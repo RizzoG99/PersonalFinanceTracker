@@ -1,0 +1,586 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		F8A524952E67A8CA0000E48D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8A5247B2E67A8C80000E48D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F8A524822E67A8C90000E48D;
+			remoteInfo = PersonalFinanceTraker;
+		};
+		F8A5249F2E67A8CA0000E48D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8A5247B2E67A8C80000E48D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F8A524822E67A8C90000E48D;
+			remoteInfo = PersonalFinanceTraker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PersonalFinanceTraker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8A524942E67A8CA0000E48D /* PersonalFinanceTrakerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PersonalFinanceTrakerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8A5249E2E67A8CA0000E48D /* PersonalFinanceTrakerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PersonalFinanceTrakerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F8A524A62E67A8CA0000E48D /* Exceptions for "PersonalFinanceTraker" folder in "PersonalFinanceTraker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F8A524822E67A8C90000E48D /* PersonalFinanceTraker */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F8A524852E67A8C90000E48D /* PersonalFinanceTraker */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F8A524A62E67A8CA0000E48D /* Exceptions for "PersonalFinanceTraker" folder in "PersonalFinanceTraker" target */,
+			);
+			path = PersonalFinanceTraker;
+			sourceTree = "<group>";
+		};
+		F8A524972E67A8CA0000E48D /* PersonalFinanceTrakerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PersonalFinanceTrakerTests;
+			sourceTree = "<group>";
+		};
+		F8A524A12E67A8CA0000E48D /* PersonalFinanceTrakerUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PersonalFinanceTrakerUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F8A524802E67A8C90000E48D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F8A524912E67A8CA0000E48D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F8A5249B2E67A8CA0000E48D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F8A5247A2E67A8C80000E48D = {
+			isa = PBXGroup;
+			children = (
+				F8A524852E67A8C90000E48D /* PersonalFinanceTraker */,
+				F8A524972E67A8CA0000E48D /* PersonalFinanceTrakerTests */,
+				F8A524A12E67A8CA0000E48D /* PersonalFinanceTrakerUITests */,
+				F8A524842E67A8C90000E48D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F8A524842E67A8C90000E48D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */,
+				F8A524942E67A8CA0000E48D /* PersonalFinanceTrakerTests.xctest */,
+				F8A5249E2E67A8CA0000E48D /* PersonalFinanceTrakerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F8A524822E67A8C90000E48D /* PersonalFinanceTraker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F8A524A72E67A8CA0000E48D /* Build configuration list for PBXNativeTarget "PersonalFinanceTraker" */;
+			buildPhases = (
+				F8A5247F2E67A8C90000E48D /* Sources */,
+				F8A524802E67A8C90000E48D /* Frameworks */,
+				F8A524812E67A8C90000E48D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F8A524852E67A8C90000E48D /* PersonalFinanceTraker */,
+			);
+			name = PersonalFinanceTraker;
+			packageProductDependencies = (
+			);
+			productName = PersonalFinanceTraker;
+			productReference = F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F8A524932E67A8CA0000E48D /* PersonalFinanceTrakerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F8A524AC2E67A8CA0000E48D /* Build configuration list for PBXNativeTarget "PersonalFinanceTrakerTests" */;
+			buildPhases = (
+				F8A524902E67A8CA0000E48D /* Sources */,
+				F8A524912E67A8CA0000E48D /* Frameworks */,
+				F8A524922E67A8CA0000E48D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F8A524962E67A8CA0000E48D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F8A524972E67A8CA0000E48D /* PersonalFinanceTrakerTests */,
+			);
+			name = PersonalFinanceTrakerTests;
+			packageProductDependencies = (
+			);
+			productName = PersonalFinanceTrakerTests;
+			productReference = F8A524942E67A8CA0000E48D /* PersonalFinanceTrakerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F8A5249D2E67A8CA0000E48D /* PersonalFinanceTrakerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F8A524AF2E67A8CA0000E48D /* Build configuration list for PBXNativeTarget "PersonalFinanceTrakerUITests" */;
+			buildPhases = (
+				F8A5249A2E67A8CA0000E48D /* Sources */,
+				F8A5249B2E67A8CA0000E48D /* Frameworks */,
+				F8A5249C2E67A8CA0000E48D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F8A524A02E67A8CA0000E48D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F8A524A12E67A8CA0000E48D /* PersonalFinanceTrakerUITests */,
+			);
+			name = PersonalFinanceTrakerUITests;
+			packageProductDependencies = (
+			);
+			productName = PersonalFinanceTrakerUITests;
+			productReference = F8A5249E2E67A8CA0000E48D /* PersonalFinanceTrakerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F8A5247B2E67A8C80000E48D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					F8A524822E67A8C90000E48D = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					F8A524932E67A8CA0000E48D = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = F8A524822E67A8C90000E48D;
+					};
+					F8A5249D2E67A8CA0000E48D = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = F8A524822E67A8C90000E48D;
+					};
+				};
+			};
+			buildConfigurationList = F8A5247E2E67A8C80000E48D /* Build configuration list for PBXProject "PersonalFinanceTraker" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F8A5247A2E67A8C80000E48D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F8A524842E67A8C90000E48D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F8A524822E67A8C90000E48D /* PersonalFinanceTraker */,
+				F8A524932E67A8CA0000E48D /* PersonalFinanceTrakerTests */,
+				F8A5249D2E67A8CA0000E48D /* PersonalFinanceTrakerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F8A524812E67A8C90000E48D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F8A524922E67A8CA0000E48D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F8A5249C2E67A8CA0000E48D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F8A5247F2E67A8C90000E48D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F8A524902E67A8CA0000E48D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F8A5249A2E67A8CA0000E48D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F8A524962E67A8CA0000E48D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F8A524822E67A8C90000E48D /* PersonalFinanceTraker */;
+			targetProxy = F8A524952E67A8CA0000E48D /* PBXContainerItemProxy */;
+		};
+		F8A524A02E67A8CA0000E48D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F8A524822E67A8C90000E48D /* PersonalFinanceTraker */;
+			targetProxy = F8A5249F2E67A8CA0000E48D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F8A524A82E67A8CA0000E48D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PersonalFinanceTraker/PersonalFinanceTraker.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PersonalFinanceTraker/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTraker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F8A524A92E67A8CA0000E48D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PersonalFinanceTraker/PersonalFinanceTraker.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PersonalFinanceTraker/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTraker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F8A524AA2E67A8CA0000E48D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F8A524AB2E67A8CA0000E48D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F8A524AD2E67A8CA0000E48D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTrakerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PersonalFinanceTraker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PersonalFinanceTraker";
+			};
+			name = Debug;
+		};
+		F8A524AE2E67A8CA0000E48D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTrakerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PersonalFinanceTraker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PersonalFinanceTraker";
+			};
+			name = Release;
+		};
+		F8A524B02E67A8CA0000E48D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTrakerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = PersonalFinanceTraker;
+			};
+			name = Debug;
+		};
+		F8A524B12E67A8CA0000E48D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTrakerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = PersonalFinanceTraker;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F8A5247E2E67A8C80000E48D /* Build configuration list for PBXProject "PersonalFinanceTraker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8A524AA2E67A8CA0000E48D /* Debug */,
+				F8A524AB2E67A8CA0000E48D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F8A524A72E67A8CA0000E48D /* Build configuration list for PBXNativeTarget "PersonalFinanceTraker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8A524A82E67A8CA0000E48D /* Debug */,
+				F8A524A92E67A8CA0000E48D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F8A524AC2E67A8CA0000E48D /* Build configuration list for PBXNativeTarget "PersonalFinanceTrakerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8A524AD2E67A8CA0000E48D /* Debug */,
+				F8A524AE2E67A8CA0000E48D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F8A524AF2E67A8CA0000E48D /* Build configuration list for PBXNativeTarget "PersonalFinanceTrakerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8A524B02E67A8CA0000E48D /* Debug */,
+				F8A524B12E67A8CA0000E48D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F8A5247B2E67A8C80000E48D /* Project object */;
+}
