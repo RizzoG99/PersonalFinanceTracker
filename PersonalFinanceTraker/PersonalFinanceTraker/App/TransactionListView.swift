@@ -1,35 +1,55 @@
 //
-//  ContentView.swift (Legacy)
+//  TransactionListView.swift
 //  PersonalFinanceTraker
 //
-//  Created by Gabriele Rizzo on 03/09/25.
-//  Note: This view has been replaced by MainTabView for the new tab-based structure
+//  Created by Gabriele Rizzo on 21/09/25.
 //
 
 import SwiftUI
 import SwiftData
 import Charts
 
-/// Legacy ContentView - Replaced by MainTabView with tab-based navigation
-/// 
-/// This view contained the original single-view layout with transactions and category breakdown
-/// in the same view. It has been superseded by a tab-based approach for better user experience.
-struct LegacyContentView: View {
+/// A dedicated view for displaying and managing financial transactions
+///
+/// This view shows transaction history with charts, grouped by dates,
+/// and provides functionality to add, edit, and delete transactions.
+///
+/// ## Features
+/// - Interactive bar chart showing income vs expenses over time
+/// - Time period filtering (week, month, year)
+/// - Grouped transaction list by date
+/// - Add, edit, and delete transactions
+/// - Swipe to delete functionality
+struct TransactionListView: View {
     @Environment(\.modelContext) private var modelContext
-    @State var showingAddItemView: Bool = false
     @State var itemToEdit: TransactionModel? = nil
     @Query(sort: \TransactionModel.timestamp, order: .reverse) private var items: [TransactionModel]
     @State private var selectedTimePeriod: TimePeriod = .month
-    @State private var selectedPieChartType: PieChartDataType = .expenses
+    @Binding private var searchText: String
+    
+    init(searchText: Binding<String>) {
+        self._searchText = searchText
+    }
     
     // Services
     private let dateFormatter = DateFormattingService()
     private let chartDataService = ChartDataService()
-    private let pieChartDataService = PieChartDataService()
+    
+    private var filteredItems: [TransactionModel] {
+        if searchText.isEmpty {
+            return items
+        } else {
+            return items.filter { item in
+                item.note.localizedCaseInsensitiveContains(searchText) ||
+                item.amount.description.localizedCaseInsensitiveContains(searchText) ||
+                item.category.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
     
     private var groupedItems: [(String, [TransactionModel])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: items) { item in
+        let grouped = Dictionary(grouping: filteredItems) { item in
             calendar.startOfDay(for: item.timestamp)
         }
         
@@ -48,27 +68,19 @@ struct LegacyContentView: View {
     }
     
     private var totalIncome: Decimal {
-        items.filter { $0.amount > 0 }.reduce(0) { $0 + $1.amount }
+        filteredItems.filter { $0.amount > 0 }.reduce(0) { $0 + $1.amount }
     }
     
     private var totalExpenses: Decimal {
-        items.filter { $0.amount < 0 }.reduce(0) { $0 + $1.amount }
+        filteredItems.filter { $0.amount < 0 }.reduce(0) { $0 + $1.amount }
     }
     
     private var chartData: [ChartDataPoint] {
-        chartDataService.generateChartData(from: items, for: selectedTimePeriod)
-    }
-    
-    private var pieChartData: [PieChartDataPoint] {
-        pieChartDataService.generatePieChartData(
-            from: items,
-            for: selectedPieChartType,
-            timePeriod: selectedTimePeriod
-        )
+        chartDataService.generateChartData(from: filteredItems, for: selectedTimePeriod)
     }
     
     var body: some View {
-        NavigationSplitView {
+        NavigationView {
             List {
                 // Chart Section
                 Section {
@@ -87,33 +99,7 @@ struct LegacyContentView: View {
                         .fontWeight(.semibold)
                 }
                 
-                // Totals Summary Section
-//                Section {
-//                    FinancialSummaryCard(
-//                        income: totalIncome,
-//                        expenses: totalExpenses,
-//                        currencyCode: "EUR"
-//                    )
-//                }
-                
-                // Category Breakdown Section
-                Section {
-                    VStack(spacing: 16) {
-                        PieChartTypePicker(selection: $selectedPieChartType)
-                        
-                        CategoryPieChart(
-                            data: pieChartData,
-                            dataType: selectedPieChartType,
-                            currencyCode: "EUR"
-                        )
-                    }
-                    .padding(.vertical, 8)
-                } header: {
-                    Text("Category Breakdown")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                }
-                
+                // Transaction List
                 ForEach(groupedItems, id: \.0) { dateString, dayItems in
                     Section {
                         ForEach(dayItems) { item in
@@ -136,13 +122,12 @@ struct LegacyContentView: View {
                     }
                 }
             }
+            .navigationTitle("Transactions")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: showAddTransaction) {
-                        Label("Add Item", systemImage: "plus")
+                    HStack {    
+                        EditButton()
                     }
                 }
                 #if DEBUG
@@ -153,15 +138,6 @@ struct LegacyContentView: View {
                 }
                 #endif
             }
-        } detail: {
-            Text("Select an item")
-        }
-        .sheet(isPresented: $showingAddItemView) {
-            NavigationStack {
-                TransactionView()
-                    .padding(.top, 32)
-            }
-            .presentationDetents([.medium])
         }
         .sheet(item: $itemToEdit) { item in
             NavigationStack {
@@ -169,12 +145,6 @@ struct LegacyContentView: View {
                     .padding(.top, 32)
             }
             .presentationDetents([.medium])
-        }
-    }
-
-    private func showAddTransaction() {
-        withAnimation {
-            showingAddItemView.toggle()
         }
     }
     
@@ -207,23 +177,14 @@ struct LegacyContentView: View {
             }
         }
     }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-                try? modelContext.save()
-            }
-        }
-    }
 }
 
 #Preview {
+    @Previewable @State var searchText = ""
     let container = try! ModelContainer(for: TransactionModel.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-    
     // Add sample data
     SampleData.populateModelContext(container.mainContext)
     
-    return LegacyContentView()
+    return TransactionListView(searchText: $searchText)
         .modelContainer(container)
 }
