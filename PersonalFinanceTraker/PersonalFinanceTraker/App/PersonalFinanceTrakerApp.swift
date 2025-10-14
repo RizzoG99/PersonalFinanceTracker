@@ -43,7 +43,7 @@ struct PersonalFinanceTrakerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            MainTabView(context: sharedModelContainer.mainContext)
         }
         .modelContainer(sharedModelContainer)
     }

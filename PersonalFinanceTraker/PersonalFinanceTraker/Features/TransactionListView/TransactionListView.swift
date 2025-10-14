@@ -9,17 +9,6 @@ import SwiftUI
 import SwiftData
 import Charts
 
-/// A dedicated view for displaying and managing financial transactions
-///
-/// This view shows transaction history with charts, grouped by dates,
-/// and provides functionality to add, edit, and delete transactions.
-///
-/// ## Features
-/// - Interactive bar chart showing income vs expenses over time
-/// - Time period filtering (week, month, year)
-/// - Grouped transaction list by date
-/// - Add, edit, and delete transactions
-/// - Swipe to delete functionality
 struct TransactionListView: View {
     @Environment(\.modelContext) private var modelContext
     @State var itemToEdit: TransactionModel? = nil
@@ -141,7 +130,7 @@ struct TransactionListView: View {
         }
         .sheet(item: $itemToEdit) { item in
             NavigationStack {
-                TransactionView(transaction: item)
+                EditAddTransactionView(item)
                     .padding(.top, 32)
             }
             .presentationDetents([.medium])

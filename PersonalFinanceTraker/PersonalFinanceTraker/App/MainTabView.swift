@@ -26,6 +26,11 @@ struct MainTabView: View {
     @State private var selectedTab: TabItem = .transactions
     @State var showingAddItemView: Bool = false
     @State private var searchText: String = ""
+    @StateObject private var viewModel: TransactionListViewModel
+    
+    init(context: ModelContext) {
+        _viewModel = StateObject(wrappedValue: TransactionListViewModel(repo: TransactionRepository(context: context)))
+    }
     
     /// Available tabs in the app
     enum TabItem: String, CaseIterable {
@@ -54,7 +59,7 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             // Transactions Tab
             Tab(TabItem.transactions.label, systemImage: TabItem.transactions.systemImage, value: TabItem.transactions) {
-                TransactionListView(searchText: $searchText)
+                TransactionListMVVM(showingAddItemView: $showingAddItemView)
             }
             
             // Category Breakdown Tab
@@ -70,6 +75,7 @@ struct MainTabView: View {
                 }
             }
         }
+        .environmentObject(viewModel)
         .onChange(of: selectedTab) { oldValue, newValue in
 //            if newValue == .plusButton {
 //                showingAddItemView = true
@@ -79,7 +85,16 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showingAddItemView) {
             NavigationStack {
-                TransactionView()
+                EditAddTransactionView()
+                    .environmentObject(viewModel)
+                    .padding(.top, 32)
+            }
+            .presentationDetents([.medium])
+        }
+        .sheet(item: $viewModel.transactionToEdit) { item in
+            NavigationStack {
+                EditAddTransactionView(item)
+                    .environmentObject(viewModel)
                     .padding(.top, 32)
             }
             .presentationDetents([.medium])
@@ -95,6 +110,6 @@ struct MainTabView: View {
     // Add sample data
     SampleData.populateModelContext(container.mainContext)
     
-    return MainTabView()
+    return MainTabView(context: container.mainContext)
         .modelContainer(container)
 }
