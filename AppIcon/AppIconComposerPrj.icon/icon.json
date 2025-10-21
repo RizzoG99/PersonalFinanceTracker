@@ -1,0 +1,40 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.16895,0.16895,0.16895,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "fill" : {
+            "automatic-gradient" : "display-p3:0.01512,0.87597,0.91425,1.00000"
+          },
+          "image-name" : "euro-currency-in-an-attache-case-svgrepo-com.svg",
+          "name" : "euro-currency-in-an-attache-case-svgrepo-com",
+          "position" : {
+            "scale" : 0.7,
+            "translation-in-points" : [
+              0,
+              -25
+            ]
+          }
+        }
+      ],
+      "name" : "background",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

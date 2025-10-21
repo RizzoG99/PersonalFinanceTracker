@@ -21,7 +21,7 @@ final class TransactionListViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     private let dateFormatter = DateFormattingService()
-    private let chartDataService = ChartDataService()
+    private let dataService = ChartDataService()
     
     init(repo: ITransactionRepository) {
         self.repo = repo
@@ -33,7 +33,7 @@ final class TransactionListViewModel: ObservableObject {
         
         self._filteredItems.projectedValue.sink { [weak self] searchText in
             self?.groupTransactions()
-            self?.chartData = self?.chartDataService.generateChartData(from: self?.filteredItems ?? [],
+            self?.chartData = self?.dataService.generateChartData(from: self?.filteredItems ?? [],
                                                                        for: self?.selectedTimePeriod ?? .month) ?? []
         }
         .store(in: &cancellables)
@@ -44,7 +44,7 @@ final class TransactionListViewModel: ObservableObject {
             transactions = try repo.fetchAll()
             doFilterItemBySearchText()
             groupTransactions()
-            chartData = chartDataService.generateChartData(from: filteredItems,
+            chartData = dataService.generateChartData(from: filteredItems,
                                                                        for: selectedTimePeriod)
 
         } catch { print(error) }

@@ -1,71 +1,21 @@
 //
-//  TransactionListView.swift
+//  TransactionListMVVM.swift
 //  PersonalFinanceTraker
 //
-//  Created by Gabriele Rizzo on 21/09/25.
+//  Created by Gabriele Rizzo on 14/10/25.
 //
 
 import SwiftUI
 import SwiftData
-import Charts
 
-struct TransactionListView: View {
+struct TransactionListMVVM: View {
     @Environment(\.modelContext) private var modelContext
-    @State var itemToEdit: TransactionModel? = nil
-    @Query(sort: \TransactionModel.timestamp, order: .reverse) private var items: [TransactionModel]
-    @State private var selectedTimePeriod: TimePeriod = .month
-    @Binding private var searchText: String
+    @EnvironmentObject private var viewModel: TransactionListViewModel
+    @Binding private var showingAddItemView: Bool
+    @State private var editMode: EditMode = .inactive
     
-    init(searchText: Binding<String>) {
-        self._searchText = searchText
-    }
-    
-    // Services
-    private let dateFormatter = DateFormattingService()
-    private let chartDataService = ChartDataService()
-    
-    private var filteredItems: [TransactionModel] {
-        if searchText.isEmpty {
-            return items
-        } else {
-            return items.filter { item in
-                item.note.localizedCaseInsensitiveContains(searchText) ||
-                item.amount.description.localizedCaseInsensitiveContains(searchText) ||
-                item.category.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-    }
-    
-    private var groupedItems: [(String, [TransactionModel])] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filteredItems) { item in
-            calendar.startOfDay(for: item.timestamp)
-        }
-        
-        return grouped.map { (date, items) in
-            (dateFormatter.formatTransactionDate(date), items.sorted { $0.timestamp > $1.timestamp })
-        }.sorted { first, second in
-            // Sort sections by date (newest first)
-            let firstDate = calendar.startOfDay(for: first.1.first?.timestamp ?? Date())
-            let secondDate = calendar.startOfDay(for: second.1.first?.timestamp ?? Date())
-            return firstDate > secondDate
-        }
-    }
-    
-    private func totalForDate(items: [TransactionModel]) -> Decimal {
-        items.reduce(0) { $0 + $1.amount }
-    }
-    
-    private var totalIncome: Decimal {
-        filteredItems.filter { $0.amount > 0 }.reduce(0) { $0 + $1.amount }
-    }
-    
-    private var totalExpenses: Decimal {
-        filteredItems.filter { $0.amount < 0 }.reduce(0) { $0 + $1.amount }
-    }
-    
-    private var chartData: [ChartDataPoint] {
-        chartDataService.generateChartData(from: filteredItems, for: selectedTimePeriod)
+    init(showingAddItemView: Binding<Bool>) {
+        _showingAddItemView = showingAddItemView
     }
     
     var body: some View {
@@ -74,10 +24,10 @@ struct TransactionListView: View {
                 // Chart Section
                 Section {
                     VStack(spacing: 16) {
-                        TimePeriodPicker(selection: $selectedTimePeriod)
+                        TimePeriodPicker(selection: $viewModel.selectedTimePeriod)
                         
                         TransactionChart(
-                            data: chartData,
+                            data: viewModel.chartData,
                             currencyCode: "EUR"
                         )
                     }
@@ -89,23 +39,25 @@ struct TransactionListView: View {
                 }
                 
                 // Transaction List
-                ForEach(groupedItems, id: \.0) { dateString, dayItems in
+                ForEach(viewModel.groupedItems, id: \.0) { dateString, dayItems in
                     Section {
                         ForEach(dayItems) { item in
                             Button(action: {
-                                itemToEdit = item
+                                self.viewModel.transactionToEdit = item
                             }) {
                                 TransactionItemView(item: item)
                             }
                             .buttonStyle(.plain)
                         }
                         .onDelete { offsets in
-                            deleteItemsFromSection(dayItems: dayItems, offsets: offsets)
+                            withAnimation {
+                                viewModel.deleteItemsFromSection(dayItems: dayItems, offsets: offsets)
+                            }
                         }
                     } header: {
                         TransactionSectionHeader(
                             dateString: dateString,
-                            totalAmount: totalForDate(items: dayItems),
+                            totalAmount: viewModel.totalForDate(items: dayItems),
                             currencyCode: "EUR"
                         )
                     }
@@ -114,66 +66,22 @@ struct TransactionListView: View {
             .navigationTitle("Transactions")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack {    
-                        EditButton()
+                ToolbarItem {
+                    EditButton()
+                }
+                ToolbarSpacer(.fixed)
+                ToolbarItem {
+                    Button(action: {
+                        showingAddItemView.toggle()
+                    }) {
+                        Image(systemName: "plus")
                     }
                 }
-                #if DEBUG
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: loadSampleData) {
-                        Label("Load Sample Data", systemImage: "arrow.clockwise")
-                    }
-                }
-                #endif
             }
         }
-        .sheet(item: $itemToEdit) { item in
-            NavigationStack {
-                EditAddTransactionView(item)
-                    .padding(.top, 32)
-            }
-            .presentationDetents([.medium])
+        .onAppear {
+            viewModel.load()
         }
     }
-    
-    #if DEBUG
-    private func loadSampleData() {
-        // Clear existing data
-        for item in items {
-            modelContext.delete(item)
-        }
-        
-        // Add sample data
-        SampleData.populateModelContext(modelContext)
-        
-        print("Sample data reloaded")
-    }
-    #endif
 
-    private func deleteItemsFromSection(dayItems: [TransactionModel], offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                if let itemToDelete = items.first(where: { $0.id == dayItems[index].id }) {
-                    modelContext.delete(itemToDelete)
-                }
-            }
-            do {
-                try modelContext.save()
-            } catch {
-                // Handle the error appropriately
-                print("Failed to save context: \(error)")
-            }
-        }
-    }
-}
-
-#Preview {
-    @Previewable @State var searchText = ""
-    let container = try! ModelContainer(for: TransactionModel.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-    // Add sample data
-    SampleData.populateModelContext(container.mainContext)
-    
-    return TransactionListView(searchText: $searchText)
-        .modelContainer(container)
 }
