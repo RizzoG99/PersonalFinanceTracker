@@ -7,7 +7,7 @@ Did you don't know how you arrive at the end of month with 0 euro? So this app h
 
 | Transaction List      | Categories | Add&Edit |
 | ----------- | ----------- | ----------- |
-|<img src="images/transaction.png" width="200">|<img src="images/categories.gif" width="200">|<img src="images/add_transaction.gif" width="200">| 
+|<img src="Images/transaction.png" width="200">|<img src="Images/categories.gif" width="200">|<img src="Images/add_transaction.gif" width="200">| 
 
 ___
 
