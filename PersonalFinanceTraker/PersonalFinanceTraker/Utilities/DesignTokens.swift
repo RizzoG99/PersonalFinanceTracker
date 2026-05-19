@@ -1,0 +1,187 @@
+//
+//  DesignTokens.swift
+//  PersonalFinanceTraker
+//
+
+import SwiftUI
+
+// MARK: - Color Tokens
+
+extension Color {
+    static let bg0 = Color("bg0")
+    static let bg1 = Color("bg1")
+    static let bg2 = Color("bg2")
+    static let accentIndigo = Color("accentIndigo")
+    static let positive = Color("positive")
+    static let negative = Color("negative")
+    static let textPrimary = Color("textPrimary")
+    static let textMid = Color("textMid")
+    static let textDim = Color("textDim")
+    static let categoryGreen = Color("categoryGreen")
+    static let categoryAmber = Color("categoryAmber")
+    static let categoryIndigo = Color("categoryIndigo")
+    static let categoryPink = Color("categoryPink")
+    static let categoryPurple = Color("categoryPurple")
+    static let categoryTeal = Color("categoryTeal")
+    static let categoryGray = Color("categoryGray")
+}
+
+// MARK: - App Background
+
+// Matches the Claude Design spec:
+// base #030712 with radial blooms — indigo at top-left (22%), teal at bottom-right (10%), indigo at center (10%)
+struct AppBackground: View {
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                Color(red: 0.012, green: 0.027, blue: 0.071)
+
+                // Indigo bloom — top-left (ellipse at 20% 0%)
+                RadialGradient(
+                    colors: [
+                        Color(red: 0.506, green: 0.549, blue: 0.973).opacity(0.22),
+                        .clear
+                    ],
+                    center: UnitPoint(x: 0.2, y: 0),
+                    startRadius: 0,
+                    endRadius: geo.size.height * 0.55
+                )
+
+                // Teal bloom — bottom-right (ellipse at 80% 100%)
+                RadialGradient(
+                    colors: [
+                        Color(red: 0.133, green: 0.827, blue: 0.627).opacity(0.10),
+                        .clear
+                    ],
+                    center: UnitPoint(x: 0.8, y: 1.0),
+                    startRadius: 0,
+                    endRadius: geo.size.height * 0.55
+                )
+
+                // Indigo bloom — center (ellipse at 50% 50%)
+                RadialGradient(
+                    colors: [
+                        Color(red: 0.388, green: 0.400, blue: 0.945).opacity(0.10),
+                        .clear
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: geo.size.height * 0.60
+                )
+            }
+        }
+        .ignoresSafeArea()
+    }
+}
+
+extension View {
+    func appBackground() -> some View {
+        self.background { AppBackground() }
+    }
+}
+
+// MARK: - Glass Card Component
+
+struct GlassCard<Content: View>: View {
+    let tint: Color?
+    let content: Content
+    let type: Glass
+    let borderRadius: CGFloat
+    
+    init(tint: Color? = nil,
+         type: Glass = .regular,
+         borderRadius: CGFloat = 26,
+         @ViewBuilder content: () -> Content) {
+        self.tint = tint
+        self.content = content()
+        self.type = type
+        self.borderRadius = borderRadius
+    }
+
+    private var glass: Glass {
+        if let tint {
+            return self.type.tint(tint)
+        }
+        return self.type
+    }
+
+    var body: some View {
+        content
+            .padding(16)
+            .glassEffect(glass, in: .rect(cornerRadius: borderRadius))
+            .glassEffectTransition(.materialize)
+    }
+}
+
+// MARK: - Category Info
+
+struct CategoryInfo {
+    let color: Color
+    let symbol: String
+
+    static func info(for categoryName: String) -> CategoryInfo {
+        let name = categoryName.lowercased()
+
+        let color: Color
+        if name.contains("grocer") || name.contains("supermarket") || name.contains("salary") || name.contains("paycheck") || name.contains("freelance") || name.contains("gift") || name.contains("investment") || name.contains("bonus") || name.contains("prize") || name.contains("refund") || name.contains("income") {
+            color = .categoryGreen
+        } else if name.contains("dining") || name.contains("restaurant") || name.contains("food") || name.contains("coffee") || name.contains("entertainment") || name.contains("movie") {
+            color = .categoryAmber
+        } else if name.contains("transport") || name.contains("gas") || name.contains("car") || name.contains("uber") || name.contains("rent") || name.contains("mortgage") || name.contains("utilities") || name.contains("electricity") || name.contains("phone") {
+            color = .categoryIndigo
+        } else if name.contains("shopping") || name.contains("clothing") {
+            color = .categoryPink
+        } else if name.contains("subscription") || name.contains("streaming") || name.contains("netflix") || name.contains("spotify") {
+            color = .categoryPurple
+        } else if name.contains("health") || name.contains("gym") || name.contains("fitness") || name.contains("healthcare") || name.contains("pet") {
+            color = .categoryTeal
+        } else {
+            color = .categoryGray
+        }
+
+        let symbol: String
+        if name.contains("grocer") || name.contains("supermarket") {
+            symbol = "cart.fill"
+        } else if name.contains("dining") || name.contains("restaurant") || name.contains("food") {
+            symbol = "fork.knife"
+        } else if name.contains("coffee") {
+            symbol = "cup.and.saucer.fill"
+        } else if name.contains("transport") || name.contains("car") || name.contains("uber") {
+            symbol = "car.fill"
+        } else if name.contains("shopping") || name.contains("clothing") {
+            symbol = "bag.fill"
+        } else if name.contains("subscription") || name.contains("streaming") || name.contains("netflix") || name.contains("spotify") {
+            symbol = "play.circle.fill"
+        } else if name.contains("health") || name.contains("healthcare") {
+            symbol = "cross.case.fill"
+        } else if name.contains("gym") || name.contains("fitness") {
+            symbol = "figure.run"
+        } else if name.contains("salary") || name.contains("paycheck") {
+            symbol = "banknote.fill"
+        } else if name.contains("freelance") {
+            symbol = "laptopcomputer"
+        } else if name.contains("gift") {
+            symbol = "gift.fill"
+        } else if name.contains("investment") || name.contains("bonus") {
+            symbol = "chart.line.uptrend.xyaxis"
+        } else if name.contains("prize") || name.contains("refund") {
+            symbol = "arrow.turn.down.left"
+        } else if name.contains("rent") || name.contains("mortgage") {
+            symbol = "house.fill"
+        } else if name.contains("utilities") || name.contains("electricity") {
+            symbol = "bolt.fill"
+        } else if name.contains("phone") {
+            symbol = "phone.fill"
+        } else if name.contains("entertainment") || name.contains("movie") {
+            symbol = "film.fill"
+        } else if name.contains("pet") {
+            symbol = "pawprint.fill"
+        } else if name.contains("travel") || name.contains("airplane") {
+            symbol = "airplane"
+        } else {
+            symbol = "creditcard.fill"
+        }
+
+        return CategoryInfo(color: color, symbol: symbol)
+    }
+}

@@ -28,6 +28,8 @@ import Foundation
 /// - Configurable time periods
 public class ChartDataService {
     
+    private let currencyService = CurrencyService()
+    
     /// Creates a new chart data service
     public init() {}
     
@@ -137,14 +139,18 @@ public class ChartDataService {
     /// - Parameter items: Array of items to calculate from
     /// - Returns: Total income amount
     private func calculateIncome(from items: [TransactionModel]) -> Decimal {
-        return items.filter { $0.amount > 0 }.reduce(0) { $0 + $1.amount }
+        return items.filter { $0.amount > 0 }.reduce(0) { total, item in
+            total + currencyService.convertToBase(item.amount, from: item.currencyCode)
+        }
     }
     
     /// Calculates total expenses from items (returned as positive value)
     /// - Parameter items: Array of items to calculate from
     /// - Returns: Total expenses as positive amount
     private func calculateExpenses(from items: [TransactionModel]) -> Decimal {
-        return abs(items.filter { $0.amount < 0 }.reduce(0) { $0 + $1.amount })
+        return abs(items.filter { $0.amount < 0 }.reduce(0) { total, item in
+            total + currencyService.convertToBase(item.amount, from: item.currencyCode)
+        })
     }
 }
 

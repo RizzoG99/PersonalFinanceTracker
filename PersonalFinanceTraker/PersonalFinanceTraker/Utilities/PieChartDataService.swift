@@ -31,6 +31,8 @@ import SwiftUI
 /// - Separate handling for income vs expenses
 public class PieChartDataService {
     
+    private let currencyService = CurrencyService()
+    
     /// Predefined colors for different categories
     private let categoryColors: [Color] = [
         .blue, .green, .orange, .red, .purple,
@@ -60,23 +62,25 @@ public class PieChartDataService {
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
         
         // Group by category and calculate totals
-        let categoryTotals = groupByCategory(typeFilteredItems)
+        let categoryGroupedData = groupByCategoryModels(typeFilteredItems)
         
         // Calculate total amount for percentage calculations
-        let totalAmount = categoryTotals.values.reduce(0, +)
+        let totalAmount = categoryGroupedData.values.map { $0.total }.reduce(0, +)
         
         // Generate pie chart data points
         var pieChartData: [PieChartDataPoint] = []
         
-        for (index, (category, amount)) in categoryTotals.sorted(by: { $0.value > $1.value }).enumerated() {
-            let percentage = totalAmount > 0 ? Double(truncating: (amount / totalAmount * 100) as NSDecimalNumber) : 0
+        for (index, (categoryName, data)) in categoryGroupedData.sorted(by: { $0.value.total > $1.value.total }).enumerated() {
+            let percentage = totalAmount > 0 ? Double(truncating: (data.total / totalAmount * 100) as NSDecimalNumber) : 0
             let color = categoryColors[index % categoryColors.count]
             
             pieChartData.append(PieChartDataPoint(
-                category: category,
-                amount: amount,
+                category: categoryName,
+                amount: data.total,
                 color: color,
-                percentage: percentage
+                percentage: percentage,
+                budget: data.model?.monthlyBudget,
+                categoryModel: data.model
             ))
         }
         
@@ -99,9 +103,9 @@ public class PieChartDataService {
         
         let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
-        let categoryTotals = groupByCategory(typeFilteredItems)
+        let categoryTotals = groupByCategoryModels(typeFilteredItems)
         
-        let totalAmount = categoryTotals.values.reduce(0, +)
+        let totalAmount = categoryTotals.values.map { $0.total }.reduce(0, +)
         
         return (totalAmount: totalAmount, categoryCount: categoryTotals.count)
     }
@@ -140,21 +144,21 @@ public class PieChartDataService {
     /// Groups items by category and calculates totals
     /// - Parameter items: Array of items to group
     /// - Returns: Dictionary with category names as keys and total amounts as values
-    private func groupByCategory(_ items: [TransactionModel]) -> [String: Decimal] {
-        var categoryTotals: [String: Decimal] = [:]
+    private func groupByCategoryModels(_ items: [TransactionModel]) -> [String: (total: Decimal, model: CategoryModel?)] {
+        var categoryData: [String: (total: Decimal, model: CategoryModel?)] = [:]
         
         for item in items {
-            let category = item.category.isEmpty ? "Other" : item.category
-            let amount = abs(item.amount) // Use absolute value for display
+            let categoryName = item.category.isEmpty ? "Other" : item.category
+            let amount = abs(currencyService.convertToBase(item.amount, from: item.currencyCode))
             
-            if let existingAmount = categoryTotals[category] {
-                categoryTotals[category] = existingAmount + amount
+            if let existing = categoryData[categoryName] {
+                categoryData[categoryName] = (existing.total + amount, existing.model ?? item.categoryModel)
             } else {
-                categoryTotals[category] = amount
+                categoryData[categoryName] = (amount, item.categoryModel)
             }
         }
         
-        return categoryTotals
+        return categoryData
     }
 }
 
