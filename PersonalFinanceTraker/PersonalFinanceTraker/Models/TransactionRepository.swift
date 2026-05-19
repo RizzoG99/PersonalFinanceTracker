@@ -10,9 +10,14 @@ import Foundation
 
 protocol ITransactionRepository {
     func fetchAll() throws -> [TransactionModel]
-        func add(_ item: TransactionModel) throws
-        func delete(_ item: TransactionModel) throws
-        func update() throws
+    func add(_ item: TransactionModel) throws
+    func delete(_ item: TransactionModel) throws
+    func update() throws
+    
+    // Category management
+    func fetchCategories() throws -> [CategoryModel]
+    func addCategory(_ item: CategoryModel) throws
+    func deleteCategory(_ item: CategoryModel) throws
 }
 
 final class TransactionRepository: ITransactionRepository {
@@ -38,6 +43,21 @@ final class TransactionRepository: ITransactionRepository {
     }
     
     func update() throws {
+        try context.save()
+    }
+    
+    func fetchCategories() throws -> [CategoryModel] {
+        let desc = FetchDescriptor<CategoryModel>(sortBy: [SortDescriptor(\.name)])
+        return try context.fetch(desc)
+    }
+    
+    func addCategory(_ item: CategoryModel) throws {
+        context.insert(item)
+        try context.save()
+    }
+    
+    func deleteCategory(_ item: CategoryModel) throws {
+        context.delete(item)
         try context.save()
     }
 

@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-enum TransactionType: String, CaseIterable {
+public enum TransactionType: String, CaseIterable {
     case income = "Income"
     case expense = "Expense"
     

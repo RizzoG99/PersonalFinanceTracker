@@ -15,16 +15,24 @@ public final class TransactionModel {
     var note: String
     var category: String
     var idCategory: String?
+    var currencyCode: String = "EUR"
+    
+    @Relationship(deleteRule: .nullify)
+    var categoryModel: CategoryModel?
     
     init(timestamp: Date,
          amount: Decimal,
          note: String,
          category: String,
-         idCategory: String? = nil) {
+         idCategory: String? = nil,
+         categoryModel: CategoryModel? = nil,
+         currencyCode: String = "EUR") {
         self.timestamp = timestamp
         self.amount = amount
         self.note = note
         self.category = category
         self.idCategory = idCategory
+        self.categoryModel = categoryModel
+        self.currencyCode = currencyCode
     }
 }
