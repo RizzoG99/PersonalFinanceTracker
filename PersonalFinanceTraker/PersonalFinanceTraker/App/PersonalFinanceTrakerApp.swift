@@ -17,6 +17,7 @@ struct PersonalFinanceTrakerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             TransactionModel.self,
+            CategoryModel.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
@@ -43,7 +44,7 @@ struct PersonalFinanceTrakerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainTabView(context: sharedModelContainer.mainContext)
+            AuthenticationWrapper(context: sharedModelContainer.mainContext)
         }
         .modelContainer(sharedModelContainer)
     }
