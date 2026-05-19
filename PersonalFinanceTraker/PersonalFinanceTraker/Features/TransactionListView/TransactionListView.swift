@@ -58,19 +58,32 @@ struct TransactionListMVVM: View {
                         TransactionSectionHeader(
                             dateString: dateString,
                             totalAmount: viewModel.totalForDate(items: dayItems),
-                            currencyCode: "EUR"
+                            currencyCode: viewModel.currencyService.baseCurrency
                         )
                     }
+                }
+                
+                // Bottom spacer to clear floating tab bar
+                Section {
+                    Color.clear.frame(height: 80)
+                        .listRowBackground(Color.clear)
                 }
             }
             .navigationTitle("Transactions")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem {
+                ToolbarItem(placement: .topBarLeading) {
+                    let csvData = viewModel.exportCSV()
+                    ShareLink(item: csvData, preview: SharePreview("Transactions.csv")) {
+                        Label("Export CSV", systemImage: "square.and.arrow.up")
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
                     EditButton()
                 }
-                ToolbarSpacer(.fixed)
-                ToolbarItem {
+                
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showingAddItemView.toggle()
                     }) {

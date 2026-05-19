@@ -17,11 +17,12 @@ final class TransactionListViewModel: ObservableObject {
     @Published var selectedTimePeriod: TimePeriod = .month
     @Published var transactionToEdit: TransactionModel? = nil
     
-    private let repo: ITransactionRepository
+    let repo: ITransactionRepository
     private var cancellables = Set<AnyCancellable>()
     
     private let dateFormatter = DateFormattingService()
     private let dataService = ChartDataService()
+    public let currencyService = CurrencyService()
     
     init(repo: ITransactionRepository) {
         self.repo = repo
@@ -113,7 +114,19 @@ final class TransactionListViewModel: ObservableObject {
     }
     
     func totalForDate(items: [TransactionModel]) -> Decimal {
-        return items.reduce(0) { $0 + $1.amount }
+        return items.reduce(0) { total, item in
+            let convertedAmount = currencyService.convertToBase(item.amount, from: item.currencyCode)
+            return total + convertedAmount
+        }
+    }
+
+    func clearSearch() {
+        self.searchText = ""
+    }
+
+    /// Generates a CSV export of all currently filtered transactions
+    func exportCSV() -> String {
+        return CSVExportService.generateCSV(from: transactions)
     }
 
 }
