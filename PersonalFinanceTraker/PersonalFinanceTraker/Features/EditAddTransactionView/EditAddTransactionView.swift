@@ -27,221 +27,105 @@ struct EditAddTransactionView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 24) {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Transaction Type Picker
-                    VStack(alignment: .leading, spacing: 8) {
-                        Picker("Transaction Type", selection: $viewModel.transactionType) {
-                            ForEach(TransactionType.allCases, id: \.self) { type in
-                                VStack {
-                                    Text(type.rawValue)
-                                }
-                                .tag(type)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: viewModel.transactionType) { _, _ in
-                            // Reset category when type changes
-                            viewModel.selectedCategory = nil
-                        }
-                    }
-                    
-                    // Transaction Name
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Note")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.secondary)
-                        
-                        TextField("Enter transaction name", text: $viewModel.transactionName)
-                            .textFieldStyle(.roundedBorder)
-                            .submitLabel(.next)
-                            .onSubmit {
-                                // Focus can be handled by the reusable component if needed
-                            }
-                    }
-                    
-                    // Date
-                    HStack {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Date")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.secondary)
-                            
-                            Button(action: {
-                                viewModel.showingDatePicker.toggle()
-                            }) {
-                                HStack {
-                                    Text(viewModel.formattedDate)
-                                        .foregroundStyle(.primary)
-                                    Spacer()
-                                    Image(systemName: "calendar")
-                                        .foregroundStyle(.secondary)
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 8)
-                                .background(Color(.systemGray6))
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color(.systemGray4), lineWidth: 1)
-                                )
-                            }
-                        }
-                        
-                        // Category
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Category")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.secondary)
-                            
-                            Button(action: {
-                                viewModel.showingCategoryPicker.toggle()
-                            }) {
-                                HStack {
-                                    if let selectedCategory = viewModel.selectedCategory {
-                                        Text(selectedCategory.displayText)
-                                            .foregroundStyle(.primary)
-                                    } else {
-                                        Text("Select a category")
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.down")
-                                        .foregroundStyle(.secondary)
-                                        .font(.caption)
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 8)
-                                .background(Color(.systemGray6))
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(viewModel.selectedCategory == nil ? Color.red.opacity(0.5) : Color(.systemGray4), lineWidth: 1)
-                                )
-                            }
-                        }
-                    }
-                    
-                    // Amount
+        VStack(spacing: 24) {
+            formFields
+            saveButton
+        }
+        .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.setTransactionViewModel(transactionViewModel)
+        }
+    }
+
+    private let rowBackground = Color.white.opacity(0.06)
+
+    private var formFields: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Form {
+                Section {
                     CurrencyAmountField(
                         label: "Amount",
                         placeholder: "0",
-                        amount: $viewModel.amount
+                        amount: $viewModel.amount,
+                        currencyCode: $viewModel.currencyCode
                     )
-                    
                 }
-                .padding(.horizontal)
-                
-                Spacer()
-                
-                // Save/Update Transaction Button
-                Button(action: {
-                    if viewModel.editingItem == nil {
-                        addTransaction()
-                    } else {
-                        updateTransaction()
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: viewModel.editingItem == nil ? "plus.circle.fill" : "checkmark.circle.fill")
-                        Text(viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction")
-                    }
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(viewModel.isFormValid ? Color.blue : Color.gray)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                .listRowBackground(rowBackground)
+
+                Section {
+                    TextField("Note", text: $viewModel.transactionName, prompt: Text("Note"))
+                        .submitLabel(.next)
                 }
-                .disabled(!viewModel.isFormValid)
-                .padding(.horizontal)
-                .padding(.bottom)
-            }
-            .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if viewModel.editingItem != nil {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            dismiss()
+                .listRowBackground(rowBackground)
+
+                Section {
+                    dateField
+
+                    Picker("Transaction Type", selection: $viewModel.transactionType) {
+                        ForEach(TransactionType.allCases, id: \.self) { type in
+                            Text(type.rawValue).tag(type)
                         }
                     }
-                }
-            }
-            .sheet(isPresented: $viewModel.showingDatePicker) {
-                NavigationStack {
-                    VStack {
-                        DatePicker(
-                            "Select Date",
-                            selection: $viewModel.date,
-                            in: ...Date(),
-                            displayedComponents: .date
-                        )
-                        .datePickerStyle(.graphical)
-                        .padding()
-                        
-                        Spacer()
+                    .onChange(of: viewModel.transactionType) { _, _ in
+                        viewModel.selectedCategory = nil
                     }
-                    .navigationTitle("Select Date")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Done") {
-                                viewModel.showingDatePicker = false
-                            }
-                            .fontWeight(.semibold)
+
+                    categoryField
+
+                    Picker("Currency", selection: $viewModel.currencyCode) {
+                        ForEach(["EUR", "USD", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY"], id: \.self) { code in
+                            Text(code).tag(code)
                         }
                     }
+                    .tint(.accentIndigo)
                 }
-                .presentationDetents([.medium])
+                .listRowBackground(rowBackground)
             }
-            .sheet(isPresented: $viewModel.showingCategoryPicker) {
-                NavigationStack {
-                    List {
-                        ForEach(viewModel.filteredCategories) { category in
-                            Button(action: {
-                                viewModel.selectedCategory = category
-                                viewModel.showingCategoryPicker = false
-                            }) {
-                                HStack {
-                                    Text(category.displayText)
-                                        .foregroundStyle(.primary)
-                                    Spacer()
-                                    if viewModel.selectedCategory?.id == category.id {
-                                        Image(systemName: "checkmark")
-                                            .foregroundStyle(.blue)
-                                            .font(.headline)
-                                    }
-                                }
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .navigationTitle("Select Category")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                viewModel.showingCategoryPicker = false
-                            }
-                        }
-                    }
-                }
-                .presentationDetents([.medium, .large])
-            }
-            .onTapGesture {
-                // Dismiss keyboard when tapping outside - handled by the system
-            }
+            .scrollContentBackground(.hidden)
         }
     }
-    
-    
-    
+
+    private var dateField: some View {
+        DatePicker(
+            "Date",
+            selection: $viewModel.date,
+            displayedComponents: [.date]
+        )
+        .tint(.accentIndigo)
+    }
+
+    private var categoryField: some View {
+        Picker("Category", selection: $viewModel.selectedCategory) {
+            Text("Select a category").tag(CategoryModel?.none)
+            ForEach(viewModel.filteredCategories) { category in
+                Text(category.name)
+                    .tag(CategoryModel?.some(category))
+            }
+        }
+        .tint(viewModel.selectedCategory == nil ? .secondary : .accentIndigo)
+    }
+
+    private var saveButton: some View {
+        Button(action: {
+            if viewModel.editingItem == nil {
+                addTransaction()
+            } else {
+                updateTransaction()
+            }
+        }) {
+            Text(viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction")
+            .font(.headline)
+            .foregroundStyle(Color.textPrimary)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .glassEffect(.regular.tint(viewModel.isFormValid ? Color.accentIndigo : Color.gray).interactive())
+        }
+        .disabled(!viewModel.isFormValid)
+        .padding(.horizontal)
+        .padding(.bottom)
+    }
+
     private func addTransaction() {
         if let newItem = viewModel.getTransactionData() {
             transactionViewModel.add(newItem)

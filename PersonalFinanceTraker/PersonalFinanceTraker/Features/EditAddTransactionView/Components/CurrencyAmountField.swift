@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CurrencyAmountField: View {
     @Binding var amount: Double
+    @Binding var currencyCode: String
     @FocusState private var isFocused: Bool
     @State private var displayText: String = ""
     
@@ -19,7 +20,7 @@ struct CurrencyAmountField: View {
     private var currencyFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currencyAccounting
-        formatter.currencyCode = Locale.current.currency?.identifier ?? "EUR"
+        formatter.currencyCode = currencyCode
         formatter.decimalSeparator = ","
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
@@ -29,34 +30,27 @@ struct CurrencyAmountField: View {
     init(
         label: String = "Amount",
         placeholder: String = "0",
-        amount: Binding<Double>
+        amount: Binding<Double>,
+        currencyCode: Binding<String>
     ) {
         self.label = label
         self.placeholder = placeholder
         self._amount = amount
+        self._currencyCode = currencyCode
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
-            
+        VStack(alignment: .center, spacing: 8) {
             HStack(spacing: 8) {
-                // Currency symbol
-                Text(currencyFormatter.currencySymbol ?? "€")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
-                
                 TextField(placeholder, text: $displayText)
                     .textFieldStyle(.plain)
                     .keyboardType(.decimalPad)
                     .focused($isFocused)
                     .submitLabel(.done)
-                    .font(.largeTitle)
+                    .font(.system(size: 44))
                     .fontWeight(.heavy)
                     .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
                     .onChange(of: isFocused) { oldValue, newValue in
                         if newValue {
                             // When field gains focus, show raw number for editing
@@ -155,13 +149,15 @@ extension CurrencyAmountField {
 #Preview {
     struct PreviewWrapper: View {
         @State private var amount: Double = 0.0
+        @State private var currency: String = "EUR"
         
         var body: some View {
             VStack(spacing: 20) {
                 CurrencyAmountField(
                     label: "Amount",
                     placeholder: "0",
-                    amount: $amount
+                    amount: $amount,
+                    currencyCode: $currency
                 )
                 
                 Text("Current amount: \(amount, specifier: "%.2f")")

@@ -11,8 +11,10 @@ final class EditAddTransactionViewModel: ObservableObject {
     @Published var transactionName: String = ""
     @Published var amount: Double = 0.0 // Changed from Decimal to Double for CurrencyAmountField
     @Published var transactionType: TransactionType = .expense
+    @Published var currencyCode: String = "EUR"
     @Published var date: Date = Date()
-    @Published var selectedCategory: TransactionCategory?
+    @Published var selectedCategory: CategoryModel?
+    @Published var availableCategories: [CategoryModel] = []
     @Published var showingDatePicker: Bool = false
     @Published var showingCategoryPicker: Bool = false
     @Published var showingErrorAlert: Bool = false
@@ -24,13 +26,13 @@ final class EditAddTransactionViewModel: ObservableObject {
     init(transaction: TransactionModel) {
         self.editingItem = transaction
         let transactionType: TransactionType = transaction.amount < 0 ? .expense : .income
-        let categoryType = transactionType == .expense ? TransactionCategory.expenseCategories : TransactionCategory.incomeCategories
         
         self._transactionName = Published(initialValue: transaction.note)
         self._amount = Published(initialValue: abs(Double(truncating: transaction.amount as NSDecimalNumber)))
         self._transactionType = Published(initialValue: transactionType)
+        self._currencyCode = Published(initialValue: transaction.currencyCode)
         self._date = Published(initialValue: transaction.timestamp)
-        self._selectedCategory = Published(initialValue: categoryType.first(where: { transaction.category.contains($0.emoji) }))
+        self._selectedCategory = Published(initialValue: transaction.categoryModel)
     }
     
     init() {
@@ -39,6 +41,18 @@ final class EditAddTransactionViewModel: ObservableObject {
     
     func setTransactionViewModel(_ transactionViewModel: TransactionListViewModel) {
         self.transactionViewModel = transactionViewModel
+        // Fetch categories when view model is linked
+        self.availableCategories = (try? transactionViewModel.repo.fetchCategories()) ?? []
+        
+        // If editing and categoryModel is nil, try to find it by name for migration
+        if let editingItem = editingItem, editingItem.categoryModel == nil {
+            self.selectedCategory = availableCategories.first(where: { editingItem.category.contains($0.name) })
+        }
+        
+        // Set default currency from user settings if not editing
+        if editingItem == nil {
+            self.currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
+        }
     }
     
     func setupForEditing(_ transaction: TransactionModel) {
@@ -68,15 +82,8 @@ final class EditAddTransactionViewModel: ObservableObject {
         }
     }
     
-    var filteredCategories: [TransactionCategory] {
-        TransactionCategory.defaultCategories.filter { category in
-            switch transactionType {
-            case .income:
-                return TransactionCategory.incomeCategories.contains { $0.id == category.id }
-            case .expense:
-                return TransactionCategory.expenseCategories.contains { $0.id == category.id }
-            }
-        }
+    var filteredCategories: [CategoryModel] {
+        availableCategories.filter { $0.transactionType == transactionType }
     }
     
     func getTransactionData() -> TransactionModel? {
@@ -90,10 +97,12 @@ final class EditAddTransactionViewModel: ObservableObject {
             timestamp: date,
             amount: finalAmount,
             note: transactionName,
-            category: selectedCategory.displayText
+            category: selectedCategory.displayText,
+            categoryModel: selectedCategory,
+            currencyCode: currencyCode
         )
         
-        print("Adding transaction: \(transactionName), Amount: \(finalAmount), Date: \(date), Category: \(selectedCategory.displayText), Type: \(transactionType.rawValue)")
+        print("Adding transaction: \(transactionName), Amount: \(finalAmount) \(currencyCode), Date: \(date), Category: \(selectedCategory.displayText), Type: \(transactionType.rawValue)")
         
         resetForm()
         return newItem
@@ -111,14 +120,17 @@ final class EditAddTransactionViewModel: ObservableObject {
         item.amount = finalAmount
         item.note = transactionName
         item.category = selectedCategory.displayText
+        item.categoryModel = selectedCategory
+        item.currencyCode = currencyCode
         
-        print("Updating transaction: \(transactionName), Amount: \(finalAmount), Date: \(date), Category: \(selectedCategory.displayText), Type: \(transactionType.rawValue)")
+        print("Updating transaction: \(transactionName), Amount: \(finalAmount) \(currencyCode), Date: \(date), Category: \(selectedCategory.displayText), Type: \(transactionType.rawValue)")
     }
     
     func resetForm() {
         transactionName = ""
         amount = 0.0
         transactionType = .expense
+        currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         date = Date()
         selectedCategory = nil
     }
