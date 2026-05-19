@@ -23,6 +23,7 @@ import Charts
 struct CategoryBreakdownView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: CategoryBreakdownViewModel
+    @State private var showingSettings = false
     
     init(context: ModelContext) {
         _viewModel = StateObject(wrappedValue: CategoryBreakdownViewModel(repo: TransactionRepository(context: context)))
@@ -107,8 +108,23 @@ struct CategoryBreakdownView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background { AppBackground() }
             .navigationTitle("Category Breakdown")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingSettings.toggle()
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                CategorySettingsView()
+                    .environment(\.modelContext, modelContext)
+            }
         }
         .onAppear {
             viewModel.load()
