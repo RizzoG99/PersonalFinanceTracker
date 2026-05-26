@@ -9,12 +9,14 @@ struct AppToolbarModifier: ViewModifier {
     @EnvironmentObject private var profileViewModel: ProfileViewModel
     @Binding var showingAddItemView: Bool
     @State private var showingProfile = false
+    @State private var selectedDetent: PresentationDetent = .large
 
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Open profile", systemImage: "gear") {
+                        selectedDetent = .large
                         showingProfile = true
                     }
                     .font(.headline)
@@ -29,8 +31,8 @@ struct AppToolbarModifier: ViewModifier {
                 }
             }
             .sheet(isPresented: $showingProfile) {
-                ProfileView(viewModel: profileViewModel)
-                    .presentationDetents([.medium, .large])
+                ProfileView(viewModel: profileViewModel, selectedDetent: $selectedDetent)
+                    .presentationDetents([.medium, .large], selection: $selectedDetent)
                     .presentationBackground { AppBackground() }
             }
     }

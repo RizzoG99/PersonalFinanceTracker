@@ -2,8 +2,9 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var viewModel: ProfileViewModel
+    @Binding var selectedDetent: PresentationDetent
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
@@ -41,28 +42,28 @@ struct ProfileView: View {
             }
         }
     }
-    
+
     private var profileHeader: some View {
         VStack(spacing: 4) {
             Text(viewModel.displayName)
                 .font(.title3.weight(.bold))
                 .foregroundStyle(.textPrimary)
-            
+
             Text(viewModel.memberSince)
                 .font(.subheadline)
                 .foregroundStyle(.textDim)
         }
     }
-    
+
     private var personalInfoSection: some View {
         TextField("Enter your name", text: $viewModel.fullName)
             .foregroundStyle(.textPrimary)
     }
-    
+
     private var securitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("Security")
-            
+
             VStack {
                 NavigationLink {
                     PINSetupView(
@@ -76,11 +77,14 @@ struct ProfileView: View {
                         .foregroundStyle(.textPrimary)
                 }
                 .buttonStyle(.plain)
-                
+                .simultaneousGesture(TapGesture().onEnded {
+                    selectedDetent = .large
+                })
+
                 if viewModel.isBiometricsAvailable {
                     Divider()
                         .padding(.vertical, 4)
-                    
+
                     Toggle(isOn: $viewModel.isBiometricEnabled) {
                         Text(viewModel.biometricLabel)
                             .foregroundStyle(.textPrimary)
@@ -90,7 +94,7 @@ struct ProfileView: View {
             }
         }
     }
-    
+
     private func sectionLabel(_ title: String) -> some View {
         Text(title.uppercased())
             .font(.caption.weight(.semibold))
@@ -100,5 +104,5 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(viewModel: ProfileViewModel())
+    ProfileView(viewModel: ProfileViewModel(), selectedDetent: .constant(.large))
 }
