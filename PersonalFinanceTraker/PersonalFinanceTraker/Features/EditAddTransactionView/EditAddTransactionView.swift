@@ -38,8 +38,6 @@ struct EditAddTransactionView: View {
         }
     }
 
-    private let rowBackground = Color.white.opacity(0.06)
-
     private var formFields: some View {
         VStack(alignment: .leading, spacing: 16) {
             Form {
@@ -51,13 +49,13 @@ struct EditAddTransactionView: View {
                         currencyCode: $viewModel.currencyCode
                     )
                 }
-                .listRowBackground(rowBackground)
+                .appFormSectionBackground()
 
                 Section {
                     TextField("Note", text: $viewModel.transactionName, prompt: Text("Note"))
                         .submitLabel(.next)
                 }
-                .listRowBackground(rowBackground)
+                .appFormSectionBackground()
 
                 Section {
                     dateField
@@ -80,9 +78,9 @@ struct EditAddTransactionView: View {
                     }
                     .tint(.accentIndigo)
                 }
-                .listRowBackground(rowBackground)
+                .appFormSectionBackground()
             }
-            .scrollContentBackground(.hidden)
+            .appFormBackground()
         }
     }
 
@@ -116,7 +114,7 @@ struct EditAddTransactionView: View {
         }) {
             Text(viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction")
             .font(.headline)
-            .foregroundStyle(Color.textPrimary)
+            .foregroundStyle(.textPrimary)
             .frame(maxWidth: .infinity)
             .padding()
             .glassEffect(.regular.tint(viewModel.isFormValid ? Color.accentIndigo : Color.gray).interactive())
