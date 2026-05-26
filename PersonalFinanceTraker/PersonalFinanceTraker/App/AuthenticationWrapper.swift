@@ -2,8 +2,6 @@
 //  AuthenticationWrapper.swift
 //  PersonalFinanceTraker
 //
-//  Created by Gemini CLI on 26/02/26.
-//
 
 import SwiftUI
 import SwiftData
@@ -11,27 +9,52 @@ import SwiftData
 struct AuthenticationWrapper: View {
     @StateObject private var authService = BiometricAuthService()
     @Environment(\.scenePhase) private var scenePhase
-    
+
+    @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
+
+    private let pinService = PINService()
     let context: ModelContext
-    
+
     var body: some View {
-        Group {
-            if authService.isUnlocked {
+        ZStack {
+            Color(red: 0.012, green: 0.027, blue: 0.071)
+                .ignoresSafeArea()
+
+            if !isPINSetup {
+                PINSetupView(
+                    viewModel: PINSetupViewModel(pinService: pinService)
+                )
+                .transition(.opacity)
+            } else if authService.isUnlocked {
                 MainTabView(context: context)
+                    .transition(.opacity)
             } else {
-                LockView {
-                    authService.authenticate { _ in }
-                }
+                PINEntryView(
+                    viewModel: PINEntryViewModel(pinService: pinService, authService: authService)
+                )
+                .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: isPINSetup)
+        .animation(.easeInOut(duration: 0.25), value: authService.isUnlocked)
         .onAppear {
-            authService.authenticate { _ in }
-        }
-        .onChange(of: scenePhase) { oldPhase, newPhase in
-            if newPhase == .active && !authService.isUnlocked {
+            if !isPINSetup {
+                try? pinService.clearPIN()
+            } else if authService.isBiometricFeatureEnabled {
                 authService.authenticate { _ in }
-            } else if newPhase == .background {
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .pinSetupComplete)) { _ in
+            isPINSetup = true
+            authService.unlock()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background && isPINSetup {
                 authService.lock()
+            } else if newPhase == .active && isPINSetup && !authService.isUnlocked {
+                if authService.isBiometricFeatureEnabled {
+                    authService.authenticate { _ in }
+                }
             }
         }
     }

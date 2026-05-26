@@ -7,12 +7,22 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct PersonalFinanceTrakerApp: App {
-    
+
+    // Dark base color (#030712) set as the window background so the
+    // system launch-screen → SwiftUI transition never flashes white.
+    init() {
+        UIWindow.appearance().backgroundColor = UIColor(
+            red: 0.012, green: 0.027, blue: 0.071, alpha: 1
+        )
+        seedMemberSinceDateIfNeeded()
+    }
+
     // MARK: - Properties
-    
+
     /// Shared model container for SwiftData persistence
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -53,7 +63,13 @@ struct PersonalFinanceTrakerApp: App {
 // MARK: - Private Extensions
 
 private extension PersonalFinanceTrakerApp {
-    
+
+    func seedMemberSinceDateIfNeeded() {
+        let key = "member_since_timestamp"
+        guard UserDefaults.standard.double(forKey: key) == 0 else { return }
+        UserDefaults.standard.set(Date.now.timeIntervalSince1970, forKey: key)
+    }
+
     /// Sets up sample data in debug builds if no existing data is found
     /// - Parameter container: The model container to populate
     static func setupSampleDataIfNeeded(in container: ModelContainer) {
