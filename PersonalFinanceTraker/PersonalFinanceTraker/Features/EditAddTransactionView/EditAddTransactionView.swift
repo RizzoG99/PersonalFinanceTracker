@@ -70,13 +70,6 @@ struct EditAddTransactionView: View {
                     }
 
                     categoryField
-
-                    Picker("Currency", selection: $viewModel.currencyCode) {
-                        ForEach(["EUR", "USD", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY"], id: \.self) { code in
-                            Text(code).tag(code)
-                        }
-                    }
-                    .tint(.accentIndigo)
                 }
                 .appFormSectionBackground()
             }

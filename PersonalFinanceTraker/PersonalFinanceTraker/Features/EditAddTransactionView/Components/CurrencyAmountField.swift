@@ -39,9 +39,20 @@ struct CurrencyAmountField: View {
         self._currencyCode = currencyCode
     }
     
+    private var currencySymbol: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        return formatter.currencySymbol ?? currencyCode
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
-            HStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(currencySymbol)
+                    .font(.system(size: 28, weight: .heavy))
+                    .foregroundStyle(.secondary)
+
                 TextField(placeholder, text: $displayText)
                     .textFieldStyle(.plain)
                     .keyboardType(.decimalPad)
@@ -51,25 +62,28 @@ struct CurrencyAmountField: View {
                     .fontWeight(.heavy)
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
-                    .onChange(of: isFocused) { oldValue, newValue in
+                    .minimumScaleFactor(0.4)
+                    .lineLimit(1)
+                    .onChange(of: isFocused) { _, newValue in
                         if newValue {
-                            // When field gains focus, show raw number for editing
                             if amount > 0 {
                                 displayText = formatNumberForEditing(amount)
                             } else {
                                 displayText = ""
                             }
                         } else {
-                            // When field loses focus, parse and format
                             parseAndFormatAmount()
                         }
                     }
                     .onAppear {
-                        // Initialize display text
                         updateDisplayText()
                     }
-                    .onChange(of: amount) { oldValue, newValue in
-                        // Update display text when amount changes externally
+                    .onChange(of: amount) { _, _ in
+                        if !isFocused {
+                            updateDisplayText()
+                        }
+                    }
+                    .onChange(of: currencyCode) { _, _ in
                         if !isFocused {
                             updateDisplayText()
                         }

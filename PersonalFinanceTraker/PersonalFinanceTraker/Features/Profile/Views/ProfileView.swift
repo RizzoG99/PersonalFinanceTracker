@@ -5,6 +5,10 @@ struct ProfileView: View {
     @Binding var selectedDetent: PresentationDetent
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage("app_base_currency") private var baseCurrency: String = Locale.current.currency?.identifier ?? "EUR"
+
+    private let supportedCurrencies = ["EUR", "USD", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY"]
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
@@ -12,6 +16,10 @@ struct ProfileView: View {
                 Form {
                     Section {
                         personalInfoSection
+                    }
+                    .appFormSectionBackground()
+                    Section {
+                        currencySection
                     }
                     .appFormSectionBackground()
                     Section {
@@ -52,6 +60,18 @@ struct ProfileView: View {
             Text(viewModel.memberSince)
                 .font(.subheadline)
                 .foregroundStyle(.textDim)
+        }
+    }
+
+    private var currencySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            sectionLabel("Currency")
+            Picker("Currency", selection: $baseCurrency) {
+                ForEach(supportedCurrencies, id: \.self) { code in
+                    Text(code).tag(code)
+                }
+            }
+            .tint(.accentIndigo)
         }
     }
 
