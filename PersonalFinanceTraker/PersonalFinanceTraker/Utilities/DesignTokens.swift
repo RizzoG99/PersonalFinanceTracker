@@ -24,6 +24,27 @@ extension Color {
     static let categoryPurple = Color("categoryPurple")
     static let categoryTeal = Color("categoryTeal")
     static let categoryGray = Color("categoryGray")
+    static let formRow = Color.white.opacity(0.06)
+}
+
+extension ShapeStyle where Self == Color {
+    static var bg0: Color { .bg0 }
+    static var bg1: Color { .bg1 }
+    static var bg2: Color { .bg2 }
+    static var accentIndigo: Color { .accentIndigo }
+    static var positive: Color { .positive }
+    static var negative: Color { .negative }
+    static var textPrimary: Color { .textPrimary }
+    static var textMid: Color { .textMid }
+    static var textDim: Color { .textDim }
+    static var categoryGreen: Color { .categoryGreen }
+    static var categoryAmber: Color { .categoryAmber }
+    static var categoryIndigo: Color { .categoryIndigo }
+    static var categoryPink: Color { .categoryPink }
+    static var categoryPurple: Color { .categoryPurple }
+    static var categoryTeal: Color { .categoryTeal }
+    static var categoryGray: Color { .categoryGray }
+    static var formRow: Color { .formRow }
 }
 
 // MARK: - App Background
@@ -77,6 +98,16 @@ struct AppBackground: View {
 extension View {
     func appBackground() -> some View {
         self.background { AppBackground() }
+    }
+
+    /// Hides the default Form/List chrome background so AppBackground shows through.
+    func appFormBackground() -> some View {
+        self.scrollContentBackground(.hidden)
+    }
+
+    /// Applies the standard app row background to a Form Section or list row.
+    func appFormSectionBackground() -> some View {
+        self.listRowBackground(Color.formRow)
     }
 }
 

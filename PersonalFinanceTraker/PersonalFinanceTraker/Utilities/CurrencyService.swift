@@ -69,3 +69,10 @@ public class CurrencyService: ObservableObject {
         return Locale.current.localizedString(forCurrencyCode: currencyCode) ?? currencyCode
     }
 }
+
+func formatEUR(_ value: Decimal) -> String {
+    let fmt = NumberFormatter()
+    fmt.numberStyle = .currency
+    fmt.currencyCode = "EUR"
+    return fmt.string(from: value as NSDecimalNumber) ?? "€0.00"
+}
