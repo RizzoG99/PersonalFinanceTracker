@@ -4,14 +4,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CreditView: View {
+    @Environment(\.modelContext) private var modelContext
+    @StateObject private var viewModel: CreditViewModel
     @Binding var showingAddItemView: Bool
-    @State private var creditScore: Int = 742
-    @State private var creditStatus: String = "Good"
-    @State private var totalUtilization: Double = 0.35
 
-    init(showingAddItemView: Binding<Bool>) {
+    init(context: ModelContext, showingAddItemView: Binding<Bool>) {
+        _viewModel = StateObject(wrappedValue: CreditViewModel(repo: CreditCardRepository(context: context)))
         _showingAddItemView = showingAddItemView
     }
 
@@ -19,9 +20,19 @@ struct CreditView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    CreditScoreCard(creditScore: creditScore, creditStatus: creditStatus)
-                    CreditUtilizationCard(totalUtilization: totalUtilization)
-                    CreditCardsSection()
+                    CreditScoreCard(
+                        creditScore: viewModel.creditScore,
+                        creditStatus: viewModel.creditStatusLabel,
+                        onEditScore: { viewModel.updateCreditScore($0) }
+                    )
+                    if !viewModel.creditCards.isEmpty {
+                        CreditUtilizationCard(
+                            totalBalance: viewModel.totalBalance,
+                            totalAvailable: viewModel.totalAvailable,
+                            totalUtilization: viewModel.totalUtilization
+                        )
+                    }
+                    CreditCardsSection(viewModel: viewModel)
                     Spacer(minLength: 80)
                 }
                 .padding(16)
@@ -31,12 +42,30 @@ struct CreditView: View {
             .navigationBarTitleDisplayMode(.large)
             .appToolbar(showingAddItemView: $showingAddItemView)
         }
+        .onAppear { viewModel.load() }
+        .alert("Error", isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
-
 }
 
 #Preview {
-    CreditView(showingAddItemView: .constant(false))
-        .environmentObject(ProfileViewModel())
-        .preferredColorScheme(.dark)
+    let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self])
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    do {
+        let container = try ModelContainer(for: schema, configurations: [config])
+        return AnyView(
+            CreditView(context: container.mainContext, showingAddItemView: .constant(false))
+                .modelContainer(container)
+                .environmentObject(ProfileViewModel())
+                .preferredColorScheme(.dark)
+        )
+    } catch {
+        return AnyView(Text("Preview failed: \(error.localizedDescription)"))
+    }
 }

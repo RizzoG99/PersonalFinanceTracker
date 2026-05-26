@@ -6,21 +6,32 @@
 import SwiftUI
 
 struct CreditCardItem: View {
-    let name: String
-    let lastFour: String
-    let balance: String
-    let limit: String
-    let color: Color
+    let card: CreditCardModel
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+
+    private var cardColor: Color {
+        switch card.colorName {
+        case "positive": return .positive
+        case "categoryTeal": return .categoryTeal
+        case "categoryPink": return .categoryPink
+        case "categoryAmber": return .categoryAmber
+        case "categoryPurple": return .categoryPurple
+        case "negative": return .negative
+        case "categoryGreen": return .categoryGreen
+        default: return .accentIndigo
+        }
+    }
 
     var body: some View {
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(name)
+                        Text(card.name)
                             .font(.headline)
                             .foregroundStyle(.textPrimary)
-                        Text("•••• \(lastFour)")
+                        Text("•••• \(card.lastFour)")
                             .font(.caption)
                             .foregroundStyle(.textDim)
                             .tracking(1.5)
@@ -28,7 +39,7 @@ struct CreditCardItem: View {
                     Spacer()
                     Image(systemName: "creditcard.fill")
                         .font(.title)
-                        .foregroundStyle(color)
+                        .foregroundStyle(cardColor)
                 }
 
                 Divider().opacity(0.2)
@@ -38,7 +49,7 @@ struct CreditCardItem: View {
                         Text("Balance")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(balance)
+                        Text(formatEUR(card.balance))
                             .font(.headline)
                             .foregroundStyle(.negative)
                     }
@@ -47,12 +58,19 @@ struct CreditCardItem: View {
                         Text("Limit")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(limit)
+                        Text(formatEUR(card.limit))
                             .font(.headline)
                             .foregroundStyle(.textPrimary)
                     }
                 }
+
+                ProgressView(value: card.utilizationRate)
+                    .tint(cardColor)
             }
+        }
+        .contextMenu {
+            Button("Edit", systemImage: "pencil") { onEdit() }
+            Button("Delete", systemImage: "trash", role: .destructive) { onDelete() }
         }
     }
 }

@@ -6,18 +6,62 @@
 import SwiftUI
 
 struct CreditCardsSection: View {
+    let viewModel: CreditViewModel
+    @State private var cardToEdit: CreditCardModel? = nil
+    @State private var showingAddCard = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Your Credit Cards")
-                .font(.headline)
-                .foregroundStyle(.textPrimary)
-                .padding(.horizontal, 4)
-
-            VStack(spacing: 12) {
-                CreditCardItem(name: "Premium Rewards", lastFour: "4532", balance: "€2,100", limit: "€5,000", color: .accentIndigo)
-                CreditCardItem(name: "Cashback Plus", lastFour: "8901", balance: "€1,400", limit: "€3,000", color: .positive)
-                CreditCardItem(name: "Travel Card", lastFour: "2345", balance: "€0", limit: "€2,000", color: .categoryTeal)
+            HStack {
+                Text("Your Credit Cards")
+                    .font(.headline)
+                    .foregroundStyle(.textPrimary)
+                Spacer()
+                Button {
+                    showingAddCard = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.accentIndigo)
+                }
             }
+            .padding(.horizontal, 4)
+
+            if viewModel.creditCards.isEmpty {
+                GlassCard {
+                    VStack(spacing: 8) {
+                        Image(systemName: "creditcard")
+                            .font(.largeTitle)
+                            .foregroundStyle(.textDim)
+                        Text("No credit cards yet")
+                            .font(.subheadline)
+                            .foregroundStyle(.textDim)
+                        Text("Tap + to add your first card")
+                            .font(.caption)
+                            .foregroundStyle(.textDim)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                }
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(viewModel.creditCards) { card in
+                        CreditCardItem(
+                            card: card,
+                            onEdit: { cardToEdit = card },
+                            onDelete: { viewModel.deleteCard(card) }
+                        )
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingAddCard) {
+            AddEditCreditCardSheet(viewModel: viewModel)
+                .presentationBackground { AppBackground() }
+        }
+        .sheet(item: $cardToEdit) { card in
+            AddEditCreditCardSheet(viewModel: viewModel, cardToEdit: card)
+                .presentationBackground { AppBackground() }
         }
     }
 }

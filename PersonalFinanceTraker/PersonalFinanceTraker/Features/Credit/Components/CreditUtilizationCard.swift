@@ -6,7 +6,17 @@
 import SwiftUI
 
 struct CreditUtilizationCard: View {
+    let totalBalance: Decimal
+    let totalAvailable: Decimal
     let totalUtilization: Double
+
+    var utilizationColor: Color {
+        switch totalUtilization {
+        case ..<0.3: return .positive
+        case ..<0.5: return .categoryAmber
+        default: return .negative
+        }
+    }
 
     var body: some View {
         GlassCard {
@@ -20,7 +30,7 @@ struct CreditUtilizationCard: View {
                         Text("Current Usage")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text("€3,500")
+                        Text(formatEUR(totalBalance))
                             .font(.headline)
                             .foregroundStyle(.negative)
                     }
@@ -29,14 +39,14 @@ struct CreditUtilizationCard: View {
                         Text("Available Credit")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text("€6,500")
+                        Text(formatEUR(totalAvailable))
                             .font(.headline)
                             .foregroundStyle(.textPrimary)
                     }
                 }
 
                 ProgressView(value: totalUtilization)
-                    .tint(.negative)
+                    .tint(utilizationColor)
 
                 HStack {
                     Text("Ideal: Keep below 30%")
@@ -45,7 +55,7 @@ struct CreditUtilizationCard: View {
                     Spacer()
                     Text("\(Int(totalUtilization * 100))%")
                         .font(.headline)
-                        .foregroundStyle(.negative)
+                        .foregroundStyle(utilizationColor)
                 }
             }
         }

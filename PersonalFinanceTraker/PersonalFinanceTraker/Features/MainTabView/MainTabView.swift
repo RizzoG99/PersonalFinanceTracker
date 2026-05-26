@@ -11,7 +11,7 @@ import SwiftData
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selectedTab: TabItem = .home
-    @State var showingAddItemView: Bool = false
+    @State private var showingAddItemView: Bool = false
     @StateObject private var viewModel: TransactionListViewModel
     @StateObject private var profileViewModel = ProfileViewModel()
 
@@ -20,7 +20,7 @@ struct MainTabView: View {
     }
 
     enum TabItem: Hashable {
-        case home, activity, insights, credit
+        case home, activity, insights, credit, search
     }
 
     var body: some View {
@@ -29,15 +29,15 @@ struct MainTabView: View {
                 Tab("Home", systemImage: selectedTab == .home ? "house.fill" : "house", value: .home) {
                     DashboardView(context: modelContext, showingAddItemView: $showingAddItemView)
                 }
-                Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
+                Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity, role: .search) {
                     ActivityView(context: modelContext, showingAddItemView: $showingAddItemView)
                 }
                 Tab("Insights", systemImage: selectedTab == .insights ? "chart.bar.fill" : "chart.bar", value: .insights) {
                     InsightsView(context: modelContext, showingAddItemView: $showingAddItemView)
                 }
-                Tab("Credit", systemImage: selectedTab == .credit ? "creditcard.fill" : "creditcard", value: .credit) {
-                    CreditView(showingAddItemView: $showingAddItemView)
-                }
+// Tab("Credit", systemImage: selectedTab == .credit ? "creditcard.fill" : "creditcard", value: .credit) {
+//     CreditView(context: modelContext, showingAddItemView: $showingAddItemView)
+// }
             }
             .environment(\.symbolVariants, .none)
             .tint(Color.accentIndigo)
@@ -67,7 +67,7 @@ struct MainTabView: View {
 }
 
 #Preview {
-    let schema = Schema([TransactionModel.self, CategoryModel.self])
+    let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self])
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])

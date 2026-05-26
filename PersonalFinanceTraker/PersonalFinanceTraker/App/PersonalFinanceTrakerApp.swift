@@ -28,6 +28,7 @@ struct PersonalFinanceTrakerApp: App {
         let schema = Schema([
             TransactionModel.self,
             CategoryModel.self,
+            CreditCardModel.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
