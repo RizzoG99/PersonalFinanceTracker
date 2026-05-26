@@ -9,16 +9,20 @@ import SwiftData
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: DashboardViewModel
+    @EnvironmentObject private var profileViewModel: ProfileViewModel
     @EnvironmentObject private var transactionListViewModel: TransactionListViewModel
+    @Binding var showingAddItemView: Bool
 
-    init(context: ModelContext) {
+    init(context: ModelContext, showingAddItemView: Binding<Bool>) {
         _viewModel = StateObject(wrappedValue: DashboardViewModel(repo: TransactionRepository(context: context)))
+        _showingAddItemView = showingAddItemView
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
+                    greetingHeader
                     balanceCard
                     if !viewModel.recentTransactions.isEmpty {
                         recentTransactionsSection
@@ -29,10 +33,20 @@ struct DashboardView: View {
                 .padding(16)
             }
             .appBackground()
-            .navigationTitle("Home")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
+            .appToolbar(showingAddItemView: $showingAddItemView)
         }
         .onAppear { viewModel.load() }
+    }
+
+    private var greetingHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(profileViewModel.greeting)
+                .font(.title2)
+                .foregroundStyle(.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 4)
     }
 
     private var balanceCard: some View {
@@ -129,12 +143,6 @@ struct DashboardView: View {
     }
 }
 
-private func formatEUR(_ value: Decimal) -> String {
-    let fmt = NumberFormatter()
-    fmt.numberStyle = .currency
-    fmt.currencyCode = "EUR"
-    return fmt.string(from: value as NSDecimalNumber) ?? "€0.00"
-}
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self])
@@ -142,8 +150,9 @@ private func formatEUR(_ value: Decimal) -> String {
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
     let vm = TransactionListViewModel(repo: TransactionRepository(context: container.mainContext))
-    return DashboardView(context: container.mainContext)
+    return DashboardView(context: container.mainContext, showingAddItemView: .constant(false))
         .environmentObject(vm)
+        .environmentObject(ProfileViewModel())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }

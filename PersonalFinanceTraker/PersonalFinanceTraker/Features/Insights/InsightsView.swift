@@ -10,9 +10,11 @@ import Charts
 struct InsightsView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: InsightsViewModel
+    @Binding var showingAddItemView: Bool
 
-    init(context: ModelContext) {
+    init(context: ModelContext, showingAddItemView: Binding<Bool>) {
         _viewModel = StateObject(wrappedValue: InsightsViewModel(repo: TransactionRepository(context: context)))
+        _showingAddItemView = showingAddItemView
     }
 
     var body: some View {
@@ -30,6 +32,7 @@ struct InsightsView: View {
             .appBackground()
             .navigationTitle("Insights")
             .navigationBarTitleDisplayMode(.large)
+            .appToolbar(showingAddItemView: $showingAddItemView)
         }
         .onAppear { viewModel.load() }
     }
@@ -65,13 +68,13 @@ struct InsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Income vs Expenses")
                 .font(.headline)
-                .foregroundColor(.textPrimary)
+                .foregroundStyle(.textPrimary)
                 .padding(.horizontal, 4)
 
             GlassCard {
                 if viewModel.chartData.isEmpty {
                     Text("No data")
-                        .foregroundColor(.textDim)
+                        .foregroundStyle(.textDim)
                         .frame(height: 200)
                         .frame(maxWidth: .infinity)
                 } else {
@@ -94,12 +97,12 @@ struct InsightsView: View {
                     }
                     .chartXAxis {
                         AxisMarks { _ in
-                            AxisValueLabel().foregroundStyle(Color.textDim)
+                            AxisValueLabel().foregroundStyle(.textDim)
                         }
                     }
                     .chartYAxis {
                         AxisMarks { _ in
-                            AxisValueLabel().foregroundStyle(Color.textDim)
+                            AxisValueLabel().foregroundStyle(.textDim)
                             AxisGridLine().foregroundStyle(Color.white.opacity(0.06))
                         }
                     }
@@ -113,13 +116,13 @@ struct InsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Spending Trend (6 Months)")
                 .font(.headline)
-                .foregroundColor(.textPrimary)
+                .foregroundStyle(.textPrimary)
                 .padding(.horizontal, 4)
 
             GlassCard {
                 if viewModel.trendData.isEmpty {
                     Text("No data")
-                        .foregroundColor(.textDim)
+                        .foregroundStyle(.textDim)
                         .frame(height: 180)
                         .frame(maxWidth: .infinity)
                 } else {
@@ -129,24 +132,24 @@ struct InsightsView: View {
                                 x: .value("Month", index),
                                 y: .value("Amount", value)
                             )
-                            .foregroundStyle(Color.negative)
+                            .foregroundStyle(.negative)
                             .interpolationMethod(.catmullRom)
 
                             PointMark(
                                 x: .value("Month", index),
                                 y: .value("Amount", value)
                             )
-                            .foregroundStyle(Color.negative)
+                            .foregroundStyle(.negative)
                         }
                     }
                     .chartXAxis {
                         AxisMarks { _ in
-                            AxisValueLabel().foregroundStyle(Color.textDim)
+                            AxisValueLabel().foregroundStyle(.textDim)
                         }
                     }
                     .chartYAxis {
                         AxisMarks { _ in
-                            AxisValueLabel().foregroundStyle(Color.textDim)
+                            AxisValueLabel().foregroundStyle(.textDim)
                             AxisGridLine().foregroundStyle(Color.white.opacity(0.06))
                         }
                     }
@@ -160,7 +163,7 @@ struct InsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Top Spending Categories")
                 .font(.headline)
-                .foregroundColor(.textPrimary)
+                .foregroundStyle(.textPrimary)
                 .padding(.horizontal, 4)
 
             VStack(spacing: 8) {
@@ -172,84 +175,14 @@ struct InsightsView: View {
     }
 }
 
-// MARK: - Subcomponents
-
-private struct InsightsKPICard: View {
-    let title: String
-    let value: String
-    let color: Color
-    let icon: String
-
-    var body: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 8) {
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundColor(color)
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.textDim)
-                Text(value)
-                    .font(.headline)
-                    .foregroundColor(.textPrimary)
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(minHeight: 90)
-        }
-    }
-}
-
-private struct InsightsTopCategoryRow: View {
-    let category: PieChartDataPoint
-
-    var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(category.category)
-                        .font(.body)
-                        .foregroundColor(.textPrimary)
-                    Text(String(format: "%.1f%%", category.percentage))
-                        .font(.caption)
-                        .foregroundColor(.textDim)
-                }
-                Spacer()
-                Text(formatEUR(category.amount))
-                    .font(.headline)
-                    .foregroundColor(.negative)
-            }
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.bg2.opacity(0.6))
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(category.color)
-                        .frame(width: geo.size.width * CGFloat(category.percentage / 100))
-                }
-            }
-            .frame(height: 6)
-        }
-        .padding(12)
-        .background(Color.bg2.opacity(0.3))
-        .cornerRadius(12)
-    }
-}
-
-private func formatEUR(_ value: Decimal) -> String {
-    let fmt = NumberFormatter()
-    fmt.numberStyle = .currency
-    fmt.currencyCode = "EUR"
-    return fmt.string(from: value as NSDecimalNumber) ?? "€0.00"
-}
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self])
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
-    return InsightsView(context: container.mainContext)
+    return InsightsView(context: container.mainContext, showingAddItemView: .constant(false))
+        .environmentObject(ProfileViewModel())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }

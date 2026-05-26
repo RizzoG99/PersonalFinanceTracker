@@ -30,7 +30,7 @@ struct CategoryBreakdownView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 // Controls Section
                 Section {
