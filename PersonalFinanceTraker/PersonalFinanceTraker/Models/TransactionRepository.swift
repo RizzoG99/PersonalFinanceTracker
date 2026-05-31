@@ -13,11 +13,17 @@ protocol ITransactionRepository {
     func add(_ item: TransactionModel) throws
     func delete(_ item: TransactionModel) throws
     func update() throws
-    
+
     // Category management
     func fetchCategories() throws -> [CategoryModel]
     func addCategory(_ item: CategoryModel) throws
     func deleteCategory(_ item: CategoryModel) throws
+
+    // Goal management
+    func fetchGoals() throws -> [GoalModel]
+    func addGoal(_ item: GoalModel) throws
+    func updateGoal() throws
+    func deleteGoal(_ item: GoalModel) throws
 }
 
 final class TransactionRepository: ITransactionRepository {
@@ -61,4 +67,22 @@ final class TransactionRepository: ITransactionRepository {
         try context.save()
     }
 
+    func fetchGoals() throws -> [GoalModel] {
+        let desc = FetchDescriptor<GoalModel>(sortBy: [SortDescriptor(\.createdAt)])
+        return try context.fetch(desc)
+    }
+
+    func addGoal(_ item: GoalModel) throws {
+        context.insert(item)
+        try context.save()
+    }
+
+    func updateGoal() throws {
+        try context.save()
+    }
+
+    func deleteGoal(_ item: GoalModel) throws {
+        context.delete(item)
+        try context.save()
+    }
 }

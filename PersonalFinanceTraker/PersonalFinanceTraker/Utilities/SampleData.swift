@@ -7,17 +7,30 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 struct SampleData {
     static func createSampleCategories() -> [CategoryModel] {
         var categories: [CategoryModel] = []
         
         for cat in TransactionCategory.incomeCategories {
-            categories.append(CategoryModel(name: cat.label, systemImage: cat.systemImage, type: .income, currencyCode: "EUR"))
+            categories.append(CategoryModel(
+                name: cat.label,
+                systemImage: cat.systemImage,
+                type: .income,
+                colorToken: CategoryConstants.colorToken(forName: cat.label),
+                currencyCode: "EUR"
+            ))
         }
-        
+
         for cat in TransactionCategory.expenseCategories {
-            categories.append(CategoryModel(name: cat.label, systemImage: cat.systemImage, type: .expense, currencyCode: "EUR"))
+            categories.append(CategoryModel(
+                name: cat.label,
+                systemImage: cat.systemImage,
+                type: .expense,
+                colorToken: CategoryConstants.colorToken(forName: cat.label),
+                currencyCode: "EUR"
+            ))
         }
         
         return categories

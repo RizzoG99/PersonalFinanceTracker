@@ -29,6 +29,7 @@ struct PersonalFinanceTrakerApp: App {
             TransactionModel.self,
             CategoryModel.self,
             CreditCardModel.self,
+            GoalModel.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
@@ -44,7 +45,7 @@ struct PersonalFinanceTrakerApp: App {
             #if DEBUG
             setupSampleDataIfNeeded(in: container)
             #endif
-            
+
             return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")

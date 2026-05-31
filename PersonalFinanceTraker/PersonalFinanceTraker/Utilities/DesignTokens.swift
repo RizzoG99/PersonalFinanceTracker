@@ -177,7 +177,7 @@ struct CategoryInfo {
             symbol = "fork.knife"
         } else if name.contains("coffee") {
             symbol = "cup.and.saucer.fill"
-        } else if name.contains("transport") || name.contains("car") || name.contains("uber") {
+        } else if name.contains("transport") || (name.contains("car") && !name.contains("health")) || name.contains("uber") {
             symbol = "car.fill"
         } else if name.contains("shopping") || name.contains("clothing") {
             symbol = "bag.fill"

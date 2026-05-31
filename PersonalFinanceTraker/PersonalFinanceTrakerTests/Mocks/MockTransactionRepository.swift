@@ -7,8 +7,10 @@
 
 final class MockTransactionRepository: ITransactionRepository {
     var transactions: [TransactionModel] = []
+    var categories: [CategoryModel] = []
+    var goals: [GoalModel] = []
     var shouldFail: Bool = false
-    
+
     // Track calls for verification (Spy pattern)
     var fetchAllCalled = false
     var addCalledCount = 0
@@ -39,4 +41,13 @@ final class MockTransactionRepository: ITransactionRepository {
         updateCalledCount += 1
         if shouldFail { throw NSError(domain: "MockError", code: 4, userInfo: nil) }
     }
+
+    func fetchCategories() throws -> [CategoryModel] { categories }
+    func addCategory(_ item: CategoryModel) throws { categories.append(item) }
+    func deleteCategory(_ item: CategoryModel) throws { categories.removeAll { $0.id == item.id } }
+
+    func fetchGoals() throws -> [GoalModel] { goals }
+    func addGoal(_ item: GoalModel) throws { goals.append(item) }
+    func updateGoal() throws {}
+    func deleteGoal(_ item: GoalModel) throws { goals.removeAll { $0.id == item.id } }
 }
