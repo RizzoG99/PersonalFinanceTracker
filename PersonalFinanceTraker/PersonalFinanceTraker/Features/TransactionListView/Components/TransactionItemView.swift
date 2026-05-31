@@ -10,40 +10,40 @@ import SwiftUI
 struct TransactionItemView: View {
     let item: TransactionModel
 
+    private var categoryColor: Color {
+        item.categoryModel?.categoryColor ?? CategoryInfo.info(for: item.category).color
+    }
+
+    private var categorySymbol: String {
+        item.categoryModel?.systemImage ?? CategoryInfo.info(for: item.category).symbol
+    }
+
     var body: some View {
-        let info = CategoryInfo.info(for: item.category)
         HStack(spacing: 12) {
-            GlassCard(tint: info.color.opacity(0.12), borderRadius: 12) {
-                Image(systemName: info.symbol)
+            GlassCard(tint: categoryColor.opacity(0.12), borderRadius: 12) {
+                Image(systemName: categorySymbol)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(info.color)
+                    .foregroundStyle(categoryColor)
                     .frame(width: 16, height: 16)
             }
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.note.isEmpty ? item.category : item.note)
                     .font(.body)
-                    .foregroundColor(.textPrimary)
+                    .foregroundStyle(.textPrimary)
                 Text(item.category)
                     .font(.caption)
-                    .foregroundColor(.textDim)
+                    .foregroundStyle(.textDim)
             }
 
             Spacer()
 
-            Text(formattedAmount)
+            Text(item.amount, format: .currency(code: item.currencyCode))
                 .font(.headline)
-                .foregroundColor(item.amount >= 0 ? .positive : .textPrimary)
+                .foregroundStyle(item.amount >= 0 ? .positive : .textPrimary)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
-    }
-
-    private var formattedAmount: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = item.currencyCode
-        return formatter.string(from: item.amount as NSDecimalNumber) ?? ""
     }
 }
 

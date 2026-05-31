@@ -12,6 +12,12 @@ struct ActivityView: View {
     @Binding var showingAddItemView: Bool
     @State private var selectedCategory: String? = nil
 
+    private func categorySymbol(for categoryName: String) -> String {
+        viewModel.filteredItems
+            .first(where: { $0.category == categoryName })?.categoryModel?.systemImage
+            ?? CategoryInfo.info(for: categoryName).symbol
+    }
+
     init(context: ModelContext, showingAddItemView: Binding<Bool>) {
         _showingAddItemView = showingAddItemView
     }
@@ -20,16 +26,15 @@ struct ActivityView: View {
         NavigationStack {
             List {
                 Section {
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    ScrollView(.horizontal) {
                         HStack(spacing: 8) {
                             ActivityFilterChip(label: "All", isSelected: selectedCategory == nil) {
                                 selectedCategory = nil
                             }
                             ForEach(availableCategories, id: \.self) { category in
-                                let info = CategoryInfo.info(for: category)
                                 ActivityFilterChip(
                                     label: category,
-                                    systemImage: info.symbol,
+                                    systemImage: categorySymbol(for: category),
                                     isSelected: selectedCategory == category
                                 ) {
                                     selectedCategory = selectedCategory == category ? nil : category
@@ -38,6 +43,7 @@ struct ActivityView: View {
                         }
                         .padding(.vertical, 4)
                     }
+                    .scrollIndicators(.hidden)
                     HStack(spacing: 12) {
                         StatCard(
                             icon: "arrow.down",
