@@ -32,8 +32,8 @@ struct MainTabView: View {
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity, role: .search) {
                     ActivityView(context: modelContext, showingAddItemView: $showingAddItemView)
                 }
-                Tab("Insights", systemImage: selectedTab == .insights ? "chart.bar.fill" : "chart.bar", value: .insights) {
-                    InsightsView(context: modelContext, showingAddItemView: $showingAddItemView)
+                Tab("Compass", systemImage: selectedTab == .insights ? "safari.fill" : "safari", value: .insights) {
+                    CompassView(context: modelContext, showingAddItemView: $showingAddItemView)
                 }
 // Tab("Credit", systemImage: selectedTab == .credit ? "creditcard.fill" : "creditcard", value: .credit) {
 //     CreditView(context: modelContext, showingAddItemView: $showingAddItemView)
@@ -49,7 +49,7 @@ struct MainTabView: View {
                     EditAddTransactionView()
                         .environmentObject(viewModel)
                 }
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
             }
             .sheet(item: $viewModel.transactionToEdit) { item in
@@ -57,7 +57,7 @@ struct MainTabView: View {
                     EditAddTransactionView(item)
                         .environmentObject(viewModel)
                 }
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
             }
         }
@@ -67,7 +67,7 @@ struct MainTabView: View {
 }
 
 #Preview {
-    let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self])
+    let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self, GoalModel.self])
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
