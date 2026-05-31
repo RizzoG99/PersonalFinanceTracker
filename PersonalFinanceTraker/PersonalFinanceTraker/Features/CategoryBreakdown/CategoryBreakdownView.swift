@@ -114,16 +114,17 @@ struct CategoryBreakdownView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+                    Button("Settings", systemImage: "gearshape") {
                         showingSettings.toggle()
-                    } label: {
-                        Image(systemName: "gearshape")
                     }
                 }
             }
             .sheet(isPresented: $showingSettings) {
-                CategorySettingsView()
-                    .environment(\.modelContext, modelContext)
+                NavigationStack {
+                    CategorySettingsView()
+                }
+                .environment(\.modelContext, modelContext)
+                .presentationBackground { AppBackground() }
             }
         }
         .onAppear {

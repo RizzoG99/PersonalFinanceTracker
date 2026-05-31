@@ -2,8 +2,6 @@
 //  CategorySettingsView.swift
 //  PersonalFinanceTraker
 //
-//  Created by Gemini CLI on 26/02/26.
-//
 
 import SwiftUI
 import SwiftData
@@ -11,169 +9,82 @@ import SwiftData
 struct CategorySettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \CategoryModel.name) private var categories: [CategoryModel]
-    @Environment(\.dismiss) private var dismiss
-    
+
     @State private var editingCategory: CategoryModel?
-    @State private var showingEditSheet = false
-    
-    // New category state
-    @State private var newName = ""
-    @State private var newSystemImage = "questionmark"
-    @State private var newType: TransactionType = .expense
-    @State private var newBudget: String = ""
-    
-    var body: some View {
-        NavigationStack {
-            List {
-                Section("Expense Categories") {
-                    ForEach(categories.filter { $0.transactionType == .expense }) { category in
-                        CategoryRow(category: category) {
-                            startEditing(category)
-                        }
-                    }
-                }
-                
-                Section("Income Categories") {
-                    ForEach(categories.filter { $0.transactionType == .income }) { category in
-                        CategoryRow(category: category) {
-                            startEditing(category)
-                        }
-                    }
-                }
-                
-                Section("Add New Category") {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            TextField("Category Name", text: $newName)
-                            TextField("SF Symbol", text: $newSystemImage)
-                                .frame(width: 120)
-                                .multilineTextAlignment(.center)
-                        }
-                        
-                        Picker("Type", selection: $newType) {
-                            Text("Expense").tag(TransactionType.expense)
-                            Text("Income").tag(TransactionType.income)
-                        }
-                        .pickerStyle(.segmented)
-                        
-                        TextField("Monthly Budget (Optional)", text: $newBudget)
-                            .keyboardType(.decimalPad)
-                        
-                        Button("Add Category") {
-                            addCategory()
-                        }
-                        .disabled(newName.isEmpty)
-                        .frame(maxWidth: .infinity)
-                        .buttonStyle(.borderedProminent)
-                    }
-                    .padding(.vertical, 8)
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .background { AppBackground() }
-            .navigationTitle("Manage Categories")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-            .sheet(isPresented: $showingEditSheet) {
-                if let category = editingCategory {
-                    EditCategorySheet(category: category)
-                }
-            }
-        }
-    }
-    
-    private func startEditing(_ category: CategoryModel) {
-        editingCategory = category
-        showingEditSheet = true
-    }
-    
-    private func addCategory() {
-        let budget = Decimal(string: newBudget)
-        let newCat = CategoryModel(name: newName, systemImage: newSystemImage, type: newType, monthlyBudget: budget)
-        modelContext.insert(newCat)
-        
-        // Reset
-        newName = ""
-        newSystemImage = "questionmark"
-        newBudget = ""
-    }
-}
+    @State private var showingAddSheet = false
 
-struct CategoryRow: View {
-    let category: CategoryModel
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: category.systemImage)
-                Text(category.name)
-                Spacer()
-                if let budget = category.monthlyBudget {
-                    Text(budget, format: .currency(code: "EUR").precision(.fractionLength(0)))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Image(systemName: "pencil.circle")
-                    .foregroundStyle(.blue)
-            }
-        }
-        .buttonStyle(.plain)
+    private var expenseCategories: [CategoryModel] {
+        categories.filter { $0.transactionType == .expense }
     }
-}
+    private var incomeCategories: [CategoryModel] {
+        categories.filter { $0.transactionType == .income }
+    }
 
-struct EditCategorySheet: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
-    @Bindable var category: CategoryModel
-    @State private var budgetString: String = ""
-    
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("Details") {
-                    TextField("Name", text: $category.name)
-                    TextField("System Image", text: $category.systemImage)
-                }
-                
-                Section("Budget") {
-                    TextField("Monthly Budget", text: $budgetString)
-                        .keyboardType(.decimalPad)
-                        .onChange(of: budgetString) { _, newValue in
-                            category.monthlyBudget = Decimal(string: newValue)
+        List {
+            Section {
+                ForEach(expenseCategories) { category in
+                    CategoryRow(category: category) {
+                        editingCategory = category
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            modelContext.delete(category)
+                        } label: {
+                            Image(systemName: "trash")
                         }
-                }
-                
-                Section {
-                    Button("Delete Category", role: .destructive) {
-                        modelContext.delete(category)
-                        dismiss()
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .background { AppBackground() }
-            .navigationTitle("Edit Category")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        dismiss()
+                        .tint(.red)
                     }
                 }
+            } header: {
+                sectionHeader("Expense Categories")
             }
-            .onAppear {
-                if let budget = category.monthlyBudget {
-                    budgetString = "\(budget)"
+            .appFormSectionBackground()
+
+            Section {
+                ForEach(incomeCategories) { category in
+                    CategoryRow(category: category) {
+                        editingCategory = category
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            modelContext.delete(category)
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .tint(.red)
+                    }
+                }
+            } header: {
+                sectionHeader("Income Categories")
+            }
+            .appFormSectionBackground()
+        }
+        .scrollContentBackground(.hidden)
+        .appBackground()
+        .navigationTitle("Categories")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Add Category", systemImage: "plus") {
+                    showingAddSheet = true
                 }
             }
         }
+        .sheet(isPresented: $showingAddSheet) {
+            AddCategorySheet(existingCategories: categories)
+                .environment(\.modelContext, modelContext)
+        }
+        .sheet(item: $editingCategory) { category in
+            EditCategorySheet(category: category, existingCategories: categories)
+                .environment(\.modelContext, modelContext)
+                .id(category.id)
+        }
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.textDim)
     }
 }
