@@ -12,9 +12,11 @@ final class EditAddTransactionViewModel: ObservableObject {
     @Published var amount: Double = 0.0 // Changed from Decimal to Double for CurrencyAmountField
     @Published var transactionType: TransactionType = .expense
     @Published var currencyCode: String = "EUR"
-    @Published var date: Date = Date()
+    @Published var date: Date = Date.now
     @Published var selectedCategory: CategoryModel?
     @Published var availableCategories: [CategoryModel] = []
+    @Published var availableGoals: [GoalModel] = []
+    @Published var selectedGoal: GoalModel?
     @Published var showingDatePicker: Bool = false
     @Published var showingCategoryPicker: Bool = false
     @Published var showingErrorAlert: Bool = false
@@ -25,8 +27,9 @@ final class EditAddTransactionViewModel: ObservableObject {
     
     init(transaction: TransactionModel) {
         self.editingItem = transaction
-        let transactionType: TransactionType = transaction.amount < 0 ? .expense : .income
-        
+        let transactionType: TransactionType = transaction.goalId != nil ? .transfer
+            : transaction.amount < 0 ? .expense : .income
+
         self._transactionName = Published(initialValue: transaction.note)
         self._amount = Published(initialValue: abs(Double(truncating: transaction.amount as NSDecimalNumber)))
         self._transactionType = Published(initialValue: transactionType)
@@ -41,15 +44,19 @@ final class EditAddTransactionViewModel: ObservableObject {
     
     func setTransactionViewModel(_ transactionViewModel: TransactionListViewModel) {
         self.transactionViewModel = transactionViewModel
-        // Fetch categories when view model is linked
         self.availableCategories = (try? transactionViewModel.repo.fetchCategories()) ?? []
-        
+        self.availableGoals = (try? transactionViewModel.repo.fetchGoals()) ?? []
+
         // If editing and categoryModel is nil, try to find it by name for migration
-        if let editingItem = editingItem, editingItem.categoryModel == nil {
+        if let editingItem = editingItem, editingItem.categoryModel == nil, editingItem.goalId == nil {
             self.selectedCategory = availableCategories.first(where: { editingItem.category.contains($0.name) })
         }
-        
-        // Set default currency from user settings if not editing
+
+        // Pre-select goal when editing a transfer
+        if let editingItem = editingItem, let goalId = editingItem.goalId {
+            self.selectedGoal = availableGoals.first(where: { $0.id == goalId })
+        }
+
         if editingItem == nil {
             self.currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         }
@@ -63,23 +70,22 @@ final class EditAddTransactionViewModel: ObservableObject {
     var isFormValid: Bool {
         !transactionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         amount > 0 &&
-        date <= Date() &&
-        selectedCategory != nil
+        date <= Date.now &&
+        (transactionType == .transfer ? selectedGoal != nil : selectedCategory != nil)
     }
     
+    private static let mediumDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        return f
+    }()
+
     var formattedDate: String {
         let calendar = Calendar.current
-        
-        if calendar.isDateInToday(date) {
-            return "Today"
-        } else if calendar.isDateInYesterday(date) {
-            return "Yesterday"
-        } else {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .none
-            return formatter.string(from: date)
-        }
+        if calendar.isDateInToday(date) { return "Today" }
+        if calendar.isDateInYesterday(date) { return "Yesterday" }
+        return Self.mediumDateFormatter.string(from: date)
     }
     
     var filteredCategories: [CategoryModel] {
@@ -87,12 +93,22 @@ final class EditAddTransactionViewModel: ObservableObject {
     }
     
     func getTransactionData() -> TransactionModel? {
+        if transactionType == .transfer {
+            guard let goal = selectedGoal else { return nil }
+            let newItem = TransactionModel(
+                timestamp: date,
+                amount: -Decimal(amount),
+                note: transactionName,
+                category: "→ \(goal.name)",
+                currencyCode: currencyCode,
+                goalId: goal.id
+            )
+            resetForm()
+            return newItem
+        }
+
         guard let selectedCategory = selectedCategory else { return nil }
-        
-        // Calculate the final amount based on transaction type
         let finalAmount = transactionType == .income ? Decimal(amount) : -Decimal(amount)
-        
-        // Create a new transaction item
         let newItem = TransactionModel(
             timestamp: date,
             amount: finalAmount,
@@ -101,29 +117,34 @@ final class EditAddTransactionViewModel: ObservableObject {
             categoryModel: selectedCategory,
             currencyCode: currencyCode
         )
-        
-        print("Adding transaction: \(transactionName), Amount: \(finalAmount) \(currencyCode), Date: \(date), Category: \(selectedCategory.displayText), Type: \(transactionType.rawValue)")
-        
         resetForm()
         return newItem
     }
     
     func updateTransaction() {
-        guard let selectedCategory = selectedCategory,
-              let item = editingItem else { return }
-        
-        // Calculate the final amount based on transaction type
+        guard let item = editingItem else { return }
+
+        if transactionType == .transfer {
+            guard let goal = selectedGoal else { return }
+            item.timestamp = date
+            item.amount = -Decimal(amount)
+            item.note = transactionName
+            item.category = "→ \(goal.name)"
+            item.categoryModel = nil
+            item.currencyCode = currencyCode
+            item.goalId = goal.id
+            return
+        }
+
+        guard let selectedCategory = selectedCategory else { return }
         let finalAmount = transactionType == .income ? Decimal(amount) : -Decimal(amount)
-        
-        // Update the existing item
         item.timestamp = date
         item.amount = finalAmount
         item.note = transactionName
         item.category = selectedCategory.displayText
         item.categoryModel = selectedCategory
         item.currencyCode = currencyCode
-        
-        print("Updating transaction: \(transactionName), Amount: \(finalAmount) \(currencyCode), Date: \(date), Category: \(selectedCategory.displayText), Type: \(transactionType.rawValue)")
+        item.goalId = nil
     }
     
     func resetForm() {
@@ -133,6 +154,7 @@ final class EditAddTransactionViewModel: ObservableObject {
         currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         date = Date()
         selectedCategory = nil
+        selectedGoal = nil
     }
 
 }
