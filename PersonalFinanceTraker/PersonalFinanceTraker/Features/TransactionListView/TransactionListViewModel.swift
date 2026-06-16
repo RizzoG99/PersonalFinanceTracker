@@ -6,38 +6,32 @@
 //
 
 import Foundation
-import Combine
 
-final class TransactionListViewModel: ObservableObject {
-    @Published var transactions: [TransactionModel] = []
-    @Published var filteredItems: [TransactionModel] = []
-    @Published var groupedItems: [(String, [TransactionModel])] = []
-    @Published var searchText: String = ""
-    @Published var chartData: [ChartDataPoint] = []
-    @Published var selectedTimePeriod: TimePeriod = .month
-    @Published var transactionToEdit: TransactionModel? = nil
-    
+@Observable @MainActor
+final class TransactionListViewModel {
+    var transactions: [TransactionModel] = []
+    var filteredItems: [TransactionModel] = [] {
+        didSet {
+            groupTransactions()
+            chartData = dataService.generateChartData(from: filteredItems, for: selectedTimePeriod)
+        }
+    }
+    var groupedItems: [(String, [TransactionModel])] = []
+    var searchText: String = "" {
+        didSet { doFilterItemBySearchText() }
+    }
+    var chartData: [ChartDataPoint] = []
+    var selectedTimePeriod: TimePeriod = .month
+    var transactionToEdit: TransactionModel? = nil
+
     let repo: ITransactionRepository
-    private var cancellables = Set<AnyCancellable>()
-    
+
     private let dateFormatter = DateFormattingService()
     private let dataService = ChartDataService()
     public let currencyService = CurrencyService()
-    
+
     init(repo: ITransactionRepository) {
         self.repo = repo
-        self._searchText.projectedValue
-            .sink { [weak self] searchText in
-                self?.doFilterItemBySearchText()
-            }
-            .store(in: &cancellables)
-        
-        self._filteredItems.projectedValue.sink { [weak self] searchText in
-            self?.groupTransactions()
-            self?.chartData = self?.dataService.generateChartData(from: self?.filteredItems ?? [],
-                                                                       for: self?.selectedTimePeriod ?? .month) ?? []
-        }
-        .store(in: &cancellables)
     }
     
     func load() {

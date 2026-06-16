@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TransactionFormView: View {
-    @ObservedObject var viewModel: EditAddTransactionViewModel
+    @Bindable var viewModel: EditAddTransactionViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

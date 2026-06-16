@@ -24,23 +24,50 @@ struct HeroInsightCard: View {
         }
     }
 
+    private var displayTitle: String {
+        switch insight.trendDirection {
+        case .down:  return "Under last month's pace"
+        case .up:    return "Watch your pace"
+        case .flat:  return insight.title
+        }
+    }
+
+    private var pillText: String? {
+        guard let match = insight.title.firstMatch(of: /(\d+)%/) else { return nil }
+        let pct = match.1
+        switch insight.trendDirection {
+        case .down:  return "↓ \(pct)%"
+        case .up:    return "↑ \(pct)%"
+        case .flat:  return nil
+        }
+    }
+
     var body: some View {
-        GlassCard(tint: tintColor) {
+        GlassCard {
             HStack(spacing: 16) {
                 Image(systemName: sfSymbol)
-                    .font(.system(size: 44))
-                    .foregroundStyle(.white.opacity(0.9))
+                    .font(.system(size: 32))
+                    .foregroundStyle(tintColor)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(insight.title)
-                        .font(.title2.bold())
-                        .foregroundStyle(.white)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(displayTitle)
+                        .font(.title3.bold())
+                        .foregroundStyle(.textPrimary)
                     Text(insight.subtitle)
                         .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle(.textMid)
                 }
 
                 Spacer()
+
+                if let pill = pillText {
+                    Text(pill)
+                        .font(.caption.bold())
+                        .foregroundStyle(tintColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(tintColor.opacity(0.15), in: Capsule())
+                }
             }
         }
     }

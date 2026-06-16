@@ -10,7 +10,7 @@ import SwiftData
 
 struct TransactionListMVVM: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var viewModel: TransactionListViewModel
+    @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding private var showingAddItemView: Bool
     @State private var editMode: EditMode = .inactive
     
@@ -19,7 +19,8 @@ struct TransactionListMVVM: View {
     }
     
     var body: some View {
-        NavigationView {
+        @Bindable var viewModel = viewModel
+        return NavigationView {
             List {
                 // Chart Section
                 Section {

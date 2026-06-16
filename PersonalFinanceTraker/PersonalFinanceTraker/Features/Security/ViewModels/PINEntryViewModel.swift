@@ -1,11 +1,12 @@
 import SwiftUI
 import LocalAuthentication
 
-final class PINEntryViewModel: ObservableObject {
-    @Published var pinInput: String = ""
-    @Published var isShaking: Bool = false
-    @Published var eyesOpen: Bool = true
-    @Published var errorMessage: String = ""
+@Observable @MainActor
+final class PINEntryViewModel {
+    var pinInput: String = ""
+    var isShaking: Bool = false
+    var eyesOpen: Bool = true
+    var errorMessage: String = ""
 
     private let pinService: PINService
     let authService: BiometricAuthService
@@ -29,7 +30,7 @@ final class PINEntryViewModel: ObservableObject {
         pinInput += digit
         eyesOpen = false
         if pinInput.count == 4 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { self.verifyPIN() }
+            Task { try? await Task.sleep(for: .seconds(0.15)); self.verifyPIN() }
         }
     }
 
@@ -48,15 +49,12 @@ final class PINEntryViewModel: ObservableObject {
         } else {
             errorMessage = "Incorrect PIN. Try again."
             triggerShake()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                self.pinInput = ""
-                self.eyesOpen = true
-            }
+            Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }
         }
     }
 
     private func triggerShake() {
         isShaking = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self.isShaking = false }
+        Task { try? await Task.sleep(for: .seconds(0.5)); self.isShaking = false }
     }
 }

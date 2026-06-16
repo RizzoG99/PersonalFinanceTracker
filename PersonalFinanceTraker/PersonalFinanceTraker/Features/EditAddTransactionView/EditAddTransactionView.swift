@@ -11,19 +11,20 @@ import SwiftData
 struct EditAddTransactionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var transactionViewModel: TransactionListViewModel
-    @StateObject private var viewModel: EditAddTransactionViewModel
+    @Environment(TransactionListViewModel.self) private var transactionViewModel
+    @Environment(DashboardViewModel.self) private var dashboardViewModel
+    @State private var viewModel: EditAddTransactionViewModel
 
     private let transaction: TransactionModel?
 
     init(_ transaction: TransactionModel) {
         self.transaction = transaction
-        _viewModel = StateObject(wrappedValue: EditAddTransactionViewModel(transaction: transaction))
+        _viewModel = State(wrappedValue: EditAddTransactionViewModel(transaction: transaction))
     }
 
     init() {
         self.transaction = nil
-        _viewModel = StateObject(wrappedValue: EditAddTransactionViewModel())
+        _viewModel = State(wrappedValue: EditAddTransactionViewModel())
     }
 
     var body: some View {
@@ -46,11 +47,13 @@ struct EditAddTransactionView: View {
         if viewModel.editingItem == nil {
             if let newItem = viewModel.getTransactionData() {
                 transactionViewModel.add(newItem)
+                dashboardViewModel.load()
                 dismiss()
             }
         } else {
             viewModel.updateTransaction()
             transactionViewModel.update()
+            dashboardViewModel.load()
             dismiss()
         }
     }

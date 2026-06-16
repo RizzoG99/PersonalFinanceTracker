@@ -44,6 +44,7 @@ struct TransactionItemView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
+        .contentShape(Rectangle())
     }
 }
 

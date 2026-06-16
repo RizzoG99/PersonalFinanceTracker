@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PINEntryView: View {
-    @StateObject var viewModel: PINEntryViewModel
+    @State var viewModel: PINEntryViewModel
 
     var body: some View {
         VStack(spacing: 0) {

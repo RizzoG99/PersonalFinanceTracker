@@ -4,17 +4,15 @@
 //
 //  Created by Gabriele Rizzo on 21/10/25.
 //
-import Combine
 import SwiftUI
 
-final class CategoryBreakdownViewModel: ObservableObject {
-    
-    @Published var transactions: [TransactionModel] = []
-    @Published var selectedTimePeriod: TimePeriod = .month
-    @Published var selectedPieChartType: PieChartDataType = .expenses
-    
+@Observable @MainActor
+final class CategoryBreakdownViewModel {
+    var transactions: [TransactionModel] = []
+    var selectedTimePeriod: TimePeriod = .month
+    var selectedPieChartType: PieChartDataType = .expenses
+
     private let repo: ITransactionRepository
-    private var cancellables = Set<AnyCancellable>()
     private var dataService = PieChartDataService()
     
     init(repo: ITransactionRepository) {

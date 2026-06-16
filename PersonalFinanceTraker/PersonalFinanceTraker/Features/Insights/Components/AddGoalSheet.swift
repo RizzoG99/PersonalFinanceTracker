@@ -13,6 +13,7 @@ struct AddGoalSheet: View {
     @State private var deadline: Date
     @State private var includeDeadline: Bool
     @State private var selectedIcon: String
+    @State private var selectedToken: String
     @State private var showIconPicker = false
 
     private let existingGoal: GoalModel?
@@ -26,6 +27,7 @@ struct AddGoalSheet: View {
         _deadline = State(initialValue: goal?.deadline ?? Calendar.current.date(byAdding: .month, value: 6, to: Date())!)
         _includeDeadline = State(initialValue: goal?.deadline != nil)
         _selectedIcon = State(initialValue: goal?.iconName ?? GoalIcon.other.rawValue)
+        _selectedToken = State(initialValue: goal?.colorToken ?? "categoryIndigo")
     }
 
     private var isValid: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty && Decimal(string: targetAmountText) != nil }
@@ -33,17 +35,18 @@ struct AddGoalSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             Button { showIconPicker = true } label: {
+                let tokenColor = CategoryConstants.color(forToken: selectedToken)
                 Image(systemName: selectedIcon)
                     .font(.system(size: 36))
-                    .foregroundStyle(Color.accentIndigo)
+                    .foregroundStyle(tokenColor)
                     .frame(width: 80, height: 80)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.accentIndigo.opacity(0.15))
+                            .fill(tokenColor.opacity(0.15))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .strokeBorder(Color.accentIndigo.opacity(0.4), lineWidth: 1.5)
+                            .strokeBorder(tokenColor.opacity(0.4), lineWidth: 1.5)
                     )
             }
             .sheet(isPresented: $showIconPicker) {
@@ -77,6 +80,12 @@ struct AddGoalSheet: View {
                             .multilineTextAlignment(.trailing)
                             .foregroundStyle(.textPrimary)
                     }
+                }
+                .appFormSectionBackground()
+
+                Section("Color") {
+                    ColorTokenPicker(selectedToken: $selectedToken)
+                        .padding(.vertical, 4)
                 }
                 .appFormSectionBackground()
 
@@ -117,9 +126,10 @@ struct AddGoalSheet: View {
             existing.targetAmount = target
             existing.deadline = dl
             existing.iconName = selectedIcon
+            existing.colorToken = selectedToken
             onSave(existing)
         } else {
-            onSave(GoalModel(name: name, targetAmount: target, deadline: dl, iconName: selectedIcon))
+            onSave(GoalModel(name: name, targetAmount: target, deadline: dl, colorToken: selectedToken, iconName: selectedIcon))
         }
         dismiss()
     }

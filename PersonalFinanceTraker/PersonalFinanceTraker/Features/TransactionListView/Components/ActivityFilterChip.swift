@@ -25,8 +25,12 @@ struct ActivityFilterChip: View {
             .foregroundStyle(isSelected ? Color.bg0 : Color.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(isSelected ? Color.accentIndigo : Color.bg2.opacity(0.6))
+            .background(isSelected ? Color.accentIndigo : Color.clear)
             .clipShape(.rect(cornerRadius: 20))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(isSelected ? Color.clear : Color.textPrimary.opacity(0.35), lineWidth: 1)
+            )
         }
     }
 }

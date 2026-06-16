@@ -1,19 +1,19 @@
 import SwiftUI
-import Combine
 import LocalAuthentication
 
-final class ProfileViewModel: ObservableObject {
+@Observable @MainActor
+final class ProfileViewModel {
 
-    @Published var fullName: String {
+    var fullName: String = "" {
         didSet { UserDefaults.standard.set(fullName, forKey: "user_full_name") }
     }
 
-    @Published var isBiometricEnabled: Bool {
+    var isBiometricEnabled: Bool = false {
         didSet { UserDefaults.standard.set(isBiometricEnabled, forKey: "biometric_lock_enabled") }
     }
 
-    @Published private(set) var isBiometricsAvailable: Bool = false
-    @Published private(set) var biometricLabel: String = "Biometrics"
+    private(set) var isBiometricsAvailable: Bool = false
+    private(set) var biometricLabel: String = "Biometrics"
 
     private let memberSinceTimestamp: Double
     private let pinService = PINService()

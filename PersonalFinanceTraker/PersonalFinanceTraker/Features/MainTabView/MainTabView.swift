@@ -12,11 +12,13 @@ struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selectedTab: TabItem = .home
     @State private var showingAddItemView: Bool = false
-    @StateObject private var viewModel: TransactionListViewModel
-    @StateObject private var profileViewModel = ProfileViewModel()
+    @State private var viewModel: TransactionListViewModel
+    @State private var dashboardViewModel: DashboardViewModel
+    @State private var profileViewModel = ProfileViewModel()
 
     init(context: ModelContext) {
-        _viewModel = StateObject(wrappedValue: TransactionListViewModel(repo: TransactionRepository(context: context)))
+        _viewModel = State(wrappedValue: TransactionListViewModel(repo: TransactionRepository(context: context)))
+        _dashboardViewModel = State(wrappedValue: DashboardViewModel(repo: TransactionRepository(context: context)))
     }
 
     enum TabItem: Hashable {
@@ -27,7 +29,7 @@ struct MainTabView: View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: selectedTab == .home ? "house.fill" : "house", value: .home) {
-                    DashboardView(context: modelContext, showingAddItemView: $showingAddItemView)
+                    DashboardView(showingAddItemView: $showingAddItemView)
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity, role: .search) {
                     ActivityView(context: modelContext, showingAddItemView: $showingAddItemView)
@@ -42,20 +44,23 @@ struct MainTabView: View {
             .environment(\.symbolVariants, .none)
             .tint(Color.accentIndigo)
             .tabBarMinimizeBehavior(.onScrollDown)
-            .environmentObject(viewModel)
-            .environmentObject(profileViewModel)
-            .sheet(isPresented: $showingAddItemView) {
+            .environment(viewModel)
+            .environment(dashboardViewModel)
+            .environment(profileViewModel)
+            .sheet(isPresented: $showingAddItemView, onDismiss: { dashboardViewModel.load() }) {
                 NavigationStack {
                     EditAddTransactionView()
-                        .environmentObject(viewModel)
+                        .environment(viewModel)
+                        .environment(dashboardViewModel)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
             }
-            .sheet(item: $viewModel.transactionToEdit) { item in
+            .sheet(item: $viewModel.transactionToEdit, onDismiss: { dashboardViewModel.load() }) { item in
                 NavigationStack {
                     EditAddTransactionView(item)
-                        .environmentObject(viewModel)
+                        .environment(viewModel)
+                        .environment(dashboardViewModel)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }

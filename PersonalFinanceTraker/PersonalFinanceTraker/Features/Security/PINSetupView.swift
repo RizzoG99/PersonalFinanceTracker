@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PINSetupView: View {
-    @StateObject var viewModel: PINSetupViewModel
+    @State var viewModel: PINSetupViewModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {

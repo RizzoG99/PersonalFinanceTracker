@@ -22,11 +22,11 @@ import Charts
 /// - Empty state handling
 struct CategoryBreakdownView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel: CategoryBreakdownViewModel
+    @State private var viewModel: CategoryBreakdownViewModel
     @State private var showingSettings = false
     
     init(context: ModelContext) {
-        _viewModel = StateObject(wrappedValue: CategoryBreakdownViewModel(repo: TransactionRepository(context: context)))
+        _viewModel = State(wrappedValue: CategoryBreakdownViewModel(repo: TransactionRepository(context: context)))
     }
     
     var body: some View {

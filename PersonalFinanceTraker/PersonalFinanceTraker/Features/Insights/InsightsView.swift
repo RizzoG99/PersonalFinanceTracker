@@ -9,11 +9,11 @@ import Charts
 
 struct CompassView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel: CompassViewModel
+    @State private var viewModel: CompassViewModel
     @Binding var showingAddItemView: Bool
 
     init(context: ModelContext, showingAddItemView: Binding<Bool>) {
-        _viewModel = StateObject(wrappedValue: CompassViewModel(repo: TransactionRepository(context: context)))
+        _viewModel = State(wrappedValue: CompassViewModel(repo: TransactionRepository(context: context)))
         _showingAddItemView = showingAddItemView
     }
 
@@ -24,8 +24,8 @@ struct CompassView: View {
                     GoalsSection(
                         goals: viewModel.goals,
                         showingAddGoal: $viewModel.showingAddGoal,
-                        goalToEdit: $viewModel.goalToEdit,
                         transferTotal: viewModel.transferTotal(for:),
+                        onSelectGoal: { viewModel.selectedGoal = $0 },
                         onDeleteGoal: viewModel.deleteGoal
                     )
                     if let insight = viewModel.heroInsight {
@@ -66,6 +66,14 @@ struct CompassView: View {
             .presentationDetents([.large])
             .presentationBackground { AppBackground() }
         }
+        .sheet(item: $viewModel.selectedGoal) { goal in
+            GoalDetailSheet(goal: goal, viewModel: viewModel) {
+                viewModel.selectedGoal = nil
+                viewModel.goalToEdit = goal
+            }
+            .presentationDetents([.large])
+            .presentationBackground { AppBackground() }
+        }
     }
 }
 
@@ -77,7 +85,7 @@ struct CompassView: View {
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
     return CompassView(context: container.mainContext, showingAddItemView: .constant(false))
-        .environmentObject(ProfileViewModel())
+        .environment(ProfileViewModel())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }

@@ -4,13 +4,12 @@
 //
 
 import Foundation
-import Combine
 
-@MainActor
-final class CreditViewModel: ObservableObject {
-    @Published var creditCards: [CreditCardModel] = []
-    @Published var creditScore: Int
-    @Published var errorMessage: String? = nil
+@Observable @MainActor
+final class CreditViewModel {
+    var creditCards: [CreditCardModel] = []
+    var creditScore: Int
+    var errorMessage: String? = nil
 
     private let repo: ICreditCardRepository
     private let scoreKey = "credit_score_value"

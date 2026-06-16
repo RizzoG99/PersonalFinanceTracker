@@ -3,8 +3,8 @@ import SwiftUI
 struct GoalsSection: View {
     let goals: [GoalModel]
     @Binding var showingAddGoal: Bool
-    @Binding var goalToEdit: GoalModel?
     let transferTotal: (GoalModel) -> Decimal
+    let onSelectGoal: (GoalModel) -> Void
     let onDeleteGoal: (GoalModel) -> Void
 
     var body: some View {
@@ -50,7 +50,7 @@ struct GoalsSection: View {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     ForEach(goals) { goal in
                         GoalCard(goal: goal, currentAmount: transferTotal(goal)) {
-                            goalToEdit = goal
+                            onSelectGoal(goal)
                         }
                         .contextMenu {
                             Button(role: .destructive) {

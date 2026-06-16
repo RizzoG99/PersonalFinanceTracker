@@ -4,16 +4,16 @@
 //
 
 import Foundation
-import Combine
 
-final class DashboardViewModel: ObservableObject {
-    @Published var transactions: [TransactionModel] = []
-    @Published var totalBalance: Decimal = 0
-    @Published var monthlyIncome: Decimal = 0
-    @Published var monthlyExpenses: Decimal = 0
-    @Published var recentTransactions: [TransactionModel] = []
-    @Published var savingsGoal: Decimal = 5000
-    @Published var currentSavings: Decimal = 0
+@Observable @MainActor
+final class DashboardViewModel {
+    var transactions: [TransactionModel] = []
+    var totalBalance: Decimal = 0
+    var monthlyIncome: Decimal = 0
+    var monthlyExpenses: Decimal = 0
+    var recentTransactions: [TransactionModel] = []
+    var savingsGoal: Decimal = 5000
+    var currentSavings: Decimal = 0
 
     let repo: ITransactionRepository
     private let currencyService = CurrencyService()

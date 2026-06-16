@@ -8,7 +8,7 @@ import SwiftData
 
 struct ActivityView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var viewModel: TransactionListViewModel
+    @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
     @State private var selectedCategory: String? = nil
 
@@ -23,7 +23,8 @@ struct ActivityView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        @Bindable var viewModel = viewModel
+        return NavigationStack {
             List {
                 Section {
                     ScrollView(.horizontal) {
@@ -120,8 +121,8 @@ struct ActivityView: View {
     SampleData.populateModelContext(container.mainContext)
     let vm = TransactionListViewModel(repo: TransactionRepository(context: container.mainContext))
     return ActivityView(context: container.mainContext, showingAddItemView: .constant(false))
-        .environmentObject(vm)
-        .environmentObject(ProfileViewModel())
+        .environment(vm)
+        .environment(ProfileViewModel())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }

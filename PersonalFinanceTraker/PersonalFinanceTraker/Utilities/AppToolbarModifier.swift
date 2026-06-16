@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct AppToolbarModifier: ViewModifier {
-    @EnvironmentObject private var profileViewModel: ProfileViewModel
+    @Environment(ProfileViewModel.self) private var profileViewModel: ProfileViewModel
     @Binding var showingAddItemView: Bool
     @State private var showingProfile = false
     @State private var selectedDetent: PresentationDetent = .large

@@ -8,15 +8,10 @@ import SwiftData
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel: DashboardViewModel
-    @EnvironmentObject private var profileViewModel: ProfileViewModel
-    @EnvironmentObject private var transactionListViewModel: TransactionListViewModel
+    @Environment(DashboardViewModel.self) private var viewModel
+    @Environment(ProfileViewModel.self) private var profileViewModel
+    @Environment(TransactionListViewModel.self) private var transactionListViewModel
     @Binding var showingAddItemView: Bool
-
-    init(context: ModelContext, showingAddItemView: Binding<Bool>) {
-        _viewModel = StateObject(wrappedValue: DashboardViewModel(repo: TransactionRepository(context: context)))
-        _showingAddItemView = showingAddItemView
-    }
 
     var body: some View {
         NavigationStack {
@@ -149,10 +144,13 @@ struct DashboardView: View {
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
-    let vm = TransactionListViewModel(repo: TransactionRepository(context: container.mainContext))
-    return DashboardView(context: container.mainContext, showingAddItemView: .constant(false))
-        .environmentObject(vm)
-        .environmentObject(ProfileViewModel())
+    let repo = TransactionRepository(context: container.mainContext)
+    let vm = TransactionListViewModel(repo: repo)
+    let dashVM = DashboardViewModel(repo: repo)
+    return DashboardView(showingAddItemView: .constant(false))
+        .environment(vm)
+        .environment(dashVM)
+        .environment(ProfileViewModel())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }

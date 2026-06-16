@@ -15,6 +15,8 @@ struct GoalCard: View {
         return min(1.0, Double(truncating: (currentAmount / goal.targetAmount) as NSDecimalNumber))
     }
 
+    private var goalColor: Color { CategoryConstants.color(forToken: goal.colorToken) }
+
     private var daysLeft: Int? {
         guard let deadline = goal.deadline else { return nil }
         return Calendar.current.dateComponents([.day], from: Date(), to: deadline).day
@@ -27,7 +29,7 @@ struct GoalCard: View {
                     HStack(spacing: 0) {
                         Image(systemName: goal.iconName)
                             .font(.title3.bold())
-                            .foregroundStyle(.accentIndigo)
+                            .foregroundStyle(goalColor)
                         Spacer()
                         Text(daysLeft.map { "\(max(0, $0))d left" } ?? " ")
                             .font(.caption)
@@ -44,7 +46,7 @@ struct GoalCard: View {
                             .fill(Color.white.opacity(0.08))
                             .overlay(alignment: .leading) {
                                 Capsule()
-                                    .fill(Color.accentIndigo)
+                                    .fill(goalColor)
                                     .frame(width: max(8, geo.size.width * CGFloat(progress)))
                                     .animation(.easeOut(duration: 0.6), value: progress)
                             }
@@ -54,7 +56,7 @@ struct GoalCard: View {
                     HStack(spacing: 4) {
                         Text(formatEURCompact(currentAmount))
                             .font(.caption.bold())
-                            .foregroundStyle(.accentIndigo)
+                            .foregroundStyle(goalColor)
                         Text("/")
                             .font(.caption)
                             .foregroundStyle(.textDim)
@@ -74,5 +76,6 @@ struct GoalCard: View {
         .frame(maxWidth: .infinity)
         .aspectRatio(4/3, contentMode: .fill)
         .clipped()
+        .contentShape(Rectangle())
     }
 }

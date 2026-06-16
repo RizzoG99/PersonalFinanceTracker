@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct AddEditCreditCardSheet: View {
-    @ObservedObject var viewModel: CreditViewModel
+    var viewModel: CreditViewModel
     var cardToEdit: CreditCardModel?
     @Environment(\.dismiss) private var dismiss
 

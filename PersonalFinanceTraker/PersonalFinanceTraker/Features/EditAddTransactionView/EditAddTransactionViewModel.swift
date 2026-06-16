@@ -7,35 +7,35 @@
 
 import Foundation
 
-final class EditAddTransactionViewModel: ObservableObject {
-    @Published var transactionName: String = ""
-    @Published var amount: Double = 0.0 // Changed from Decimal to Double for CurrencyAmountField
-    @Published var transactionType: TransactionType = .expense
-    @Published var currencyCode: String = "EUR"
-    @Published var date: Date = Date.now
-    @Published var selectedCategory: CategoryModel?
-    @Published var availableCategories: [CategoryModel] = []
-    @Published var availableGoals: [GoalModel] = []
-    @Published var selectedGoal: GoalModel?
-    @Published var showingDatePicker: Bool = false
-    @Published var showingCategoryPicker: Bool = false
-    @Published var showingErrorAlert: Bool = false
-    @Published var errorMessage: String = ""
+@Observable @MainActor
+final class EditAddTransactionViewModel {
+    var transactionName: String = ""
+    var amount: Double = 0.0
+    var transactionType: TransactionType = .expense
+    var currencyCode: String = "EUR"
+    var date: Date = Date.now
+    var selectedCategory: CategoryModel?
+    var availableCategories: [CategoryModel] = []
+    var availableGoals: [GoalModel] = []
+    var selectedGoal: GoalModel?
+    var showingDatePicker: Bool = false
+    var showingCategoryPicker: Bool = false
+    var showingErrorAlert: Bool = false
+    var errorMessage: String = ""
     
     let editingItem: TransactionModel?
     private var transactionViewModel: TransactionListViewModel?
     
     init(transaction: TransactionModel) {
         self.editingItem = transaction
-        let transactionType: TransactionType = transaction.goalId != nil ? .transfer
+        let type: TransactionType = transaction.goalId != nil ? .transfer
             : transaction.amount < 0 ? .expense : .income
-
-        self._transactionName = Published(initialValue: transaction.note)
-        self._amount = Published(initialValue: abs(Double(truncating: transaction.amount as NSDecimalNumber)))
-        self._transactionType = Published(initialValue: transactionType)
-        self._currencyCode = Published(initialValue: transaction.currencyCode)
-        self._date = Published(initialValue: transaction.timestamp)
-        self._selectedCategory = Published(initialValue: transaction.categoryModel)
+        self.transactionName = transaction.note
+        self.amount = abs(Double(truncating: transaction.amount as NSDecimalNumber))
+        self.transactionType = type
+        self.currencyCode = transaction.currencyCode
+        self.date = transaction.timestamp
+        self.selectedCategory = transaction.categoryModel
     }
     
     init() {

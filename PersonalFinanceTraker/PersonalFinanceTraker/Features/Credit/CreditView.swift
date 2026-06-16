@@ -8,11 +8,11 @@ import SwiftData
 
 struct CreditView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel: CreditViewModel
+    @State private var viewModel: CreditViewModel
     @Binding var showingAddItemView: Bool
 
     init(context: ModelContext, showingAddItemView: Binding<Bool>) {
-        _viewModel = StateObject(wrappedValue: CreditViewModel(repo: CreditCardRepository(context: context)))
+        _viewModel = State(wrappedValue: CreditViewModel(repo: CreditCardRepository(context: context)))
         _showingAddItemView = showingAddItemView
     }
 
@@ -62,7 +62,7 @@ struct CreditView: View {
         return AnyView(
             CreditView(context: container.mainContext, showingAddItemView: .constant(false))
                 .modelContainer(container)
-                .environmentObject(ProfileViewModel())
+                .environment(ProfileViewModel())
                 .preferredColorScheme(.dark)
         )
     } catch {

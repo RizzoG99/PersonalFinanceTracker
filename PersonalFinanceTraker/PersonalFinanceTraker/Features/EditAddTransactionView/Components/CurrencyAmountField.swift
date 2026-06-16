@@ -75,6 +75,21 @@ struct CurrencyAmountField: View {
                             parseAndFormatAmount()
                         }
                     }
+                    .onChange(of: displayText) { _, newValue in
+                        guard isFocused else { return }
+                        let clean = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if clean.isEmpty {
+                            amount = 0.0
+                            return
+                        }
+                        let normalized = clean.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ",")
+                        let formatter = NumberFormatter()
+                        formatter.numberStyle = .decimal
+                        formatter.decimalSeparator = Locale.current.decimalSeparator ?? ","
+                        if let parsed = formatter.number(from: normalized)?.doubleValue, parsed >= 0 {
+                            amount = parsed
+                        }
+                    }
                     .onAppear {
                         updateDisplayText()
                     }

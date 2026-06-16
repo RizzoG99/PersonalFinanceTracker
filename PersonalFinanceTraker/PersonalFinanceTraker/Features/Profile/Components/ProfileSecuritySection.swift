@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProfileSecuritySection: View {
-    @ObservedObject var viewModel: ProfileViewModel
+    @Bindable var viewModel: ProfileViewModel
     @Binding var selectedDetent: PresentationDetent
 
     var body: some View {

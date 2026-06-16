@@ -1,17 +1,17 @@
 import SwiftUI
-import Combine
 
-final class PINSetupViewModel: ObservableObject {
+@Observable @MainActor
+final class PINSetupViewModel {
     enum SetupStep { case verifyCurrentPin, enterPin, confirmPin, success }
 
-    @Published var currentStep: SetupStep = .enterPin
-    @Published var pinInput: String = ""
-    @Published var confirmInput: String = ""
-    @Published var errorMessage: String = ""
-    @Published var isShaking: Bool = false
-    @Published var isBouncing: Bool = false
-    @Published var eyesOpen: Bool = true
-    @Published var isComplete: Bool = false
+    var currentStep: SetupStep = .enterPin
+    var pinInput: String = ""
+    var confirmInput: String = ""
+    var errorMessage: String = ""
+    var isShaking: Bool = false
+    var isBouncing: Bool = false
+    var eyesOpen: Bool = true
+    var isComplete: Bool = false
 
     let isChangeMode: Bool
     private let pinService: PINService
@@ -30,21 +30,21 @@ final class PINSetupViewModel: ObservableObject {
             pinInput += digit
             eyesOpen = false
             if pinInput.count == 4 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { self.verifyCurrentPIN() }
+                Task { try? await Task.sleep(for: .seconds(0.15)); self.verifyCurrentPIN() }
             }
         case .enterPin:
             guard pinInput.count < 4 else { return }
             pinInput += digit
             eyesOpen = false
             if pinInput.count == 4 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { self.advanceToConfirm() }
+                Task { try? await Task.sleep(for: .seconds(0.15)); self.advanceToConfirm() }
             }
         case .confirmPin:
             guard confirmInput.count < 4 else { return }
             confirmInput += digit
             eyesOpen = false
             if confirmInput.count == 4 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { self.validateAndSave() }
+                Task { try? await Task.sleep(for: .seconds(0.15)); self.validateAndSave() }
             }
         case .success:
             break
@@ -82,10 +82,7 @@ final class PINSetupViewModel: ObservableObject {
         } else {
             errorMessage = "Incorrect PIN. Try again."
             triggerShake()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                self.pinInput = ""
-                self.eyesOpen = true
-            }
+            Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }
         }
     }
 
@@ -93,10 +90,7 @@ final class PINSetupViewModel: ObservableObject {
         if isChangeMode && pinService.validatePIN(pinInput) {
             errorMessage = "New PIN must be different from the current one."
             triggerShake()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                self.pinInput = ""
-                self.eyesOpen = true
-            }
+            Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }
             return
         }
         firstPin = pinInput
@@ -110,10 +104,7 @@ final class PINSetupViewModel: ObservableObject {
         guard confirmInput == firstPin else {
             errorMessage = "PINs don't match. Try again."
             triggerShake()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                self.confirmInput = ""
-                self.eyesOpen = true
-            }
+            Task { try? await Task.sleep(for: .seconds(0.45)); self.confirmInput = ""; self.eyesOpen = true }
             return
         }
 
@@ -131,18 +122,15 @@ final class PINSetupViewModel: ObservableObject {
         withAnimation(.easeInOut(duration: 0.2)) {
             currentStep = .success
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        Task {
+            try? await Task.sleep(for: .seconds(0.2))
             withAnimation(.spring(response: 0.4, dampingFraction: 0.4)) {
                 self.isBouncing = true
             }
-        }
-
-        if isChangeMode {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            try? await Task.sleep(for: .seconds(1.3))
+            if isChangeMode {
                 self.isComplete = true
-            }
-        } else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            } else {
                 UserDefaults.standard.set(true, forKey: "pin_setup_complete")
                 NotificationCenter.default.post(name: .pinSetupComplete, object: nil)
             }
@@ -151,6 +139,6 @@ final class PINSetupViewModel: ObservableObject {
 
     private func triggerShake() {
         isShaking = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self.isShaking = false }
+        Task { try? await Task.sleep(for: .seconds(0.5)); self.isShaking = false }
     }
 }
