@@ -30,6 +30,7 @@ struct PersonalFinanceTrakerApp: App {
             CategoryModel.self,
             CreditCardModel.self,
             GoalModel.self,
+            HealthScoreSnapshot.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
