@@ -24,6 +24,13 @@ final class CompassViewModel {
     var showingAddGoal = false
     var goalToEdit: GoalModel?
     var selectedGoal: GoalModel?
+    var scoreSnapshots: [HealthScoreSnapshot] = []
+    var ignoreSubscriptions: Bool = UserDefaults.standard.bool(forKey: "healthScore.ignoreSubscriptions") {
+        didSet {
+            UserDefaults.standard.set(ignoreSubscriptions, forKey: "healthScore.ignoreSubscriptions")
+            computeHealthScore()
+        }
+    }
 
     // MARK: - Dependencies
     let repo: ITransactionRepository
@@ -108,8 +115,11 @@ final class CompassViewModel {
         healthScore = healthService.compute(
             transactions: transactions,
             expenseTransactions: expenseTransactions,
-            budgetedCategories: budgetedCategories
+            budgetedCategories: budgetedCategories,
+            ignoreSubscriptions: ignoreSubscriptions
         )
+        saveSnapshotIfNeeded()
+        scoreSnapshots = (try? repo.fetchSnapshots(limit: 6)) ?? []
     }
 
     func computeTimelineData() {
@@ -137,6 +147,29 @@ final class CompassViewModel {
         averageIncome = inc
         averageExpenses = exp
         averageSavings = sav
+    }
+
+    private func saveSnapshotIfNeeded() {
+        guard let score = healthScore else { return }
+        let existing = (try? repo.fetchSnapshots(limit: 1)) ?? []
+        let today = Calendar.current.startOfDay(for: Date.now)
+        guard existing.first.map({ Calendar.current.startOfDay(for: $0.timestamp) }) != today else { return }
+
+        let components = score.components
+        let savingsScore = components.first(where: { $0.name == "Savings rate" })?.score ?? 0
+        let stabilityScore = components.first(where: { $0.name == "Stability" })?.score ?? 0
+        let adherenceScore = components.first(where: { $0.name == "Budget" })?.score ?? 0
+        let subscriptionScore = components.first(where: { $0.name == "Subscriptions" })?.score ?? 0
+
+        let snapshot = HealthScoreSnapshot(
+            timestamp: Date.now,
+            score: score.score,
+            savingsScore: savingsScore,
+            stabilityScore: stabilityScore,
+            adherenceScore: adherenceScore,
+            subscriptionScore: subscriptionScore
+        )
+        try? repo.saveSnapshot(snapshot)
     }
 
     // MARK: - Helpers
