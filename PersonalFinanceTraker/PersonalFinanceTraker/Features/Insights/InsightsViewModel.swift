@@ -159,7 +159,7 @@ final class CompassViewModel {
         let savingsScore = components.first(where: { $0.name == "Savings rate" })?.score ?? 0
         let stabilityScore = components.first(where: { $0.name == "Stability" })?.score ?? 0
         let adherenceScore = components.first(where: { $0.name == "Budget" })?.score ?? 0
-        let subscriptionScore = components.first(where: { $0.name == "Subscriptions" })?.score ?? 0
+        let subscriptionScore = ignoreSubscriptions ? 0 : (components.first(where: { $0.name == "Subscriptions" })?.score ?? 0)
 
         let snapshot = HealthScoreSnapshot(
             timestamp: Date.now,

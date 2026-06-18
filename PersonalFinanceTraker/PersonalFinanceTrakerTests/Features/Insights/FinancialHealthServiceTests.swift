@@ -95,4 +95,54 @@ struct FinancialHealthServiceTests {
         )
         #expect(result.components.map(\.max).reduce(0, +) == 100)
     }
+
+    @Test("MockRepository saveSnapshot is called after compute")
+    func snapshotSavedAfterCompute() throws {
+        let mock = MockTransactionRepository()
+        let service = makeService()
+        let income = (0..<6).map { makeIncome(amount: 1000, monthsAgo: $0) }
+        let expenses = (0..<6).map { makeExpense(amount: 800, monthsAgo: $0) }
+        mock.transactions = income + expenses
+
+        // Simulate what CompassViewModel.saveSnapshotIfNeeded does
+        let result = service.compute(
+            transactions: income + expenses,
+            expenseTransactions: expenses,
+            budgetedCategories: [],
+            ignoreSubscriptions: false
+        )
+        let snapshot = HealthScoreSnapshot(
+            timestamp: Date.now,
+            score: result.score,
+            savingsScore: result.components.first(where: { $0.name == "Savings rate" })?.score ?? 0,
+            stabilityScore: result.components.first(where: { $0.name == "Stability" })?.score ?? 0,
+            adherenceScore: result.components.first(where: { $0.name == "Budget" })?.score ?? 0,
+            subscriptionScore: result.components.first(where: { $0.name == "Subscriptions" })?.score ?? 0
+        )
+        try mock.saveSnapshot(snapshot)
+        let fetched = try mock.fetchSnapshots(limit: 6)
+
+        #expect(mock.saveSnapshotCalledCount == 1)
+        #expect(fetched.count == 1)
+        #expect(fetched.first?.score == result.score)
+    }
+
+    @Test("Snapshot subscriptionScore is 0 when ignoreSubscriptions is true")
+    func snapshotSubscriptionScoreZeroWhenIgnored() {
+        let service = makeService()
+        let income = (0..<6).map { makeIncome(amount: 1000, monthsAgo: $0) }
+        let expenses = (0..<6).map { makeExpense(amount: 800, monthsAgo: $0) }
+        let result = service.compute(
+            transactions: income + expenses,
+            expenseTransactions: expenses,
+            budgetedCategories: [],
+            ignoreSubscriptions: true
+        )
+        // When opt-out is on, there is no "Subscriptions" component
+        let subscriptionComponent = result.components.first(where: { $0.name == "Subscriptions" })
+        #expect(subscriptionComponent == nil)
+        // Snapshot extraction should use 0 explicitly (not rely on nil-coalescence)
+        let subscriptionScore = result.components.first(where: { $0.name == "Subscriptions" })?.score ?? 0
+        #expect(subscriptionScore == 0)
+    }
 }

@@ -25,6 +25,9 @@ struct HealthScoreSection: View {
                 )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
+                .onChange(of: ignoreSubscriptions) {
+                    showingDetail = false
+                }
             }
         }
     }
