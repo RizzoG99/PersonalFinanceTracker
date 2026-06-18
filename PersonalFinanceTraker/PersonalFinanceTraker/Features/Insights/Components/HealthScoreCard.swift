@@ -1,12 +1,14 @@
-//
-//  HealthScoreCard.swift
-//  PersonalFinanceTraker
-//
-
 import SwiftUI
+import Charts
 
 struct HealthScoreCard: View {
     let healthScore: HealthScore
+    let snapshots: [HealthScoreSnapshot]
+    let onTap: () -> Void
+
+    private var sortedSnapshots: [HealthScoreSnapshot] {
+        snapshots.sorted { $0.timestamp < $1.timestamp }
+    }
 
     private var scoreColor: Color {
         switch healthScore.score {
@@ -17,31 +19,61 @@ struct HealthScoreCard: View {
         }
     }
 
+    private var sparklineColor: Color {
+        guard sortedSnapshots.count >= 2,
+              let first = sortedSnapshots.first,
+              let last = sortedSnapshots.last else { return .accentIndigo }
+        if last.score > first.score { return .positive }
+        if last.score < first.score { return .negative }
+        return .textDim
+    }
+
     var body: some View {
         GlassCard {
-            HStack(alignment: .top, spacing: 20) {
-                arcGauge
-                    .frame(width: 100, height: 100)
+            VStack(spacing: 12) {
+                if sortedSnapshots.count >= 2 {
+                    sparkline
+                }
+                HStack(alignment: .top, spacing: 20) {
+                    arcGauge
+                        .frame(width: 100, height: 100)
 
-                VStack(alignment: .leading, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("\(healthScore.score) / 100")
-                            .font(.title2.bold())
-                            .foregroundStyle(.textPrimary)
-                        Text(healthScore.label)
-                            .font(.caption)
-                            .foregroundStyle(.textMid)
-                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(healthScore.score) / 100")
+                                .font(.title2.bold())
+                                .foregroundStyle(.textPrimary)
+                            Text(healthScore.label)
+                                .font(.caption)
+                                .foregroundStyle(.textMid)
+                        }
 
-                    Divider()
-                        .overlay(Color.white.opacity(0.1))
+                        Divider()
+                            .overlay(Color.white.opacity(0.1))
 
-                    ForEach(healthScore.components) { component in
-                        componentRow(component)
+                        ForEach(healthScore.components) { component in
+                            componentRow(component)
+                        }
                     }
                 }
             }
         }
+        .onTapGesture { onTap() }
+    }
+
+    private var sparkline: some View {
+        Chart(sortedSnapshots) { snapshot in
+            LineMark(
+                x: .value("Date", snapshot.timestamp),
+                y: .value("Score", snapshot.score)
+            )
+            .foregroundStyle(sparklineColor)
+            .interpolationMethod(.catmullRom)
+        }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartYScale(domain: 0...100)
+        .frame(height: 24)
     }
 
     private var arcGauge: some View {

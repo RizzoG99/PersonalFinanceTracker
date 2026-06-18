@@ -31,7 +31,14 @@ struct CompassView: View {
                     if let insight = viewModel.heroInsight {
                         HeroInsightCard(insight: insight)
                     }
-                    HealthScoreSection(healthScore: viewModel.healthScore)
+                    HealthScoreSection(
+                        healthScore: viewModel.healthScore,
+                        snapshots: viewModel.scoreSnapshots,
+                        ignoreSubscriptions: Binding(
+                            get: { viewModel.ignoreSubscriptions },
+                            set: { viewModel.ignoreSubscriptions = $0 }
+                        )
+                    )
                     SpendingTimelineChart(
                         selectedPeriod: $viewModel.selectedTimePeriod,
                         data: viewModel.timelineData
