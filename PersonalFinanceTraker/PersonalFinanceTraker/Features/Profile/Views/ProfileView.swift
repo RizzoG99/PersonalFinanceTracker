@@ -4,6 +4,8 @@ struct ProfileView: View {
     @Bindable var viewModel: ProfileViewModel
     @Binding var selectedDetent: PresentationDetent
     @Environment(\.dismiss) private var dismiss
+    @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
+    @State private var showingFileImporter = false
 
     var body: some View {
         NavigationStack {
@@ -20,6 +22,25 @@ struct ProfileView: View {
                     .appFormSectionBackground()
                     Section {
                         ProfileCategoriesSection(selectedDetent: $selectedDetent)
+                    }
+                    .appFormSectionBackground()
+                    Section {
+                        Button {
+                            showingFileImporter = true
+                        } label: {
+                            if transactionViewModel.isLoadingCSV {
+                                HStack {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                    Text("Reading file…")
+                                }
+                            } else {
+                                Label("Import CSV", systemImage: "square.and.arrow.down")
+                            }
+                        }
+                        .disabled(transactionViewModel.isLoadingCSV)
+                    } header: {
+                        ProfileSectionLabel(title: "Data")
                     }
                     .appFormSectionBackground()
                     Section {
@@ -46,6 +67,18 @@ struct ProfileView: View {
                             .padding(8)
                     }
                     .accessibilityLabel("Close")
+                }
+            }
+            .fileImporter(
+                isPresented: $showingFileImporter,
+                allowedContentTypes: [.commaSeparatedText, .plainText]
+            ) { result in
+                switch result {
+                case .success(let url):
+                    dismiss()
+                    transactionViewModel.loadCSVFile(from: url)
+                case .failure(let error):
+                    transactionViewModel.importError = error.localizedDescription
                 }
             }
         }

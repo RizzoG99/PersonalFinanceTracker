@@ -13,11 +13,11 @@ struct TransactionListMVVM: View {
     @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding private var showingAddItemView: Bool
     @State private var editMode: EditMode = .inactive
-    
+
     init(showingAddItemView: Binding<Bool>) {
         _showingAddItemView = showingAddItemView
     }
-    
+
     var body: some View {
         @Bindable var viewModel = viewModel
         return NavigationView {
@@ -26,7 +26,7 @@ struct TransactionListMVVM: View {
                 Section {
                     VStack(spacing: 16) {
                         TimePeriodPicker(selection: $viewModel.selectedTimePeriod)
-                        
+
                         TransactionChart(
                             data: viewModel.chartData,
                             currencyCode: "EUR"
@@ -38,7 +38,7 @@ struct TransactionListMVVM: View {
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
-                
+
                 // Transaction List
                 ForEach(viewModel.groupedItems, id: \.0) { dateString, dayItems in
                     Section {
@@ -63,7 +63,7 @@ struct TransactionListMVVM: View {
                         )
                     }
                 }
-                
+
                 // Bottom spacer to clear floating tab bar
                 Section {
                     Color.clear.frame(height: 80)
@@ -79,11 +79,11 @@ struct TransactionListMVVM: View {
                         Label("Export CSV", systemImage: "square.and.arrow.up")
                     }
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     EditButton()
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showingAddItemView.toggle()

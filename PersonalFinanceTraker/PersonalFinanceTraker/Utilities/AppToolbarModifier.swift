@@ -7,12 +7,14 @@ import SwiftUI
 
 struct AppToolbarModifier: ViewModifier {
     @Environment(ProfileViewModel.self) private var profileViewModel: ProfileViewModel
+    @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
     @State private var showingProfile = false
     @State private var selectedDetent: PresentationDetent = .large
 
     func body(content: Content) -> some View {
-        content
+        @Bindable var transactionViewModel = transactionViewModel
+        return content
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Open profile", systemImage: "gear") {
@@ -34,6 +36,25 @@ struct AppToolbarModifier: ViewModifier {
                 ProfileView(viewModel: profileViewModel, selectedDetent: $selectedDetent)
                     .presentationDetents([.medium, .large], selection: $selectedDetent)
                     .presentationBackground { AppBackground() }
+            }
+            // ImportFlowView is at the same level as ProfileView so there's
+            // never more than one sheet on screen at a time
+            .sheet(isPresented: $transactionViewModel.showingImportFlow) {
+                ImportFlowView(viewModel: transactionViewModel)
+            }
+            .onChange(of: transactionViewModel.showingImportFlow) { _, isShowing in
+                if isShowing { showingProfile = false }
+            }
+            .alert(
+                "Import Error",
+                isPresented: Binding(
+                    get: { transactionViewModel.importError != nil },
+                    set: { if !$0 { transactionViewModel.importError = nil } }
+                )
+            ) {
+                Button("OK") { transactionViewModel.importError = nil }
+            } message: {
+                Text(transactionViewModel.importError ?? "")
             }
     }
 }

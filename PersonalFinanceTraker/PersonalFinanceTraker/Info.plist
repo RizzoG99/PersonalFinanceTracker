@@ -8,5 +8,9 @@
 	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authentication is required to unlock your financial data.</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>
