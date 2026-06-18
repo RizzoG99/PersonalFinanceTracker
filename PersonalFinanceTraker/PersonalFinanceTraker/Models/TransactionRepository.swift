@@ -24,6 +24,10 @@ protocol ITransactionRepository {
     func addGoal(_ item: GoalModel) throws
     func updateGoal() throws
     func deleteGoal(_ item: GoalModel) throws
+
+    // Snapshot management
+    func saveSnapshot(_ snapshot: HealthScoreSnapshot) throws
+    func fetchSnapshots(limit: Int) throws -> [HealthScoreSnapshot]
 }
 
 final class TransactionRepository: ITransactionRepository {
@@ -84,5 +88,18 @@ final class TransactionRepository: ITransactionRepository {
     func deleteGoal(_ item: GoalModel) throws {
         context.delete(item)
         try context.save()
+    }
+
+    func saveSnapshot(_ snapshot: HealthScoreSnapshot) throws {
+        context.insert(snapshot)
+        try context.save()
+    }
+
+    func fetchSnapshots(limit: Int) throws -> [HealthScoreSnapshot] {
+        var desc = FetchDescriptor<HealthScoreSnapshot>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
+        )
+        desc.fetchLimit = limit
+        return try context.fetch(desc)
     }
 }
