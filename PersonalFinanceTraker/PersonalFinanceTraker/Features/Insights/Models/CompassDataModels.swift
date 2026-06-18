@@ -27,6 +27,8 @@ struct ScoreComponent: Identifiable {
     let name: String
     let score: Int
     let max: Int
+    let explanation: String
+    let tip: String?
 }
 
 struct HealthScore {

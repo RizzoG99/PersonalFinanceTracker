@@ -2,7 +2,8 @@
 //  MockTransactionRepository.swift
 //  PersonalFinanceTrakerTests
 //
-//  import Foundation
+
+import Foundation
 @testable import PersonalFinanceTraker
 
 final class MockTransactionRepository: ITransactionRepository {

@@ -1,8 +1,3 @@
-//
-//  FinancialHealthService.swift
-//  PersonalFinanceTraker
-//
-
 import Foundation
 
 struct FinancialHealthService {
@@ -11,7 +6,8 @@ struct FinancialHealthService {
     func compute(
         transactions: [TransactionModel],
         expenseTransactions: [TransactionModel],
-        budgetedCategories: [CategoryModel]
+        budgetedCategories: [CategoryModel],
+        ignoreSubscriptions: Bool = false
     ) -> HealthScore {
         let calendar = Calendar.current
         let now = Date.now
@@ -19,7 +15,7 @@ struct FinancialHealthService {
         let recent = transactions.filter { $0.timestamp >= sixMonthsAgo }
         let recentExpenses = expenseTransactions.filter { $0.timestamp >= sixMonthsAgo }
 
-        // 1. Savings rate (25 pts — 20% savings rate = full score)
+        // 1. Savings rate (target: 20% → full score)
         let income = recent.filter { $0.amount > 0 }.reduce(Decimal(0)) {
             $0 + currencyService.convertToBase($1.amount, from: $1.currencyCode)
         }
@@ -27,9 +23,9 @@ struct FinancialHealthService {
         let savingsRate = income > 0
             ? Double(truncating: ((income - expenses) / income) as NSDecimalNumber)
             : 0
-        let savingsScore = max(0, min(25, Int((savingsRate / 0.20) * 25)))
+        let rawSavingsScore = max(0, min(25, Int((savingsRate / 0.20) * 25)))
 
-        // 2. Spending stability via coefficient of variation (25 pts)
+        // 2. Spending stability via coefficient of variation
         let monthlyExpenses: [Double] = (0..<6).map { offset in
             let start = calendar.date(byAdding: .month, value: -offset, to: now) ?? now
             let end = calendar.date(byAdding: .month, value: 1, to: start) ?? now
@@ -43,25 +39,28 @@ struct FinancialHealthService {
             ? monthlyExpenses.map { ($0 - mean) * ($0 - mean) }.reduce(0, +) / 6
             : 0
         let cov = mean > 0 ? variance.squareRoot() / mean : 0
-        let stabilityScore = max(0, min(25, Int((1.0 - cov / 0.5) * 25)))
+        let rawStabilityScore = max(0, min(25, Int((1.0 - cov / 0.5) * 25)))
 
-        // 3. Budget adherence (25 pts)
+        // 3. Budget adherence (current month only)
         let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
         let thisMonthExpenses = expenseTransactions.filter { $0.timestamp >= startOfMonth }
-        let adherenceScore: Int
+        let rawAdherenceScore: Int
+        let adheringCount: Int
         if budgetedCategories.isEmpty {
-            adherenceScore = 15
+            rawAdherenceScore = 15
+            adheringCount = 0
         } else {
-            let adheringCount = budgetedCategories.filter { cat in
+            let adhering = budgetedCategories.filter { cat in
                 let spent = sumExpenses(thisMonthExpenses.filter {
                     $0.category.localizedCaseInsensitiveContains(cat.name)
                 })
                 return spent <= (cat.monthlyBudget ?? 0)
-            }.count
-            adherenceScore = Int(Double(adheringCount) / Double(budgetedCategories.count) * 25)
+            }
+            adheringCount = adhering.count
+            rawAdherenceScore = Int(Double(adheringCount) / Double(budgetedCategories.count) * 25)
         }
 
-        // 4. Subscription control (25 pts — above 15% of expenses = 0 pts)
+        // 4. Subscription control (above 15% of expenses = 0 pts)
         let subscriptionExpenses = sumExpenses(recentExpenses.filter {
             $0.category.localizedCaseInsensitiveContains("subscri") ||
             $0.category.localizedCaseInsensitiveContains("stream")
@@ -69,9 +68,61 @@ struct FinancialHealthService {
         let subRatio = expenses > 0
             ? Double(truncating: (subscriptionExpenses / expenses) as NSDecimalNumber)
             : 0
-        let subscriptionScore = max(0, min(25, Int((1.0 - subRatio / 0.15) * 25)))
+        let rawSubscriptionScore = max(0, min(25, Int((1.0 - subRatio / 0.15) * 25)))
 
-        let total = savingsScore + stabilityScore + adherenceScore + subscriptionScore
+        // Build components — redistribute subscription pts when opted out
+        let components: [ScoreComponent]
+        let total: Int
+
+        if ignoreSubscriptions {
+            // 100 pts split across 3 components: savings=34, stability=33, adherence=33
+            let savingsScore  = min(34, Int(Double(rawSavingsScore)   / 25.0 * 34.0))
+            let stabilityScore = min(33, Int(Double(rawStabilityScore) / 25.0 * 33.0))
+            let adherenceScore = min(33, Int(Double(rawAdherenceScore) / 25.0 * 33.0))
+            total = savingsScore + stabilityScore + adherenceScore
+            components = [
+                ScoreComponent(
+                    name: "Savings rate", score: savingsScore, max: 34,
+                    explanation: savingsExplanation(rate: savingsRate),
+                    tip: savingsScore < 34 ? savingsTip(rate: savingsRate, income: income) : nil
+                ),
+                ScoreComponent(
+                    name: "Stability", score: stabilityScore, max: 33,
+                    explanation: stabilityExplanation(cov: cov),
+                    tip: stabilityScore < 33 ? stabilityTip() : nil
+                ),
+                ScoreComponent(
+                    name: "Budget", score: adherenceScore, max: 33,
+                    explanation: adherenceExplanation(adhering: adheringCount, total: budgetedCategories.count),
+                    tip: adherenceScore < 33 ? adherenceTip(adhering: adheringCount, total: budgetedCategories.count) : nil
+                ),
+            ]
+        } else {
+            total = rawSavingsScore + rawStabilityScore + rawAdherenceScore + rawSubscriptionScore
+            components = [
+                ScoreComponent(
+                    name: "Savings rate", score: rawSavingsScore, max: 25,
+                    explanation: savingsExplanation(rate: savingsRate),
+                    tip: rawSavingsScore < 25 ? savingsTip(rate: savingsRate, income: income) : nil
+                ),
+                ScoreComponent(
+                    name: "Stability", score: rawStabilityScore, max: 25,
+                    explanation: stabilityExplanation(cov: cov),
+                    tip: rawStabilityScore < 25 ? stabilityTip() : nil
+                ),
+                ScoreComponent(
+                    name: "Budget", score: rawAdherenceScore, max: 25,
+                    explanation: adherenceExplanation(adhering: adheringCount, total: budgetedCategories.count),
+                    tip: rawAdherenceScore < 25 ? adherenceTip(adhering: adheringCount, total: budgetedCategories.count) : nil
+                ),
+                ScoreComponent(
+                    name: "Subscriptions", score: rawSubscriptionScore, max: 25,
+                    explanation: subscriptionExplanation(ratio: subRatio),
+                    tip: rawSubscriptionScore < 25 ? subscriptionTip() : nil
+                ),
+            ]
+        }
+
         let label: String
         switch total {
         case 80...100: label = "Excellent financial habits"
@@ -80,16 +131,46 @@ struct FinancialHealthService {
         default:       label = "Needs attention"
         }
 
-        return HealthScore(
-            score: total,
-            label: label,
-            components: [
-                ScoreComponent(name: "Savings rate",  score: savingsScore,      max: 25),
-                ScoreComponent(name: "Stability",     score: stabilityScore,    max: 25),
-                ScoreComponent(name: "Budget",        score: adherenceScore,    max: 25),
-                ScoreComponent(name: "Subscriptions", score: subscriptionScore, max: 25),
-            ]
-        )
+        return HealthScore(score: total, label: label, components: components)
+    }
+
+    // MARK: - Explanation helpers
+
+    private func savingsExplanation(rate: Double) -> String {
+        "You saved \(Int(rate * 100))% of income over the last 6 months."
+    }
+
+    private func savingsTip(rate: Double, income: Decimal) -> String {
+        let needed = max(Decimal(0), Decimal(0.20 - rate)) * income / 6
+        let rounded = Int(truncating: needed as NSDecimalNumber)
+        return "Save €\(rounded) more per month to reach the 20% target."
+    }
+
+    private func stabilityExplanation(cov: Double) -> String {
+        "Your monthly spending varies by \(Int(cov * 100))%."
+    }
+
+    private func stabilityTip() -> String {
+        "Keep variation under 25% to earn full points."
+    }
+
+    private func adherenceExplanation(adhering: Int, total: Int) -> String {
+        guard total > 0 else { return "No budgeted categories set." }
+        return "\(adhering) of \(total) budgeted categories are within limit this month."
+    }
+
+    private func adherenceTip(adhering: Int, total: Int) -> String {
+        guard total > 0 else { return "Set monthly budgets in Profile to unlock this score." }
+        let over = total - adhering
+        return "Bring \(over) over-budget \(over == 1 ? "category" : "categories") within limit."
+    }
+
+    private func subscriptionExplanation(ratio: Double) -> String {
+        "Subscriptions are \(Int(ratio * 100))% of expenses over the last 6 months."
+    }
+
+    private func subscriptionTip() -> String {
+        "Keep subscriptions under 15% of expenses to earn full points."
     }
 
     private func sumExpenses(_ items: [TransactionModel]) -> Decimal {
