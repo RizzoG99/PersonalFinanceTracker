@@ -2,6 +2,7 @@ import Testing
 import Foundation
 @testable import PersonalFinanceTraker
 
+@MainActor
 @Suite(.serialized)
 struct AppSettingsTests {
 
