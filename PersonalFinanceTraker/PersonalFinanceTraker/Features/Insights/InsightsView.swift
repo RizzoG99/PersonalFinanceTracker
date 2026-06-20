@@ -34,7 +34,7 @@ struct CompassView: View {
                     HealthScoreSection(
                         healthScore: viewModel.healthScore,
                         snapshots: viewModel.scoreSnapshots,
-                        payCycleStartDay: viewModel.payCycleStartDay,
+                        payCycleStartDay: AppSettings.storedStartDay,
                         ignoreSubscriptions: Binding(
                             get: { viewModel.ignoreSubscriptions },
                             set: { viewModel.ignoreSubscriptions = $0 }
