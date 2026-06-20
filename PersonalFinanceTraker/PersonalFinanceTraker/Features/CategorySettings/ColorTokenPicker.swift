@@ -6,7 +6,7 @@ struct ColorTokenPicker: View {
     var body: some View {
         HStack(spacing: 12) {
             ForEach(CategoryConstants.colorTokenNames, id: \.self) { token in
-                let color = CategoryConstants.color(forToken: token)
+                let color = Color(token)
                 Button {
                     selectedToken = token
                 } label: {

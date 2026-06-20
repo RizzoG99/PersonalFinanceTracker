@@ -35,7 +35,7 @@ struct AddGoalSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             Button { showIconPicker = true } label: {
-                let tokenColor = CategoryConstants.color(forToken: selectedToken)
+                let tokenColor = Color(selectedToken)
                 Image(systemName: selectedIcon)
                     .font(.system(size: 36))
                     .foregroundStyle(tokenColor)

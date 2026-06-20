@@ -17,7 +17,7 @@ struct IconGridPicker: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(symbols, id: \.self) { symbol in
-                let color = CategoryConstants.color(forToken: colorToken)
+                let color = Color(colorToken)
                 let isSelected = selectedSymbol == symbol
                 Button {
                     selectedSymbol = symbol

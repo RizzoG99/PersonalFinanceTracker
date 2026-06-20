@@ -15,7 +15,7 @@ struct GoalCard: View {
         return min(1.0, Double(truncating: (currentAmount / goal.targetAmount) as NSDecimalNumber))
     }
 
-    private var goalColor: Color { CategoryConstants.color(forToken: goal.colorToken) }
+    private var goalColor: Color { Color(goal.colorToken) }
 
     private var daysLeft: Int? {
         guard let deadline = goal.deadline else { return nil }

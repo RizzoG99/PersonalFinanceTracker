@@ -43,7 +43,7 @@ public final class CategoryModel {
     }
 
     public var categoryColor: Color {
-        CategoryConstants.color(forToken: colorToken)
+        Color(colorToken)
     }
 
     public var displayText: String {

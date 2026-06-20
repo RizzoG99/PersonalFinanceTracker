@@ -67,16 +67,4 @@ enum CategoryConstants {
             return "categoryGray"
         }
     }
-
-    static func color(forToken token: String) -> Color {
-        switch token {
-        case "categoryGreen":  return Color("categoryGreen")
-        case "categoryAmber":  return Color("categoryAmber")
-        case "categoryPink":   return Color("categoryPink")
-        case "categoryPurple": return Color("categoryPurple")
-        case "categoryTeal":   return Color("categoryTeal")
-        case "categoryGray":   return Color("categoryGray")
-        default:               return Color("categoryIndigo")
-        }
-    }
 }
