@@ -31,6 +31,15 @@ final class CompassViewModel {
             computeHealthScore()
         }
     }
+    var payCycleStartDay: Int = {
+        let v = UserDefaults.standard.integer(forKey: "payCycleStartDay")
+        return v == 0 ? 1 : v
+    }() {
+        didSet {
+            UserDefaults.standard.set(payCycleStartDay, forKey: "payCycleStartDay")
+            computeHealthScore()
+        }
+    }
 
     // MARK: - Dependencies
     let repo: ITransactionRepository
@@ -116,6 +125,7 @@ final class CompassViewModel {
             transactions: transactions,
             expenseTransactions: expenseTransactions,
             budgetedCategories: budgetedCategories,
+            payCycleStartDay: payCycleStartDay,
             ignoreSubscriptions: ignoreSubscriptions
         )
         saveSnapshotIfNeeded()
