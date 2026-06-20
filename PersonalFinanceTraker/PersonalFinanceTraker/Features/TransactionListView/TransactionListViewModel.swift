@@ -35,7 +35,6 @@ final class TransactionListViewModel {
 
     let repo: ITransactionRepository
 
-    private let dateFormatter = DateFormattingService()
     private let dataService = ChartDataService()
     public let currencyService = CurrencyService()
 
@@ -94,7 +93,7 @@ final class TransactionListViewModel {
         }
         
         self.groupedItems = grouped.map { (date, items) in
-            (dateFormatter.formatTransactionDate(date), items.sorted { $0.timestamp > $1.timestamp })
+            (date.formattedForTransaction(), items.sorted { $0.timestamp > $1.timestamp })
         }.sorted { first, second in
             // Sort sections by date (newest first)
             let firstDate = calendar.startOfDay(for: first.1.first?.timestamp ?? Date())
