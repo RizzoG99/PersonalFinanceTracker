@@ -11,6 +11,7 @@ final class CategoryBreakdownViewModel {
     var transactions: [TransactionModel] = []
     var selectedTimePeriod: TimePeriod = .month
     var selectedPieChartType: PieChartDataType = .expenses
+    var loadError: String? = nil
 
     private let repo: ITransactionRepository
     private var dataService = PieChartDataService()
@@ -22,7 +23,7 @@ final class CategoryBreakdownViewModel {
     func load() {
         do {
             transactions = try repo.fetchAll()
-        } catch { print(error) }
+        } catch { loadError = error.localizedDescription }
     }
     
     var summaryStats: (totalAmount: Decimal, categoryCount: Int) {

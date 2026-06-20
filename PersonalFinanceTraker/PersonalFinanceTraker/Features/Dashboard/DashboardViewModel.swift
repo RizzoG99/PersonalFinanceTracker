@@ -14,6 +14,7 @@ final class DashboardViewModel {
     var recentTransactions: [TransactionModel] = []
     var savingsGoal: Decimal = 5000
     var currentSavings: Decimal = 0
+    var loadError: String? = nil
 
     let repo: ITransactionRepository
     private let currencyService = CurrencyService()
@@ -27,7 +28,7 @@ final class DashboardViewModel {
             transactions = try repo.fetchAll()
             calculateMetrics()
         } catch {
-            print("DashboardViewModel load error: \(error)")
+            loadError = error.localizedDescription
         }
     }
 
