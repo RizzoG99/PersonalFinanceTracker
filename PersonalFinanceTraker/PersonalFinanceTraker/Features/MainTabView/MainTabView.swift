@@ -15,6 +15,7 @@ struct MainTabView: View {
     @State private var viewModel: TransactionListViewModel
     @State private var dashboardViewModel: DashboardViewModel
     @State private var profileViewModel = ProfileViewModel()
+    @State private var appSettings = AppSettings()
 
     init(context: ModelContext) {
         _viewModel = State(wrappedValue: TransactionListViewModel(repo: TransactionRepository(context: context)))
@@ -30,9 +31,11 @@ struct MainTabView: View {
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: selectedTab == .home ? "house.fill" : "house", value: .home) {
                     DashboardView(showingAddItemView: $showingAddItemView)
+                        .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity, role: .search) {
                     ActivityView(context: modelContext, showingAddItemView: $showingAddItemView)
+                        .payCycleAware { viewModel.load() }
                 }
                 Tab("Compass", systemImage: selectedTab == .insights ? "safari.fill" : "safari", value: .insights) {
                     CompassView(context: modelContext, showingAddItemView: $showingAddItemView)
@@ -47,6 +50,7 @@ struct MainTabView: View {
             .environment(viewModel)
             .environment(dashboardViewModel)
             .environment(profileViewModel)
+            .environment(appSettings)
             .sheet(isPresented: $showingAddItemView, onDismiss: { dashboardViewModel.load() }) {
                 NavigationStack {
                     EditAddTransactionView()

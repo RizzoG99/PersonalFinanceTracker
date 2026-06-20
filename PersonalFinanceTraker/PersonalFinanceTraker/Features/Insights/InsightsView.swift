@@ -56,6 +56,7 @@ struct CompassView: View {
             .navigationBarTitleDisplayMode(.large)
             .appToolbar(showingAddItemView: $showingAddItemView)
         }
+        .payCycleAware { viewModel.load() }
         .onAppear { viewModel.load() }
         .onChange(of: showingAddItemView) { _, isShowing in
             if !isShowing { viewModel.load() }

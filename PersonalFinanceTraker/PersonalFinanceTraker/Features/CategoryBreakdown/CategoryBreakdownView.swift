@@ -44,7 +44,7 @@ struct CategoryBreakdownView: View {
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
-                
+
                 // Pie Chart Section
                 Section {
                     VStack(spacing: 16) {
@@ -61,7 +61,7 @@ struct CategoryBreakdownView: View {
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
-                
+
                 // Summary Stats Section
                 if viewModel.summaryStats.categoryCount > 0 {
                     Section {
@@ -71,13 +71,13 @@ struct CategoryBreakdownView: View {
                                 value: viewModel.summaryStats.totalAmount,
                                 currencyCode: "EUR"
                             )
-                            
+
                             SummaryStatRow(
                                 label: "Categories:",
                                 value: "\(viewModel.summaryStats.categoryCount)",
                                 isNumber: true
                             )
-                            
+
                             SummaryStatRow(
                                 label: "Time Period:",
                                 value: viewModel.selectedTimePeriod.description,
@@ -91,7 +91,7 @@ struct CategoryBreakdownView: View {
                             .fontWeight(.semibold)
                     }
                 }
-                
+
                 // Detailed Category List
                 if !viewModel.pieChartData.isEmpty {
                     Section {
@@ -127,6 +127,7 @@ struct CategoryBreakdownView: View {
                 .presentationBackground { AppBackground() }
             }
         }
+        .payCycleAware { viewModel.load() }
         .onAppear {
             viewModel.load()
         }
