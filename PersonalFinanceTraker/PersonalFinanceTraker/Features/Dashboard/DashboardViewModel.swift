@@ -36,12 +36,9 @@ final class DashboardViewModel {
             total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
         }
 
-        let now = Date()
-        let calendar = Calendar.current
-        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
-        let monthEnd = calendar.date(byAdding: .month, value: 1, to: monthStart) ?? now
-
-        let monthTx = transactions.filter { $0.timestamp >= monthStart && $0.timestamp < monthEnd }
+        let payCycleStartDay = AppSettings.storedStartDay
+        let (monthStart, monthEnd) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
+        let monthTx = transactions.filter { $0.timestamp >= monthStart && $0.timestamp <= monthEnd }
 
         monthlyIncome = monthTx.filter { $0.amount > 0 }.reduce(Decimal(0)) { total, tx in
             total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
@@ -60,6 +57,15 @@ final class DashboardViewModel {
         currentSavings = allIncome - allExpenses
 
         recentTransactions = Array(transactions.sorted { $0.timestamp > $1.timestamp }.prefix(5))
+    }
+
+    var financialMonthLabel: String {
+        let startDay = AppSettings.storedStartDay
+        guard startDay != 1 else { return "This Month" }
+        let (start, _) = PayCycleService.currentFinancialMonth(startDay: startDay)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return "Since \(formatter.string(from: start))"
     }
 
     var savingsGoalProgress: Double {
