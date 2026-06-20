@@ -11,10 +11,10 @@ final class CreditViewModel {
     var creditScore: Int
     var errorMessage: String? = nil
 
-    private let repo: ICreditCardRepository
+    private let repo: CreditCardRepository
     private let scoreKey = "credit_score_value"
 
-    init(repo: ICreditCardRepository) {
+    init(repo: CreditCardRepository) {
         self.repo = repo
         let stored = UserDefaults.standard.integer(forKey: scoreKey)
         creditScore = stored > 0 ? stored : 742

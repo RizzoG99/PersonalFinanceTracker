@@ -6,14 +6,7 @@
 import SwiftData
 import Foundation
 
-protocol ICreditCardRepository {
-    func fetchAll() throws -> [CreditCardModel]
-    func add(_ item: CreditCardModel) throws
-    func delete(_ item: CreditCardModel) throws
-    func update() throws
-}
-
-final class CreditCardRepository: ICreditCardRepository {
+final class CreditCardRepository {
     private let context: ModelContext
 
     init(context: ModelContext) {
