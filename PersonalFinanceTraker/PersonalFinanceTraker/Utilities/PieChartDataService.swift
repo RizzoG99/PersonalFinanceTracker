@@ -49,16 +49,18 @@ public class PieChartDataService {
     ///   - dataType: Whether to show expenses or income
     ///   - timePeriod: The time period for data filtering
     ///   - referenceDate: The reference date for calculations (defaults to current date)
+    ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Array of pie chart data points ready for display
     public func generatePieChartData(
         from items: [TransactionModel],
         for dataType: PieChartDataType,
         timePeriod: TimePeriod,
-        referenceDate: Date = Date()
+        referenceDate: Date = Date(),
+        payCycleStartDay: Int = 1
     ) -> [PieChartDataPoint] {
-        
+
         // Filter items by time period and transaction type
-        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate)
+        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
         
         // Group by category and calculate totals
@@ -93,15 +95,17 @@ public class PieChartDataService {
     ///   - dataType: Whether to analyze expenses or income
     ///   - timePeriod: Time period for analysis
     ///   - referenceDate: Reference date for calculations
+    ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: A tuple containing total amount and number of categories
     public func getSummaryStats(
         from items: [TransactionModel],
         for dataType: PieChartDataType,
         timePeriod: TimePeriod,
-        referenceDate: Date = Date()
+        referenceDate: Date = Date(),
+        payCycleStartDay: Int = 1
     ) -> (totalAmount: Decimal, categoryCount: Int) {
-        
-        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate)
+
+        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
         let categoryTotals = groupByCategoryModels(typeFilteredItems)
         
@@ -117,13 +121,17 @@ public class PieChartDataService {
     ///   - items: Array of items to filter
     ///   - timePeriod: Time period for filtering
     ///   - referenceDate: Reference date for calculations
+    ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Filtered array of items within the time period
-    private func filterItems(_ items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date) -> [TransactionModel] {
-        let calendar = Calendar.current
-        let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate
-        
-        return items.filter { item in
-            item.timestamp >= startDate && item.timestamp <= referenceDate
+    private func filterItems(_ items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1) -> [TransactionModel] {
+        switch timePeriod {
+        case .month:
+            let (start, end) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
+            return items.filter { $0.timestamp >= start && $0.timestamp <= end }
+        default:
+            let calendar = Calendar.current
+            let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate
+            return items.filter { $0.timestamp >= startDate && $0.timestamp <= referenceDate }
         }
     }
     
@@ -171,14 +179,16 @@ extension PieChartDataService {
     ///   - dataType: Whether to show expenses or income
     ///   - timePeriod: Time period for filtering
     ///   - limit: Maximum number of categories to return
+    ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Array of the top categories by amount
     public func getTopCategories(
         from items: [TransactionModel],
         for dataType: PieChartDataType,
         timePeriod: TimePeriod,
-        limit: Int = 5
+        limit: Int = 5,
+        payCycleStartDay: Int = 1
     ) -> [PieChartDataPoint] {
-        let allData = generatePieChartData(from: items, for: dataType, timePeriod: timePeriod)
+        let allData = generatePieChartData(from: items, for: dataType, timePeriod: timePeriod, payCycleStartDay: payCycleStartDay)
         return Array(allData.prefix(limit))
     }
 }
