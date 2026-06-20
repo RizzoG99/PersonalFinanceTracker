@@ -1,0 +1,23 @@
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/Icon-iOS-Default-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/euro-currency-in-an-attache-case-svgrepo-com.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/Icon Exports/Icon-iOS-ClearDark-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/Icon Exports/Icon-iOS-ClearLight-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/Icon Exports/Icon-iOS-Dark-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/Icon Exports/Icon-iOS-Default-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/Icon Exports/Icon-iOS-TintedDark-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/Icon Exports/Icon-iOS-TintedLight-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/Icon Exports/Icon-watchOS-Default-1088x1088@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/bar-chart-report-svgrepo-com-2.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/pie-chart-svgrepo-com copy.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/pie-chart-svgrepo-com.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/shield-shape-svgrepo-com.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/trend-up-svgrepo-com.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/personal-finance-v2.icon/Assets/SVG Image 2.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/AppIcon/v2/personal-finance-v2.icon/Assets/SVG Image.svg
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/Images/add_transaction.gif
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/Images/categories.gif
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/Images/transaction.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/PersonalFinanceTraker/PersonalFinanceTraker/Assets.xcassets/AppIcon.appiconset/Icon-iOS-Dark-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/PersonalFinanceTraker/PersonalFinanceTraker/Assets.xcassets/AppIcon.appiconset/Icon-iOS-Default-1024x1024@1x 1.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/PersonalFinanceTraker/PersonalFinanceTraker/Assets.xcassets/AppIcon.appiconset/Icon-iOS-Default-1024x1024@1x.png
+/Users/gabrielerizzo/Develop/PersonalFinanceTracker/PersonalFinanceTraker/PersonalFinanceTraker/Assets.xcassets/AppIcon.appiconset/Icon-iOS-TintedLight-1024x1024@1x.png

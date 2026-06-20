@@ -58,6 +58,7 @@ struct HealthScoreCard: View {
                 }
             }
         }
+        .contentShape(Rectangle())
         .onTapGesture { onTap() }
     }
 

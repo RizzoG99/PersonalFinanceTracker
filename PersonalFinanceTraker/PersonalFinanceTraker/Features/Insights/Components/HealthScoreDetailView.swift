@@ -10,10 +10,20 @@ struct HealthScoreDetailView: View {
         snapshots.sorted { $0.timestamp < $1.timestamp }
     }
 
+    private var periodText: String {
+        let calendar = Calendar.current
+        let end = Date.now
+        let start = calendar.date(byAdding: .month, value: -6, to: end) ?? end
+        let fmt = DateFormatter()
+        fmt.dateFormat = "MMM yyyy"
+        return "\(fmt.string(from: start)) – \(fmt.string(from: end))"
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                    scoreHeader
                     if sortedSnapshots.count >= 2 {
                         historySection
                     }
@@ -25,6 +35,40 @@ struct HealthScoreDetailView: View {
             .appBackground()
             .navigationTitle("Health Score")
             .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    // MARK: - Score Header
+
+    private var scoreColor: Color {
+        switch healthScore.score {
+        case 80...100: return .positive
+        case 60...79:  return .accentIndigo
+        case 40...59:  return .categoryAmber
+        default:       return .negative
+        }
+    }
+
+    private var scoreHeader: some View {
+        GlassCard {
+            VStack(spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(healthScore.score)")
+                        .font(.system(size: 52, weight: .bold, design: .rounded))
+                        .foregroundStyle(scoreColor)
+                    Text("/ 100")
+                        .font(.title3)
+                        .foregroundStyle(.textDim)
+                    Spacer()
+                }
+                Text(healthScore.label)
+                    .font(.subheadline)
+                    .foregroundStyle(.textMid)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Divider().overlay(Color.white.opacity(0.08))
+                scoreLegend
+            }
         }
     }
 
@@ -74,9 +118,14 @@ struct HealthScoreDetailView: View {
 
     private var componentsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Breakdown")
-                .font(.headline)
-                .foregroundStyle(.textPrimary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Breakdown")
+                    .font(.headline)
+                    .foregroundStyle(.textPrimary)
+                Text("\(periodText) · 25 pts per metric")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
 
             GlassCard {
                 VStack(spacing: 16) {
@@ -86,9 +135,39 @@ struct HealthScoreDetailView: View {
                             Divider().overlay(Color.white.opacity(0.08))
                         }
                     }
+
                 }
             }
         }
+    }
+
+    private var scoreLegend: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Total score guide")
+                .font(.caption2)
+                .foregroundStyle(.textDim)
+            HStack(spacing: 0) {
+                legendBand(range: "80–100", label: "Excellent", color: .positive)
+                legendBand(range: "60–79", label: "Solid", color: .accentIndigo)
+                legendBand(range: "40–59", label: "Progress", color: .categoryAmber)
+                legendBand(range: "< 40", label: "Attention", color: .negative)
+            }
+        }
+    }
+
+    private func legendBand(range: String, label: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(color.opacity(0.6))
+                .frame(height: 3)
+            Text(range)
+                .font(.caption2.bold())
+                .foregroundStyle(color)
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.textDim)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func componentRow(_ component: ScoreComponent) -> some View {
@@ -103,14 +182,19 @@ struct HealthScoreDetailView: View {
                     .foregroundStyle(.textMid)
             }
 
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.07))
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.accentIndigo.opacity(0.8))
-                    .frame(width: max(0, CGFloat(component.score) / CGFloat(component.max)) * 200, height: 6)
-            }
-            .frame(height: 6)
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.07))
+                .frame(height: 6)
+                .overlay(alignment: .leading) {
+                    GeometryReader { geo in
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.accentIndigo.opacity(0.8))
+                            .frame(
+                                width: geo.size.width * CGFloat(component.score) / CGFloat(max(1, component.max)),
+                                height: 6
+                            )
+                    }
+                }
 
             Text(component.explanation)
                 .font(.caption)

@@ -7,11 +7,13 @@ struct FinancialHealthService {
         transactions: [TransactionModel],
         expenseTransactions: [TransactionModel],
         budgetedCategories: [CategoryModel],
+        payCycleStartDay: Int = 1,
         ignoreSubscriptions: Bool = false
     ) -> HealthScore {
         let calendar = Calendar.current
         let now = Date.now
-        let sixMonthsAgo = calendar.date(byAdding: .month, value: -6, to: now) ?? now
+        let financialMonths = PayCycleService.financialMonths(count: 6, before: now, startDay: payCycleStartDay, calendar: calendar)
+        let sixMonthsAgo = financialMonths.first?.start ?? calendar.date(byAdding: .month, value: -6, to: now) ?? now
         let recent = transactions.filter { $0.timestamp >= sixMonthsAgo }
         let recentExpenses = expenseTransactions.filter { $0.timestamp >= sixMonthsAgo }
 
@@ -26,11 +28,9 @@ struct FinancialHealthService {
         let rawSavingsScore = max(0, min(25, Int((savingsRate / 0.20) * 25)))
 
         // 2. Spending stability via coefficient of variation
-        let monthlyExpenses: [Double] = (0..<6).map { offset in
-            let start = calendar.date(byAdding: .month, value: -offset, to: now) ?? now
-            let end = calendar.date(byAdding: .month, value: 1, to: start) ?? now
+        let monthlyExpenses: [Double] = financialMonths.map { month in
             let total = expenseTransactions
-                .filter { $0.timestamp >= start && $0.timestamp < end }
+                .filter { $0.timestamp >= month.start && $0.timestamp <= month.end }
                 .reduce(Decimal(0)) { $0 + currencyService.convertToBase($1.amount, from: $1.currencyCode) }
             return Double(truncating: abs(total) as NSDecimalNumber)
         }
@@ -41,13 +41,13 @@ struct FinancialHealthService {
         let cov = mean > 0 ? variance.squareRoot() / mean : 0
         let rawStabilityScore = max(0, min(25, Int((1.0 - cov / 0.5) * 25)))
 
-        // 3. Budget adherence (current month only)
-        let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
-        let thisMonthExpenses = expenseTransactions.filter { $0.timestamp >= startOfMonth }
+        // 3. Budget adherence (current financial month only)
+        let currentFinancialMonth = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay, calendar: calendar)
+        let thisMonthExpenses = expenseTransactions.filter { $0.timestamp >= currentFinancialMonth.start && $0.timestamp <= currentFinancialMonth.end }
         let rawAdherenceScore: Int
         let adheringCount: Int
         if budgetedCategories.isEmpty {
-            rawAdherenceScore = 15
+            rawAdherenceScore = 25
             adheringCount = 0
         } else {
             let adhering = budgetedCategories.filter { cat in
@@ -68,7 +68,7 @@ struct FinancialHealthService {
         let subRatio = expenses > 0
             ? Double(truncating: (subscriptionExpenses / expenses) as NSDecimalNumber)
             : 0
-        let rawSubscriptionScore = max(0, min(25, Int((1.0 - subRatio / 0.15) * 25)))
+        let rawSubscriptionScore = max(0, min(25, Int(round((1.0 - subRatio / 0.15) * 25))))
 
         // Build components — redistribute subscription pts when opted out
         let components: [ScoreComponent]
@@ -89,7 +89,7 @@ struct FinancialHealthService {
                 ScoreComponent(
                     name: "Stability", score: stabilityScore, max: 33,
                     explanation: stabilityExplanation(cov: cov),
-                    tip: stabilityScore < 33 ? stabilityTip() : nil
+                    tip: stabilityScore < 33 ? stabilityTip(cov: cov) : nil
                 ),
                 ScoreComponent(
                     name: "Budget", score: adherenceScore, max: 33,
@@ -108,7 +108,7 @@ struct FinancialHealthService {
                 ScoreComponent(
                     name: "Stability", score: rawStabilityScore, max: 25,
                     explanation: stabilityExplanation(cov: cov),
-                    tip: rawStabilityScore < 25 ? stabilityTip() : nil
+                    tip: rawStabilityScore < 25 ? stabilityTip(cov: cov) : nil
                 ),
                 ScoreComponent(
                     name: "Budget", score: rawAdherenceScore, max: 25,
@@ -141,8 +141,14 @@ struct FinancialHealthService {
     }
 
     private func savingsTip(rate: Double, income: Decimal) -> String {
-        let needed = max(Decimal(0), Decimal(0.20 - rate)) * income / 6
+        let targetRate = Decimal(string: "0.20")!
+        let currentRate = Decimal(string: String(format: "%.6f", rate)) ?? Decimal(0)
+        let gap = max(Decimal(0), targetRate - currentRate)
+        let needed = gap * (income / 6)
         let rounded = Int(truncating: needed as NSDecimalNumber)
+        guard rounded >= 1 else {
+            return "Increase your savings rate from \(Int(rate * 100))% toward 20% to score higher."
+        }
         return "Save €\(rounded) more per month to reach the 20% target."
     }
 
@@ -150,12 +156,13 @@ struct FinancialHealthService {
         "Your monthly spending varies by \(Int(cov * 100))%."
     }
 
-    private func stabilityTip() -> String {
-        "Keep variation under 25% to earn full points."
+    private func stabilityTip(cov: Double) -> String {
+        let pct = Int(cov * 100)
+        return "Your spending varies \(pct)% month-to-month. Aim for under 10% for a top score."
     }
 
     private func adherenceExplanation(adhering: Int, total: Int) -> String {
-        guard total > 0 else { return "No budgeted categories set." }
+        guard total > 0 else { return "No budgets set — add them in Profile to track spending limits." }
         return "\(adhering) of \(total) budgeted categories are within limit this month."
     }
 
@@ -166,7 +173,9 @@ struct FinancialHealthService {
     }
 
     private func subscriptionExplanation(ratio: Double) -> String {
-        "Subscriptions are \(Int(ratio * 100))% of expenses over the last 6 months."
+        let pct = Int(ratio * 100)
+        guard pct > 0 else { return "No subscription spending detected in the last 6 months." }
+        return "Subscriptions are \(pct)% of expenses over the last 6 months."
     }
 
     private func subscriptionTip() -> String {

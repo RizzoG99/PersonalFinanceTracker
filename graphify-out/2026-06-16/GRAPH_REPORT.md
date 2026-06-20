@@ -1,0 +1,535 @@
+# Graph Report - .  (2026-06-16)
+
+## Corpus Check
+- Large corpus: 172 files · ~1,273,369 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder.
+
+## Summary
+- 990 nodes · 1307 edges · 96 communities (92 shown, 4 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 21 edges (avg confidence: 0.85)
+- Token cost: 0 input · 0 output
+
+## Community Hubs (Navigation)
+- [[_COMMUNITY_Analytics & Dashboard Views|Analytics & Dashboard Views]]
+- [[_COMMUNITY_Profile State Management|Profile State Management]]
+- [[_COMMUNITY_Time Period Filtering|Time Period Filtering]]
+- [[_COMMUNITY_Financial Health Data Models|Financial Health Data Models]]
+- [[_COMMUNITY_Project Architecture Docs|Project Architecture Docs]]
+- [[_COMMUNITY_Compass Goals & Forecasting|Compass Goals & Forecasting]]
+- [[_COMMUNITY_Transaction Repository Layer|Transaction Repository Layer]]
+- [[_COMMUNITY_App Navigation & Protocols|App Navigation & Protocols]]
+- [[_COMMUNITY_Credit Card Feature|Credit Card Feature]]
+- [[_COMMUNITY_Pie Chart Data Service|Pie Chart Data Service]]
+- [[_COMMUNITY_Date Formatting Utilities|Date Formatting Utilities]]
+- [[_COMMUNITY_PIN Setup Security|PIN Setup Security]]
+- [[_COMMUNITY_Cryptographic PIN Service|Cryptographic PIN Service]]
+- [[_COMMUNITY_Transaction Form ViewModel|Transaction Form ViewModel]]
+- [[_COMMUNITY_Chart Data Aggregation|Chart Data Aggregation]]
+- [[_COMMUNITY_Profile & Toolbar UI|Profile & Toolbar UI]]
+- [[_COMMUNITY_Design System Tokens|Design System Tokens]]
+- [[_COMMUNITY_Credit Card ViewModel|Credit Card ViewModel]]
+- [[_COMMUNITY_Biometric Auth & PIN Entry|Biometric Auth & PIN Entry]]
+- [[_COMMUNITY_Currency Input Component|Currency Input Component]]
+- [[_COMMUNITY_Currency Formatting Service|Currency Formatting Service]]
+- [[_COMMUNITY_UI Tests|UI Tests]]
+- [[_COMMUNITY_App Icon Branding Assets|App Icon Branding Assets]]
+- [[_COMMUNITY_Category Breakdown ViewModel|Category Breakdown ViewModel]]
+- [[_COMMUNITY_Category Pie Chart Component|Category Pie Chart Component]]
+- [[_COMMUNITY_Category Data Model|Category Data Model]]
+- [[_COMMUNITY_Activity View Dependencies|Activity View Dependencies]]
+- [[_COMMUNITY_App Entry Point|App Entry Point]]
+- [[_COMMUNITY_Add Goal Sheet|Add Goal Sheet]]
+- [[_COMMUNITY_Dashboard ViewModel|Dashboard ViewModel]]
+- [[_COMMUNITY_Sample Data Utilities|Sample Data Utilities]]
+- [[_COMMUNITY_PIN Pad View|PIN Pad View]]
+- [[_COMMUNITY_Transaction Chart Component|Transaction Chart Component]]
+- [[_COMMUNITY_Transaction Data Model|Transaction Data Model]]
+- [[_COMMUNITY_Credit Card Edit Sheet|Credit Card Edit Sheet]]
+- [[_COMMUNITY_EditAdd Transaction View|Edit/Add Transaction View]]
+- [[_COMMUNITY_Transaction List View|Transaction List View]]
+- [[_COMMUNITY_Credit Card Data Model|Credit Card Data Model]]
+- [[_COMMUNITY_Summary Stat Row|Summary Stat Row]]
+- [[_COMMUNITY_Add Category Sheet|Add Category Sheet]]
+- [[_COMMUNITY_Category Settings View|Category Settings View]]
+- [[_COMMUNITY_Category Detail Row|Category Detail Row]]
+- [[_COMMUNITY_Credit Score Card|Credit Score Card]]
+- [[_COMMUNITY_Goal Card Component|Goal Card Component]]
+- [[_COMMUNITY_Edit Category Sheet|Edit Category Sheet]]
+- [[_COMMUNITY_Goals Section|Goals Section]]
+- [[_COMMUNITY_Health Score Card|Health Score Card]]
+- [[_COMMUNITY_Lock View Biometrics|Lock View Biometrics]]
+- [[_COMMUNITY_Chart Data Point Model|Chart Data Point Model]]
+- [[_COMMUNITY_Category Constants|Category Constants]]
+- [[_COMMUNITY_CSV Export Service|CSV Export Service]]
+- [[_COMMUNITY_Authentication Wrapper|Authentication Wrapper]]
+- [[_COMMUNITY_Activity Filter Chips|Activity Filter Chips]]
+- [[_COMMUNITY_Category Trend Row|Category Trend Row]]
+- [[_COMMUNITY_Credit Card Item|Credit Card Item]]
+- [[_COMMUNITY_Credit Utilization Card|Credit Utilization Card]]
+- [[_COMMUNITY_Forecast Card|Forecast Card]]
+- [[_COMMUNITY_Hero Insight Card|Hero Insight Card]]
+- [[_COMMUNITY_Pie Chart Type Picker|Pie Chart Type Picker]]
+- [[_COMMUNITY_Spending Timeline Chart|Spending Timeline Chart]]
+- [[_COMMUNITY_Stat Card Component|Stat Card Component]]
+- [[_COMMUNITY_Transaction Item View|Transaction Item View]]
+- [[_COMMUNITY_Transaction Save Button|Transaction Save Button]]
+- [[_COMMUNITY_Transaction Section Header|Transaction Section Header]]
+- [[_COMMUNITY_PIN Setup View|PIN Setup View]]
+- [[_COMMUNITY_Category Row|Category Row]]
+- [[_COMMUNITY_Credit Cards Section|Credit Cards Section]]
+- [[_COMMUNITY_Insights KPI Card|Insights KPI Card]]
+- [[_COMMUNITY_Monkey Animation View|Monkey Animation View]]
+- [[_COMMUNITY_Profile Avatar View|Profile Avatar View]]
+- [[_COMMUNITY_Profile Security Section|Profile Security Section]]
+- [[_COMMUNITY_Edit Full Name View|Edit Full Name View]]
+- [[_COMMUNITY_Unit Tests|Unit Tests]]
+- [[_COMMUNITY_Color Token Picker|Color Token Picker]]
+- [[_COMMUNITY_Icon Grid Picker|Icon Grid Picker]]
+- [[_COMMUNITY_Activity Search Bar|Activity Search Bar]]
+- [[_COMMUNITY_Category Trends Section|Category Trends Section]]
+- [[_COMMUNITY_Forecast Section|Forecast Section]]
+- [[_COMMUNITY_Habit Insight Row|Habit Insight Row]]
+- [[_COMMUNITY_Habits Section|Habits Section]]
+- [[_COMMUNITY_Health Score Section|Health Score Section]]
+- [[_COMMUNITY_Insights Empty State|Insights Empty State]]
+- [[_COMMUNITY_Insights Section Header|Insights Section Header]]
+- [[_COMMUNITY_Top Category Row|Top Category Row]]
+- [[_COMMUNITY_PIN Dots View|PIN Dots View]]
+- [[_COMMUNITY_Profile Categories Section|Profile Categories Section]]
+- [[_COMMUNITY_Profile Currency Section|Profile Currency Section]]
+- [[_COMMUNITY_Profile Header|Profile Header]]
+- [[_COMMUNITY_Profile Personal Info|Profile Personal Info]]
+- [[_COMMUNITY_Profile Section Label|Profile Section Label]]
+- [[_COMMUNITY_Transaction Form View|Transaction Form View]]
+- [[_COMMUNITY_PIN Entry View|PIN Entry View]]
+- [[_COMMUNITY_Category Breakdown UI Docs|Category Breakdown UI Docs]]
+- [[_COMMUNITY_README|README]]
+- [[_COMMUNITY_TODO List|TODO List]]
+- [[_COMMUNITY_SwiftUI Pro Icon Asset|SwiftUI Pro Icon Asset]]
+
+## God Nodes (most connected - your core abstractions)
+1. `CompassViewModel` - 27 edges
+2. `TransactionRepository` - 19 edges
+3. `EditAddTransactionViewModel` - 18 edges
+4. `MockTransactionRepository` - 18 edges
+5. `TransactionListViewModel` - 17 edges
+6. `CreditViewModel` - 14 edges
+7. `PINSetupViewModel` - 14 edges
+8. `DateFormattingService` - 13 edges
+9. `PINEntryViewModel` - 12 edges
+10. `CategoryBreakdownViewModel` - 11 edges
+
+## Surprising Connections (you probably didn't know these)
+- `MVVM Pattern with Repository and Services` --semantically_similar_to--> `@Observable Class Pattern with @MainActor`  [INFERRED] [semantically similar]
+  CLAUDE.md → .claude/skills/swiftui-pro/references/data.md
+- `Goal Pockets Rework Feature Design` --references--> `Personal Finance Tracker Project Documentation`  [INFERRED]
+  docs/features/2026-05-31-goal-pockets-rework.md → CLAUDE.md
+- `iOS Feature Brainstorm Skill` --references--> `MVVM Pattern with Repository and Services`  [EXTRACTED]
+  .claude/skills/ios-feature-brainstorm/SKILL.md → CLAUDE.md
+- `iOS Feature Brainstorm Skill` --references--> `ITransactionRepository Protocol`  [EXTRACTED]
+  .claude/skills/ios-feature-brainstorm/SKILL.md → CLAUDE.md
+- `Goal Pockets Rework Feature Design` --cites--> `TransactionModel SwiftData Entity`  [EXTRACTED]
+  docs/features/2026-05-31-goal-pockets-rework.md → CLAUDE.md
+
+## Import Cycles
+- None detected.
+
+## Hyperedges (group relationships)
+- **SwiftUI Pro Review Framework - All Reference Modules** — swiftui_pro_skill, swiftui_pro_api_reference, swiftui_pro_data_reference, swiftui_pro_views_reference, swiftui_pro_navigation_reference, swiftui_pro_design_reference, swiftui_pro_accessibility_reference, swiftui_pro_performance_reference, swiftui_pro_swift_reference, swiftui_pro_hygiene_reference [EXTRACTED 1.00]
+- **Personal Finance Tracker Architecture - Core Patterns** — pft_mvvm_architecture, pft_transaction_model, pft_transaction_repository, pft_swiftdata_persistence, pft_feature_organization [EXTRACTED 1.00]
+- **Goal Pockets Feature - Schema and Logic Changes** — pft_transfer_transaction_type, pft_goal_id_field, pft_transaction_model, pft_goal_computed_amount [EXTRACTED 1.00]
+- **App Icon Redesign Initiative (v1 to v2)** — appicon_icon_ios_default_1024_briefcase_icon, appicon_v2_icon_ios_default_1024_pie_chart, design_concept_icon_evolution, design_concept_visual_identity [INFERRED 0.85]
+- **Financial Analytics Visual System** — appicon_v2_pie_chart_svg, appicon_v2_bar_chart_report_svg, appicon_v2_trend_up_svg, design_concept_financial_analytics_icons [INFERRED 0.80]
+- **Multi-theme Icon Variants (Light/Dark/Clear)** — appicon_v2_icon_ios_default_1024_pie_chart, appicon_v2_icon_ios_dark_1024_pie_chart, appicon_v2_icon_ios_cleardark_1024_pie_chart [EXTRACTED 1.00]
+
+## Communities (96 total, 4 thin omitted)
+
+### Community 0 - "Analytics & Dashboard Views"
+Cohesion: 0.05
+Nodes (31): CategoryBreakdownView, CategoryBreakdownViewModel, CompassViewModel, DashboardView, DashboardViewModel, CompassView, ITransactionRepository, TransactionRepository (+23 more)
+
+### Community 1 - "Profile State Management"
+Cohesion: 0.06
+Nodes (24): IndexSet, ObservableObject, Bool, Combine, Double, LocalAuthentication, String, SwiftUI (+16 more)
+
+### Community 2 - "Time Period Filtering"
+Cohesion: 0.07
+Nodes (30): CaseIterable, TimePeriod, month, week, year, TimePeriodPicker, GoalIcon, courses (+22 more)
+
+### Community 3 - "Financial Health Data Models"
+Cohesion: 0.09
+Nodes (31): Identifiable, CategoryTrend, HabitObservation, HealthScore, HeroInsight, ScoreComponent, SpendingForecast, TimelineDataPoint (+23 more)
+
+### Community 4 - "Project Architecture Docs"
+Cohesion: 0.07
+Nodes (31): Feature Brainstorm Three-Step Flow, iOS Feature Brainstorm Skill, Financial Amount Sign Convention, ChartDataService Time-series Aggregation, Personal Finance Tracker Project Documentation, Feature-based Folder Structure, Goal Current Amount as Computed Value, GoalId Field in TransactionModel (+23 more)
+
+### Community 5 - "Compass Goals & Forecasting"
+Cohesion: 0.14
+Nodes (14): CompassViewModel, CategoryTrend, Combine, Decimal, Foundation, GoalModel, HabitObservation, HealthScore (+6 more)
+
+### Community 6 - "Transaction Repository Layer"
+Cohesion: 0.11
+Nodes (11): ITransactionRepository, MockTransactionRepository, Foundation, PersonalFinanceTraker, Testing, Bool, CategoryModel, GoalModel (+3 more)
+
+### Community 7 - "App Navigation & Protocols"
+Cohesion: 0.10
+Nodes (19): Codable, Hashable, MainTabView, TabItem, activity, credit, home, insights (+11 more)
+
+### Community 8 - "Credit Card Feature"
+Cohesion: 0.12
+Nodes (13): CreditView, CreditCardRepository, ICreditCardRepository, Binding, Bool, CreditViewModel, ModelContext, SwiftData (+5 more)
+
+### Community 9 - "Pie Chart Data Service"
+Cohesion: 0.20
+Nodes (13): CategoryModel, Color, Date, Decimal, Foundation, Int, PieChartDataPoint, PieChartDataType (+5 more)
+
+### Community 10 - "Date Formatting Utilities"
+Cohesion: 0.21
+Nodes (9): Calendar, Bool, Date, DateFormatter, Foundation, Int, String, TimePeriod (+1 more)
+
+### Community 11 - "PIN Setup Security"
+Cohesion: 0.15
+Nodes (11): Bool, Combine, PINService, String, SwiftUI, PINSetupViewModel, SetupStep, confirmPin (+3 more)
+
+### Community 12 - "Cryptographic PIN Service"
+Cohesion: 0.19
+Nodes (11): CryptoKit, Data, Error, Bool, Foundation, String, Security, Notification.Name (+3 more)
+
+### Community 13 - "Transaction Form ViewModel"
+Cohesion: 0.14
+Nodes (12): EditAddTransactionViewModel, Bool, CategoryModel, Date, DateFormatter, Double, Foundation, GoalModel (+4 more)
+
+### Community 14 - "Chart Data Aggregation"
+Cohesion: 0.31
+Nodes (8): ChartDataPoint, Date, Decimal, Foundation, Int, TimePeriod, TransactionModel, ChartDataService
+
+### Community 15 - "Profile & Toolbar UI"
+Cohesion: 0.12
+Nodes (14): PresentationDetent, ProfileViewModel, SwiftUI, Binding, Bool, Content, PresentationDetent, ProfileViewModel (+6 more)
+
+### Community 16 - "Design System Tokens"
+Cohesion: 0.19
+Nodes (11): Glass, CGFloat, Content, String, SwiftUI, AppBackground, CategoryInfo, Color (+3 more)
+
+### Community 17 - "Credit Card ViewModel"
+Cohesion: 0.18
+Nodes (9): CreditViewModel, ICreditCardRepository, Combine, CreditCardModel, Decimal, Double, Foundation, Int (+1 more)
+
+### Community 18 - "Biometric Auth & PIN Entry"
+Cohesion: 0.20
+Nodes (7): BiometricAuthService, Bool, LocalAuthentication, PINService, String, SwiftUI, PINEntryViewModel
+
+### Community 19 - "Currency Input Component"
+Cohesion: 0.24
+Nodes (8): CurrencyAmountField, PreviewWrapper, Binding, Bool, Double, NumberFormatter, String, SwiftUI
+
+### Community 20 - "Currency Formatting Service"
+Cohesion: 0.31
+Nodes (7): Decimal, Foundation, NumberFormatter, String, CurrencyService, formatEUR(), formatEURCompact()
+
+### Community 21 - "UI Tests"
+Cohesion: 0.14
+Nodes (6): XCTest, Bool, XCTest, PersonalFinanceTrakerUITests, PersonalFinanceTrakerUITestsLaunchTests, XCTestCase
+
+### Community 22 - "App Icon Branding Assets"
+Cohesion: 0.19
+Nodes (13): Euro Currency Briefcase SVG, App Icon (Default) - Briefcase with Euro Symbol, Bar Chart Report SVG (Teal), App Icon v2 (ClearDark) - Pie Chart Shield, App Icon v2 (Dark) - Pie Chart Shield, App Icon v2 (Default) - Pie Chart Shield, Pie Chart SVG (Teal), Shield Shape SVG (+5 more)
+
+### Community 23 - "Category Breakdown ViewModel"
+Cohesion: 0.17
+Nodes (10): CategoryBreakdownViewModel, Combine, Decimal, Int, ITransactionRepository, PieChartDataPoint, PieChartDataType, SwiftUI (+2 more)
+
+### Community 24 - "Category Pie Chart Component"
+Cohesion: 0.30
+Nodes (10): CategoryLegendItem, CategoryLegendView, CategoryPieChart, EmptyPieChartView, CGFloat, Charts, PieChartDataPoint, PieChartDataType (+2 more)
+
+### Community 25 - "Category Data Model"
+Cohesion: 0.23
+Nodes (10): CategoryModel, Color, Decimal, Foundation, String, SwiftData, SwiftUI, TransactionModel (+2 more)
+
+### Community 26 - "Activity View Dependencies"
+Cohesion: 0.20
+Nodes (9): Binding, Bool, ModelContext, String, SwiftData, SwiftUI, TransactionListViewModel, TransactionModel (+1 more)
+
+### Community 27 - "App Entry Point"
+Cohesion: 0.22
+Nodes (7): App, PersonalFinanceTrakerApp, ModelContainer, SwiftData, SwiftUI, Scene, UIKit
+
+### Community 28 - "Add Goal Sheet"
+Cohesion: 0.25
+Nodes (8): AddGoalSheet, GoalIconPickerSheet, Bool, Date, GoalModel, String, SwiftUI, Void
+
+### Community 29 - "Dashboard ViewModel"
+Cohesion: 0.24
+Nodes (7): DashboardViewModel, Combine, Decimal, Double, Foundation, ITransactionRepository, TransactionModel
+
+### Community 30 - "Sample Data Utilities"
+Cohesion: 0.24
+Nodes (7): CategoryModel, Foundation, ModelContext, SwiftData, SwiftUI, TransactionModel, SampleData
+
+### Community 31 - "PIN Pad View"
+Cohesion: 0.24
+Nodes (8): ButtonStyle, PINKeyButton, PINKeyStyle, PINPadView, Configuration, String, SwiftUI, Void
+
+### Community 32 - "Transaction Chart Component"
+Cohesion: 0.29
+Nodes (8): LegendItem, TransactionChart, CGFloat, ChartDataPoint, Charts, Color, String, SwiftUI
+
+### Community 33 - "Transaction Data Model"
+Cohesion: 0.31
+Nodes (8): TransactionModel, CategoryModel, Date, Decimal, Foundation, String, SwiftData, UUID
+
+### Community 34 - "Credit Card Edit Sheet"
+Cohesion: 0.25
+Nodes (7): AddEditCreditCardSheet, Bool, Color, CreditCardModel, CreditViewModel, String, SwiftUI
+
+### Community 35 - "Edit/Add Transaction View"
+Cohesion: 0.28
+Nodes (6): EditAddTransactionView, EditAddTransactionViewModel, SwiftData, SwiftUI, TransactionListViewModel, TransactionModel
+
+### Community 36 - "Transaction List View"
+Cohesion: 0.25
+Nodes (7): EditMode, Binding, Bool, SwiftData, SwiftUI, TransactionListViewModel, TransactionListMVVM
+
+### Community 37 - "Credit Card Data Model"
+Cohesion: 0.31
+Nodes (7): CreditCardModel, Decimal, Double, Foundation, String, SwiftData, UUID
+
+### Community 38 - "Summary Stat Row"
+Cohesion: 0.32
+Nodes (6): Any, SummaryStatRow, Bool, Decimal, String, SwiftUI
+
+### Community 39 - "Add Category Sheet"
+Cohesion: 0.25
+Nodes (7): AddCategorySheet, Bool, CategoryModel, String, SwiftData, SwiftUI, TransactionType
+
+### Community 40 - "Category Settings View"
+Cohesion: 0.29
+Nodes (6): CategorySettingsView, CategoryModel, String, SwiftData, SwiftUI, View
+
+### Community 41 - "Category Detail Row"
+Cohesion: 0.25
+Nodes (6): CategoryDetailRow, Color, Double, PieChartDataPoint, String, SwiftUI
+
+### Community 42 - "Credit Score Card"
+Cohesion: 0.25
+Nodes (7): CreditScoreCard, Color, Double, Int, String, SwiftUI, Void
+
+### Community 43 - "Goal Card Component"
+Cohesion: 0.25
+Nodes (7): GoalCard, Decimal, Double, GoalModel, Int, SwiftUI, Void
+
+### Community 44 - "Edit Category Sheet"
+Cohesion: 0.29
+Nodes (6): EditCategorySheet, Bool, CategoryModel, String, SwiftData, SwiftUI
+
+### Community 45 - "Goals Section"
+Cohesion: 0.29
+Nodes (6): GoalsSection, Bool, Decimal, GoalModel, SwiftUI, Void
+
+### Community 46 - "Health Score Card"
+Cohesion: 0.29
+Nodes (5): HealthScoreCard, Color, HealthScore, SwiftUI, ScoreComponent
+
+### Community 47 - "Lock View Biometrics"
+Cohesion: 0.29
+Nodes (6): LABiometryType, LocalAuthentication, String, SwiftUI, Void, LockView
+
+### Community 48 - "Chart Data Point Model"
+Cohesion: 0.38
+Nodes (5): ChartDataPoint, Bool, Decimal, Foundation, String
+
+### Community 49 - "Category Constants"
+Cohesion: 0.38
+Nodes (4): Color, String, SwiftUI, CategoryConstants
+
+### Community 50 - "CSV Export Service"
+Cohesion: 0.38
+Nodes (4): Foundation, String, TransactionModel, CSVExportService
+
+### Community 51 - "Authentication Wrapper"
+Cohesion: 0.33
+Nodes (5): AuthenticationWrapper, Bool, ModelContext, SwiftData, SwiftUI
+
+### Community 52 - "Activity Filter Chips"
+Cohesion: 0.33
+Nodes (5): ActivityFilterChip, Bool, String, SwiftUI, Void
+
+### Community 53 - "Category Trend Row"
+Cohesion: 0.33
+Nodes (5): CategoryTrendRow, CategoryTrend, Color, String, SwiftUI
+
+### Community 54 - "Credit Card Item"
+Cohesion: 0.33
+Nodes (5): CreditCardItem, Color, CreditCardModel, SwiftUI, Void
+
+### Community 55 - "Credit Utilization Card"
+Cohesion: 0.33
+Nodes (5): CreditUtilizationCard, Color, Decimal, Double, SwiftUI
+
+### Community 56 - "Forecast Card"
+Cohesion: 0.33
+Nodes (5): ForecastCard, Bool, Color, SpendingForecast, SwiftUI
+
+### Community 57 - "Hero Insight Card"
+Cohesion: 0.33
+Nodes (5): HeroInsightCard, Color, HeroInsight, String, SwiftUI
+
+### Community 58 - "Pie Chart Type Picker"
+Cohesion: 0.40
+Nodes (4): PieChartTypePicker, Binding, PieChartDataType, SwiftUI
+
+### Community 59 - "Spending Timeline Chart"
+Cohesion: 0.33
+Nodes (5): SpendingTimelineChart, Charts, SwiftUI, TimelineDataPoint, TimePeriod
+
+### Community 60 - "Stat Card Component"
+Cohesion: 0.33
+Nodes (5): StatCard, Color, String, SwiftData, SwiftUI
+
+### Community 61 - "Transaction Item View"
+Cohesion: 0.33
+Nodes (5): TransactionItemView, Color, String, SwiftUI, TransactionModel
+
+### Community 62 - "Transaction Save Button"
+Cohesion: 0.33
+Nodes (5): TransactionSaveButton, Bool, String, SwiftUI, Void
+
+### Community 63 - "Transaction Section Header"
+Cohesion: 0.47
+Nodes (4): TransactionSectionHeader, Decimal, String, SwiftUI
+
+### Community 64 - "PIN Setup View"
+Cohesion: 0.33
+Nodes (5): Int, String, SwiftUI, PINSetupViewModel, PINSetupView
+
+### Community 65 - "Category Row"
+Cohesion: 0.40
+Nodes (4): CategoryRow, CategoryModel, SwiftUI, Void
+
+### Community 66 - "Credit Cards Section"
+Cohesion: 0.40
+Nodes (4): CreditCardsSection, CreditCardModel, CreditViewModel, SwiftUI
+
+### Community 67 - "Insights KPI Card"
+Cohesion: 0.40
+Nodes (4): InsightsKPICard, Color, String, SwiftUI
+
+### Community 68 - "Monkey Animation View"
+Cohesion: 0.40
+Nodes (4): MonkeyAnimationView, Bool, CGFloat, SwiftUI
+
+### Community 69 - "Profile Avatar View"
+Cohesion: 0.40
+Nodes (4): ProfileAvatarView, CGFloat, String, SwiftUI
+
+### Community 70 - "Profile Security Section"
+Cohesion: 0.40
+Nodes (4): ProfileSecuritySection, PresentationDetent, ProfileViewModel, SwiftUI
+
+### Community 71 - "Edit Full Name View"
+Cohesion: 0.40
+Nodes (4): Bool, String, SwiftUI, EditFullNameView
+
+### Community 72 - "Unit Tests"
+Cohesion: 0.40
+Nodes (3): PersonalFinanceTraker, Testing, PersonalFinanceTrakerTests
+
+### Community 73 - "Color Token Picker"
+Cohesion: 0.50
+Nodes (3): ColorTokenPicker, String, SwiftUI
+
+### Community 74 - "Icon Grid Picker"
+Cohesion: 0.50
+Nodes (3): IconGridPicker, String, SwiftUI
+
+### Community 75 - "Activity Search Bar"
+Cohesion: 0.50
+Nodes (3): ActivitySearchBar, String, SwiftUI
+
+### Community 76 - "Category Trends Section"
+Cohesion: 0.50
+Nodes (3): CategoryTrendsSection, CategoryTrend, SwiftUI
+
+### Community 77 - "Forecast Section"
+Cohesion: 0.50
+Nodes (3): ForecastSection, SpendingForecast, SwiftUI
+
+### Community 78 - "Habit Insight Row"
+Cohesion: 0.50
+Nodes (3): HabitInsightRow, HabitObservation, SwiftUI
+
+### Community 79 - "Habits Section"
+Cohesion: 0.50
+Nodes (3): HabitsSection, HabitObservation, SwiftUI
+
+### Community 80 - "Health Score Section"
+Cohesion: 0.50
+Nodes (3): HealthScoreSection, HealthScore, SwiftUI
+
+### Community 81 - "Insights Empty State"
+Cohesion: 0.50
+Nodes (3): InsightsEmptyCard, String, SwiftUI
+
+### Community 82 - "Insights Section Header"
+Cohesion: 0.50
+Nodes (3): InsightsSectionHeader, String, SwiftUI
+
+### Community 83 - "Top Category Row"
+Cohesion: 0.50
+Nodes (3): InsightsTopCategoryRow, PieChartDataPoint, SwiftUI
+
+### Community 84 - "PIN Dots View"
+Cohesion: 0.50
+Nodes (3): PINDotsView, Int, SwiftUI
+
+### Community 85 - "Profile Categories Section"
+Cohesion: 0.50
+Nodes (3): ProfileCategoriesSection, PresentationDetent, SwiftUI
+
+### Community 86 - "Profile Currency Section"
+Cohesion: 0.50
+Nodes (3): ProfileCurrencySection, String, SwiftUI
+
+### Community 87 - "Profile Header"
+Cohesion: 0.50
+Nodes (3): ProfileHeader, String, SwiftUI
+
+### Community 88 - "Profile Personal Info"
+Cohesion: 0.50
+Nodes (3): ProfilePersonalInfoSection, String, SwiftUI
+
+### Community 89 - "Profile Section Label"
+Cohesion: 0.50
+Nodes (3): ProfileSectionLabel, String, SwiftUI
+
+### Community 90 - "Transaction Form View"
+Cohesion: 0.50
+Nodes (3): TransactionFormView, EditAddTransactionViewModel, SwiftUI
+
+### Community 91 - "PIN Entry View"
+Cohesion: 0.50
+Nodes (3): SwiftUI, PINEntryViewModel, PINEntryView
+
+## Knowledge Gaps
+- **383 isolated node(s):** `SwiftUI`, `SwiftData`, `Bool`, `ModelContext`, `SwiftUI` (+378 more)
+  These have ≤1 connection - possible missing edges or undocumented components.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+
+## Suggested Questions
+_Questions this graph is uniquely positioned to answer:_
+
+- **Why does `MainTabView` connect `App Navigation & Protocols` to `Category Settings View`?**
+  _High betweenness centrality (0.063) - this node is a cross-community bridge._
+- **Why does `TransactionCategory` connect `App Navigation & Protocols` to `Financial Health Data Models`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Are the 4 inferred relationships involving `TransactionRepository` (e.g. with `.init()` and `.init()`) actually correct?**
+  _`TransactionRepository` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `SwiftUI`, `SwiftData`, `Bool` to the rest of the system?**
+  _390 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Analytics & Dashboard Views` be split into smaller, more focused modules?**
+  _Cohesion score 0.052244897959183675 - nodes in this community are weakly interconnected._
+- **Should `Profile State Management` be split into smaller, more focused modules?**
+  _Cohesion score 0.06342494714587738 - nodes in this community are weakly interconnected._
+- **Should `Time Period Filtering` be split into smaller, more focused modules?**
+  _Cohesion score 0.07058823529411765 - nodes in this community are weakly interconnected._
