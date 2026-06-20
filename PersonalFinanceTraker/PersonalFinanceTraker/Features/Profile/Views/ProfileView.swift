@@ -21,7 +21,7 @@ struct ProfileView: View {
                     }
                     .appFormSectionBackground()
                     Section {
-                        ProfilePayCycleSection(payCycleStartDay: $viewModel.payCycleStartDay)
+                        ProfilePayCycleSection()
                     }
                     .appFormSectionBackground()
                     Section {
