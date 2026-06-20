@@ -29,7 +29,8 @@ final class CategoryBreakdownViewModel {
         dataService.getSummaryStats(
             from: transactions,
             for: selectedPieChartType,
-            timePeriod: selectedTimePeriod
+            timePeriod: selectedTimePeriod,
+            payCycleStartDay: AppSettings.storedStartDay
         )
     }
     
@@ -37,7 +38,8 @@ final class CategoryBreakdownViewModel {
         dataService.generatePieChartData(
             from: transactions,
             for: selectedPieChartType,
-            timePeriod: selectedTimePeriod
+            timePeriod: selectedTimePeriod,
+            payCycleStartDay: AppSettings.storedStartDay
         )
     }
 }

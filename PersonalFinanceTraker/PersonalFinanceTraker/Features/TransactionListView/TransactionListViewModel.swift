@@ -13,7 +13,7 @@ final class TransactionListViewModel {
     var filteredItems: [TransactionModel] = [] {
         didSet {
             groupTransactions()
-            chartData = dataService.generateChartData(from: filteredItems, for: selectedTimePeriod)
+            chartData = dataService.generateChartData(from: filteredItems, for: selectedTimePeriod, payCycleStartDay: AppSettings.storedStartDay)
         }
     }
     var groupedItems: [(String, [TransactionModel])] = []
@@ -40,7 +40,8 @@ final class TransactionListViewModel {
             doFilterItemBySearchText()
             groupTransactions()
             chartData = dataService.generateChartData(from: filteredItems,
-                                                                       for: selectedTimePeriod)
+                                                                       for: selectedTimePeriod,
+                                                                       payCycleStartDay: AppSettings.storedStartDay)
 
         } catch { print(error) }
     }
@@ -116,6 +117,14 @@ final class TransactionListViewModel {
 
     func clearSearch() {
         self.searchText = ""
+    }
+
+    var currentPeriodLabel: String? {
+        guard selectedTimePeriod == .month, AppSettings.storedStartDay != 1 else { return nil }
+        let (start, _) = PayCycleService.currentFinancialMonth(startDay: AppSettings.storedStartDay)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return "Since \(formatter.string(from: start))"
     }
 
     /// Generates a CSV export of all currently filtered transactions
