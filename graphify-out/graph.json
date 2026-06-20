@@ -97,14 +97,324 @@
   },
   "nodes": [
     {
+      "label": "HealthScoreDetailView.swift",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_healthscoredetailview",
+      "community": 40,
+      "norm_label": "healthscoredetailview.swift"
+    },
+    {
+      "label": "SwiftUI",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_swiftui",
+      "community": 40,
+      "norm_label": "swiftui"
+    },
+    {
+      "label": "Charts",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_charts",
+      "community": 40,
+      "norm_label": "charts"
+    },
+    {
+      "label": "HealthScoreDetailView",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "components_healthscoredetailview_healthscoredetailview",
+      "community": 40,
+      "norm_label": "healthscoredetailview"
+    },
+    {
+      "label": "View",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "view",
+      "community": 46,
+      "norm_label": "view"
+    },
+    {
+      "label": "HealthScore",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscore",
+      "community": 40,
+      "norm_label": "healthscore"
+    },
+    {
+      "label": "HealthScoreSnapshot",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscoresnapshot",
+      "community": 40,
+      "norm_label": "healthscoresnapshot"
+    },
+    {
+      "label": "Int",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_int",
+      "community": 40,
+      "norm_label": "int"
+    },
+    {
+      "label": "Bool",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_bool",
+      "community": 40,
+      "norm_label": "bool"
+    },
+    {
+      "label": "String",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "string",
+      "community": 118,
+      "norm_label": "string"
+    },
+    {
+      "label": "Color",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "color",
+      "community": 40,
+      "norm_label": "color"
+    },
+    {
+      "label": ".legendBand()",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L162",
+      "_origin": "ast",
+      "id": "components_healthscoredetailview_healthscoredetailview_legendband",
+      "community": 40,
+      "norm_label": ".legendband()"
+    },
+    {
+      "label": ".componentRow()",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L177",
+      "_origin": "ast",
+      "id": "components_healthscoredetailview_healthscoredetailview_componentrow",
+      "community": 40,
+      "norm_label": ".componentrow()"
+    },
+    {
+      "label": "ScoreComponent",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L177",
+      "_origin": "ast",
+      "id": "scorecomponent",
+      "community": 40,
+      "norm_label": "scorecomponent"
+    },
+    {
+      "label": "HealthScoreSection.swift",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_healthscoresection",
+      "community": 80,
+      "norm_label": "healthscoresection.swift"
+    },
+    {
+      "label": "SwiftUI",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_swiftui",
+      "community": 80,
+      "norm_label": "swiftui"
+    },
+    {
+      "label": "HealthScoreSection",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "components_healthscoresection_healthscoresection",
+      "community": 80,
+      "norm_label": "healthscoresection"
+    },
+    {
+      "label": "HealthScore",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscore",
+      "community": 80,
+      "norm_label": "healthscore"
+    },
+    {
+      "label": "HealthScoreSnapshot",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscoresnapshot",
+      "community": 80,
+      "norm_label": "healthscoresnapshot"
+    },
+    {
+      "label": "Int",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_int",
+      "community": 80,
+      "norm_label": "int"
+    },
+    {
+      "label": "Bool",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_bool",
+      "community": 80,
+      "norm_label": "bool"
+    },
+    {
+      "label": "InsightsView.swift",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "insights_insightsview",
+      "community": 0,
+      "norm_label": "insightsview.swift"
+    },
+    {
+      "label": "SwiftUI",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_swiftui",
+      "community": 0,
+      "norm_label": "swiftui"
+    },
+    {
+      "label": "SwiftData",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "swiftdata",
+      "community": 0,
+      "norm_label": "swiftdata"
+    },
+    {
+      "label": "Charts",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_charts",
+      "community": 0,
+      "norm_label": "charts"
+    },
+    {
+      "label": "CompassView",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "insights_insightsview_compassview",
+      "community": 0,
+      "norm_label": "compassview"
+    },
+    {
+      "label": "CompassViewModel",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "compassviewmodel",
+      "community": 0,
+      "norm_label": "compassviewmodel"
+    },
+    {
+      "label": "Bool",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_bool",
+      "community": 0,
+      "norm_label": "bool"
+    },
+    {
+      "label": ".init()",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "insights_insightsview_compassview_init",
+      "community": 0,
+      "norm_label": ".init()"
+    },
+    {
+      "label": "ModelContext",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "modelcontext",
+      "community": 0,
+      "norm_label": "modelcontext"
+    },
+    {
+      "label": "Binding",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "binding",
+      "community": 0,
+      "norm_label": "binding"
+    },
+    {
       "label": "InsightsViewModel.swift",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel",
       "community": 5,
-      "norm_label": "insightsviewmodel.swift"
+      "norm_label": "insightsviewmodel.swift",
+      "id": "insights_insightsviewmodel"
     },
     {
       "label": "Foundation",
@@ -112,9 +422,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L6",
       "_origin": "ast",
-      "id": "foundation",
       "community": 5,
-      "norm_label": "foundation"
+      "norm_label": "foundation",
+      "id": "foundation"
     },
     {
       "label": "CompassViewModel",
@@ -122,9 +432,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel",
       "community": 5,
-      "norm_label": "compassviewmodel"
+      "norm_label": "compassviewmodel",
+      "id": "insights_insightsviewmodel_compassviewmodel"
     },
     {
       "label": "HeroInsight",
@@ -132,9 +442,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L11",
       "_origin": "ast",
-      "id": "heroinsight",
       "community": 5,
-      "norm_label": "heroinsight"
+      "norm_label": "heroinsight",
+      "id": "heroinsight"
     },
     {
       "label": "HealthScore",
@@ -142,9 +452,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "healthscore",
       "community": 5,
-      "norm_label": "healthscore"
+      "norm_label": "healthscore",
+      "id": "healthscore"
     },
     {
       "label": "TimelineDataPoint",
@@ -152,9 +462,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "id": "timelinedatapoint",
       "community": 5,
-      "norm_label": "timelinedatapoint"
+      "norm_label": "timelinedatapoint",
+      "id": "timelinedatapoint"
     },
     {
       "label": "TimePeriod",
@@ -162,9 +472,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "id": "timeperiod",
       "community": 5,
-      "norm_label": "timeperiod"
+      "norm_label": "timeperiod",
+      "id": "timeperiod"
     },
     {
       "label": "CategoryTrend",
@@ -172,9 +482,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "id": "categorytrend",
       "community": 5,
-      "norm_label": "categorytrend"
+      "norm_label": "categorytrend",
+      "id": "categorytrend"
     },
     {
       "label": "HabitObservation",
@@ -182,9 +492,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "id": "habitobservation",
       "community": 5,
-      "norm_label": "habitobservation"
+      "norm_label": "habitobservation",
+      "id": "habitobservation"
     },
     {
       "label": "SpendingForecast",
@@ -192,9 +502,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "id": "spendingforecast",
       "community": 5,
-      "norm_label": "spendingforecast"
+      "norm_label": "spendingforecast",
+      "id": "spendingforecast"
     },
     {
       "label": "GoalModel",
@@ -202,9 +512,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "id": "goalmodel",
       "community": 5,
-      "norm_label": "goalmodel"
+      "norm_label": "goalmodel",
+      "id": "goalmodel"
     },
     {
       "label": "Decimal",
@@ -212,9 +522,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L21",
       "_origin": "ast",
-      "id": "decimal",
       "community": 5,
-      "norm_label": "decimal"
+      "norm_label": "decimal",
+      "id": "decimal"
     },
     {
       "label": "HealthScoreSnapshot",
@@ -222,9 +532,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "id": "healthscoresnapshot",
       "community": 5,
-      "norm_label": "healthscoresnapshot"
+      "norm_label": "healthscoresnapshot",
+      "id": "healthscoresnapshot"
     },
     {
       "label": "Bool",
@@ -232,9 +542,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L28",
       "_origin": "ast",
-      "id": "bool",
       "community": 5,
-      "norm_label": "bool"
+      "norm_label": "bool",
+      "id": "bool"
     },
     {
       "label": "Int",
@@ -242,9 +552,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "id": "int",
       "community": 75,
-      "norm_label": "int"
+      "norm_label": "int",
+      "id": "int"
     },
     {
       "label": "ITransactionRepository",
@@ -252,9 +562,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L45",
       "_origin": "ast",
-      "id": "itransactionrepository",
       "community": 1,
-      "norm_label": "itransactionrepository"
+      "norm_label": "itransactionrepository",
+      "id": "itransactionrepository"
     },
     {
       "label": "CurrencyService",
@@ -262,9 +572,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L47",
       "_origin": "ast",
-      "id": "currencyservice",
       "community": 5,
-      "norm_label": "currencyservice"
+      "norm_label": "currencyservice",
+      "id": "currencyservice"
     },
     {
       "label": "FinancialHealthService",
@@ -272,9 +582,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L49",
       "_origin": "ast",
-      "id": "financialhealthservice",
       "community": 5,
-      "norm_label": "financialhealthservice"
+      "norm_label": "financialhealthservice",
+      "id": "financialhealthservice"
     },
     {
       "label": "SpendingForecastService",
@@ -282,9 +592,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "id": "spendingforecastservice",
       "community": 5,
-      "norm_label": "spendingforecastservice"
+      "norm_label": "spendingforecastservice",
+      "id": "spendingforecastservice"
     },
     {
       "label": "StatisticalAverageService",
@@ -292,9 +602,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L51",
       "_origin": "ast",
-      "id": "statisticalaverageservice",
       "community": 5,
-      "norm_label": "statisticalaverageservice"
+      "norm_label": "statisticalaverageservice",
+      "id": "statisticalaverageservice"
     },
     {
       "label": "SpendingInsightService",
@@ -302,9 +612,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L52",
       "_origin": "ast",
-      "id": "spendinginsightservice",
       "community": 5,
-      "norm_label": "spendinginsightservice"
+      "norm_label": "spendinginsightservice",
+      "id": "spendinginsightservice"
     },
     {
       "label": "TransactionModel",
@@ -312,9 +622,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L54",
       "_origin": "ast",
-      "id": "transactionmodel",
       "community": 5,
-      "norm_label": "transactionmodel"
+      "norm_label": "transactionmodel",
+      "id": "transactionmodel"
     },
     {
       "label": ".init()",
@@ -322,9 +632,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L57",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_init",
       "community": 5,
-      "norm_label": ".init()"
+      "norm_label": ".init()",
+      "id": "insights_insightsviewmodel_compassviewmodel_init"
     },
     {
       "label": ".load()",
@@ -332,9 +642,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L69",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_load",
       "community": 5,
-      "norm_label": ".load()"
+      "norm_label": ".load()",
+      "id": "insights_insightsviewmodel_compassviewmodel_load"
     },
     {
       "label": ".addGoal()",
@@ -342,9 +652,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L89",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_addgoal",
       "community": 5,
-      "norm_label": ".addgoal()"
+      "norm_label": ".addgoal()",
+      "id": "insights_insightsviewmodel_compassviewmodel_addgoal"
     },
     {
       "label": ".saveGoalEdits()",
@@ -352,9 +662,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L94",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_savegoaledits",
       "community": 5,
-      "norm_label": ".savegoaledits()"
+      "norm_label": ".savegoaledits()",
+      "id": "insights_insightsviewmodel_compassviewmodel_savegoaledits"
     },
     {
       "label": ".deleteGoal()",
@@ -362,9 +672,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L98",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_deletegoal",
       "community": 5,
-      "norm_label": ".deletegoal()"
+      "norm_label": ".deletegoal()",
+      "id": "insights_insightsviewmodel_compassviewmodel_deletegoal"
     },
     {
       "label": ".addFunds()",
@@ -372,9 +682,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L103",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_addfunds",
       "community": 5,
-      "norm_label": ".addfunds()"
+      "norm_label": ".addfunds()",
+      "id": "insights_insightsviewmodel_compassviewmodel_addfunds"
     },
     {
       "label": ".computeHeroInsight()",
@@ -382,9 +692,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L118",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_computeheroinsight",
       "community": 5,
-      "norm_label": ".computeheroinsight()"
+      "norm_label": ".computeheroinsight()",
+      "id": "insights_insightsviewmodel_compassviewmodel_computeheroinsight"
     },
     {
       "label": ".computeHealthScore()",
@@ -392,9 +702,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L122",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_computehealthscore",
       "community": 5,
-      "norm_label": ".computehealthscore()"
+      "norm_label": ".computehealthscore()",
+      "id": "insights_insightsviewmodel_compassviewmodel_computehealthscore"
     },
     {
       "label": ".computeTimelineData()",
@@ -402,9 +712,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L135",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_computetimelinedata",
       "community": 5,
-      "norm_label": ".computetimelinedata()"
+      "norm_label": ".computetimelinedata()",
+      "id": "insights_insightsviewmodel_compassviewmodel_computetimelinedata"
     },
     {
       "label": ".computeCategoryTrends()",
@@ -412,9 +722,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L140",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_computecategorytrends",
       "community": 5,
-      "norm_label": ".computecategorytrends()"
+      "norm_label": ".computecategorytrends()",
+      "id": "insights_insightsviewmodel_compassviewmodel_computecategorytrends"
     },
     {
       "label": ".computeHabits()",
@@ -422,9 +732,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L144",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_computehabits",
       "community": 5,
-      "norm_label": ".computehabits()"
+      "norm_label": ".computehabits()",
+      "id": "insights_insightsviewmodel_compassviewmodel_computehabits"
     },
     {
       "label": ".computeForecast()",
@@ -432,9 +742,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L148",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_computeforecast",
       "community": 5,
-      "norm_label": ".computeforecast()"
+      "norm_label": ".computeforecast()",
+      "id": "insights_insightsviewmodel_compassviewmodel_computeforecast"
     },
     {
       "label": ".calculateAverages()",
@@ -442,9 +752,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L152",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_calculateaverages",
       "community": 5,
-      "norm_label": ".calculateaverages()"
+      "norm_label": ".calculateaverages()",
+      "id": "insights_insightsviewmodel_compassviewmodel_calculateaverages"
     },
     {
       "label": ".saveSnapshotIfNeeded()",
@@ -452,9 +762,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L162",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_savesnapshotifneeded",
       "community": 5,
-      "norm_label": ".savesnapshotifneeded()"
+      "norm_label": ".savesnapshotifneeded()",
+      "id": "insights_insightsviewmodel_compassviewmodel_savesnapshotifneeded"
     },
     {
       "label": ".transferTotal()",
@@ -462,9 +772,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L187",
       "_origin": "ast",
-      "id": "insights_insightsviewmodel_compassviewmodel_transfertotal",
       "community": 5,
-      "norm_label": ".transfertotal()"
+      "norm_label": ".transfertotal()",
+      "id": "insights_insightsviewmodel_compassviewmodel_transfertotal"
     },
     {
       "label": "CLAUDE.md",
@@ -1652,7 +1962,7 @@
       "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTraker.build/DerivedSources/PersonalFinanceTraker-Swift.h",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 118,
       "norm_label": "personalfinancetraker-swift.h",
       "id": "derivedsources_personalfinancetraker_swift"
     },
@@ -1662,7 +1972,7 @@
       "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTraker.build/Objects-normal/arm64/PersonalFinanceTraker-Swift.h",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 118,
       "norm_label": "personalfinancetraker-swift.h",
       "id": "arm64_personalfinancetraker_swift"
     },
@@ -1672,7 +1982,7 @@
       "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerTests.build/DerivedSources/PersonalFinanceTrakerTests-Swift.h",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 118,
       "norm_label": "personalfinancetrakertests-swift.h",
       "id": "derivedsources_personalfinancetrakertests_swift"
     },
@@ -1682,7 +1992,7 @@
       "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerTests.build/Objects-normal/arm64/PersonalFinanceTrakerTests-Swift.h",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 118,
       "norm_label": "personalfinancetrakertests-swift.h",
       "id": "arm64_personalfinancetrakertests_swift"
     },
@@ -1692,7 +2002,7 @@
       "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerUITests.build/DerivedSources/PersonalFinanceTrakerUITests-Swift.h",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 118,
       "norm_label": "personalfinancetrakeruitests-swift.h",
       "id": "derivedsources_personalfinancetrakeruitests_swift"
     },
@@ -1702,7 +2012,7 @@
       "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerUITests.build/Objects-normal/arm64/PersonalFinanceTrakerUITests-Swift.h",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 118,
       "norm_label": "personalfinancetrakeruitests-swift.h",
       "id": "arm64_personalfinancetrakeruitests_swift"
     },
@@ -1745,16 +2055,6 @@
       "community": 115,
       "norm_label": "healthscorecard",
       "id": "components_healthscorecard_healthscorecard"
-    },
-    {
-      "label": "View",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "community": 46,
-      "norm_label": "view",
-      "id": "view"
     },
     {
       "label": "HealthScore",
@@ -1815,186 +2115,6 @@
       "community": 115,
       "norm_label": "scorecomponent",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscorecard_swift_scorecomponent"
-    },
-    {
-      "label": "HealthScoreDetailView.swift",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "healthscoredetailview.swift",
-      "id": "components_healthscoredetailview"
-    },
-    {
-      "label": "SwiftUI",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "swiftui",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_swiftui"
-    },
-    {
-      "label": "Charts",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L2",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "charts",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_charts"
-    },
-    {
-      "label": "HealthScoreDetailView",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L4",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "healthscoredetailview",
-      "id": "components_healthscoredetailview_healthscoredetailview"
-    },
-    {
-      "label": "HealthScore",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L5",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "healthscore",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscore"
-    },
-    {
-      "label": "HealthScoreSnapshot",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L6",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "healthscoresnapshot",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscoresnapshot"
-    },
-    {
-      "label": "Bool",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L7",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "bool",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_bool"
-    },
-    {
-      "label": "String",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L13",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "string",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_string"
-    },
-    {
-      "label": "Color",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L43",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "color",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_color"
-    },
-    {
-      "label": ".legendBand()",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L158",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": ".legendband()",
-      "id": "components_healthscoredetailview_healthscoredetailview_legendband"
-    },
-    {
-      "label": ".componentRow()",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L173",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": ".componentrow()",
-      "id": "components_healthscoredetailview_healthscoredetailview_componentrow"
-    },
-    {
-      "label": "ScoreComponent",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L173",
-      "_origin": "ast",
-      "community": 40,
-      "norm_label": "scorecomponent",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_scorecomponent"
-    },
-    {
-      "label": "HealthScoreSection.swift",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 80,
-      "norm_label": "healthscoresection.swift",
-      "id": "components_healthscoresection"
-    },
-    {
-      "label": "SwiftUI",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 80,
-      "norm_label": "swiftui",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_swiftui"
-    },
-    {
-      "label": "HealthScoreSection",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L3",
-      "_origin": "ast",
-      "community": 80,
-      "norm_label": "healthscoresection",
-      "id": "components_healthscoresection_healthscoresection"
-    },
-    {
-      "label": "HealthScore",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L4",
-      "_origin": "ast",
-      "community": 80,
-      "norm_label": "healthscore",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscore"
-    },
-    {
-      "label": "HealthScoreSnapshot",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L5",
-      "_origin": "ast",
-      "community": 80,
-      "norm_label": "healthscoresnapshot",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscoresnapshot"
-    },
-    {
-      "label": "Bool",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L6",
-      "_origin": "ast",
-      "community": 80,
-      "norm_label": "bool",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_bool"
     },
     {
       "label": "FinancialHealthService.swift",
@@ -2635,16 +2755,6 @@
       "community": 75,
       "norm_label": ".makeexpense()",
       "id": "insights_financialhealthservicetests_financialhealthservicetests_makeexpense"
-    },
-    {
-      "label": "String",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/Insights/FinancialHealthServiceTests.swift",
-      "source_location": "L17",
-      "_origin": "ast",
-      "community": 2,
-      "norm_label": "string",
-      "id": "string"
     },
     {
       "label": ".savingsTipNilWhenMaxed()",
@@ -5632,7 +5742,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitsSection.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 111,
+      "community": 46,
       "norm_label": "habitssection.swift",
       "id": "components_habitssection"
     },
@@ -5642,7 +5752,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitsSection.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 111,
+      "community": 46,
       "norm_label": "swiftui",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_habitssection_swift_swiftui"
     },
@@ -5652,7 +5762,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitsSection.swift",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 111,
+      "community": 46,
       "norm_label": "habitssection",
       "id": "components_habitssection_habitssection"
     },
@@ -5662,7 +5772,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitsSection.swift",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 111,
+      "community": 46,
       "norm_label": "habitobservation",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_habitssection_swift_habitobservation"
     },
@@ -5955,106 +6065,6 @@
       "community": 59,
       "norm_label": "timelinedatapoint",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_spendingtimelinechart_swift_timelinedatapoint"
-    },
-    {
-      "label": "InsightsView.swift",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "insightsview.swift",
-      "id": "insights_insightsview"
-    },
-    {
-      "label": "SwiftUI",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L6",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "swiftui",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_swiftui"
-    },
-    {
-      "label": "SwiftData",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L7",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "swiftdata",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_swiftdata"
-    },
-    {
-      "label": "Charts",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L8",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "charts",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_charts"
-    },
-    {
-      "label": "CompassView",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L10",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "compassview",
-      "id": "insights_insightsview_compassview"
-    },
-    {
-      "label": "CompassViewModel",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L12",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "compassviewmodel",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_compassviewmodel"
-    },
-    {
-      "label": "Bool",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L13",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "bool",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_bool"
-    },
-    {
-      "label": ".init()",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L15",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": ".init()",
-      "id": "insights_insightsview_compassview_init"
-    },
-    {
-      "label": "ModelContext",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L15",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "modelcontext",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_modelcontext"
-    },
-    {
-      "label": "Binding",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L15",
-      "_origin": "ast",
-      "community": 0,
-      "norm_label": "binding",
-      "id": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_binding"
     },
     {
       "label": "CompassDataModels.swift",
@@ -6602,7 +6612,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfilePersonalInfoSection.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 46,
+      "community": 143,
       "norm_label": "profilepersonalinfosection.swift",
       "id": "components_profilepersonalinfosection"
     },
@@ -6612,7 +6622,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfilePersonalInfoSection.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 46,
+      "community": 143,
       "norm_label": "swiftui",
       "id": "personalfinancetraker_personalfinancetraker_features_profile_components_profilepersonalinfosection_swift_swiftui"
     },
@@ -6622,7 +6632,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfilePersonalInfoSection.swift",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 46,
+      "community": 143,
       "norm_label": "profilepersonalinfosection",
       "id": "components_profilepersonalinfosection_profilepersonalinfosection"
     },
@@ -6632,7 +6642,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfilePersonalInfoSection.swift",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 46,
+      "community": 143,
       "norm_label": "string",
       "id": "personalfinancetraker_personalfinancetraker_features_profile_components_profilepersonalinfosection_swift_string"
     },
@@ -8402,7 +8412,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "caseiterable",
       "id": "caseiterable"
     },
@@ -9482,7 +9492,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "goalmodel.swift",
       "id": "models_goalmodel"
     },
@@ -9492,7 +9502,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "swiftdata",
       "id": "personalfinancetraker_personalfinancetraker_models_goalmodel_swift_swiftdata"
     },
@@ -9502,7 +9512,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "foundation",
       "id": "personalfinancetraker_personalfinancetraker_models_goalmodel_swift_foundation"
     },
@@ -9512,7 +9522,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 2,
+      "community": 142,
       "norm_label": "goalmodel",
       "id": "models_goalmodel_goalmodel"
     },
@@ -9522,7 +9532,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 2,
+      "community": 142,
       "norm_label": "uuid",
       "id": "personalfinancetraker_personalfinancetraker_models_goalmodel_swift_uuid"
     },
@@ -9532,7 +9542,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 2,
+      "community": 142,
       "norm_label": "string",
       "id": "personalfinancetraker_personalfinancetraker_models_goalmodel_swift_string"
     },
@@ -9542,7 +9552,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 2,
+      "community": 142,
       "norm_label": "decimal",
       "id": "personalfinancetraker_personalfinancetraker_models_goalmodel_swift_decimal"
     },
@@ -9552,7 +9562,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 2,
+      "community": 142,
       "norm_label": "date",
       "id": "personalfinancetraker_personalfinancetraker_models_goalmodel_swift_date"
     },
@@ -9562,7 +9572,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 2,
+      "community": 142,
       "norm_label": ".init()",
       "id": "models_goalmodel_goalmodel_init"
     },
@@ -9572,7 +9582,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "goalicon",
       "id": "models_goalmodel_goalicon"
     },
@@ -9582,7 +9592,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "emergency",
       "id": "models_goalmodel_goalicon_emergency"
     },
@@ -9592,7 +9602,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "vacation",
       "id": "models_goalmodel_goalicon_vacation"
     },
@@ -9602,7 +9612,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "house",
       "id": "models_goalmodel_goalicon_house"
     },
@@ -9612,7 +9622,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "gift",
       "id": "models_goalmodel_goalicon_gift"
     },
@@ -9622,7 +9632,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "courses",
       "id": "models_goalmodel_goalicon_courses"
     },
@@ -9632,7 +9642,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 2,
+      "community": 96,
       "norm_label": "other",
       "id": "models_goalmodel_goalicon_other"
     },
@@ -10272,7 +10282,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "transactiontype.swift",
       "id": "models_transactiontype"
     },
@@ -10282,7 +10292,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "swiftui",
       "id": "personalfinancetraker_personalfinancetraker_models_transactiontype_swift_swiftui"
     },
@@ -10292,7 +10302,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "transactiontype",
       "id": "models_transactiontype_transactiontype"
     },
@@ -10302,7 +10312,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "income",
       "id": "models_transactiontype_transactiontype_income"
     },
@@ -10312,7 +10322,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "expense",
       "id": "models_transactiontype_transactiontype_expense"
     },
@@ -10322,7 +10332,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "transfer",
       "id": "models_transactiontype_transactiontype_transfer"
     },
@@ -10332,7 +10342,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 2,
+      "community": 111,
       "norm_label": "color",
       "id": "personalfinancetraker_personalfinancetraker_models_transactiontype_swift_color"
     },
@@ -14225,15 +14235,1461 @@
   ],
   "links": [
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview",
+      "target": "components_healthscoredetailview_healthscoredetailview"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_charts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_swiftui"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L47",
+      "weight": 1.0,
+      "context": "field",
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "color",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L94",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "components_healthscoredetailview_healthscoredetailview_componentrow"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L158",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "components_healthscoredetailview_healthscoredetailview_legendband"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_bool"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L5",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscore"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscoresnapshot"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "field",
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L137",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/App/AuthenticationWrapper.swift",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "app_authenticationwrapper_authenticationwrapper",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/CategoryBreakdownView.swift",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "categorybreakdown_categorybreakdownview_categorybreakdownview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/AddCategorySheet.swift",
+      "source_location": "L30",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "categorysettings_addcategorysheet_addcategorysheet",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/CategoryRow.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "categorysettings_categoryrow_categoryrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/CategorySettingsView.swift",
+      "source_location": "L23",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "categorysettings_categorysettingsview_categorysettingsview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/CategorySettingsView.swift",
+      "source_location": "L85",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "categorysettings_categorysettingsview_categorysettingsview_sectionheader",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/ColorTokenPicker.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "categorysettings_colortokenpicker_colortokenpicker",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/EditCategorySheet.swift",
+      "source_location": "L33",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "categorysettings_editcategorysheet_editcategorysheet",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/IconGridPicker.swift",
+      "source_location": "L17",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "categorysettings_icongridpicker_icongridpicker",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ActivityFilterChip.swift",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_activityfilterchip_activityfilterchip",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ActivitySearchBar.swift",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_activitysearchbar_activitysearchbar",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/AddEditCreditCardSheet.swift",
+      "source_location": "L37",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_addeditcreditcardsheet_addeditcreditcardsheet",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/AddGoalSheet.swift",
+      "source_location": "L33",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_addgoalsheet_addgoalsheet",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/AddGoalSheet.swift",
+      "source_location": "L134",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_addgoalsheet_goaliconpickersheet",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryDetailRow.swift",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_categorydetailrow_categorydetailrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
+      "source_location": "L117",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_categorypiechart_categorylegenditem",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
+      "source_location": "L97",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_categorypiechart_categorylegendview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
+      "source_location": "L67",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_categorypiechart_categorypiechart",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
+      "source_location": "L158",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_categorypiechart_emptypiechartview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/CategoryTrendRow.swift",
+      "source_location": "L66",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_categorytrendrow_categorytrendrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/CategoryTrendsSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_categorytrendssection_categorytrendssection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditCardItem.swift",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_creditcarditem_creditcarditem",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditCardsSection.swift",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_creditcardssection_creditcardssection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditScoreCard.swift",
+      "source_location": "L100",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_creditscorecard_creditscorecard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditUtilizationCard.swift",
+      "source_location": "L21",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_creditutilizationcard_creditutilizationcard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVCategoryMappingView.swift",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_csvcategorymappingview_csvcategorymappingview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVCategoryMappingView.swift",
+      "source_location": "L69",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_csvcategorymappingview_csvcategorymappingview_categoryrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVColumnMappingView.swift",
+      "source_location": "L126",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_csvcolumnmappingview_csvcolumnmappingview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVColumnMappingView.swift",
+      "source_location": "L103",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_csvcolumnmappingview_csvcolumnmappingview_optionalpicker",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVColumnMappingView.swift",
+      "source_location": "L93",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_csvcolumnmappingview_csvcolumnmappingview_requiredpicker",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift",
+      "source_location": "L49",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_currencyamountfield_currencyamountfield",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift",
+      "source_location": "L154",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_currencyamountfield_currencyamountfield_focused",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift",
+      "source_location": "L168",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_currencyamountfield_previewwrapper",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/ForecastCard.swift",
+      "source_location": "L17",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_forecastcard_forecastcard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/ForecastSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_forecastsection_forecastsection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/GoalCard.swift",
+      "source_location": "L23",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_goalcard_goalcard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/GoalDetailSheet.swift",
+      "source_location": "L157",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_goaldetailsheet_goaldetailsheet",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/GoalsSection.swift",
+      "source_location": "L10",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_goalssection_goalssection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitInsightRow.swift",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_habitinsightrow_habitinsightrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitsSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_habitssection_habitssection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreCard.swift",
+      "source_location": "L47",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscorecard_healthscorecard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreCard.swift",
+      "source_location": "L78",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_healthscorecard_healthscorecard_componentrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L94",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview_componentrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L158",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_healthscoredetailview_healthscoredetailview_legendband",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoresection_healthscoresection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HeroInsightCard.swift",
+      "source_location": "L27",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_heroinsightcard_heroinsightcard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportFlowView.swift",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_importflowview_importflowview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportResultView.swift",
+      "source_location": "L22",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_importresultview_importresultview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportResultView.swift",
+      "source_location": "L87",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_importresultview_importresultview_statcell",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportResultView.swift",
+      "source_location": "L99",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_importresultview_importresultview_transactionrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsEmptyCard.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_insightsemptycard_insightsemptycard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsKPICard.swift",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_insightskpicard_insightskpicard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsSectionHeader.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_insightssectionheader_insightssectionheader",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsTopCategoryRow.swift",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_insightstopcategoryrow_insightstopcategoryrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/MonkeyAnimationView.swift",
+      "source_location": "L10",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_monkeyanimationview_monkeyanimationview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/PieChartTypePicker.swift",
+      "source_location": "L36",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_piecharttypepicker_piecharttypepicker",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINDotsView.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_pindotsview_pindotsview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINPadView.swift",
+      "source_location": "L36",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_pinpadview_pinkeybutton",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINPadView.swift",
+      "source_location": "L48",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "components_pinpadview_pinkeystyle_makebody",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINPadView.swift",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_pinpadview_pinpadview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileAvatarView.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_profileavatarview_profileavatarview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileCategoriesSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_profilecategoriessection_profilecategoriessection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileCurrencySection.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_profilecurrencysection_profilecurrencysection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileHeader.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_profileheader_profileheader",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfilePersonalInfoSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_profilepersonalinfosection_profilepersonalinfosection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileSectionLabel.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_profilesectionlabel_profilesectionlabel",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileSecuritySection.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_profilesecuritysection_profilesecuritysection",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/SpendingTimelineChart.swift",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_spendingtimelinechart_spendingtimelinechart",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/StatCard.swift",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_statcard_statcard",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/SummaryStatRow.swift",
+      "source_location": "L35",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_summarystatrow_summarystatrow",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TimePeriodPicker.swift",
+      "source_location": "L57",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_timeperiodpicker_timeperiodpicker",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionChart.swift",
+      "source_location": "L111",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_transactionchart_legenditem",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionChart.swift",
+      "source_location": "L56",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_transactionchart_transactionchart",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_transactionformview_transactionformview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionItemView.swift",
+      "source_location": "L21",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_transactionitemview_transactionitemview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionSaveButton.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_transactionsavebutton_transactionsavebutton",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionSectionHeader.swift",
+      "source_location": "L50",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_transactionsectionheader_transactionsectionheader",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/CreditView.swift",
+      "source_location": "L19",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "credit_creditview_creditview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Dashboard/DashboardView.swift",
+      "source_location": "L119",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "dashboard_dashboardview_dashboardview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift",
+      "source_location": "L29",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "editaddtransactionview_editaddtransactionview_editaddtransactionview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "insights_insightsview_compassview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/MainTabView/MainTabView.swift",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "maintabview_maintabview_maintabview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/LockView.swift",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "security_lockview_lockview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINEntryView.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "security_pinentryview_pinentryview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINSetupView.swift",
+      "source_location": "L84",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "security_pinsetupview_pinsetupview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/ActivityView.swift",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "transactionlistview_activityview_activityview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/TransactionListView.swift",
+      "source_location": "L21",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "transactionlistview_transactionlistview_transactionlistmvvm",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/DesignTokens.swift",
+      "source_location": "L55",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "utilities_designtokens_appbackground",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/EditFullNameView.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "views_editfullnameview_editfullnameview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "views_profileview_profileview",
+      "target": "view"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTraker.build/Objects-normal/arm64/PersonalFinanceTraker-Swift.h",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "arm64_personalfinancetraker_swift",
+      "target": "string"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerTests.build/Objects-normal/arm64/PersonalFinanceTrakerTests-Swift.h",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "arm64_personalfinancetrakertests_swift",
+      "target": "string"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerUITests.build/Objects-normal/arm64/PersonalFinanceTrakerUITests-Swift.h",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "arm64_personalfinancetrakeruitests_swift",
+      "target": "string"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L162",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "components_healthscoredetailview_healthscoredetailview_legendband",
+      "target": "string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TimePeriodPicker.swift",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_timeperiodpicker_timeperiod",
+      "target": "string"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTraker.build/DerivedSources/PersonalFinanceTraker-Swift.h",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "derivedsources_personalfinancetraker_swift",
+      "target": "string"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerTests.build/DerivedSources/PersonalFinanceTrakerTests-Swift.h",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "derivedsources_personalfinancetrakertests_swift",
+      "target": "string"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerUITests.build/DerivedSources/PersonalFinanceTrakerUITests-Swift.h",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "derivedsources_personalfinancetrakeruitests_swift",
+      "target": "string"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/Insights/FinancialHealthServiceTests.swift",
+      "source_location": "L17",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "insights_financialhealthservicetests_financialhealthservicetests_makeexpense",
+      "target": "string"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "models_transactiontype_transactiontype",
+      "target": "string"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L162",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "components_healthscoredetailview_healthscoredetailview_legendband",
+      "target": "color",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
+      "source_location": "L177",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "components_healthscoredetailview_healthscoredetailview_componentrow",
+      "target": "scorecomponent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_healthscoresection",
+      "target": "components_healthscoresection_healthscoresection"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "components_healthscoresection",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_swiftui"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoresection_healthscoresection",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_bool"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L4",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoresection_healthscoresection",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscore"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L5",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "components_healthscoresection_healthscoresection",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscoresnapshot"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "source": "components_healthscoresection_healthscoresection",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "insights_insightsview",
+      "target": "insights_insightsview_compassview"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "insights_insightsview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_charts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "insights_insightsview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_swiftui"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "insights_insightsview",
+      "target": "swiftdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "field",
+      "source": "insights_insightsview_compassview",
+      "target": "compassviewmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "insights_insightsview_compassview",
+      "target": "insights_insightsview_compassview_init"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "insights_insightsview_compassview",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_bool"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "insights_insightsview_compassview_init",
+      "target": "compassviewmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L15",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "confidence_score": 1.0,
+      "source": "insights_insightsview_compassview_init",
+      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_bool"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L15",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "insights_insightsview_compassview_init",
+      "target": "binding",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L15",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "insights_insightsview_compassview_init",
+      "target": "modelcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "insights_insightsview_compassview_init",
+      "target": "models_transactionrepository_transactionrepository"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel",
-      "target": "foundation",
-      "confidence_score": 1.0
+      "target": "foundation"
     },
     {
       "relation": "contains",
@@ -14252,9 +15708,9 @@
       "source_location": "L28",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel",
-      "target": "bool",
-      "confidence_score": 1.0
+      "target": "bool"
     },
     {
       "relation": "references",
@@ -14285,9 +15741,9 @@
       "source_location": "L23",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel",
-      "target": "decimal",
-      "confidence_score": 1.0
+      "target": "decimal"
     },
     {
       "relation": "references",
@@ -14296,9 +15752,9 @@
       "source_location": "L49",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel",
-      "target": "financialhealthservice",
-      "confidence_score": 1.0
+      "target": "financialhealthservice"
     },
     {
       "relation": "references",
@@ -14329,9 +15785,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel",
-      "target": "healthscore",
-      "confidence_score": 1.0
+      "target": "healthscore"
     },
     {
       "relation": "references",
@@ -14340,9 +15796,9 @@
       "source_location": "L27",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel",
-      "target": "healthscoresnapshot",
-      "confidence_score": 1.0
+      "target": "healthscoresnapshot"
     },
     {
       "relation": "references",
@@ -14512,9 +15968,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -14610,9 +16066,9 @@
       "source_location": "L55",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel",
-      "target": "transactionmodel",
-      "confidence_score": 1.0
+      "target": "transactionmodel"
     },
     {
       "relation": "references",
@@ -14665,9 +16121,9 @@
       "source_location": "L103",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel_addfunds",
-      "target": "decimal",
-      "confidence_score": 1.0
+      "target": "decimal"
     },
     {
       "relation": "references",
@@ -14676,9 +16132,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L187",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel_transfertotal",
-      "target": "decimal",
-      "confidence_score": 1.0
+      "target": "decimal"
     },
     {
       "relation": "calls",
@@ -14720,9 +16176,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L174",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel_savesnapshotifneeded",
-      "target": "healthscoresnapshot",
-      "confidence_score": 1.0
+      "target": "healthscoresnapshot"
     },
     {
       "relation": "references",
@@ -14829,9 +16285,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L61",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel_init",
-      "target": "financialhealthservice",
-      "confidence_score": 1.0
+      "target": "financialhealthservice"
     },
     {
       "relation": "calls",
@@ -14873,9 +16329,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift",
       "source_location": "L104",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "insights_insightsviewmodel_compassviewmodel_addfunds",
-      "target": "transactionmodel",
-      "confidence_score": 1.0
+      "target": "transactionmodel"
     },
     {
       "relation": "references",
@@ -15963,72 +17419,6 @@
       "target": "personalfinancetraker_deriveddata_build_intermediates_noindex_personalfinancetraker_build_debug_iphonesimulator_personalfinancetraker_build_derivedsources_generatedassetsymbols_swift_foundation"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTraker.build/DerivedSources/PersonalFinanceTraker-Swift.h",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "derivedsources_personalfinancetraker_swift",
-      "target": "string"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTraker.build/Objects-normal/arm64/PersonalFinanceTraker-Swift.h",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "arm64_personalfinancetraker_swift",
-      "target": "string"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerTests.build/DerivedSources/PersonalFinanceTrakerTests-Swift.h",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "derivedsources_personalfinancetrakertests_swift",
-      "target": "string"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerTests.build/Objects-normal/arm64/PersonalFinanceTrakerTests-Swift.h",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "arm64_personalfinancetrakertests_swift",
-      "target": "string"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerUITests.build/DerivedSources/PersonalFinanceTrakerUITests-Swift.h",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "derivedsources_personalfinancetrakeruitests_swift",
-      "target": "string"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/PersonalFinanceTraker.build/Debug-iphonesimulator/PersonalFinanceTrakerUITests.build/Objects-normal/arm64/PersonalFinanceTrakerUITests-Swift.h",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "arm64_personalfinancetrakeruitests_swift",
-      "target": "string"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreCard.swift",
@@ -16107,1013 +17497,12 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreCard.swift",
-      "source_location": "L47",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscorecard_healthscorecard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreCard.swift",
       "source_location": "L7",
       "weight": 1.0,
       "context": "field",
       "confidence_score": 1.0,
       "source": "components_healthscorecard_healthscorecard",
       "target": "void"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/App/AuthenticationWrapper.swift",
-      "source_location": "L18",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "app_authenticationwrapper_authenticationwrapper",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/CategoryBreakdownView.swift",
-      "source_location": "L32",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "categorybreakdown_categorybreakdownview_categorybreakdownview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/AddCategorySheet.swift",
-      "source_location": "L30",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "categorysettings_addcategorysheet_addcategorysheet",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/CategoryRow.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "categorysettings_categoryrow_categoryrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/CategorySettingsView.swift",
-      "source_location": "L23",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "categorysettings_categorysettingsview_categorysettingsview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/CategorySettingsView.swift",
-      "source_location": "L85",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "categorysettings_categorysettingsview_categorysettingsview_sectionheader",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/ColorTokenPicker.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "categorysettings_colortokenpicker_colortokenpicker",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/EditCategorySheet.swift",
-      "source_location": "L33",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "categorysettings_editcategorysheet_editcategorysheet",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategorySettings/IconGridPicker.swift",
-      "source_location": "L17",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "categorysettings_icongridpicker_icongridpicker",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ActivityFilterChip.swift",
-      "source_location": "L14",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_activityfilterchip_activityfilterchip",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ActivitySearchBar.swift",
-      "source_location": "L11",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_activitysearchbar_activitysearchbar",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/AddEditCreditCardSheet.swift",
-      "source_location": "L37",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_addeditcreditcardsheet_addeditcreditcardsheet",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/AddGoalSheet.swift",
-      "source_location": "L33",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_addgoalsheet_addgoalsheet",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/AddGoalSheet.swift",
-      "source_location": "L134",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_addgoalsheet_goaliconpickersheet",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryDetailRow.swift",
-      "source_location": "L16",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_categorydetailrow_categorydetailrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
-      "source_location": "L117",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_categorypiechart_categorylegenditem",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
-      "source_location": "L97",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_categorypiechart_categorylegendview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
-      "source_location": "L67",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_categorypiechart_categorypiechart",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/CategoryPieChart.swift",
-      "source_location": "L158",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_categorypiechart_emptypiechartview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/CategoryTrendRow.swift",
-      "source_location": "L66",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_categorytrendrow_categorytrendrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/CategoryTrendsSection.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_categorytrendssection_categorytrendssection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditCardItem.swift",
-      "source_location": "L26",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_creditcarditem_creditcarditem",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditCardsSection.swift",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_creditcardssection_creditcardssection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditScoreCard.swift",
-      "source_location": "L100",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_creditscorecard_creditscorecard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/Components/CreditUtilizationCard.swift",
-      "source_location": "L21",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_creditutilizationcard_creditutilizationcard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVCategoryMappingView.swift",
-      "source_location": "L25",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_csvcategorymappingview_csvcategorymappingview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVCategoryMappingView.swift",
-      "source_location": "L69",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_csvcategorymappingview_csvcategorymappingview_categoryrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVColumnMappingView.swift",
-      "source_location": "L126",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_csvcolumnmappingview_csvcolumnmappingview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVColumnMappingView.swift",
-      "source_location": "L103",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_csvcolumnmappingview_csvcolumnmappingview_optionalpicker",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/CSVColumnMappingView.swift",
-      "source_location": "L93",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_csvcolumnmappingview_csvcolumnmappingview_requiredpicker",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift",
-      "source_location": "L49",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_currencyamountfield_currencyamountfield",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift",
-      "source_location": "L154",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_currencyamountfield_currencyamountfield_focused",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift",
-      "source_location": "L168",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_currencyamountfield_previewwrapper",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/ForecastCard.swift",
-      "source_location": "L17",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_forecastcard_forecastcard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/ForecastSection.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_forecastsection_forecastsection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/GoalCard.swift",
-      "source_location": "L23",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_goalcard_goalcard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/GoalDetailSheet.swift",
-      "source_location": "L157",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_goaldetailsheet_goaldetailsheet",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/GoalsSection.swift",
-      "source_location": "L10",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_goalssection_goalssection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitInsightRow.swift",
-      "source_location": "L11",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_habitinsightrow_habitinsightrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HabitsSection.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_habitssection_habitssection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreCard.swift",
-      "source_location": "L78",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_healthscorecard_healthscorecard_componentrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L137",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L94",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview_componentrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L158",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview_legendband",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoresection_healthscoresection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HeroInsightCard.swift",
-      "source_location": "L27",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_heroinsightcard_heroinsightcard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportFlowView.swift",
-      "source_location": "L11",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_importflowview_importflowview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportResultView.swift",
-      "source_location": "L22",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_importresultview_importresultview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportResultView.swift",
-      "source_location": "L87",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_importresultview_importresultview_statcell",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ImportResultView.swift",
-      "source_location": "L99",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_importresultview_importresultview_transactionrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsEmptyCard.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_insightsemptycard_insightsemptycard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsKPICard.swift",
-      "source_location": "L14",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_insightskpicard_insightskpicard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsSectionHeader.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_insightssectionheader_insightssectionheader",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsTopCategoryRow.swift",
-      "source_location": "L11",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_insightstopcategoryrow_insightstopcategoryrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/MonkeyAnimationView.swift",
-      "source_location": "L10",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_monkeyanimationview_monkeyanimationview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/PieChartTypePicker.swift",
-      "source_location": "L36",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_piecharttypepicker_piecharttypepicker",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINDotsView.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_pindotsview_pindotsview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINPadView.swift",
-      "source_location": "L36",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_pinpadview_pinkeybutton",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINPadView.swift",
-      "source_location": "L48",
-      "weight": 1.0,
-      "context": "return_type",
-      "confidence_score": 1.0,
-      "source": "components_pinpadview_pinkeystyle_makebody",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/PINPadView.swift",
-      "source_location": "L9",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_pinpadview_pinpadview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileAvatarView.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_profileavatarview_profileavatarview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileCategoriesSection.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_profilecategoriessection_profilecategoriessection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileCurrencySection.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_profilecurrencysection_profilecurrencysection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileHeader.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_profileheader_profileheader",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfilePersonalInfoSection.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_profilepersonalinfosection_profilepersonalinfosection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileSectionLabel.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_profilesectionlabel_profilesectionlabel",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileSecuritySection.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_profilesecuritysection_profilesecuritysection",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/SpendingTimelineChart.swift",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_spendingtimelinechart_spendingtimelinechart",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/StatCard.swift",
-      "source_location": "L18",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_statcard_statcard",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/CategoryBreakdown/Components/SummaryStatRow.swift",
-      "source_location": "L35",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_summarystatrow_summarystatrow",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TimePeriodPicker.swift",
-      "source_location": "L57",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_timeperiodpicker_timeperiodpicker",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionChart.swift",
-      "source_location": "L111",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_transactionchart_legenditem",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionChart.swift",
-      "source_location": "L56",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_transactionchart_transactionchart",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_transactionformview_transactionformview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionItemView.swift",
-      "source_location": "L21",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_transactionitemview_transactionitemview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionSaveButton.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_transactionsavebutton_transactionsavebutton",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionSectionHeader.swift",
-      "source_location": "L50",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_transactionsectionheader_transactionsectionheader",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Credit/CreditView.swift",
-      "source_location": "L19",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "credit_creditview_creditview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Dashboard/DashboardView.swift",
-      "source_location": "L119",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "dashboard_dashboardview_dashboardview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift",
-      "source_location": "L29",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "editaddtransactionview_editaddtransactionview_editaddtransactionview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L20",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/MainTabView/MainTabView.swift",
-      "source_location": "L26",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "maintabview_maintabview_maintabview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/LockView.swift",
-      "source_location": "L32",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "security_lockview_lockview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINEntryView.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "security_pinentryview_pinentryview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINSetupView.swift",
-      "source_location": "L84",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "security_pinsetupview_pinsetupview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/ActivityView.swift",
-      "source_location": "L25",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "transactionlistview_activityview_activityview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/TransactionListView.swift",
-      "source_location": "L21",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "transactionlistview_transactionlistview_transactionlistmvvm",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/DesignTokens.swift",
-      "source_location": "L55",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "utilities_designtokens_appbackground",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/EditFullNameView.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "views_editfullnameview_editfullnameview",
-      "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "views_profileview_profileview",
-      "target": "view"
     },
     {
       "relation": "references",
@@ -17125,200 +17514,6 @@
       "confidence_score": 1.0,
       "source": "components_healthscorecard_healthscorecard_componentrow",
       "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscorecard_swift_scorecomponent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview",
-      "target": "components_healthscoredetailview_healthscoredetailview"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_charts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_swiftui"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L94",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "components_healthscoredetailview_healthscoredetailview_componentrow"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L158",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "components_healthscoredetailview_healthscoredetailview_legendband"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_bool"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L43",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_color"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L5",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscore"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L9",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_healthscoresnapshot"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_string"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L158",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview_legendband",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_string"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L158",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview_legendband",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_color"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift",
-      "source_location": "L94",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "components_healthscoredetailview_healthscoredetailview_componentrow",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_scorecomponent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_healthscoresection",
-      "target": "components_healthscoresection_healthscoresection"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_healthscoresection",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_swiftui"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoresection_healthscoresection",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_bool"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L4",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoresection_healthscoresection",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscore"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift",
-      "source_location": "L5",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_healthscoresection_healthscoresection",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoresection_swift_healthscoresnapshot"
     },
     {
       "relation": "imports",
@@ -18637,17 +18832,6 @@
       "target": "insights_financialhealthservicetests_financialhealthservicetests_makeexpense"
     },
     {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/Insights/FinancialHealthServiceTests.swift",
-      "source_location": "L17",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "insights_financialhealthservicetests_financialhealthservicetests_makeexpense",
-      "target": "string"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -18712,28 +18896,6 @@
       "confidence_score": 1.0,
       "source": "insights_financialhealthservicetests_financialhealthservicetests_snapshotsubscriptionscorezerowhenignored",
       "target": "insights_financialhealthservicetests_financialhealthservicetests_makeexpense"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TimePeriodPicker.swift",
-      "source_location": "L26",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "components_timeperiodpicker_timeperiod",
-      "target": "string"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionType.swift",
-      "source_location": "L16",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "models_transactiontype_transactiontype",
-      "target": "string"
     },
     {
       "relation": "contains",
@@ -22350,136 +22512,6 @@
       "confidence_score": 1.0,
       "source": "components_spendingtimelinechart_spendingtimelinechart",
       "target": "personalfinancetraker_personalfinancetraker_features_insights_components_spendingtimelinechart_swift_timeperiod"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "insights_insightsview",
-      "target": "insights_insightsview_compassview"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "insights_insightsview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_charts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "insights_insightsview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_swiftdata"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "insights_insightsview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_swiftui"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview",
-      "target": "insights_insightsview_compassview_init"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L13",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_bool"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L12",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_compassviewmodel"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview_init",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_compassviewmodel"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L15",
-      "weight": 1.0,
-      "context": "generic_arg",
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview_init",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_bool"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L16",
-      "weight": 1.0,
-      "source": "insights_insightsview_compassview_init",
-      "target": "models_transactionrepository_transactionrepository"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L15",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview_init",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_binding"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift",
-      "source_location": "L15",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "confidence_score": 1.0,
-      "source": "insights_insightsview_compassview_init",
-      "target": "personalfinancetraker_personalfinancetraker_features_insights_insightsview_swift_modelcontext"
     },
     {
       "relation": "contains",
@@ -34086,5 +34118,5 @@
       "source_file": "AppIcon/v2/Icon Exports/"
     }
   ],
-  "built_at_commit": "980cf7b7b381bd77d03f68f28bb1d136f44afd09"
+  "built_at_commit": "51aada1533a4d73060558e4bf6c7097ee35544c3"
 }

@@ -12,6 +12,15 @@ final class ProfileViewModel {
         didSet { UserDefaults.standard.set(isBiometricEnabled, forKey: "biometric_lock_enabled") }
     }
 
+    var payCycleStartDay: Int = {
+        let v = UserDefaults.standard.integer(forKey: "payCycleStartDay")
+        return v == 0 ? 1 : v
+    }() {
+        didSet {
+            UserDefaults.standard.set(payCycleStartDay, forKey: "payCycleStartDay")
+        }
+    }
+
     private(set) var isBiometricsAvailable: Bool = false
     private(set) var biometricLabel: String = "Biometrics"
 
@@ -23,6 +32,10 @@ final class ProfileViewModel {
     init() {
         fullName = UserDefaults.standard.string(forKey: "user_full_name") ?? ""
         isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometric_lock_enabled")
+        payCycleStartDay = {
+            let v = UserDefaults.standard.integer(forKey: "payCycleStartDay")
+            return v == 0 ? 1 : v
+        }()
         memberSinceTimestamp = UserDefaults.standard.double(forKey: "member_since_timestamp")
         checkBiometrics()
     }

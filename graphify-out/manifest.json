@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreSection.swift": {
-    "mtime": 1781947232.611101,
-    "ast_hash": "dfddaa873dc5f78d71bb58aefc0838f8",
+    "mtime": 1781949850.625053,
+    "ast_hash": "7524e14534be6f8290f635adc03381f8",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HeroInsightCard.swift": {
@@ -340,8 +340,8 @@
     "semantic_hash": "0789639dfbf6f44623c01a365072364a"
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift": {
-    "mtime": 1781820003.8749456,
-    "ast_hash": "ce6ce79ffbc45483f46975d10560e563",
+    "mtime": 1781949858.9013195,
+    "ast_hash": "f11ca7a923323ac3f693c3ff0be48caf",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift": {
@@ -1210,8 +1210,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/HealthScoreDetailView.swift": {
-    "mtime": 1781948133.7317736,
-    "ast_hash": "37c7860523adee8f677f18600649142a",
+    "mtime": 1781949841.9609792,
+    "ast_hash": "a8581ee1450fc97ec6e5a8698146cc6a",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/DerivedData/Build/Intermediates.noindex/XCBuildData/01b184dc9f967639ffadffa2940e8364.xcbuilddata/target-graph.txt": {

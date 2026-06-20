@@ -5,12 +5,12 @@
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1413 nodes · 1862 edges · 138 communities (124 shown, 14 thin omitted)
+- 1411 nodes · 1859 edges · 140 communities (126 shown, 14 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 15 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `80193df7`
+- Built from commit: `980cf7b7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -51,6 +51,7 @@
 - [[_COMMUNITY_Transaction Data Model|Transaction Data Model]]
 - [[_COMMUNITY_Credit Card Edit Sheet|Credit Card Edit Sheet]]
 - [[_COMMUNITY_EditAdd Transaction View|Edit/Add Transaction View]]
+- [[_COMMUNITY_Community 36|Community 36]]
 - [[_COMMUNITY_Credit Card Data Model|Credit Card Data Model]]
 - [[_COMMUNITY_Summary Stat Row|Summary Stat Row]]
 - [[_COMMUNITY_Add Category Sheet|Add Category Sheet]]
@@ -87,6 +88,7 @@
 - [[_COMMUNITY_Profile Security Section|Profile Security Section]]
 - [[_COMMUNITY_Edit Full Name View|Edit Full Name View]]
 - [[_COMMUNITY_Unit Tests|Unit Tests]]
+- [[_COMMUNITY_Community 73|Community 73]]
 - [[_COMMUNITY_Icon Grid Picker|Icon Grid Picker]]
 - [[_COMMUNITY_Activity Search Bar|Activity Search Bar]]
 - [[_COMMUNITY_Category Trends Section|Category Trends Section]]
@@ -108,7 +110,7 @@
 - [[_COMMUNITY_Category Breakdown UI Docs|Category Breakdown UI Docs]]
 - [[_COMMUNITY_README|README]]
 - [[_COMMUNITY_TODO List|TODO List]]
-- [[_COMMUNITY_Community 96|Community 96]]
+- [[_COMMUNITY_Community 95|Community 95]]
 - [[_COMMUNITY_Community 97|Community 97]]
 - [[_COMMUNITY_Community 98|Community 98]]
 - [[_COMMUNITY_Community 99|Community 99]]
@@ -154,7 +156,7 @@
 - [[_COMMUNITY_Community 140|Community 140]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `CompassViewModel` - 35 edges
+1. `CompassViewModel` - 36 edges
 2. `TransactionListViewModel` - 25 edges
 3. `MockTransactionRepository` - 22 edges
 4. `TransactionRepository` - 20 edges
@@ -174,8 +176,8 @@
   PersonalFinanceTraker/PersonalFinanceTrakerTests/Mocks/MockTransactionRepository.swift → PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionRepository.swift
 - `PieChartDataService` --references--> `Color`  [EXTRACTED]
   PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift → PersonalFinanceTraker/PersonalFinanceTraker/Utilities/PieChartDataService.swift
-- `CompassViewModel` --references--> `CurrencyService`  [EXTRACTED]
-  PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift → PersonalFinanceTraker/PersonalFinanceTraker/Utilities/FinancialHealthService.swift
+- `TransactionListViewModel` --references--> `ITransactionRepository`  [EXTRACTED]
+  PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/TransactionListViewModel.swift → PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift
 
 ## Import Cycles
 - None detected.
@@ -188,7 +190,7 @@
 - **Financial Analytics Visual System** — appicon_v2_pie_chart_svg, appicon_v2_bar_chart_report_svg, appicon_v2_trend_up_svg, design_concept_financial_analytics_icons [INFERRED 0.80]
 - **Multi-theme Icon Variants (Light/Dark/Clear)** — appicon_v2_icon_ios_default_1024_pie_chart, appicon_v2_icon_ios_dark_1024_pie_chart, appicon_v2_icon_ios_cleardark_1024_pie_chart [EXTRACTED 1.00]
 
-## Communities (138 total, 14 thin omitted)
+## Communities (140 total, 14 thin omitted)
 
 ### Community 0 - "Analytics & Dashboard Views"
 Cohesion: 0.06
@@ -211,8 +213,8 @@ Cohesion: 0.13
 Nodes (14): File Structure, Global Constraints, Health Score V2 Implementation Plan, Summary, Task 10: Verify All Changes and Run Tests, Task 1: Create HealthScoreSnapshot SwiftData Model, Task 2: Extend ScoreComponent with Explanation and Tip Fields, Task 3: Add Snapshot Methods to TransactionRepository (+6 more)
 
 ### Community 5 - "Compass Goals & Forecasting"
-Cohesion: 0.10
-Nodes (19): CategoryTrend, CurrencyService, GoalModel, HabitObservation, HeroInsight, CompassViewModel, Bool, Decimal (+11 more)
+Cohesion: 0.08
+Nodes (27): Bool, CategoryModel, CategoryTrend, CurrencyService, Decimal, Double, FinancialHealthService, Foundation (+19 more)
 
 ### Community 6 - "Transaction Repository Layer"
 Cohesion: 0.10
@@ -259,8 +261,8 @@ Cohesion: 0.19
 Nodes (11): Glass, CGFloat, Content, String, SwiftUI, AppBackground, CategoryInfo, Color (+3 more)
 
 ### Community 17 - "Credit Card ViewModel"
-Cohesion: 0.06
-Nodes (30): BiometricAuthService, CategoryBreakdownViewModel, ObservableObject, Decimal, Int, ITransactionRepository, PieChartDataPoint, PieChartDataType (+22 more)
+Cohesion: 0.20
+Nodes (7): BiometricAuthService, Bool, LocalAuthentication, PINService, String, SwiftUI, PINEntryViewModel
 
 ### Community 18 - "Biometric Auth & PIN Entry"
 Cohesion: 0.08
@@ -334,6 +336,10 @@ Nodes (7): AddEditCreditCardSheet, Bool, Color, CreditCardModel, CreditViewModel
 Cohesion: 0.32
 Nodes (5): EditAddTransactionView, EditAddTransactionViewModel, SwiftData, SwiftUI, TransactionModel
 
+### Community 36 - "Community 36"
+Cohesion: 0.31
+Nodes (7): Decimal, Foundation, NumberFormatter, String, CurrencyService, formatEUR(), formatEURCompact()
+
 ### Community 37 - "Credit Card Data Model"
 Cohesion: 0.31
 Nodes (7): CreditCardModel, Decimal, Double, Foundation, String, SwiftData, UUID
@@ -372,7 +378,7 @@ Nodes (6): GoalsSection, Bool, Decimal, GoalModel, SwiftUI, Void
 
 ### Community 46 - "Health Score Card"
 Cohesion: 0.18
-Nodes (9): CategorySettingsView, ActivitySearchBar, CategoryModel, String, SwiftData, SwiftUI, String, SwiftUI (+1 more)
+Nodes (9): CategorySettingsView, ProfilePersonalInfoSection, CategoryModel, String, SwiftData, SwiftUI, String, SwiftUI (+1 more)
 
 ### Community 47 - "Lock View Biometrics"
 Cohesion: 0.29
@@ -478,6 +484,10 @@ Nodes (4): Bool, String, SwiftUI, EditFullNameView
 Cohesion: 0.40
 Nodes (3): PersonalFinanceTraker, Testing, PersonalFinanceTrakerTests
 
+### Community 73 - "Community 73"
+Cohesion: 0.18
+Nodes (9): CategoryBreakdownViewModel, Decimal, Int, ITransactionRepository, PieChartDataPoint, PieChartDataType, SwiftUI, TimePeriod (+1 more)
+
 ### Community 74 - "Icon Grid Picker"
 Cohesion: 0.50
 Nodes (3): IconGridPicker, String, SwiftUI
@@ -499,8 +509,8 @@ Cohesion: 0.50
 Nodes (3): HabitInsightRow, HabitObservation, SwiftUI
 
 ### Community 79 - "Habits Section"
-Cohesion: 0.22
-Nodes (5): Bool, Foundation, LocalAuthentication, Void, BiometricAuthService
+Cohesion: 0.20
+Nodes (6): ObservableObject, Bool, Foundation, LocalAuthentication, Void, BiometricAuthService
 
 ### Community 80 - "Health Score Section"
 Cohesion: 0.33
@@ -535,8 +545,8 @@ Cohesion: 0.50
 Nodes (3): ProfileHeader, String, SwiftUI
 
 ### Community 88 - "Profile Personal Info"
-Cohesion: 0.50
-Nodes (3): ProfilePersonalInfoSection, String, SwiftUI
+Cohesion: 0.25
+Nodes (6): Bool, Double, LocalAuthentication, String, SwiftUI, ProfileViewModel
 
 ### Community 89 - "Profile Section Label"
 Cohesion: 0.50
@@ -554,9 +564,9 @@ Nodes (3): SwiftUI, PINEntryViewModel, PINEntryView
 Cohesion: 0.20
 Nodes (9): GoalDetailSheet, Bool, Color, CompassViewModel, Decimal, Double, GoalModel, SwiftUI (+1 more)
 
-### Community 96 - "Community 96"
-Cohesion: 0.24
-Nodes (10): CategoryModel, Decimal, Double, Bool, Foundation, HealthScore, Int, String (+2 more)
+### Community 95 - "Community 95"
+Cohesion: 0.50
+Nodes (3): ActivitySearchBar, String, SwiftUI
 
 ### Community 97 - "Community 97"
 Cohesion: 0.31
@@ -683,24 +693,24 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ## Knowledge Gaps
-- **596 isolated node(s):** `graphify`, `Usage`, `What graphify is for`, `Step 0 - GitHub repos and multi-path merge (only if a URL or several paths)`, `Step 1 - Ensure graphify is installed` (+591 more)
+- **597 isolated node(s):** `Foundation`, `HeroInsight`, `HealthScore`, `TimelineDataPoint`, `TimePeriod` (+592 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `TransactionRepository` connect `Analytics & Dashboard Views` to `App Navigation & Protocols`?**
-  _High betweenness centrality (0.138) - this node is a cross-community bridge._
-- **Why does `MockTransactionRepository` connect `Transaction Repository Layer` to `Analytics & Dashboard Views`, `Profile State Management`?**
-  _High betweenness centrality (0.136) - this node is a cross-community bridge._
-- **Why does `ITransactionRepository` connect `Analytics & Dashboard Views` to `Transaction Repository Layer`?**
-  _High betweenness centrality (0.130) - this node is a cross-community bridge._
+- **Why does `CompassViewModel` connect `Compass Goals & Forecasting` to `Profile State Management`, `Activity Search Bar`, `Habits Section`?**
+  _High betweenness centrality (0.144) - this node is a cross-community bridge._
+- **Why does `TimePeriodPicker` connect `Time Period Filtering` to `Health Score Card`?**
+  _High betweenness centrality (0.143) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `TransactionRepository` (e.g. with `.init()` and `.init()`) actually correct?**
   _`TransactionRepository` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `graphify`, `Usage`, `What graphify is for` to the rest of the system?**
-  _596 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `Foundation`, `HeroInsight`, `HealthScore` to the rest of the system?**
+  _597 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Analytics & Dashboard Views` be split into smaller, more focused modules?**
   _Cohesion score 0.06201550387596899 - nodes in this community are weakly interconnected._
 - **Should `Profile State Management` be split into smaller, more focused modules?**
   _Cohesion score 0.11264367816091954 - nodes in this community are weakly interconnected._
+- **Should `Time Period Filtering` be split into smaller, more focused modules?**
+  _Cohesion score 0.05853658536585366 - nodes in this community are weakly interconnected._
