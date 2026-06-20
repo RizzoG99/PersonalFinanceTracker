@@ -35,4 +35,20 @@ struct AppSettingsTests {
         #expect(AppSettings.storedStartDay == 20)
         resetDefaults()
     }
+
+    @Test func clampsValueAbove28() {
+        resetDefaults()
+        let settings = AppSettings()
+        settings.payCycleStartDay = 50
+        #expect(settings.payCycleStartDay == 28)
+        resetDefaults()
+    }
+
+    @Test func clampsValueBelow1() {
+        resetDefaults()
+        let settings = AppSettings()
+        settings.payCycleStartDay = 0
+        #expect(settings.payCycleStartDay == 1)
+        resetDefaults()
+    }
 }

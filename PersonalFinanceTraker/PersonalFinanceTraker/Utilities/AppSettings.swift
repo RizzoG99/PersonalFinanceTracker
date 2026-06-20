@@ -3,7 +3,13 @@ import Foundation
 @Observable
 final class AppSettings {
     var payCycleStartDay: Int {
-        didSet { UserDefaults.standard.set(payCycleStartDay, forKey: "payCycleStartDay") }
+        didSet {
+            guard (1...28).contains(payCycleStartDay) else {
+                payCycleStartDay = max(1, min(28, payCycleStartDay))
+                return
+            }
+            UserDefaults.standard.set(payCycleStartDay, forKey: "payCycleStartDay")
+        }
     }
 
     init() {
