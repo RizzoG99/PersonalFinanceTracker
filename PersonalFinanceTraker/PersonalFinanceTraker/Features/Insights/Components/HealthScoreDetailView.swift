@@ -4,6 +4,7 @@ import Charts
 struct HealthScoreDetailView: View {
     let healthScore: HealthScore
     let snapshots: [HealthScoreSnapshot]
+    let payCycleStartDay: Int
     @Binding var ignoreSubscriptions: Bool
 
     private var sortedSnapshots: [HealthScoreSnapshot] {
@@ -13,10 +14,13 @@ struct HealthScoreDetailView: View {
     private var periodText: String {
         let calendar = Calendar.current
         let end = Date.now
-        let start = calendar.date(byAdding: .month, value: -6, to: end) ?? end
+        let financialMonths = PayCycleService.financialMonths(count: 6, before: end, startDay: payCycleStartDay, calendar: calendar)
+        let start = financialMonths.first?.start ?? end
         let fmt = DateFormatter()
-        fmt.dateFormat = "MMM yyyy"
-        return "\(fmt.string(from: start)) – \(fmt.string(from: end))"
+        fmt.dateFormat = "MMM d"
+        let endFmt = DateFormatter()
+        endFmt.dateFormat = "MMM d, yyyy"
+        return "\(fmt.string(from: start)) – \(endFmt.string(from: end))"
     }
 
     var body: some View {

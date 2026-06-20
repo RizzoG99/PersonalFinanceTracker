@@ -3,6 +3,7 @@ import SwiftUI
 struct HealthScoreSection: View {
     let healthScore: HealthScore?
     let snapshots: [HealthScoreSnapshot]
+    let payCycleStartDay: Int
     @Binding var ignoreSubscriptions: Bool
 
     @State private var showingDetail = false
@@ -21,6 +22,7 @@ struct HealthScoreSection: View {
                 HealthScoreDetailView(
                     healthScore: score,
                     snapshots: snapshots,
+                    payCycleStartDay: payCycleStartDay,
                     ignoreSubscriptions: $ignoreSubscriptions
                 )
                 .presentationDetents([.large])
