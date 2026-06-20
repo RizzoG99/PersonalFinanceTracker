@@ -128,8 +128,5 @@ struct CategoryBreakdownView: View {
             }
         }
         .payCycleAware { viewModel.load() }
-        .onAppear {
-            viewModel.load()
-        }
     }
 }

@@ -18,7 +18,7 @@ struct ActivityView: View {
             ?? CategoryInfo.info(for: categoryName).symbol
     }
 
-    init(context: ModelContext, showingAddItemView: Binding<Bool>) {
+    init(showingAddItemView: Binding<Bool>) {
         _showingAddItemView = showingAddItemView
     }
 
@@ -128,7 +128,7 @@ struct ActivityView: View {
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
     let vm = TransactionListViewModel(repo: TransactionRepository(context: container.mainContext))
-    return ActivityView(context: container.mainContext, showingAddItemView: .constant(false))
+    return ActivityView(showingAddItemView: .constant(false))
         .environment(vm)
         .environment(ProfileViewModel())
         .modelContainer(container)

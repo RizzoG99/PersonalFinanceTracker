@@ -34,7 +34,7 @@ struct MainTabView: View {
                         .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity, role: .search) {
-                    ActivityView(context: modelContext, showingAddItemView: $showingAddItemView)
+                    ActivityView(showingAddItemView: $showingAddItemView)
                         .payCycleAware { viewModel.load() }
                 }
                 Tab("Compass", systemImage: selectedTab == .insights ? "safari.fill" : "safari", value: .insights) {
