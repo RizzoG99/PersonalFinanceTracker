@@ -1,0 +1,38 @@
+import Testing
+import Foundation
+@testable import PersonalFinanceTraker
+
+@Suite(.serialized)
+struct AppSettingsTests {
+
+    private func resetDefaults() {
+        UserDefaults.standard.removeObject(forKey: "payCycleStartDay")
+    }
+
+    @Test func defaultsToOneWhenKeyAbsent() {
+        resetDefaults()
+        let settings = AppSettings()
+        #expect(settings.payCycleStartDay == 1)
+    }
+
+    @Test func persistsToUserDefaults() {
+        resetDefaults()
+        let settings = AppSettings()
+        settings.payCycleStartDay = 15
+        let settings2 = AppSettings()
+        #expect(settings2.payCycleStartDay == 15)
+        resetDefaults()
+    }
+
+    @Test func storedStartDayDefaultsToOne() {
+        resetDefaults()
+        #expect(AppSettings.storedStartDay == 1)
+    }
+
+    @Test func storedStartDayReflectsStoredValue() {
+        resetDefaults()
+        UserDefaults.standard.set(20, forKey: "payCycleStartDay")
+        #expect(AppSettings.storedStartDay == 20)
+        resetDefaults()
+    }
+}
