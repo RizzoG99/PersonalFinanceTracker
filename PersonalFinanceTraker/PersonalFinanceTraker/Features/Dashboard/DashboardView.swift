@@ -49,11 +49,11 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Total Balance")
                     .font(.subheadline)
-                    .foregroundColor(.textMid)
+                    .foregroundStyle(.textMid)
 
                 Text(formatEUR(viewModel.totalBalance))
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.textPrimary)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.textPrimary)
 
                 Divider().opacity(0.15)
 
@@ -82,11 +82,11 @@ struct DashboardView: View {
                 HStack {
                     Text("Savings Goal")
                         .font(.subheadline)
-                        .foregroundColor(.textMid)
+                        .foregroundStyle(.textMid)
                     Spacer()
                     Text("\(Int(viewModel.savingsGoalProgress * 100))%")
                         .font(.headline)
-                        .foregroundColor(.accentIndigo)
+                        .foregroundStyle(.accentIndigo)
                 }
 
                 ProgressView(value: min(viewModel.savingsGoalProgress, 1.0))
@@ -96,19 +96,19 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Current")
                             .font(.caption)
-                            .foregroundColor(.textDim)
+                            .foregroundStyle(.textDim)
                         Text(formatEUR(viewModel.currentSavings))
                             .font(.headline)
-                            .foregroundColor(.textPrimary)
+                            .foregroundStyle(.textPrimary)
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
                         Text("Goal")
                             .font(.caption)
-                            .foregroundColor(.textDim)
+                            .foregroundStyle(.textDim)
                         Text(formatEUR(viewModel.savingsGoal))
                             .font(.headline)
-                            .foregroundColor(.textPrimary)
+                            .foregroundStyle(.textPrimary)
                     }
                 }
             }
@@ -119,7 +119,7 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Recent Transactions")
                 .font(.headline)
-                .foregroundColor(.textPrimary)
+                .foregroundStyle(.textPrimary)
                 .padding(.horizontal, 4)
             
             GlassCard {
