@@ -113,7 +113,7 @@ final class EditAddTransactionViewModel {
             timestamp: date,
             amount: finalAmount,
             note: transactionName,
-            category: selectedCategory.displayText,
+            category: selectedCategory.name,
             categoryModel: selectedCategory,
             currencyCode: currencyCode
         )
@@ -141,7 +141,7 @@ final class EditAddTransactionViewModel {
         item.timestamp = date
         item.amount = finalAmount
         item.note = transactionName
-        item.category = selectedCategory.displayText
+        item.category = selectedCategory.name
         item.categoryModel = selectedCategory
         item.currencyCode = currencyCode
         item.goalId = nil

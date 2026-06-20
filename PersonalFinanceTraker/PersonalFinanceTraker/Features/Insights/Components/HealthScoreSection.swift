@@ -10,7 +10,14 @@ struct HealthScoreSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            InsightsSectionHeader(title: "Health Score", subtitle: "How your finances are doing")
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Health Score")
+                    .font(.headline)
+                    .foregroundStyle(.textPrimary)
+                Text("How your finances are doing")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
             if let score = healthScore {
                 HealthScoreCard(healthScore: score, snapshots: snapshots) {
                     showingDetail = true

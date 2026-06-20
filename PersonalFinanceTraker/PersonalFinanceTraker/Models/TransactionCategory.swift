@@ -75,8 +75,4 @@ struct TransactionCategory: Identifiable, Hashable, Codable {
     ]
     
     static let defaultCategories: [TransactionCategory] = incomeCategories + expenseCategories
-    
-    var displayText: String {
-        label
-    }
 }

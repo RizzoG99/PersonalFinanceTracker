@@ -5,7 +5,14 @@ struct ForecastSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            InsightsSectionHeader(title: "Forecast", subtitle: "Month-end projection")
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Forecast")
+                    .font(.headline)
+                    .foregroundStyle(.textPrimary)
+                Text("Month-end projection")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
             if let fc = forecast, fc.lastThreeMonthAvg > 0 {
                 ForecastCard(forecast: fc)
             } else {

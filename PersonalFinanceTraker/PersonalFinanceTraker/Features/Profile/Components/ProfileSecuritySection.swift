@@ -6,7 +6,10 @@ struct ProfileSecuritySection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ProfileSectionLabel(title: "Security")
+            Text("SECURITY")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.textDim)
+                .padding(.horizontal, 4)
             VStack {
                 NavigationLink {
                     PINSetupView(

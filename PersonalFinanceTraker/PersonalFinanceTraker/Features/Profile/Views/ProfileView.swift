@@ -44,7 +44,10 @@ struct ProfileView: View {
                         }
                         .disabled(transactionViewModel.isLoadingCSV)
                     } header: {
-                        ProfileSectionLabel(title: "Data")
+                        Text("DATA")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.textDim)
+                            .padding(.horizontal, 4)
                     }
                     .appFormSectionBackground()
                     Section {

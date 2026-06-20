@@ -5,7 +5,14 @@ struct HabitsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            InsightsSectionHeader(title: "Patterns", subtitle: "Recurring spending habits")
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Patterns")
+                    .font(.headline)
+                    .foregroundStyle(.textPrimary)
+                Text("Recurring spending habits")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
             if observations.isEmpty {
                 InsightsEmptyCard(message: "More data needed to detect patterns")
             } else {

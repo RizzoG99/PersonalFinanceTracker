@@ -5,7 +5,10 @@ struct ProfileCategoriesSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ProfileSectionLabel(title: "Categories")
+            Text("CATEGORIES")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.textDim)
+                .padding(.horizontal, 4)
             NavigationLink {
                 CategorySettingsView()
             } label: {

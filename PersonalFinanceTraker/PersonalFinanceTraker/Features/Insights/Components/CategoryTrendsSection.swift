@@ -5,7 +5,14 @@ struct CategoryTrendsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            InsightsSectionHeader(title: "Category Trends", subtitle: "vs last month")
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Category Trends")
+                    .font(.headline)
+                    .foregroundStyle(.textPrimary)
+                Text("vs last month")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
             if trends.isEmpty {
                 InsightsEmptyCard(message: "No expense data yet")
             } else {
