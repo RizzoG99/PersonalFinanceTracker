@@ -63,9 +63,7 @@ final class DashboardViewModel {
         let startDay = AppSettings.storedStartDay
         guard startDay != 1 else { return "This Month" }
         let (start, _) = PayCycleService.currentFinancialMonth(startDay: startDay)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return "Since \(formatter.string(from: start))"
+        return "Since \(start.formatted(.dateTime.month(.abbreviated).day()))"
     }
 
     var savingsGoalProgress: Double {

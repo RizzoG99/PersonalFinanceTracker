@@ -71,9 +71,9 @@ final class TransactionListViewModel {
             self.filteredItems = transactions
         } else {
             self.filteredItems = transactions.filter { item in
-                item.note.localizedCaseInsensitiveContains(searchText) ||
-                item.amount.description.localizedCaseInsensitiveContains(searchText) ||
-                item.category.localizedCaseInsensitiveContains(searchText)
+                item.note.localizedStandardContains(searchText) ||
+                item.amount.description.localizedStandardContains(searchText) ||
+                item.category.localizedStandardContains(searchText)
             }
         }
     }
@@ -122,9 +122,7 @@ final class TransactionListViewModel {
     var currentPeriodLabel: String? {
         guard selectedTimePeriod == .month, AppSettings.storedStartDay != 1 else { return nil }
         let (start, _) = PayCycleService.currentFinancialMonth(startDay: AppSettings.storedStartDay)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return "Since \(formatter.string(from: start))"
+        return "Since \(start.formatted(.dateTime.month(.abbreviated).day()))"
     }
 
     /// Generates a CSV export of all currently filtered transactions
