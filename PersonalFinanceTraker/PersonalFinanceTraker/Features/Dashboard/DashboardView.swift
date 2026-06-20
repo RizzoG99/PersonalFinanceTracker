@@ -57,6 +57,10 @@ struct DashboardView: View {
 
                 Divider().opacity(0.15)
 
+                Text(viewModel.financialMonthLabel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
                 HStack(spacing: 12) {
                     StatCard(icon: "arrow.down",
                              label: "Income",

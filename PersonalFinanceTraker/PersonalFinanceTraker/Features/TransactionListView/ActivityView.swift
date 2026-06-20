@@ -45,6 +45,14 @@ struct ActivityView: View {
                         .padding(.vertical, 4)
                     }
                     .scrollIndicators(.hidden)
+
+                    if let label = viewModel.currentPeriodLabel {
+                        Text(label)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal)
+                    }
+
                     HStack(spacing: 12) {
                         StatCard(
                             icon: "arrow.down",

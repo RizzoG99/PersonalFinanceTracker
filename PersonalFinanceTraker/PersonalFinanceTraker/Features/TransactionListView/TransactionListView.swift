@@ -27,6 +27,13 @@ struct TransactionListMVVM: View {
                     VStack(spacing: 16) {
                         TimePeriodPicker(selection: $viewModel.selectedTimePeriod)
 
+                        if let label = viewModel.currentPeriodLabel {
+                            Text(label)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal)
+                        }
+
                         TransactionChart(
                             data: viewModel.chartData,
                             currencyCode: "EUR"
