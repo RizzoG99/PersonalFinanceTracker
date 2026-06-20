@@ -16,7 +16,7 @@ final class DashboardViewModel {
     var currentSavings: Decimal = 0
     var loadError: String? = nil
 
-    let repo: ITransactionRepository
+    private let repo: ITransactionRepository
     private let currencyService = CurrencyService()
 
     init(repo: ITransactionRepository) {

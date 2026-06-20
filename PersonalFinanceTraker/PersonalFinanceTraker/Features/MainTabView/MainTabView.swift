@@ -22,10 +22,6 @@ struct MainTabView: View {
         _dashboardViewModel = State(wrappedValue: DashboardViewModel(repo: TransactionRepository(context: context)))
     }
 
-    enum TabItem: Hashable {
-        case home, activity, insights, credit, search
-    }
-
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
