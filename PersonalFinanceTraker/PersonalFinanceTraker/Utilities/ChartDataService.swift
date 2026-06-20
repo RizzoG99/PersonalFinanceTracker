@@ -38,9 +38,10 @@ public class ChartDataService {
     ///   - items: Array of financial items to process
     ///   - timePeriod: The time period for data aggregation
     ///   - referenceDate: The reference date for calculations (defaults to current date)
+    ///   - payCycleStartDay: The day of the month when the financial month starts (defaults to 1)
     /// - Returns: Array of chart data points ready for display
-    public func generateChartData(from items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date = Date()) -> [ChartDataPoint] {
-        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate)
+    public func generateChartData(from items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [ChartDataPoint] {
+        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         
         switch timePeriod {
         case .week:
@@ -57,13 +58,20 @@ public class ChartDataService {
     ///   - items: Array of items to filter
     ///   - timePeriod: Time period for filtering
     ///   - referenceDate: Reference date for calculations
+    ///   - payCycleStartDay: The day of the month when the financial month starts (defaults to 1)
     /// - Returns: Filtered array of items within the time period
-    public func filterItems(_ items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date = Date()) -> [TransactionModel] {
-        let calendar = Calendar.current
-        let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate
-        
-        return items.filter { item in
-            item.timestamp >= startDate && item.timestamp <= referenceDate
+    public func filterItems(_ items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [TransactionModel] {
+        switch timePeriod {
+        case .month:
+            let (start, end) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
+            return items.filter { $0.timestamp >= start && $0.timestamp <= end }
+        default:
+            let calendar = Calendar.current
+            let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate
+
+            return items.filter { item in
+                item.timestamp >= startDate && item.timestamp <= referenceDate
+            }
         }
     }
     
@@ -172,13 +180,14 @@ extension ChartDataService {
     /// - Parameters:
     ///   - items: Array of items to analyze
     ///   - timePeriod: Time period for analysis
+    ///   - payCycleStartDay: The day of the month when the financial month starts (defaults to 1)
     /// - Returns: A tuple containing total income, expenses, and net amount
-    public func getSummaryStats(from items: [TransactionModel], for timePeriod: TimePeriod) -> (income: Decimal, expenses: Decimal, net: Decimal) {
-        let filteredItems = filterItems(items, for: timePeriod)
+    public func getSummaryStats(from items: [TransactionModel], for timePeriod: TimePeriod, payCycleStartDay: Int = 1) -> (income: Decimal, expenses: Decimal, net: Decimal) {
+        let filteredItems = filterItems(items, for: timePeriod, payCycleStartDay: payCycleStartDay)
         let income = calculateIncome(from: filteredItems)
         let expenses = calculateExpenses(from: filteredItems)
         let net = income - expenses
-        
+
         return (income: income, expenses: expenses, net: net)
     }
 }
