@@ -57,13 +57,13 @@ struct ActivityView: View {
                         StatCard(
                             icon: "arrow.down",
                             label: "Income",
-                            value: formatEUR(viewModel.filteredItems.filter { $0.amount > 0 }.reduce(Decimal(0)) { $0 + $1.amount }),
+                            value: formatEUR(viewModel.totalFilteredIncome),
                             color: .positive
                         )
                         StatCard(
                             icon: "arrow.up",
                             label: "Expenses",
-                            value: formatEUR(abs(viewModel.filteredItems.filter { $0.amount < 0 }.reduce(Decimal(0)) { $0 + $1.amount })),
+                            value: formatEUR(viewModel.totalFilteredExpenses),
                             color: .negative
                         )
                     }

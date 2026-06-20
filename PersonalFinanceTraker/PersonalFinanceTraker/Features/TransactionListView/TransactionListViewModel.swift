@@ -17,6 +17,15 @@ final class TransactionListViewModel {
         }
     }
     var groupedItems: [(String, [TransactionModel])] = []
+
+    var totalFilteredIncome: Decimal {
+        filteredItems.filter { $0.amount > 0 }.reduce(.zero) { $0 + $1.amount }
+    }
+
+    var totalFilteredExpenses: Decimal {
+        abs(filteredItems.filter { $0.amount < 0 }.reduce(.zero) { $0 + $1.amount })
+    }
+
     var searchText: String = "" {
         didSet { doFilterItemBySearchText() }
     }
