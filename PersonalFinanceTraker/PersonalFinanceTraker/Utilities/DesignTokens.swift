@@ -153,22 +153,7 @@ struct CategoryInfo {
     static func info(for categoryName: String) -> CategoryInfo {
         let name = categoryName.lowercased()
 
-        let color: Color
-        if name.contains("grocer") || name.contains("supermarket") || name.contains("salary") || name.contains("paycheck") || name.contains("freelance") || name.contains("gift") || name.contains("investment") || name.contains("bonus") || name.contains("prize") || name.contains("refund") || name.contains("income") {
-            color = .categoryGreen
-        } else if name.contains("dining") || name.contains("restaurant") || name.contains("food") || name.contains("coffee") || name.contains("entertainment") || name.contains("movie") {
-            color = .categoryAmber
-        } else if name.contains("transport") || name.contains("gas") || name.contains("car") || name.contains("uber") || name.contains("rent") || name.contains("mortgage") || name.contains("utilities") || name.contains("electricity") || name.contains("phone") {
-            color = .categoryIndigo
-        } else if name.contains("shopping") || name.contains("clothing") {
-            color = .categoryPink
-        } else if name.contains("subscription") || name.contains("streaming") || name.contains("netflix") || name.contains("spotify") {
-            color = .categoryPurple
-        } else if name.contains("health") || name.contains("gym") || name.contains("fitness") || name.contains("healthcare") || name.contains("pet") {
-            color = .categoryTeal
-        } else {
-            color = .categoryGray
-        }
+        let color = Color(CategoryConstants.colorToken(forName: categoryName))
 
         let symbol: String
         if name.contains("grocer") || name.contains("supermarket") {
