@@ -57,13 +57,13 @@ struct ActivityView: View {
                         StatCard(
                             icon: "arrow.down",
                             label: "Income",
-                            value: formatEUR(viewModel.totalFilteredIncome),
+                            value: viewModel.totalFilteredIncome.formattedEUR(),
                             color: .positive
                         )
                         StatCard(
                             icon: "arrow.up",
                             label: "Expenses",
-                            value: formatEUR(viewModel.totalFilteredExpenses),
+                            value: viewModel.totalFilteredExpenses.formattedEUR(),
                             color: .negative
                         )
                     }

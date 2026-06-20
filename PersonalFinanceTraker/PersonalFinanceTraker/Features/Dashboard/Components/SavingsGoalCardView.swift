@@ -30,7 +30,7 @@ struct SavingsGoalCardView: View {
                         Text("Current")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(formatEUR(viewModel.currentSavings))
+                        Text(viewModel.currentSavings.formattedEUR())
                             .font(.headline)
                             .foregroundStyle(.textPrimary)
                     }
@@ -39,7 +39,7 @@ struct SavingsGoalCardView: View {
                         Text("Goal")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(formatEUR(viewModel.savingsGoal))
+                        Text(viewModel.savingsGoal.formattedEUR())
                             .font(.headline)
                             .foregroundStyle(.textPrimary)
                     }

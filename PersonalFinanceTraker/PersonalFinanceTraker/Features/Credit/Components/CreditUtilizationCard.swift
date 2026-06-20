@@ -30,7 +30,7 @@ struct CreditUtilizationCard: View {
                         Text("Current Usage")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(formatEUR(totalBalance))
+                        Text(totalBalance.formattedEUR())
                             .font(.headline)
                             .foregroundStyle(.negative)
                     }
@@ -39,7 +39,7 @@ struct CreditUtilizationCard: View {
                         Text("Available Credit")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(formatEUR(totalAvailable))
+                        Text(totalAvailable.formattedEUR())
                             .font(.headline)
                             .foregroundStyle(.textPrimary)
                     }

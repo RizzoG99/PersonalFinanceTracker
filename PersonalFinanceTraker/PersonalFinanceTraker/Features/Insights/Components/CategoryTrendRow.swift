@@ -42,7 +42,7 @@ struct CategoryTrendRow: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 3) {
-                    Text(formatEUR(trend.category.amount))
+                    Text(trend.category.amount.formattedEUR())
                         .font(.headline)
                         .foregroundStyle(.textPrimary)
                     trendBadge

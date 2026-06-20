@@ -70,32 +70,34 @@ public class CurrencyService: ObservableObject {
     }
 }
 
-func formatEUR(_ value: Decimal) -> String {
-    let fmt = NumberFormatter()
-    fmt.numberStyle = .currency
-    fmt.currencyCode = "EUR"
-    return fmt.string(from: value as NSDecimalNumber) ?? "€0.00"
-}
+extension Decimal {
+    func formattedEUR() -> String {
+        let fmt = NumberFormatter()
+        fmt.numberStyle = .currency
+        fmt.currencyCode = "EUR"
+        return fmt.string(from: self as NSDecimalNumber) ?? "€0.00"
+    }
 
-func formatEURCompact(_ value: Decimal) -> String {
-    let double = Double(truncating: value as NSDecimalNumber)
-    let fmt = NumberFormatter()
-    fmt.numberStyle = .currency
-    fmt.currencyCode = "EUR"
-    fmt.maximumFractionDigits = 1
-    fmt.minimumFractionDigits = 0
-    switch abs(double) {
-    case 1_000_000...:
-        fmt.positiveSuffix = "M \(fmt.currencySymbol ?? "€")"
-        fmt.negativeSuffix = "M \(fmt.currencySymbol ?? "€")"
-        fmt.currencySymbol = ""
-        return fmt.string(from: NSNumber(value: double / 1_000_000)) ?? formatEUR(value)
-    case 1_000...:
-        fmt.positiveSuffix = "K \(fmt.currencySymbol ?? "€")"
-        fmt.negativeSuffix = "K \(fmt.currencySymbol ?? "€")"
-        fmt.currencySymbol = ""
-        return fmt.string(from: NSNumber(value: double / 1_000)) ?? formatEUR(value)
-    default:
-        return formatEUR(value)
+    func formattedEURCompact() -> String {
+        let double = Double(truncating: self as NSDecimalNumber)
+        let fmt = NumberFormatter()
+        fmt.numberStyle = .currency
+        fmt.currencyCode = "EUR"
+        fmt.maximumFractionDigits = 1
+        fmt.minimumFractionDigits = 0
+        switch abs(double) {
+        case 1_000_000...:
+            fmt.positiveSuffix = "M \(fmt.currencySymbol ?? "€")"
+            fmt.negativeSuffix = "M \(fmt.currencySymbol ?? "€")"
+            fmt.currencySymbol = ""
+            return fmt.string(from: NSNumber(value: double / 1_000_000)) ?? self.formattedEUR()
+        case 1_000...:
+            fmt.positiveSuffix = "K \(fmt.currencySymbol ?? "€")"
+            fmt.negativeSuffix = "K \(fmt.currencySymbol ?? "€")"
+            fmt.currencySymbol = ""
+            return fmt.string(from: NSNumber(value: double / 1_000)) ?? self.formattedEUR()
+        default:
+            return self.formattedEUR()
+        }
     }
 }

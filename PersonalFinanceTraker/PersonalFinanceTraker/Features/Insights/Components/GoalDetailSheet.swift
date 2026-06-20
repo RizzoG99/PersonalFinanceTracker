@@ -87,7 +87,7 @@ struct GoalDetailSheet: View {
                         .font(.subheadline)
                         .foregroundStyle(.textDim)
                     Spacer()
-                    Text(formatEURCompact(currentAmount))
+                    Text(currentAmount.formattedEURCompact())
                         .font(.subheadline.bold())
                         .foregroundStyle(goalColor)
                 }
@@ -96,7 +96,7 @@ struct GoalDetailSheet: View {
                         .font(.subheadline)
                         .foregroundStyle(.textDim)
                     Spacer()
-                    Text(formatEURCompact(goal.targetAmount))
+                    Text(goal.targetAmount.formattedEURCompact())
                         .font(.subheadline.bold())
                         .foregroundStyle(.textPrimary)
                 }

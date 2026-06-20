@@ -54,13 +54,13 @@ struct GoalCard: View {
                     .frame(height: 6)
 
                     HStack(spacing: 4) {
-                        Text(formatEURCompact(currentAmount))
+                        Text(currentAmount.formattedEURCompact())
                             .font(.caption.bold())
                             .foregroundStyle(goalColor)
                         Text("/")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(formatEURCompact(goal.targetAmount))
+                        Text(goal.targetAmount.formattedEURCompact())
                             .font(.caption)
                             .foregroundStyle(.textDim)
                         Spacer()

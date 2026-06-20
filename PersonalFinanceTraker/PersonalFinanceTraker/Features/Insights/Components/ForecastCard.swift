@@ -28,7 +28,7 @@ struct ForecastCard: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(formatEUR(forecast.projectedAmount))
+                    Text(forecast.projectedAmount.formattedEUR())
                         .font(.title.bold())
                         .foregroundStyle(.white)
                     Text("projected this month")
@@ -42,15 +42,15 @@ struct ForecastCard: View {
                     Text("3-month avg")
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.7))
-                    Text(formatEUR(forecast.lastThreeMonthAvg))
+                    Text(forecast.lastThreeMonthAvg.formattedEUR())
                         .font(.caption.bold())
                         .foregroundStyle(.white.opacity(0.85))
                     Spacer()
                     let diff = forecast.projectedAmount - forecast.lastThreeMonthAvg
                     if diff != 0 {
                         Text(diff > 0
-                            ? "+\(formatEUR(diff))"
-                            : "-\(formatEUR(abs(diff)))"
+                            ? "+\(diff.formattedEUR())"
+                            : "-\(abs(diff).formattedEUR())"
                         )
                         .font(.caption.bold())
                         .foregroundStyle(.white)

@@ -20,7 +20,7 @@ struct InsightsTopCategoryRow: View {
                         .foregroundStyle(.textDim)
                 }
                 Spacer()
-                Text(formatEUR(category.amount))
+                Text(category.amount.formattedEUR())
                     .font(.headline)
                     .foregroundStyle(.negative)
             }

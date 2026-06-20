@@ -16,7 +16,7 @@ struct BalanceCardView: View {
                     .font(.subheadline)
                     .foregroundStyle(.textMid)
 
-                Text(formatEUR(viewModel.totalBalance))
+                Text(viewModel.totalBalance.formattedEUR())
                     .font(.largeTitle.bold())
                     .foregroundStyle(.textPrimary)
 
@@ -29,12 +29,12 @@ struct BalanceCardView: View {
                 HStack(spacing: 12) {
                     StatCard(icon: "arrow.down",
                              label: "Income",
-                             value: "+\(formatEUR(viewModel.monthlyIncome))",
+                             value: "+\(viewModel.monthlyIncome.formattedEUR())",
                              color: .positive)
 
                     StatCard(icon: "arrow.up",
                              label: "Expenses",
-                             value: "-\(formatEUR(viewModel.monthlyExpenses))",
+                             value: "-\(viewModel.monthlyExpenses.formattedEUR())",
                              color: .negative)
                 }
             }

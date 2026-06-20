@@ -49,7 +49,7 @@ struct CreditCardItem: View {
                         Text("Balance")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(formatEUR(card.balance))
+                        Text(card.balance.formattedEUR())
                             .font(.headline)
                             .foregroundStyle(.negative)
                     }
@@ -58,7 +58,7 @@ struct CreditCardItem: View {
                         Text("Limit")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(formatEUR(card.limit))
+                        Text(card.limit.formattedEUR())
                             .font(.headline)
                             .foregroundStyle(.textPrimary)
                     }
