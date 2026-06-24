@@ -90,33 +90,49 @@ struct SpendingInsightService {
             let cat = tx.category.isEmpty ? "Other" : tx.category
             categoryTotals[cat, default: 0] += abs(currencyService.convertToBase(tx.amount, from: tx.currencyCode))
         }
-        let topCats = categoryTotals.sorted { $0.value > $1.value }.prefix(3).map { $0.key }
+        // ponytail: topCats used by streak detection added in next step
+        let topCats = categoryTotals.sorted { $0.value > $1.value }.prefix(5).map { $0.key }
+        _ = topCats
 
-        let weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
         var observations: [HabitObservation] = []
 
-        for catName in topCats {
-            let catTxns = recentExpenses.filter { $0.category == catName }
-            guard catTxns.count >= 3 else { continue }
-
-            var dayCounts: [Int: Int] = [:]
-            for tx in catTxns {
-                let weekday = calendar.component(.weekday, from: tx.timestamp)
-                dayCounts[weekday, default: 0] += 1
+        // MARK: - Weekend vs Weekday
+        let weekendWeekdays: Set<Int> = [1, 7] // Sun=1, Sat=7
+        if recentExpenses.count >= 5 {
+            var weekendTotal = Decimal(0)
+            var weekdayTotal = Decimal(0)
+            for tx in recentExpenses {
+                let converted = abs(currencyService.convertToBase(tx.amount, from: tx.currencyCode))
+                if weekendWeekdays.contains(calendar.component(.weekday, from: tx.timestamp)) {
+                    weekendTotal += converted
+                } else {
+                    weekdayTotal += converted
+                }
             }
-            guard let (peakDay, peakCount) = dayCounts.max(by: { $0.value < $1.value }),
-                  peakCount >= 2 else { continue }
-
-            let dayName = weekdayNames[peakDay - 1]
-            let info = CategoryInfo.info(for: catName)
-            let parts = catName.split(separator: " ", maxSplits: 1)
-            let displayName = parts.count > 1 ? String(parts[1]) : catName
-
-            observations.append(HabitObservation(
-                sfSymbol: info.symbol,
-                title: "\(displayName) peaks on \(dayName)s",
-                detail: "\(peakCount) of \(catTxns.count) transactions this month"
-            ))
+            // Fixed denominators: 30-day window always has ~10 weekend days and ~20 weekday days
+            let weekendAvg = weekendTotal / 10
+            let weekdayAvg = weekdayTotal / 20
+            if weekendAvg > 0 && weekdayAvg > 0 {
+                let ratio = Double(truncating: (weekendAvg / weekdayAvg) as NSDecimalNumber)
+                if ratio >= 1.3 {
+                    let ratioStr = String(format: "%.1f", ratio)
+                    observations.append(HabitObservation(
+                        sfSymbol: "calendar.badge.clock",
+                        title: "Weekend spending is \(ratioStr)× higher",
+                        detail: "\(weekendAvg.formattedEURCompact()) avg/day on weekends vs \(weekdayAvg.formattedEURCompact()) on weekdays"
+                    ))
+                } else {
+                    let inverseRatio = Double(truncating: (weekdayAvg / weekendAvg) as NSDecimalNumber)
+                    if inverseRatio >= 1.3 {
+                        let ratioStr = String(format: "%.1f", inverseRatio)
+                        observations.append(HabitObservation(
+                            sfSymbol: "briefcase",
+                            title: "Weekdays are your heaviest spending days",
+                            detail: "\(weekdayAvg.formattedEURCompact()) avg/day on weekdays vs \(weekendAvg.formattedEURCompact()) on weekends"
+                        ))
+                    }
+                }
+            }
         }
 
         let subCount = recentExpenses.filter {
