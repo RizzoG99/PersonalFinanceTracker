@@ -90,11 +90,43 @@ struct SpendingInsightService {
             let cat = tx.category.isEmpty ? "Other" : tx.category
             categoryTotals[cat, default: 0] += abs(currencyService.convertToBase(tx.amount, from: tx.currencyCode))
         }
-        // ponytail: topCats used by streak detection added in next step
         let topCats = categoryTotals.sorted { $0.value > $1.value }.prefix(5).map { $0.key }
-        _ = topCats
 
         var observations: [HabitObservation] = []
+
+        // MARK: - Category Streaks
+        let startOfThisWeek: Date = {
+            var comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: .now)
+            comps.weekday = 2 // Monday
+            return calendar.date(from: comps) ?? .now
+        }()
+
+        var streakObservations: [(streak: Int, obs: HabitObservation)] = []
+        for catName in topCats {
+            let catTxns = recentExpenses.filter { $0.category == catName }
+            guard catTxns.count >= 3 else { continue }
+
+            var streak = 0
+            for weekOffset in 0..<6 {
+                guard let weekStart = calendar.date(byAdding: .weekOfYear, value: -weekOffset, to: startOfThisWeek),
+                      let weekEnd = calendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) else { break }
+                let hasTransaction = catTxns.contains { $0.timestamp >= weekStart && $0.timestamp < weekEnd }
+                if hasTransaction { streak += 1 } else { break }
+            }
+            guard streak >= 3 else { continue }
+
+            let info = CategoryInfo.info(for: catName)
+            let parts = catName.split(separator: " ", maxSplits: 1)
+            let displayName = parts.count > 1 ? String(parts[1]) : catName
+            let detail = streak >= 4 ? "Every week for over a month" : "Every week for \(streak) weeks"
+
+            streakObservations.append((streak, HabitObservation(
+                sfSymbol: info.symbol,
+                title: "\(displayName) — \(streak)-week streak",
+                detail: detail
+            )))
+        }
+        observations += streakObservations.sorted { $0.streak > $1.streak }.prefix(2).map(\.obs)
 
         // MARK: - Weekend vs Weekday
         let weekendWeekdays: Set<Int> = [1, 7] // Sun=1, Sat=7

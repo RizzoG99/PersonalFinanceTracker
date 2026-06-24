@@ -22,6 +22,26 @@ struct SpendingInsightServiceTests {
         TransactionModel(timestamp: date, amount: -abs(amount), note: "", category: category, currencyCode: "EUR", goalId: nil)
     }
 
+    // Returns a Date in a specific calendar week, offset from current week
+    private func dateInWeek(weeksAgo: Int, weekday: Int = 3) -> Date {
+        let cal = Calendar.current
+        var comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        comps.weekOfYear = (comps.weekOfYear ?? 0) - weeksAgo
+        comps.weekday = weekday
+        return cal.date(from: comps) ?? Date()
+    }
+
+    @Test("4-week streak emits streak observation with 'over a month' detail")
+    func fourWeekStreakEmitsObservation() {
+        let service = makeService()
+        // One transaction per week for 4 consecutive weeks in same category
+        let txns = (0..<4).map { makeExpense(amount: 20, category: "🛒 Groceries", on: dateInWeek(weeksAgo: $0)) }
+        let obs = service.habitObservations(expenseTransactions: txns)
+        let streak = obs.first { $0.title.contains("Groceries") && $0.title.contains("streak") }
+        #expect(streak != nil)
+        #expect(streak?.detail == "Every week for over a month")
+    }
+
     @Test("weekend-heavy: emits calendar.badge.clock observation")
     func weekendHeavySpending() {
         let service = makeService()
@@ -40,5 +60,25 @@ struct SpendingInsightServiceTests {
         let txns = (0..<4).map { makeExpense(amount: 50, on: dateOnWeekday(7, weeksAgo: $0)) }
         let obs = service.habitObservations(expenseTransactions: txns)
         #expect(!obs.contains { $0.sfSymbol == "calendar.badge.clock" || $0.sfSymbol == "briefcase" })
+    }
+
+    @Test("2-week streak emits no streak observation")
+    func twoWeekStreakTooShort() {
+        let service = makeService()
+        let txns = (0..<2).map { makeExpense(amount: 20, category: "🛒 Groceries", on: dateInWeek(weeksAgo: $0)) }
+        let obs = service.habitObservations(expenseTransactions: txns)
+        #expect(!obs.contains { $0.title.contains("streak") })
+    }
+
+    @Test("at most 2 streak observations emitted")
+    func atMostTwoStreaks() {
+        let service = makeService()
+        // 3 categories each with 4-week streaks
+        let cats = ["🛒 Groceries", "🍽️ Restaurants", "⛽ Gas"]
+        let txns = cats.flatMap { cat in
+            (0..<4).map { makeExpense(amount: 20, category: cat, on: dateInWeek(weeksAgo: $0)) }
+        }
+        let obs = service.habitObservations(expenseTransactions: txns)
+        #expect(obs.filter { $0.title.contains("streak") }.count <= 2)
     }
 }
