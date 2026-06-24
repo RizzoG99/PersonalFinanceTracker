@@ -28,6 +28,10 @@ protocol ITransactionRepository {
     // Snapshot management
     func saveSnapshot(_ snapshot: HealthScoreSnapshot) throws
     func fetchSnapshots(limit: Int) throws -> [HealthScoreSnapshot]
+
+    // Forecast cache management
+    func fetchForecastCache() throws -> DailyForecastCache?
+    func saveForecastCache(_ cache: DailyForecastCache) throws
 }
 
 final class TransactionRepository: ITransactionRepository {
@@ -101,5 +105,16 @@ final class TransactionRepository: ITransactionRepository {
         )
         desc.fetchLimit = limit
         return try context.fetch(desc)
+    }
+
+    func fetchForecastCache() throws -> DailyForecastCache? {
+        try context.fetch(FetchDescriptor<DailyForecastCache>()).first
+    }
+
+    func saveForecastCache(_ cache: DailyForecastCache) throws {
+        let existing = try context.fetch(FetchDescriptor<DailyForecastCache>())
+        existing.forEach { context.delete($0) }
+        context.insert(cache)
+        try context.save()
     }
 }
