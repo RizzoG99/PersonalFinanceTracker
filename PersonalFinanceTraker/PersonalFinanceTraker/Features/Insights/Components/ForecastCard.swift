@@ -4,19 +4,48 @@
 //
 
 import SwiftUI
+import Charts
 
 struct ForecastCard: View {
     let forecast: SpendingForecast
 
+    private struct ChartPoint: Identifiable {
+        var id: Int { day }
+        let day: Int
+        let amount: Double
+    }
+
     private var isOverPace: Bool {
         forecast.lastThreeMonthAvg > 0 && forecast.projectedAmount > forecast.lastThreeMonthAvg
     }
-
     private var trendColor: Color { isOverPace ? .negative : .positive }
+
+    private var daysInMonth: Int {
+        Calendar.current.range(of: .day, in: .month, for: .now)?.count ?? 30
+    }
+
+    private var actualPoints: [ChartPoint] {
+        forecast.dailyActuals.map {
+            ChartPoint(day: $0.day, amount: NSDecimalNumber(decimal: $0.cumulative).doubleValue)
+        }
+    }
+
+    // Two-point segment: last actual → projected month-end
+    private var projectionPoints: [ChartPoint] {
+        guard let last = actualPoints.last else { return [] }
+        return [
+            last,
+            ChartPoint(
+                day: daysInMonth,
+                amount: NSDecimalNumber(decimal: forecast.projectedAmount).doubleValue
+            ),
+        ]
+    }
 
     var body: some View {
         GlassCard(tint: trendColor) {
             VStack(alignment: .leading, spacing: 14) {
+                // Header row
                 HStack {
                     Label("At this pace", systemImage: "chart.line.uptrend.xyaxis")
                         .font(.subheadline.bold())
@@ -27,33 +56,91 @@ struct ForecastCard: View {
                         .foregroundStyle(.white.opacity(0.7))
                 }
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(forecast.projectedAmount.formattedEUR())
-                        .font(.title.bold())
-                        .foregroundStyle(.white)
-                    Text("projected this month")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.75))
+                // Chart (only rendered when we have data)
+                if !actualPoints.isEmpty {
+                    Chart {
+                        // Solid area + line for actual days
+                        ForEach(actualPoints) { point in
+                            AreaMark(
+                                x: .value("Day", point.day),
+                                y: .value("Spend", point.amount)
+                            )
+                            .foregroundStyle(trendColor.opacity(0.2))
+                            LineMark(
+                                x: .value("Day", point.day),
+                                y: .value("Spend", point.amount),
+                                series: .value("Series", "actual")
+                            )
+                            .foregroundStyle(trendColor)
+                            .lineStyle(StrokeStyle(lineWidth: 2))
+                        }
+
+                        // Dashed projection segment (last actual → month-end)
+                        ForEach(projectionPoints) { point in
+                            LineMark(
+                                x: .value("Day", point.day),
+                                y: .value("Spend", point.amount),
+                                series: .value("Series", "projection")
+                            )
+                            .foregroundStyle(trendColor.opacity(0.5))
+                            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
+                        }
+
+                        // 3-month average reference line
+                        if forecast.lastThreeMonthAvg > 0 {
+                            let avg = NSDecimalNumber(decimal: forecast.lastThreeMonthAvg).doubleValue
+                            RuleMark(y: .value("Avg", avg))
+                                .foregroundStyle(.white.opacity(0.35))
+                                .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                                .annotation(position: .top, alignment: .trailing) {
+                                    Text("avg")
+                                        .font(.caption2)
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                        }
+                    }
+                    .frame(height: 90)
+                    .chartXScale(domain: 1...daysInMonth)
+                    .chartXAxis {
+                        AxisMarks(values: [1, daysInMonth]) { value in
+                            AxisValueLabel {
+                                if let day = value.as(Int.self) {
+                                    Text("\(day)")
+                                        .font(.caption2)
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                            }
+                        }
+                    }
+                    .chartYAxis(.hidden)
                 }
 
                 Divider().overlay(Color.white.opacity(0.2))
 
-                HStack {
-                    Text("3-month avg")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
-                    Text(forecast.lastThreeMonthAvg.formattedEUR())
-                        .font(.caption.bold())
-                        .foregroundStyle(.white.opacity(0.85))
+                // Summary row
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(forecast.projectedAmount.formattedEUR())
+                            .font(.title2.bold())
+                            .foregroundStyle(.white)
+                        Text("projected this month")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.75))
+                    }
                     Spacer()
                     let diff = forecast.projectedAmount - forecast.lastThreeMonthAvg
                     if diff != 0 {
-                        Text(diff > 0
-                            ? "+\(diff.formattedEUR())"
-                            : "-\(abs(diff).formattedEUR())"
-                        )
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(diff > 0
+                                ? "+\(diff.formattedEUR())"
+                                : "-\(abs(diff).formattedEUR())"
+                            )
+                            .font(.caption.bold())
+                            .foregroundStyle(.white)
+                            Text("vs 3-month avg")
+                                .font(.caption2)
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
                     }
                 }
             }
