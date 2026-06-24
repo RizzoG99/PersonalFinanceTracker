@@ -66,9 +66,16 @@ struct HabitObservation: Identifiable {
 
 // MARK: - Forecast
 
+struct DailyPoint: Identifiable {
+    let id = UUID()
+    let day: Int
+    let cumulative: Decimal
+}
+
 struct SpendingForecast {
     let projectedAmount: Decimal
     let dailyPace: Decimal
     let lastThreeMonthAvg: Decimal
     let daysLeft: Int
+    let dailyActuals: [DailyPoint]
 }

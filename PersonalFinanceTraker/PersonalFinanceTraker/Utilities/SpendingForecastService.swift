@@ -27,12 +27,45 @@ struct SpendingForecastService {
         }
         let lastThreeMonthAvg = threeMonthTotal / 3
 
+        let dailyActuals = computeDailyActuals(expenseTransactions, from: startOfMonth, upToDay: daysElapsed)
+
         return SpendingForecast(
             projectedAmount: projected,
             dailyPace: dailyPace,
             lastThreeMonthAvg: lastThreeMonthAvg,
-            daysLeft: daysLeft
+            daysLeft: daysLeft,
+            dailyActuals: dailyActuals
         )
+    }
+
+    private func computeDailyActuals(
+        _ expenseTransactions: [TransactionModel],
+        from startOfMonth: Date,
+        upToDay daysElapsed: Int
+    ) -> [DailyPoint] {
+        let calendar = Calendar.current
+        var dailyTotals: [Int: Decimal] = [:]
+
+        for transaction in expenseTransactions {
+            guard transaction.timestamp >= startOfMonth else { continue }
+            let dayComponent = calendar.dateComponents([.day], from: startOfMonth, to: transaction.timestamp).day ?? 0
+            let day = dayComponent + 1
+            guard day >= 1 && day <= daysElapsed else { continue }
+
+            let converted = currencyService.convertToBase(transaction.amount, from: transaction.currencyCode)
+            dailyTotals[day, default: 0] += converted
+        }
+
+        var cumulativeTotal: Decimal = 0
+        var points: [DailyPoint] = []
+
+        for day in 1...daysElapsed {
+            let dayExpense = abs(dailyTotals[day] ?? 0)
+            cumulativeTotal += dayExpense
+            points.append(DailyPoint(day: day, cumulative: cumulativeTotal))
+        }
+
+        return points
     }
 
     private func sumExpenses(_ items: [TransactionModel]) -> Decimal {
