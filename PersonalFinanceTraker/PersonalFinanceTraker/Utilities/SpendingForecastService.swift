@@ -16,7 +16,7 @@ struct SpendingForecastService {
         let calendar = Calendar.current
         let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
         let daysInMonth = calendar.range(of: .day, in: .month, for: now)?.count ?? 30
-        let daysElapsed = max(1, calendar.dateComponents([.day], from: startOfMonth, to: now).day ?? 1)
+        let daysElapsed = max(1, (calendar.dateComponents([.day], from: startOfMonth, to: now).day ?? 0) + 1)
         let daysLeft = max(0, daysInMonth - daysElapsed)
         let currentMonthKey = monthKey(for: now)
 
