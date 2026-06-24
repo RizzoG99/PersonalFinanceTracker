@@ -40,7 +40,7 @@ struct SpendingForecastServiceTests {
     func cacheHitAppendsNewDaysOnly() {
         let now = date(year: 2026, month: 6, day: 20)
         // Cache up to day 15, cumulative 100 at each entry (all spend on day 1)
-        let existingCache = DailyForecastCache(
+        let existingCache = ForecastCacheState(
             monthKey: "2026-06",
             computedUpToDay: 15,
             days: Array(1...15),
@@ -62,7 +62,7 @@ struct SpendingForecastServiceTests {
     @Test("month boundary discards old cache and recomputes from day 1")
     func monthBoundaryFullRecompute() {
         let now = date(year: 2026, month: 7, day: 5)
-        let juneCache = DailyForecastCache(
+        let juneCache = ForecastCacheState(
             monthKey: "2026-06",
             computedUpToDay: 30,
             days: Array(1...30),

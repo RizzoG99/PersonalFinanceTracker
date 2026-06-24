@@ -137,12 +137,26 @@ final class CompassViewModel {
     }
 
     private func computeForecast() {
-        let cache = try? repo.fetchForecastCache()
-        let (fc, updatedCache) = forecastService.compute(
+        let cacheModel = try? repo.fetchForecastCache()
+        let cacheState = cacheModel.map {
+            ForecastCacheState(
+                monthKey: $0.monthKey,
+                computedUpToDay: $0.computedUpToDay,
+                days: $0.days,
+                amounts: $0.amounts
+            )
+        }
+        let (fc, updatedState) = forecastService.compute(
             expenseTransactions: expenseTransactions,
-            cache: cache
+            cache: cacheState
         )
-        try? repo.saveForecastCache(updatedCache)
+        let updatedCacheModel = DailyForecastCache(
+            monthKey: updatedState.monthKey,
+            computedUpToDay: updatedState.computedUpToDay,
+            days: updatedState.days,
+            amounts: updatedState.amounts
+        )
+        try? repo.saveForecastCache(updatedCacheModel)
         forecast = fc
     }
 

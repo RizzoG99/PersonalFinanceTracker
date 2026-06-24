@@ -10,9 +10,9 @@ struct SpendingForecastService {
 
     func compute(
         expenseTransactions: [TransactionModel],
-        cache: DailyForecastCache?,
+        cache: ForecastCacheState?,
         now: Date = .now
-    ) -> (forecast: SpendingForecast, updatedCache: DailyForecastCache) {
+    ) -> (forecast: SpendingForecast, updatedCache: ForecastCacheState) {
         let calendar = Calendar.current
         let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
         let daysInMonth = calendar.range(of: .day, in: .month, for: now)?.count ?? 30
@@ -90,7 +90,7 @@ struct SpendingForecastService {
             daysLeft: daysLeft,
             dailyActuals: dailyActuals
         )
-        let updatedCache = DailyForecastCache(
+        let updatedCache = ForecastCacheState(
             monthKey: currentMonthKey,
             computedUpToDay: daysElapsed,
             days: days,

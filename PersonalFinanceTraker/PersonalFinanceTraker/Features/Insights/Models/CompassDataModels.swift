@@ -66,6 +66,13 @@ struct HabitObservation: Identifiable {
 
 // MARK: - Forecast
 
+struct ForecastCacheState {
+    let monthKey: String
+    let computedUpToDay: Int
+    let days: [Int]
+    let amounts: [Double]
+}
+
 struct DailyPoint: Identifiable {
     let id = UUID()
     let day: Int
