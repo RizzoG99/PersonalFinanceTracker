@@ -11,6 +11,7 @@ final class MockTransactionRepository: ITransactionRepository {
     var categories: [CategoryModel] = []
     var goals: [GoalModel] = []
     var snapshots: [HealthScoreSnapshot] = []
+    var forecastCache: DailyForecastCache?
     var shouldFail: Bool = false
 
     // Track calls for verification (Spy pattern)
@@ -63,5 +64,15 @@ final class MockTransactionRepository: ITransactionRepository {
     func fetchSnapshots(limit: Int) throws -> [HealthScoreSnapshot] {
         if shouldFail { throw NSError(domain: "MockError", code: 6, userInfo: nil) }
         return Array(snapshots.sorted { $0.timestamp > $1.timestamp }.prefix(limit))
+    }
+
+    func fetchForecastCache() throws -> DailyForecastCache? {
+        if shouldFail { throw NSError(domain: "MockError", code: 7, userInfo: nil) }
+        return forecastCache
+    }
+
+    func saveForecastCache(_ cache: DailyForecastCache) throws {
+        if shouldFail { throw NSError(domain: "MockError", code: 8, userInfo: nil) }
+        forecastCache = cache
     }
 }

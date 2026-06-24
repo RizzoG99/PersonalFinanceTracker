@@ -137,7 +137,13 @@ final class CompassViewModel {
     }
 
     private func computeForecast() {
-        forecast = forecastService.compute(expenseTransactions: expenseTransactions)
+        let cache = try? repo.fetchForecastCache()
+        let (fc, updatedCache) = forecastService.compute(
+            expenseTransactions: expenseTransactions,
+            cache: cache
+        )
+        try? repo.saveForecastCache(updatedCache)
+        forecast = fc
     }
 
     private func calculateAverages() {
