@@ -81,4 +81,16 @@ struct SpendingInsightServiceTests {
         let obs = service.habitObservations(expenseTransactions: txns)
         #expect(obs.filter { $0.title.contains("streak") }.count <= 2)
     }
+
+    @Test("weekday-heavy: emits briefcase observation")
+    func weekdayHeavySpending() {
+        let service = makeService()
+        // 5 weekday transactions × €50 = €250 total weekday, avg €12.5/day (€250/20)
+        // 5 weekend transactions × €10 = €50 total weekend, avg €5/day (€50/10)
+        // inverse ratio = 2.5× — well above 1.3 threshold
+        let weekday = (0..<5).map { makeExpense(amount: 50, on: dateOnWeekday(2, weeksAgo: $0 % 4)) }
+        let weekend = (0..<5).map { makeExpense(amount: 10, on: dateOnWeekday(7, weeksAgo: $0 % 4)) }
+        let obs = service.habitObservations(expenseTransactions: weekday + weekend)
+        #expect(obs.contains { $0.sfSymbol == "briefcase" })
+    }
 }

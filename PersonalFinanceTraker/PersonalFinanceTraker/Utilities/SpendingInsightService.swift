@@ -111,6 +111,7 @@ struct SpendingInsightService {
             let weekendAvg = weekendTotal / 10
             let weekdayAvg = weekdayTotal / 20
             if weekendAvg > 0 && weekdayAvg > 0 {
+                // ponytail: truncating is standard Decimal→Double in this codebase (see heroInsight, categoryTrends)
                 let ratio = Double(truncating: (weekendAvg / weekdayAvg) as NSDecimalNumber)
                 if ratio >= 1.3 {
                     let ratioStr = String(format: "%.1f", ratio)
@@ -146,7 +147,7 @@ struct SpendingInsightService {
             guard catTxns.count >= 3 else { continue }
 
             var streak = 0
-            for weekOffset in 0..<6 {
+            for weekOffset in 0..<6 { // cap lookback at 6 weeks to keep streak counts readable
                 guard let weekStart = calendar.date(byAdding: .weekOfYear, value: -weekOffset, to: startOfThisWeek),
                       let weekEnd = calendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) else { break }
                 let hasTransaction = catTxns.contains { $0.timestamp >= weekStart && $0.timestamp < weekEnd }
