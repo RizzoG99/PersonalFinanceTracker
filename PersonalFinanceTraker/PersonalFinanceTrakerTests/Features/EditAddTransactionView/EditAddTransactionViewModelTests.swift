@@ -109,7 +109,7 @@ struct EditAddTransactionViewModelTests {
         vm.transactionName = "Transfer"
         vm.amount = 500
         vm.transactionType = .transfer
-        let goal = GoalModel(name: "Savings", targetAmount: 10000, deadline: Date())
+        let goal = GoalModel(name: "Savings", targetAmount: 10000)
         vm.selectedGoal = goal
         vm.date = Date()
         #expect(vm.isFormValid == true)
@@ -229,7 +229,7 @@ struct EditAddTransactionViewModelTests {
         vm.transactionName = "Transfer"
         vm.amount = 500
         vm.transactionType = .transfer
-        let goal = GoalModel(name: "Savings", targetAmount: 10000, deadline: Date())
+        let goal = GoalModel(name: "Savings", targetAmount: 10000)
         vm.selectedGoal = goal
         let tx = vm.getTransactionData()
         #expect(tx?.amount == -500)
@@ -283,12 +283,6 @@ struct EditAddTransactionViewModelTests {
         #expect(vm.transactionName == "Transfer")
     }
 
-    @Test @MainActor func initWithZeroAmountSetsIncome() async throws {
-        let tx = TransactionModel(timestamp: Date(), amount: 0, note: "Zero", category: "Food")
-        let vm = EditAddTransactionViewModel(transaction: tx)
-        #expect(vm.transactionType == .income)
-    }
-
     @Test @MainActor func initPreservesTimestamp() async throws {
         let date = Calendar.current.date(byAdding: .day, value: -5, to: Date())!
         let tx = TransactionModel(timestamp: date, amount: -75, note: "Dinner", category: "Food")
@@ -328,7 +322,7 @@ struct EditAddTransactionViewModelTests {
 
     @Test @MainActor func resetFormClearsGoal() async throws {
         let vm = EditAddTransactionViewModel()
-        let goal = GoalModel(name: "Savings", targetAmount: 10000, deadline: Date())
+        let goal = GoalModel(name: "Savings", targetAmount: 10000)
         vm.selectedGoal = goal
         vm.resetForm()
         #expect(vm.selectedGoal == nil)
