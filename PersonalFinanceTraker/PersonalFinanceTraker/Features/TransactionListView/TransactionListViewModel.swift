@@ -106,6 +106,11 @@ final class TransactionListViewModel {
         }
     }
     
+    func delete(_ item: TransactionModel) {
+        do { try repo.delete(item) } catch { print(error.localizedDescription) }
+        load()
+    }
+
     func deleteItemsFromSection(dayItems: [TransactionModel], offsets: IndexSet) {
         // If a timer is already running, commit that batch immediately
         if pendingDeletionTask != nil {
