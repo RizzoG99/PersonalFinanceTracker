@@ -100,9 +100,40 @@ struct TransactionListMVVM: View {
                 }
             }
         }
+        .overlay(alignment: .bottom) {
+            if viewModel.showUndoBanner {
+                UndoDeleteBanner(count: viewModel.pendingDeletion.count) {
+                    viewModel.undoDelete()
+                }
+                .padding(.bottom, 90) // clears the floating tab bar
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
         .onAppear {
             viewModel.load()
         }
     }
 
+}
+
+private struct UndoDeleteBanner: View {
+    let count: Int
+    let onUndo: () -> Void
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Text("\(count) transaction\(count == 1 ? "" : "s") deleted")
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+            Spacer()
+            Button("Undo", action: onUndo)
+                .font(.subheadline.bold())
+                .tint(.accentColor)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.regularMaterial, in: Capsule())
+        .padding(.horizontal, 16)
+    }
 }
