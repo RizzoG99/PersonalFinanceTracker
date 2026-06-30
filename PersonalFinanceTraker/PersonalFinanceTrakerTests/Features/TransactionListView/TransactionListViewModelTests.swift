@@ -91,4 +91,91 @@ struct TransactionListViewModelTests {
         vm.deleteItemsFromSection(dayItems: [tx], offsets: IndexSet([0]))
         #expect(mockRepo.deleteCalledCount == 1)
     }
+
+    // MARK: - Deferred delete
+
+    @Test @MainActor func deleteItemsFromSectionSetsUndoBannerAndDoesNotCallRepo() async throws {
+        let mockRepo = MockTransactionRepository()
+        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
+        let t2 = TransactionModel(timestamp: Date(), amount: -20, note: "B", category: "Food")
+        mockRepo.transactions = [t1, t2]
+        let vm = TransactionListViewModel(repo: mockRepo)
+        vm.load()
+
+        vm.deleteItemsFromSection(dayItems: [t1, t2], offsets: IndexSet([0]))
+
+        #expect(vm.showUndoBanner == true)
+        #expect(vm.pendingDeletion.count == 1)
+        #expect(vm.pendingDeletion.first?.id == t1.id)
+        #expect(vm.transactions.count == 1) // optimistically removed
+        #expect(mockRepo.deleteCalledCount == 0) // repo not touched yet
+    }
+
+    @Test @MainActor func commitPendingDeletionCallsRepoAndClearsBanner() async throws {
+        let mockRepo = MockTransactionRepository()
+        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
+        mockRepo.transactions = [t1]
+        let vm = TransactionListViewModel(repo: mockRepo)
+        vm.load()
+
+        vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
+        vm.commitPendingDeletion()
+
+        #expect(mockRepo.deleteCalledCount == 1)
+        #expect(vm.pendingDeletion.isEmpty)
+        #expect(vm.showUndoBanner == false)
+    }
+
+    @Test @MainActor func undoDeleteRestoresTransactionsAndClearsBanner() async throws {
+        let mockRepo = MockTransactionRepository()
+        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
+        mockRepo.transactions = [t1]
+        let vm = TransactionListViewModel(repo: mockRepo)
+        vm.load()
+
+        vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
+        #expect(vm.transactions.count == 0) // optimistically removed
+
+        vm.undoDelete()
+
+        #expect(vm.showUndoBanner == false)
+        #expect(vm.pendingDeletion.isEmpty)
+        #expect(vm.transactions.count == 1) // restored from repo
+        #expect(mockRepo.deleteCalledCount == 0) // repo was never touched
+    }
+
+    @Test @MainActor func newDeleteWhilePendingCommitsPreviousBatchFirst() async throws {
+        let mockRepo = MockTransactionRepository()
+        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
+        let t2 = TransactionModel(timestamp: Date(), amount: -20, note: "B", category: "Food")
+        mockRepo.transactions = [t1, t2]
+        let vm = TransactionListViewModel(repo: mockRepo)
+        vm.load()
+
+        // Delete t1 — starts timer
+        vm.deleteItemsFromSection(dayItems: [t1, t2], offsets: IndexSet([0]))
+        #expect(mockRepo.deleteCalledCount == 0)
+
+        // Delete t2 while timer is running — must commit t1 first
+        vm.deleteItemsFromSection(dayItems: [t2], offsets: IndexSet([0]))
+        #expect(mockRepo.deleteCalledCount == 1) // t1 committed
+        #expect(vm.pendingDeletion.count == 1)   // t2 now pending
+        #expect(vm.pendingDeletion.first?.id == t2.id)
+    }
+
+    @Test @MainActor func deleteBatchGroupsAllItemsUnderOnePendingSet() async throws {
+        let mockRepo = MockTransactionRepository()
+        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
+        let t2 = TransactionModel(timestamp: Date(), amount: -20, note: "B", category: "Food")
+        let t3 = TransactionModel(timestamp: Date(), amount: -30, note: "C", category: "Food")
+        mockRepo.transactions = [t1, t2, t3]
+        let vm = TransactionListViewModel(repo: mockRepo)
+        vm.load()
+
+        vm.deleteItemsFromSection(dayItems: [t1, t2, t3], offsets: IndexSet([0, 1, 2]))
+
+        #expect(vm.pendingDeletion.count == 3)
+        #expect(vm.transactions.isEmpty)
+        #expect(mockRepo.deleteCalledCount == 0)
+    }
 }

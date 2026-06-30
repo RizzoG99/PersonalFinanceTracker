@@ -33,6 +33,10 @@ final class TransactionListViewModel {
     var selectedTimePeriod: TimePeriod = .month
     var transactionToEdit: TransactionModel? = nil
 
+    private(set) var pendingDeletion: [TransactionModel] = []
+    private var pendingDeletionTask: Task<Void, Never>?
+    var showUndoBanner: Bool = false
+
     let repo: ITransactionRepository
 
     private let dataService = ChartDataService()
@@ -102,17 +106,52 @@ final class TransactionListViewModel {
         }
     }
     
+    func delete(_ item: TransactionModel) {
+        do { try repo.delete(item) } catch { print(error.localizedDescription) }
+        load()
+    }
+
     func deleteItemsFromSection(dayItems: [TransactionModel], offsets: IndexSet) {
-        for index in offsets {
-            if let itemToDelete = transactions.first(where: { $0.id == dayItems[index].id }) {
-                do {
-                    try repo.delete(itemToDelete)
-                } catch {
-                    print(error.localizedDescription)
-                }
-            }
+        // If a timer is already running, commit that batch immediately
+        if pendingDeletionTask != nil {
+            commitPendingDeletion()
         }
-        // Reload data to reflect the changes
+
+        let itemsToDelete = offsets.compactMap { index -> TransactionModel? in
+            guard index < dayItems.count else { return nil }
+            return transactions.first(where: { $0.id == dayItems[index].id })
+        }
+        guard !itemsToDelete.isEmpty else { return }
+
+        pendingDeletion = itemsToDelete
+        let idsToRemove = Set(itemsToDelete.map { $0.id })
+        transactions.removeAll { idsToRemove.contains($0.id) }
+        doFilterItemBySearchText()
+
+        showUndoBanner = true
+
+        pendingDeletionTask = Task {
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            commitPendingDeletion()
+        }
+    }
+
+    func commitPendingDeletion() {
+        for item in pendingDeletion {
+            try? repo.delete(item)
+        }
+        pendingDeletion = []
+        pendingDeletionTask?.cancel()
+        pendingDeletionTask = nil
+        showUndoBanner = false
+    }
+
+    func undoDelete() {
+        pendingDeletionTask?.cancel()
+        pendingDeletionTask = nil
+        pendingDeletion = []
+        showUndoBanner = false
         load()
     }
     
