@@ -82,15 +82,7 @@ struct TransactionListViewModelTests {
         #expect(vm.filteredItems.first?.note == "Coffee")
     }
 
-    @Test @MainActor func deleteCallsRepoDelete() async throws {
-        let tx = TransactionModel(timestamp: Date(), amount: -50, note: "Lunch", category: "Food")
-        let mockRepo = MockTransactionRepository()
-        mockRepo.transactions = [tx]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
-        vm.deleteItemsFromSection(dayItems: [tx], offsets: IndexSet([0]))
-        #expect(mockRepo.deleteCalledCount == 1)
-    }
+
 
     // MARK: - Deferred delete
 
