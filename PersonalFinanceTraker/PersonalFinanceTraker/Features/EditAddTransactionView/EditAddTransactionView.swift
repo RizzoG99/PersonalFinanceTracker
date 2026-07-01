@@ -38,6 +38,19 @@ struct EditAddTransactionView: View {
         }
         .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if let transaction {
+                ToolbarItem(placement: .destructiveAction) {
+                    Button(role: .destructive) {
+                        transactionViewModel.delete(transaction)
+                        dashboardViewModel.load()
+                        dismiss()
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            }
+        }
         .onAppear {
             viewModel.setTransactionViewModel(transactionViewModel)
         }

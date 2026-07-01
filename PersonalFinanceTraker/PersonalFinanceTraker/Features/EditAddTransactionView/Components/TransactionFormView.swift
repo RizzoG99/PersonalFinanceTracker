@@ -44,10 +44,16 @@ struct TransactionFormView: View {
                         Picker("Goal", selection: $viewModel.selectedGoal) {
                             Text("Select a goal").tag(GoalModel?.none)
                             ForEach(viewModel.availableGoals, id: \.id) { goal in
-                                Text(goal.name).tag(GoalModel?.some(goal))
+                                Label {
+                                    Text(goal.name)
+                                } icon: {
+                                    Image(systemName: goal.iconName)
+                                        .foregroundStyle(goal.goalColor)
+                                }
+                                .tag(GoalModel?.some(goal))
                             }
                         }
-                        .tint(viewModel.selectedGoal == nil ? .secondary : .accentIndigo)
+                        .tint(viewModel.selectedGoal?.goalColor ?? .secondary)
                     } else {
                         Picker("Category", selection: $viewModel.selectedCategory) {
                             Text("Select a category").tag(CategoryModel?.none)
