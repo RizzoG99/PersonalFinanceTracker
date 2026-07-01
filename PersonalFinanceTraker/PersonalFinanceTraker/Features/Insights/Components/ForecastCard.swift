@@ -101,21 +101,11 @@ struct ForecastCard: View {
                     }
                     .frame(height: 90)
                     .chartXScale(domain: 1...daysInMonth)
-                    .chartXAxis {
-                        AxisMarks(values: [1, daysInMonth]) { value in
-                            AxisValueLabel {
-                                if let day = value.as(Int.self) {
-                                    Text("\(day)")
-                                        .font(.caption2)
-                                        .foregroundStyle(.textDim)
-                                }
-                            }
-                        }
-                    }
+                    .chartXAxis(.hidden)
                     .chartYAxis(.hidden)
                 }
 
-                Divider().overlay(Color.white.opacity(0.2))
+                Divider().overlay { Color.white.opacity(0.2) }
 
                 // Summary row
                 HStack(alignment: .top) {
