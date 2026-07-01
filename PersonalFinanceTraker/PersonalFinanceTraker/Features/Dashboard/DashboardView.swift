@@ -9,6 +9,7 @@ import SwiftData
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(DashboardViewModel.self) private var viewModel
+    @Environment(TransactionListViewModel.self) private var transactionViewModel
     @Binding var showingAddItemView: Bool
 
     var body: some View {

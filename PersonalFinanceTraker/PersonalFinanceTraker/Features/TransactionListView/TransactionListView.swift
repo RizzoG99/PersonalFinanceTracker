@@ -100,12 +100,15 @@ struct TransactionListMVVM: View {
                 }
             }
         }
-        .overlay(alignment: .bottom) {
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             if viewModel.showUndoBanner {
-                UndoDeleteBanner(count: viewModel.pendingDeletion.count) {
-                    viewModel.undoDelete()
-                }
-                .padding(.bottom, 90) // clears the floating tab bar
+                UndoDeleteBanner(
+                    count: viewModel.pendingDeletion.count,
+                    progress: viewModel.deleteProgress,
+                    onUndo: viewModel.undoDelete
+                )
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
@@ -117,23 +120,44 @@ struct TransactionListMVVM: View {
 
 }
 
-private struct UndoDeleteBanner: View {
+struct UndoDeleteBanner: View {
     let count: Int
+    let progress: Double
     let onUndo: () -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
+            Image(systemName: "trash")
+                .foregroundStyle(.secondary)
+
             Text("\(count) transaction\(count == 1 ? "" : "s") deleted")
                 .font(.subheadline)
-                .foregroundStyle(.primary)
+
             Spacer()
+
+            ZStack {
+                Circle()
+                    .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                Circle()
+                    .trim(from: 0, to: 1 - progress)
+                    .stroke(Color.white, lineWidth: 2)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.linear(duration: 0.1), value: progress)
+            }
+            .frame(width: 22, height: 22)
+            .accessibilityHidden(true)
+
             Button("Undo", action: onUndo)
                 .font(.subheadline.bold())
                 .tint(.accentColor)
+                .accessibilityLabel("Undo delete")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.regularMaterial, in: Capsule())
-        .padding(.horizontal, 16)
+        .background {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.black.opacity(0.75))
+        }
+        .foregroundStyle(.white)
     }
 }
