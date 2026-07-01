@@ -116,6 +116,7 @@ struct TransactionListViewModelTests {
         #expect(mockRepo.deleteCalledCount == 1)
         #expect(vm.pendingDeletion.isEmpty)
         #expect(vm.showUndoBanner == false)
+        #expect(vm.deleteProgress == 0.0)
     }
 
     @Test @MainActor func undoDeleteRestoresTransactionsAndClearsBanner() async throws {
@@ -134,9 +135,10 @@ struct TransactionListViewModelTests {
         #expect(vm.pendingDeletion.isEmpty)
         #expect(vm.transactions.count == 1) // restored from repo
         #expect(mockRepo.deleteCalledCount == 0) // repo was never touched
+        #expect(vm.deleteProgress == 0.0)
     }
 
-    @Test @MainActor func newDeleteWhilePendingCommitsPreviousBatchFirst() async throws {
+    @Test @MainActor func mergeDeleteWhilePendingPoolsItemsAndResetsBanner() async throws {
         let mockRepo = MockTransactionRepository()
         let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
         let t2 = TransactionModel(timestamp: Date(), amount: -20, note: "B", category: "Food")
@@ -144,15 +146,18 @@ struct TransactionListViewModelTests {
         let vm = TransactionListViewModel(repo: mockRepo)
         vm.load()
 
-        // Delete t1 — starts timer
+        // First delete — starts timer
         vm.deleteItemsFromSection(dayItems: [t1, t2], offsets: IndexSet([0]))
+        #expect(vm.pendingDeletion.count == 1)
+        #expect(vm.deleteProgress == 0.0)
         #expect(mockRepo.deleteCalledCount == 0)
 
-        // Delete t2 while timer is running — must commit t1 first
+        // Second delete while timer is running — must merge, not commit
         vm.deleteItemsFromSection(dayItems: [t2], offsets: IndexSet([0]))
-        #expect(mockRepo.deleteCalledCount == 1) // t1 committed
-        #expect(vm.pendingDeletion.count == 1)   // t2 now pending
-        #expect(vm.pendingDeletion.first?.id == t2.id)
+        #expect(mockRepo.deleteCalledCount == 0)   // repo still untouched
+        #expect(vm.pendingDeletion.count == 2)      // both items pooled
+        #expect(vm.deleteProgress == 0.0)           // timer reset
+        #expect(vm.showUndoBanner == true)
     }
 
     @Test @MainActor func deleteBatchGroupsAllItemsUnderOnePendingSet() async throws {

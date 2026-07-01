@@ -36,6 +36,7 @@ final class TransactionListViewModel {
     private(set) var pendingDeletion: [TransactionModel] = []
     private var pendingDeletionTask: Task<Void, Never>?
     var showUndoBanner: Bool = false
+    var deleteProgress: Double = 0.0
 
     let repo: ITransactionRepository
 
@@ -107,31 +108,34 @@ final class TransactionListViewModel {
     }
     
     func delete(_ item: TransactionModel) {
-        do { try repo.delete(item) } catch { print(error.localizedDescription) }
-        load()
+        scheduleDeletion([item])
     }
 
     func deleteItemsFromSection(dayItems: [TransactionModel], offsets: IndexSet) {
-        // If a timer is already running, commit that batch immediately
-        if pendingDeletionTask != nil {
-            commitPendingDeletion()
+        let items = offsets.compactMap { i -> TransactionModel? in
+            guard i < dayItems.count else { return nil }
+            return transactions.first { $0.id == dayItems[i].id }
         }
+        guard !items.isEmpty else { return }
+        scheduleDeletion(items)
+    }
 
-        let itemsToDelete = offsets.compactMap { index -> TransactionModel? in
-            guard index < dayItems.count else { return nil }
-            return transactions.first(where: { $0.id == dayItems[index].id })
-        }
-        guard !itemsToDelete.isEmpty else { return }
-
-        pendingDeletion = itemsToDelete
-        let idsToRemove = Set(itemsToDelete.map { $0.id })
-        transactions.removeAll { idsToRemove.contains($0.id) }
+    private func scheduleDeletion(_ items: [TransactionModel]) {
+        pendingDeletionTask?.cancel()
+        pendingDeletion.append(contentsOf: items)
+        let ids = Set(items.map(\.id))
+        transactions.removeAll { ids.contains($0.id) }
         doFilterItemBySearchText()
-
+        deleteProgress = 0.0
         showUndoBanner = true
-
         pendingDeletionTask = Task {
-            try? await Task.sleep(for: .seconds(5))
+            let start = Date.now
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(100))
+                guard !Task.isCancelled else { return }
+                deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
+                if deleteProgress >= 1.0 { break }
+            }
             guard !Task.isCancelled else { return }
             commitPendingDeletion()
         }
@@ -145,6 +149,7 @@ final class TransactionListViewModel {
         pendingDeletionTask?.cancel()
         pendingDeletionTask = nil
         showUndoBanner = false
+        deleteProgress = 0.0
     }
 
     func undoDelete() {
@@ -152,6 +157,7 @@ final class TransactionListViewModel {
         pendingDeletionTask = nil
         pendingDeletion = []
         showUndoBanner = false
+        deleteProgress = 0.0
         load()
     }
     
