@@ -32,6 +32,12 @@ final class DashboardViewModel {
         }
     }
 
+    func optimisticRemove(_ items: [TransactionModel]) {
+        let ids = Set(items.map(\.id))
+        transactions.removeAll { ids.contains($0.id) }
+        calculateMetrics()
+    }
+
     private func calculateMetrics() {
         totalBalance = transactions.reduce(Decimal(0)) { total, tx in
             total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)

@@ -33,7 +33,7 @@ struct MainTabView: View {
                     ActivityView(showingAddItemView: $showingAddItemView)
                         .payCycleAware { viewModel.load() }
                 }
-                Tab("Compass", systemImage: selectedTab == .insights ? "safari.fill" : "safari", value: .insights) {
+                Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {
                     CompassView(context: modelContext, showingAddItemView: $showingAddItemView)
                 }
 // Tab("Credit", systemImage: selectedTab == .credit ? "creditcard.fill" : "creditcard", value: .credit) {
@@ -56,7 +56,10 @@ struct MainTabView: View {
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
             }
-            .sheet(item: $viewModel.transactionToEdit, onDismiss: { dashboardViewModel.load() }) { item in
+            .sheet(item: $viewModel.transactionToEdit, onDismiss: {
+                // Skip reload if a deletion is pending — dashboard reloads when the snackbar settles
+                if !viewModel.showUndoBanner { dashboardViewModel.load() }
+            }) { item in
                 NavigationStack {
                     EditAddTransactionView(item)
                         .environment(viewModel)
@@ -65,6 +68,25 @@ struct MainTabView: View {
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
             }
+        }
+        .overlay(alignment: .bottom) {
+            if viewModel.showUndoBanner {
+                UndoDeleteBanner(
+                    count: viewModel.pendingDeletion.count,
+                    progress: viewModel.deleteProgress,
+                    onUndo: viewModel.undoDelete
+                )
+                .padding(.horizontal, 16)
+                .padding(.bottom, 90)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
+        .onChange(of: viewModel.pendingDeletion) { _, pending in
+            if !pending.isEmpty { dashboardViewModel.optimisticRemove(pending) }
+        }
+        .onChange(of: viewModel.showUndoBanner) { _, isShowing in
+            if !isShowing { dashboardViewModel.load() }
         }
         .appBackground()
         .preferredColorScheme(.dark)

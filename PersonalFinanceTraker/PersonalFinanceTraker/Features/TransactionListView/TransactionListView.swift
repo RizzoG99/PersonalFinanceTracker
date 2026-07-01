@@ -100,7 +100,7 @@ struct TransactionListMVVM: View {
                 }
             }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .overlay(alignment: .bottom) {
             if viewModel.showUndoBanner {
                 UndoDeleteBanner(
                     count: viewModel.pendingDeletion.count,
@@ -108,7 +108,7 @@ struct TransactionListMVVM: View {
                     onUndo: viewModel.undoDelete
                 )
                 .padding(.horizontal, 16)
-                .padding(.bottom, 8)
+                .padding(.bottom, 90) // ponytail: clears floating tab bar; safeAreaInset doesn't pierce TabView's floating layer
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
