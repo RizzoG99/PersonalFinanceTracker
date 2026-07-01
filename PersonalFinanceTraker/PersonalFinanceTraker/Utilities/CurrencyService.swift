@@ -71,14 +71,14 @@ public class CurrencyService: ObservableObject {
 }
 
 extension Decimal {
-    func formattedEUR() -> String {
+    public func formattedEUR() -> String {
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
         fmt.currencyCode = "EUR"
         return fmt.string(from: self as NSDecimalNumber) ?? "€0.00"
     }
 
-    func formattedEURCompact() -> String {
+    public func formattedEURCompact() -> String {
         let double = Double(truncating: self as NSDecimalNumber)
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency

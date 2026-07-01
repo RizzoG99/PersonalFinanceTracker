@@ -5,6 +5,7 @@
 
 import SwiftData
 import Foundation
+import SwiftUI
 
 @Model
 final class GoalModel {
@@ -15,6 +16,8 @@ final class GoalModel {
     var colorToken: String
     var iconName: String
     var createdAt: Date
+
+    var goalColor: Color { Color(colorToken) }
 
     init(
         name: String,
@@ -31,6 +34,11 @@ final class GoalModel {
         self.iconName = iconName
         self.createdAt = Date()
     }
+}
+
+extension GoalModel: Hashable {
+    static func == (lhs: GoalModel, rhs: GoalModel) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
 enum GoalIcon: String, CaseIterable {
