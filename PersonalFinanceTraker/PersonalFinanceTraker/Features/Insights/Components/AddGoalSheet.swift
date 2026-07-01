@@ -15,6 +15,20 @@ struct AddGoalSheet: View {
     @State private var selectedIcon: String
     @State private var selectedToken: String
     @State private var showIconPicker = false
+    @FocusState private var amountFocused: Bool
+
+    private static let amountFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.minimumFractionDigits = 2
+        f.maximumFractionDigits = 2
+        return f
+    }()
+
+    private var parsedAmount: Decimal? {
+        let parts = targetAmountText.replacingOccurrences(of: ",", with: "").components(separatedBy: ".")
+        return Decimal(string: parts.count > 2 ? parts.joined() : parts.joined(separator: "."))
+    }
 
     private let existingGoal: GoalModel?
     private let onSave: (GoalModel) -> Void
@@ -23,14 +37,16 @@ struct AddGoalSheet: View {
         self.existingGoal = goal
         self.onSave = onSave
         _name = State(initialValue: goal?.name ?? "")
-        _targetAmountText = State(initialValue: goal.map { "\($0.targetAmount)" } ?? "")
+        _targetAmountText = State(initialValue: goal.map {
+            AddGoalSheet.amountFormatter.string(for: $0.targetAmount as NSDecimalNumber) ?? "\($0.targetAmount)"
+        } ?? "")
         _deadline = State(initialValue: goal?.deadline ?? Calendar.current.date(byAdding: .month, value: 6, to: Date())!)
         _includeDeadline = State(initialValue: goal?.deadline != nil)
         _selectedIcon = State(initialValue: goal?.iconName ?? GoalIcon.other.rawValue)
         _selectedToken = State(initialValue: goal?.colorToken ?? "categoryIndigo")
     }
 
-    private var isValid: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty && Decimal(string: targetAmountText) != nil }
+    private var isValid: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty && parsedAmount != nil }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -79,6 +95,17 @@ struct AddGoalSheet: View {
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .foregroundStyle(.textPrimary)
+                            .frame(maxWidth: 120)
+                            .focused($amountFocused)
+                            .onChange(of: amountFocused) { _, isFocused in
+                                if isFocused {
+                                    targetAmountText = targetAmountText.replacingOccurrences(of: ",", with: "")
+                                } else if let value = parsedAmount, !targetAmountText.isEmpty {
+                                    targetAmountText = Self.amountFormatter.string(for: value as NSDecimalNumber) ?? targetAmountText
+                                }
+                            }
+                        Text("€")
+                            .foregroundStyle(.textMid)
                     }
                 }
                 .appFormSectionBackground()
@@ -113,12 +140,18 @@ struct AddGoalSheet: View {
             .padding(.horizontal)
             .padding(.bottom)
         }
+        .onChange(of: selectedIcon) { old, new in
+            let oldLabel = GoalIcon(rawValue: old)?.label ?? ""
+            if name.trimmingCharacters(in: .whitespaces).isEmpty || name == oldLabel {
+                name = GoalIcon(rawValue: new)?.label ?? ""
+            }
+        }
         .navigationTitle(existingGoal == nil ? "New Goal" : "Edit Goal")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private func save() {
-        let target = Decimal(string: targetAmountText) ?? 0
+        let target = parsedAmount ?? 0
         let dl: Date? = includeDeadline ? deadline : nil
 
         if let existing = existingGoal {

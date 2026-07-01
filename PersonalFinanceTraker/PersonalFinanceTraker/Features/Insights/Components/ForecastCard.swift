@@ -43,17 +43,17 @@ struct ForecastCard: View {
     }
 
     var body: some View {
-        GlassCard(tint: trendColor) {
+        GlassCard(borderRadius: 14) {
             VStack(alignment: .leading, spacing: 14) {
                 // Header row
                 HStack {
                     Label("At this pace", systemImage: "chart.line.uptrend.xyaxis")
                         .font(.subheadline.bold())
-                        .foregroundStyle(.white.opacity(0.85))
+                        .foregroundStyle(.textPrimary)
                     Spacer()
                     Text("\(forecast.daysLeft) days left")
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(.textDim)
                 }
 
                 // Chart (only rendered when we have data)
@@ -90,12 +90,12 @@ struct ForecastCard: View {
                         if forecast.lastThreeMonthAvg > 0 {
                             let avg = NSDecimalNumber(decimal: forecast.lastThreeMonthAvg).doubleValue
                             RuleMark(y: .value("Avg", avg))
-                                .foregroundStyle(.white.opacity(0.35))
+                                .foregroundStyle(.textDim.opacity(0.5))
                                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                                 .annotation(position: .top, alignment: .trailing) {
                                     Text("avg")
                                         .font(.caption2)
-                                        .foregroundStyle(.white.opacity(0.5))
+                                        .foregroundStyle(.textDim)
                                 }
                         }
                     }
@@ -107,7 +107,7 @@ struct ForecastCard: View {
                                 if let day = value.as(Int.self) {
                                     Text("\(day)")
                                         .font(.caption2)
-                                        .foregroundStyle(.white.opacity(0.5))
+                                        .foregroundStyle(.textDim)
                                 }
                             }
                         }
@@ -122,10 +122,10 @@ struct ForecastCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(forecast.projectedAmount.formattedEUR())
                             .font(.title2.bold())
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.textPrimary)
                         Text("projected this month")
                             .font(.caption)
-                            .foregroundStyle(.white.opacity(0.75))
+                            .foregroundStyle(.textDim)
                     }
                     Spacer()
                     let diff = forecast.projectedAmount - forecast.lastThreeMonthAvg
@@ -136,10 +136,10 @@ struct ForecastCard: View {
                                 : "-\(abs(diff).formattedEUR())"
                             )
                             .font(.caption.bold())
-                            .foregroundStyle(.white)
+                            .foregroundStyle(trendColor)
                             Text("vs 3-month avg")
                                 .font(.caption2)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(.textDim)
                         }
                     }
                 }

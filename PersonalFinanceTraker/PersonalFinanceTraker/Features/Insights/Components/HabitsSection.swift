@@ -14,7 +14,10 @@ struct HabitsSection: View {
                     .foregroundStyle(.textDim)
             }
             if observations.isEmpty {
-                InsightsEmptyCard(message: "More data needed to detect patterns")
+                InsightsEmptyCard(
+                    message: "No recurring patterns detected yet",
+                    subtitle: "Patterns appear after consistent weekly spending in a category"
+                )
             } else {
                 VStack(spacing: 8) {
                     ForEach(observations) { obs in
