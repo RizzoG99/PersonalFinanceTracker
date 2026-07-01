@@ -15,7 +15,7 @@ struct TimelineAnomalyService {
         let threshold = mean + 1.5 * variance.squareRoot()
 
         return zip(raw, values).map { point, val in
-            TimelineDataPoint(period: point.period, expenses: point.expenses, isSpike: val > threshold && val > 0)
+            TimelineDataPoint(date: point.date, period: point.period, expenses: point.expenses, isSpike: val > threshold && val > 0)
         }
     }
 }

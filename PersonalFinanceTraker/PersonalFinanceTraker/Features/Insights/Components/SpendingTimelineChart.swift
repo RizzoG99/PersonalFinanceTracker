@@ -10,6 +10,10 @@ struct SpendingTimelineChart: View {
     @Binding var selectedPeriod: TimePeriod
     let data: [TimelineDataPoint]
 
+    private var labelByDate: [Date: String] {
+        Dictionary(uniqueKeysWithValues: data.map { ($0.date, $0.period) })
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -27,7 +31,7 @@ struct SpendingTimelineChart: View {
             }
 
             GlassCard {
-                if data.isEmpty {
+                if data.isEmpty || data.allSatisfy({ $0.expenses == 0 }) {
                     Text("No data")
                         .foregroundStyle(.textDim)
                         .frame(height: 200)
@@ -35,11 +39,9 @@ struct SpendingTimelineChart: View {
                 } else {
                     Chart {
                         ForEach(data) { point in
-                            let expenseDouble = Double(truncating: point.expenses as NSDecimalNumber)
-
                             AreaMark(
-                                x: .value("Period", point.period),
-                                y: .value("Expenses", expenseDouble)
+                                x: .value("Date", point.date),
+                                y: .value("Expenses", point.expenseValue)
                             )
                             .foregroundStyle(
                                 LinearGradient(
@@ -51,8 +53,8 @@ struct SpendingTimelineChart: View {
                             .interpolationMethod(.catmullRom)
 
                             LineMark(
-                                x: .value("Period", point.period),
-                                y: .value("Expenses", expenseDouble)
+                                x: .value("Date", point.date),
+                                y: .value("Expenses", point.expenseValue)
                             )
                             .foregroundStyle(Color.accentIndigo)
                             .interpolationMethod(.catmullRom)
@@ -60,8 +62,8 @@ struct SpendingTimelineChart: View {
 
                             if point.isSpike {
                                 PointMark(
-                                    x: .value("Period", point.period),
-                                    y: .value("Expenses", expenseDouble)
+                                    x: .value("Date", point.date),
+                                    y: .value("Expenses", point.expenseValue)
                                 )
                                 .foregroundStyle(Color.negative)
                                 .symbolSize(60)
@@ -73,8 +75,10 @@ struct SpendingTimelineChart: View {
                         }
                     }
                     .chartXAxis {
-                        AxisMarks { _ in
-                            AxisValueLabel().foregroundStyle(.textDim)
+                        AxisMarks(values: data.map(\.date)) { value in
+                            if let date = value.as(Date.self), let label = labelByDate[date] {
+                                AxisValueLabel { Text(label).foregroundStyle(.textDim) }
+                            }
                         }
                     }
                     .chartYAxis {
@@ -83,7 +87,7 @@ struct SpendingTimelineChart: View {
                             AxisGridLine().foregroundStyle(Color.white.opacity(0.06))
                         }
                     }
-                    .frame(height: 220)
+                    .frame(maxWidth: .infinity, minHeight: 220)
                 }
             }
         }
