@@ -20,7 +20,6 @@ struct DashboardView: View {
                     if !viewModel.recentTransactions.isEmpty {
                         RecentTransactionsSectionView()
                     }
-                    SavingsGoalCardView()
                     Spacer(minLength: 80)
                 }
                 .padding(16)

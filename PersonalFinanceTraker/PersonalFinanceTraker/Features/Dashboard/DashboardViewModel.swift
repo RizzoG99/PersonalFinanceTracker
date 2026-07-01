@@ -12,8 +12,6 @@ final class DashboardViewModel {
     var monthlyIncome: Decimal = 0
     var monthlyExpenses: Decimal = 0
     var recentTransactions: [TransactionModel] = []
-    var savingsGoal: Decimal = 5000
-    var currentSavings: Decimal = 0
     var loadError: String? = nil
 
     private let repo: ITransactionRepository
@@ -61,8 +59,6 @@ final class DashboardViewModel {
         let allExpenses = abs(transactions.filter { $0.amount < 0 }.reduce(Decimal(0)) { total, tx in
             total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
         })
-        currentSavings = allIncome - allExpenses
-
         recentTransactions = Array(transactions.sorted { $0.timestamp > $1.timestamp }.prefix(5))
     }
 
@@ -73,9 +69,4 @@ final class DashboardViewModel {
         return "Since \(start.formatted(.dateTime.month(.abbreviated).day()))"
     }
 
-    var savingsGoalProgress: Double {
-        let denom = max(savingsGoal, currentSavings)
-        guard denom > 0 else { return 0 }
-        return Double(truncating: (currentSavings / denom) as NSDecimalNumber)
-    }
 }
