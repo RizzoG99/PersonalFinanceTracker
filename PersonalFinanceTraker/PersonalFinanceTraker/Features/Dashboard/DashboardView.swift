@@ -28,7 +28,7 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.inline)
             .appToolbar(showingAddItemView: $showingAddItemView)
         }
-        .onAppear { viewModel.load() }
+        .task { viewModel.load() }
     }
 }
 

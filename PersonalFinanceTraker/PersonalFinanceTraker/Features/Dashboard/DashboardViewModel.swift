@@ -16,12 +16,24 @@ final class DashboardViewModel {
 
     private let repo: ITransactionRepository
     private let currencyService = CurrencyService()
+    private var isLoaded = false
 
     init(repo: ITransactionRepository) {
         self.repo = repo
     }
 
     func load() {
+        guard !isLoaded else { return }
+        isLoaded = true
+        fetchAndCompute()
+    }
+
+    func reload() {
+        isLoaded = false
+        load()
+    }
+
+    private func fetchAndCompute() {
         do {
             transactions = try repo.fetchAll()
             calculateMetrics()

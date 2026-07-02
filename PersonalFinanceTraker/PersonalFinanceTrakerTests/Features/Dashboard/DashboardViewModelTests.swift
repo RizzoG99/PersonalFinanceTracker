@@ -93,4 +93,34 @@ struct DashboardViewModelTests {
         // Most recent first
         #expect(vm.recentTransactions.first?.amount == 1000)
     }
+
+    @Test func loadDoesNotRefetchWhenAlreadyLoaded() throws {
+        let repo = MockTransactionRepository()
+        repo.transactions = [makeTx(daysAgo: 1, amount: -100)]
+        let vm = DashboardViewModel(repo: repo)
+
+        vm.load()
+        #expect(vm.transactions.count == 1)
+
+        // Mutate the underlying repo after first load
+        repo.transactions = [makeTx(daysAgo: 1, amount: -100), makeTx(daysAgo: 2, amount: -200)]
+
+        // Second load() must be a no-op
+        vm.load()
+        #expect(vm.transactions.count == 1)  // still 1, not 2
+    }
+
+    @Test func reloadFetchesFreshData() throws {
+        let repo = MockTransactionRepository()
+        repo.transactions = [makeTx(daysAgo: 1, amount: -100)]
+        let vm = DashboardViewModel(repo: repo)
+
+        vm.load()
+        #expect(vm.transactions.count == 1)
+
+        repo.transactions = [makeTx(daysAgo: 1, amount: -100), makeTx(daysAgo: 2, amount: -200)]
+
+        vm.reload()
+        #expect(vm.transactions.count == 2)
+    }
 }
