@@ -123,4 +123,17 @@ struct DashboardViewModelTests {
         vm.reload()
         #expect(vm.transactions.count == 2)
     }
+
+    @Test func zeroAmountTransactionDoesNotAffectMonthlyMetrics() {
+        UserDefaults.standard.set(1, forKey: "payCycleStartDay")
+        defer { UserDefaults.standard.removeObject(forKey: "payCycleStartDay") }
+        let repo = MockTransactionRepository()
+        repo.transactions = [
+            TransactionModel(timestamp: Date(), amount: 0, note: "", category: "Test", currencyCode: "EUR")
+        ]
+        let vm = DashboardViewModel(repo: repo)
+        vm.load()
+        #expect(vm.monthlyIncome == 0)
+        #expect(vm.monthlyExpenses == 0)
+    }
 }

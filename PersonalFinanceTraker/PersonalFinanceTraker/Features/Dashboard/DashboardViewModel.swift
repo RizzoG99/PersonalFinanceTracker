@@ -24,7 +24,7 @@ final class DashboardViewModel {
 
     func load() {
         guard !isLoaded else { return }
-        isLoaded = true
+        isLoaded = true  // ponytail: mark loaded before fetch; call reload() to retry after failure
         fetchAndCompute()
     }
 
@@ -62,7 +62,7 @@ final class DashboardViewModel {
             balance += converted
             guard tx.timestamp >= monthStart && tx.timestamp <= monthEnd else { continue }
             if tx.amount > 0 { income += converted }
-            else { expenses += abs(converted) }
+            else if tx.amount < 0 { expenses += abs(converted) }
         }
 
         totalBalance = balance
