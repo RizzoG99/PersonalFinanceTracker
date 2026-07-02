@@ -29,7 +29,7 @@ struct MainTabView: View {
                     DashboardView(showingAddItemView: $showingAddItemView)
                         .payCycleAware { dashboardViewModel.load() }
                 }
-                Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity, role: .search) {
+                Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
                     ActivityView(showingAddItemView: $showingAddItemView)
                         .payCycleAware { viewModel.load() }
                 }
@@ -88,6 +88,7 @@ struct MainTabView: View {
         .onChange(of: viewModel.showUndoBanner) { _, isShowing in
             if !isShowing { dashboardViewModel.load() }
         }
+        .task { viewModel.load() }  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
         .appBackground()
         .preferredColorScheme(.dark)
     }
