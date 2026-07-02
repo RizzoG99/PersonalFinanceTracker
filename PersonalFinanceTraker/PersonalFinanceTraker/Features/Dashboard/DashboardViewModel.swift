@@ -55,20 +55,27 @@ final class DashboardViewModel {
         var balance = Decimal(0)
         var income = Decimal(0)
         var expenses = Decimal(0)
+        var recent: [TransactionModel] = []
 
-        // ponytail: single pass — was 6 passes; convertToBase called once per tx
+        // ponytail: single pass — balance/metrics + O(n) top-5 (no full sort)
         for tx in transactions {
             let converted = currencyService.convertToBase(tx.amount, from: tx.currencyCode)
             balance += converted
-            guard tx.timestamp >= monthStart && tx.timestamp <= monthEnd else { continue }
-            if tx.amount > 0 { income += converted }
-            else if tx.amount < 0 { expenses += abs(converted) }
+            if tx.timestamp >= monthStart && tx.timestamp <= monthEnd {
+                if tx.amount > 0 { income += converted }
+                else if tx.amount < 0 { expenses += abs(converted) }
+            }
+            if recent.count < 5 || tx.timestamp > recent.last!.timestamp {
+                recent.append(tx)
+                if recent.count > 5 { recent.removeLast() }
+                recent.sort { $0.timestamp > $1.timestamp }
+            }
         }
 
         totalBalance = balance
         monthlyIncome = income
         monthlyExpenses = expenses
-        recentTransactions = Array(transactions.sorted { $0.timestamp > $1.timestamp }.prefix(5))
+        recentTransactions = recent
     }
 
     var financialMonthLabel: String {
