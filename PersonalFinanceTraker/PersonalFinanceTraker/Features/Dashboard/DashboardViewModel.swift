@@ -37,28 +37,25 @@ final class DashboardViewModel {
     }
 
     private func calculateMetrics() {
-        totalBalance = transactions.reduce(Decimal(0)) { total, tx in
-            total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
-        }
-
         let payCycleStartDay = AppSettings.storedStartDay
         let (monthStart, monthEnd) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
-        let monthTx = transactions.filter { $0.timestamp >= monthStart && $0.timestamp <= monthEnd }
 
-        monthlyIncome = monthTx.filter { $0.amount > 0 }.reduce(Decimal(0)) { total, tx in
-            total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
+        var balance = Decimal(0)
+        var income = Decimal(0)
+        var expenses = Decimal(0)
+
+        // ponytail: single pass — was 6 passes; convertToBase called once per tx
+        for tx in transactions {
+            let converted = currencyService.convertToBase(tx.amount, from: tx.currencyCode)
+            balance += converted
+            guard tx.timestamp >= monthStart && tx.timestamp <= monthEnd else { continue }
+            if tx.amount > 0 { income += converted }
+            else { expenses += abs(converted) }
         }
 
-        monthlyExpenses = abs(monthTx.filter { $0.amount < 0 }.reduce(Decimal(0)) { total, tx in
-            total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
-        })
-
-        let allIncome = transactions.filter { $0.amount > 0 }.reduce(Decimal(0)) { total, tx in
-            total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
-        }
-        let allExpenses = abs(transactions.filter { $0.amount < 0 }.reduce(Decimal(0)) { total, tx in
-            total + currencyService.convertToBase(tx.amount, from: tx.currencyCode)
-        })
+        totalBalance = balance
+        monthlyIncome = income
+        monthlyExpenses = expenses
         recentTransactions = Array(transactions.sorted { $0.timestamp > $1.timestamp }.prefix(5))
     }
 

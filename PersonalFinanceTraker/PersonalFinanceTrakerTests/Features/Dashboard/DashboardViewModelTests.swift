@@ -69,4 +69,28 @@ struct DashboardViewModelTests {
         let vm = DashboardViewModel(repo: MockTransactionRepository())
         #expect(vm.financialMonthLabel == "This Month")
     }
+
+    @Test func calculatesAllMetricsInSingleLoad() {
+        UserDefaults.standard.set(1, forKey: "payCycleStartDay")
+        defer { UserDefaults.standard.removeObject(forKey: "payCycleStartDay") }
+
+        // 3 transactions this month: +1000 income, -300 expense, -200 expense
+        let (monthStart, _) = PayCycleService.currentFinancialMonth(startDay: 1)
+        let repo = MockTransactionRepository()
+        let calendar = Calendar.current
+        repo.transactions = [
+            TransactionModel(timestamp: calendar.date(byAdding: .hour, value: 2, to: monthStart)!, amount: 1000, note: "", category: "Salary", currencyCode: "EUR"),
+            TransactionModel(timestamp: calendar.date(byAdding: .hour, value: 1, to: monthStart)!, amount: -300, note: "", category: "Food", currencyCode: "EUR"),
+            TransactionModel(timestamp: monthStart, amount: -200, note: "", category: "Transport", currencyCode: "EUR"),
+        ]
+        let vm = DashboardViewModel(repo: repo)
+        vm.load()
+
+        #expect(vm.totalBalance == 500)
+        #expect(vm.monthlyIncome == 1000)
+        #expect(vm.monthlyExpenses == 500)
+        #expect(vm.recentTransactions.count == 3)
+        // Most recent first
+        #expect(vm.recentTransactions.first?.amount == 1000)
+    }
 }
