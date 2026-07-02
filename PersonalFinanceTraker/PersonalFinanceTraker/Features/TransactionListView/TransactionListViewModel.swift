@@ -42,23 +42,30 @@ final class TransactionListViewModel {
 
     private let dataService = ChartDataService()
     public let currencyService = CurrencyService()
+    private var isLoaded = false
 
     init(repo: ITransactionRepository) {
         self.repo = repo
     }
-    
+
     func load() {
+        guard !isLoaded else { return }
+        isLoaded = true
+        fetchAndRefresh()
+    }
+
+    func reload() {
+        isLoaded = false
+        load()
+    }
+
+    private func fetchAndRefresh() {
         do {
             transactions = try repo.fetchAll()
-            doFilterItemBySearchText()
-            groupTransactions()
-            chartData = dataService.generateChartData(from: filteredItems,
-                                                                       for: selectedTimePeriod,
-                                                                       payCycleStartDay: AppSettings.storedStartDay)
-
+            doFilterItemBySearchText()  // triggers filteredItems.didSet → groupTransactions() + chartData
         } catch { print(error) }
     }
-    
+
     func add(date: Date, amount: Decimal, note: String, category: String) {
         let item = TransactionModel(
             timestamp: date,
@@ -68,15 +75,15 @@ final class TransactionListViewModel {
         )
         add(item)
     }
-    
+
     func add(_ item: TransactionModel) {
         try? repo.add(item)
-        load()
+        reload()
     }
-    
+
     func update() {
         try? repo.update()
-        load()
+        reload()
     }
     
     private func doFilterItemBySearchText() {
@@ -158,7 +165,7 @@ final class TransactionListViewModel {
         pendingDeletion = []
         showUndoBanner = false
         deleteProgress = 0.0
-        load()
+        reload()
     }
     
     func totalForDate(items: [TransactionModel]) -> Decimal {
@@ -262,7 +269,7 @@ final class TransactionListViewModel {
             }
         }
         showingImportFlow = false
-        load()
+        reload()
         if failCount > 0 {
             importError = "Failed to save \(failCount) of \(transactions.count) transaction(s). Check available storage and try again."
         }

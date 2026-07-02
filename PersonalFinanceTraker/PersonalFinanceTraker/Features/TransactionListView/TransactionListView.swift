@@ -113,9 +113,7 @@ struct TransactionListMVVM: View {
             }
         }
         .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
-        .onAppear {
-            viewModel.load()
-        }
+        .task { viewModel.load() }
     }
 
 }
