@@ -1,18 +1,39 @@
-# 🤑 Personal Finance Traker | iOS
-**Device compatibility:** iOS 26 and newer.
+# Personal Finance Tracker · iOS
 
-Did you don't know how you arrive at the end of month with 0 euro? So this app help you to understand it 💪🏻
+A personal finance app for tracking income and expenses, understanding spending patterns, and staying on top of your finances.
 
-## 🤩 Features
+**Requirements:** iOS 26+
 
-| Transaction List      | Categories | Add&Edit |
-| ----------- | ----------- | ----------- |
-|<img src="Images/transaction.png" width="200">|<img src="Images/categories.gif" width="200">|<img src="Images/add_transaction.gif" width="200">| 
+---
 
-___
+## Features
 
-### 🚧 Work in progress...
+- **Dashboard** — total balance, income/expense summary for the current pay cycle, and recent transactions
+- **Activity** — full transaction list with grouped history and swipe-to-delete with undo
+- **Insights** — spending breakdown by category with charts and narrative summaries
+- **Categories** — customizable categories with icons and colors
+- **Add / Edit transactions** — quick entry sheet with category, amount, date, and notes
+- **Profile** — pay cycle configuration and personal info
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Swift 6 |
+| UI | SwiftUI |
+| Persistence | SwiftData |
+| Architecture | MVVM |
+| Tests | Swift Testing |
+
+## Work in Progress
+
 - Biometric authorization
-- Filtered search
-- iCloude saved data
-- Budgeting
+- Full-text search
+- iCloud sync
+- Budgeting / spending limits
+
+## Development
+
+Open `PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj` in Xcode. Build and run on a simulator or device running iOS 26+.
+
+> **Note:** The project directory is spelled `PersonalFinanceTraker` (one 'c') — this is a known typo carried throughout the Xcode project.
