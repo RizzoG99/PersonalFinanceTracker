@@ -65,10 +65,10 @@ final class DashboardViewModel {
                 if tx.amount > 0 { income += converted }
                 else if tx.amount < 0 { expenses += abs(converted) }
             }
-            if recent.count < 5 || tx.timestamp > recent.last!.timestamp {
+            if recent.count < 5 || tx.timestamp > (recent.last?.timestamp ?? .distantPast) {
                 recent.append(tx)
-                if recent.count > 5 { recent.removeLast() }
                 recent.sort { $0.timestamp > $1.timestamp }
+                if recent.count > 5 { recent.removeLast() }
             }
         }
 

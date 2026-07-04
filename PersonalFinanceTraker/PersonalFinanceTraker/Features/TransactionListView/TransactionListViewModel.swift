@@ -43,6 +43,8 @@ final class TransactionListViewModel {
     private let dataService = ChartDataService()
     public let currencyService = CurrencyService()
     private var isLoaded = false
+    var loadError: String? = nil
+    var isLoading = false
 
     init(repo: ITransactionRepository) {
         self.repo = repo
@@ -51,7 +53,12 @@ final class TransactionListViewModel {
     func load() {
         guard !isLoaded else { return }
         isLoaded = true
-        fetchAndRefresh()
+        isLoading = true
+        // ponytail: Task defers work to next run loop so view renders spinner before the 180ms block
+        Task {
+            self.fetchAndRefresh()
+            self.isLoading = false
+        }
     }
 
     func reload() {
@@ -63,7 +70,7 @@ final class TransactionListViewModel {
         do {
             transactions = try repo.fetchAll()
             doFilterItemBySearchText()  // triggers filteredItems.didSet → groupTransactions() + chartData
-        } catch { print(error) }
+        } catch { loadError = "Failed to load transactions: \(error.localizedDescription)" }
     }
 
     func add(date: Date, amount: Decimal, note: String, category: String) {
@@ -100,18 +107,13 @@ final class TransactionListViewModel {
     
     private func groupTransactions() {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: self.filteredItems) { item in
-            calendar.startOfDay(for: item.timestamp)
-        }
-        
-        self.groupedItems = grouped.map { (date, items) in
-            (date.formattedForTransaction(), items.sorted { $0.timestamp > $1.timestamp })
-        }.sorted { first, second in
-            // Sort sections by date (newest first)
-            let firstDate = calendar.startOfDay(for: first.1.first?.timestamp ?? Date())
-            let secondDate = calendar.startOfDay(for: second.1.first?.timestamp ?? Date())
-            return firstDate > secondDate
-        }
+        let grouped = Dictionary(grouping: filteredItems) { calendar.startOfDay(for: $0.timestamp) }
+        // ponytail: sort Date keys directly — avoids O(n log n) calendar.startOfDay calls in comparator
+        groupedItems = grouped
+            .sorted { $0.key > $1.key }
+            .map { (date, items) in
+                (date.formattedForTransaction(), items.sorted { $0.timestamp > $1.timestamp })
+            }
     }
     
     func delete(_ item: TransactionModel) {

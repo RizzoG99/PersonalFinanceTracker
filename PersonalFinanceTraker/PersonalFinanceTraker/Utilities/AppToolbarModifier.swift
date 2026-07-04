@@ -56,6 +56,17 @@ struct AppToolbarModifier: ViewModifier {
             } message: {
                 Text(transactionViewModel.importError ?? "")
             }
+            .alert(
+                "Load Error",
+                isPresented: Binding(
+                    get: { transactionViewModel.loadError != nil },
+                    set: { if !$0 { transactionViewModel.loadError = nil } }
+                )
+            ) {
+                Button("OK") { transactionViewModel.loadError = nil }
+            } message: {
+                Text(transactionViewModel.loadError ?? "")
+            }
     }
 }
 
