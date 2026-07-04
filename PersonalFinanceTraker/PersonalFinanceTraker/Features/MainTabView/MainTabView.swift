@@ -42,7 +42,6 @@ struct MainTabView: View {
             }
             .environment(\.symbolVariants, .none)
             .tint(Color.accentIndigo)
-            .tabBarMinimizeBehavior(.onScrollDown)
             .environment(viewModel)
             .environment(dashboardViewModel)
             .environment(profileViewModel)
