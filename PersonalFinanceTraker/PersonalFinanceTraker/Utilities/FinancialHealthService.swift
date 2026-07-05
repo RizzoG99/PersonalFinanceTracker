@@ -4,8 +4,8 @@ struct FinancialHealthService {
     let currencyService: CurrencyService
 
     func compute(
-        transactions: [TransactionModel],
-        expenseTransactions: [TransactionModel],
+        transactions: [TransactionSnapshot],
+        expenseTransactions: [TransactionSnapshot],
         budgetedCategories: [CategoryModel],
         payCycleStartDay: Int = 1,
         ignoreSubscriptions: Bool = false
@@ -182,7 +182,7 @@ struct FinancialHealthService {
         "Keep subscriptions under 15% of expenses to earn full points."
     }
 
-    private func sumExpenses(_ items: [TransactionModel]) -> Decimal {
+    private func sumExpenses(_ items: [TransactionSnapshot]) -> Decimal {
         abs(items.reduce(Decimal(0)) { $0 + currencyService.convertToBase($1.amount, from: $1.currencyCode) })
     }
 }

@@ -7,25 +7,27 @@ import Foundation
 
 @Observable @MainActor
 final class DashboardViewModel {
-    var transactions: [TransactionModel] = []
+    var transactions: [TransactionSnapshot] = []
     var totalBalance: Decimal = 0
     var monthlyIncome: Decimal = 0
     var monthlyExpenses: Decimal = 0
-    var recentTransactions: [TransactionModel] = []
+    var recentTransactions: [TransactionSnapshot] = []
     var loadError: String? = nil
 
-    private let repo: ITransactionRepository
+    private let repo: any ITransactionRepository
     private let currencyService = CurrencyService()
     private var isLoaded = false
 
-    init(repo: ITransactionRepository) {
+    init(repo: any ITransactionRepository) {
         self.repo = repo
     }
 
     func load() {
         guard !isLoaded else { return }
         isLoaded = true  // ponytail: mark loaded before fetch; call reload() to retry after failure
-        fetchAndCompute()
+        Task {
+            await fetchAndCompute()
+        }
     }
 
     func reload() {
@@ -33,17 +35,16 @@ final class DashboardViewModel {
         load()
     }
 
-    private func fetchAndCompute() {
+    private func fetchAndCompute() async {
         do {
-            transactions = try repo.fetchAll()
+            transactions = try await repo.fetchAll()
             calculateMetrics()
         } catch {
             loadError = error.localizedDescription
         }
     }
 
-    func optimisticRemove(_ items: [TransactionModel]) {
-        let ids = Set(items.map(\.id))
+    func optimisticRemove(ids: [PersistentIdentifier]) {
         transactions.removeAll { ids.contains($0.id) }
         calculateMetrics()
     }
@@ -55,7 +56,7 @@ final class DashboardViewModel {
         var balance = Decimal(0)
         var income = Decimal(0)
         var expenses = Decimal(0)
-        var recent: [TransactionModel] = []
+        var recent: [TransactionSnapshot] = []
 
         // ponytail: single pass — balance/metrics + O(n) top-5 (no full sort)
         for tx in transactions {

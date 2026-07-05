@@ -9,7 +9,7 @@ struct SpendingInsightService {
     let currencyService: CurrencyService
     let pieDataService: PieChartDataService
 
-    func heroInsight(expenseTransactions: [TransactionModel]) -> HeroInsight {
+    func heroInsight(expenseTransactions: [TransactionSnapshot]) -> HeroInsight {
         let calendar = Calendar.current
         let now = Date.now
         let startOfCurrentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
@@ -57,7 +57,7 @@ struct SpendingInsightService {
         }
     }
 
-    func categoryTrends(expenseTransactions: [TransactionModel]) -> [CategoryTrend] {
+    func categoryTrends(expenseTransactions: [TransactionSnapshot]) -> [CategoryTrend] {
         let calendar = Calendar.current
         let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: .now) ?? .now
 
@@ -80,7 +80,7 @@ struct SpendingInsightService {
         }
     }
 
-    func habitObservations(expenseTransactions: [TransactionModel]) -> [HabitObservation] {
+    func habitObservations(expenseTransactions: [TransactionSnapshot]) -> [HabitObservation] {
         let calendar = Calendar.current
         let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: .now) ?? .now
         let recentExpenses = expenseTransactions.filter { $0.timestamp >= thirtyDaysAgo }
@@ -183,7 +183,7 @@ struct SpendingInsightService {
         return observations
     }
 
-    private func sumExpenses(_ items: [TransactionModel]) -> Decimal {
+    private func sumExpenses(_ items: [TransactionSnapshot]) -> Decimal {
         abs(items.reduce(Decimal(0)) { $0 + currencyService.convertToBase($1.amount, from: $1.currencyCode) })
     }
 }

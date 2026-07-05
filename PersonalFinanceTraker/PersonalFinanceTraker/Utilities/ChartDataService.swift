@@ -13,7 +13,7 @@ public class ChartDataService {
 
     public init() {}
 
-    public func generateChartData(from items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [ChartDataPoint] {
+    public func generateChartData(from items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [ChartDataPoint] {
         let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
 
         switch timePeriod {
@@ -26,7 +26,7 @@ public class ChartDataService {
         }
     }
 
-    public func filterItems(_ items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [TransactionModel] {
+    public func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
         switch timePeriod {
         case .month:
             let (start, end) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
@@ -42,7 +42,7 @@ public class ChartDataService {
 
     // MARK: - Private Methods
 
-    private func generateWeeklyData(from items: [TransactionModel], referenceDate: Date) -> [ChartDataPoint] {
+    private func generateWeeklyData(from items: [TransactionSnapshot], referenceDate: Date) -> [ChartDataPoint] {
         let calendar = Calendar.current
         var data: [ChartDataPoint] = []
 
@@ -62,7 +62,7 @@ public class ChartDataService {
         return data.reversed()
     }
 
-    private func generateMonthlyData(from items: [TransactionModel], referenceDate: Date) -> [ChartDataPoint] {
+    private func generateMonthlyData(from items: [TransactionSnapshot], referenceDate: Date) -> [ChartDataPoint] {
         let calendar = Calendar.current
         var data: [ChartDataPoint] = []
 
@@ -80,7 +80,7 @@ public class ChartDataService {
         return data.reversed()
     }
 
-    private func generateYearlyData(from items: [TransactionModel], referenceDate: Date) -> [ChartDataPoint] {
+    private func generateYearlyData(from items: [TransactionSnapshot], referenceDate: Date) -> [ChartDataPoint] {
         let calendar = Calendar.current
         var data: [ChartDataPoint] = []
 
@@ -99,13 +99,13 @@ public class ChartDataService {
         return data.reversed()
     }
 
-    private func calculateIncome(from items: [TransactionModel]) -> Decimal {
+    private func calculateIncome(from items: [TransactionSnapshot]) -> Decimal {
         items.filter { $0.amount > 0 }.reduce(0) { total, item in
             total + currencyService.convertToBase(item.amount, from: item.currencyCode)
         }
     }
 
-    private func calculateExpenses(from items: [TransactionModel]) -> Decimal {
+    private func calculateExpenses(from items: [TransactionSnapshot]) -> Decimal {
         abs(items.filter { $0.amount < 0 }.reduce(0) { total, item in
             total + currencyService.convertToBase(item.amount, from: item.currencyCode)
         })
@@ -115,12 +115,12 @@ public class ChartDataService {
 // MARK: - Extensions
 
 extension ChartDataService {
-    public func getRecentData(from items: [TransactionModel], count: Int, for timePeriod: TimePeriod) -> [ChartDataPoint] {
+    public func getRecentData(from items: [TransactionSnapshot], count: Int, for timePeriod: TimePeriod) -> [ChartDataPoint] {
         let allData = generateChartData(from: items, for: timePeriod)
         return Array(allData.suffix(count))
     }
 
-    public func getSummaryStats(from items: [TransactionModel], for timePeriod: TimePeriod, payCycleStartDay: Int = 1) -> (income: Decimal, expenses: Decimal, net: Decimal) {
+    public func getSummaryStats(from items: [TransactionSnapshot], for timePeriod: TimePeriod, payCycleStartDay: Int = 1) -> (income: Decimal, expenses: Decimal, net: Decimal) {
         let filteredItems = filterItems(items, for: timePeriod, payCycleStartDay: payCycleStartDay)
         let income = calculateIncome(from: filteredItems)
         let expenses = calculateExpenses(from: filteredItems)

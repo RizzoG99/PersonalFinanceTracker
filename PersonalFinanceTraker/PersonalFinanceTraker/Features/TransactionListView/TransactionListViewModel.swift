@@ -9,14 +9,14 @@ import Foundation
 
 @Observable @MainActor
 final class TransactionListViewModel {
-    var transactions: [TransactionModel] = []
-    var filteredItems: [TransactionModel] = [] {
+    var transactions: [TransactionSnapshot] = []
+    var filteredItems: [TransactionSnapshot] = [] {
         didSet {
-            groupTransactions()
+            updateGroupedItems()
             chartData = dataService.generateChartData(from: filteredItems, for: selectedTimePeriod, payCycleStartDay: AppSettings.storedStartDay)
         }
     }
-    var groupedItems: [(String, [TransactionModel])] = []
+    var groupedItems: [(String, [TransactionSnapshot])] = []
 
     var totalFilteredIncome: Decimal {
         filteredItems.filter { $0.amount > 0 }.reduce(.zero) { $0 + $1.amount }
@@ -31,33 +31,28 @@ final class TransactionListViewModel {
     }
     var chartData: [ChartDataPoint] = []
     var selectedTimePeriod: TimePeriod = .month
-    var transactionToEdit: TransactionModel? = nil
+    var transactionToEdit: TransactionSnapshot? = nil
 
-    private(set) var pendingDeletion: [TransactionModel] = []
+    private(set) var pendingDeletion: [TransactionSnapshot] = []
     private var pendingDeletionTask: Task<Void, Never>?
     var showUndoBanner: Bool = false
     var deleteProgress: Double = 0.0
 
-    let repo: ITransactionRepository
+    let repo: any ITransactionRepository
 
     private let dataService = ChartDataService()
     public let currencyService = CurrencyService()
     private var isLoaded = false
-    var loadError: String? = nil
-    var isLoading = false
 
-    init(repo: ITransactionRepository) {
+    init(repo: any ITransactionRepository) {
         self.repo = repo
     }
 
     func load() {
         guard !isLoaded else { return }
         isLoaded = true
-        isLoading = true
-        // ponytail: Task defers work to next run loop so view renders spinner before the 180ms block
         Task {
-            self.fetchAndRefresh()
-            self.isLoading = false
+            await fetchAndRefresh()
         }
     }
 
@@ -66,33 +61,27 @@ final class TransactionListViewModel {
         load()
     }
 
-    private func fetchAndRefresh() {
+    private func fetchAndRefresh() async {
         do {
-            transactions = try repo.fetchAll()
-            doFilterItemBySearchText()  // triggers filteredItems.didSet → groupTransactions() + chartData
-        } catch { loadError = "Failed to load transactions: \(error.localizedDescription)" }
+            transactions = try await repo.fetchAll()
+            doFilterItemBySearchText()  // triggers filteredItems.didSet → updateGroupedItems() + chartData
+        } catch { print(error) }
     }
 
-    func add(date: Date, amount: Decimal, note: String, category: String) {
-        let item = TransactionModel(
-            timestamp: date,
-            amount: amount,
-            note: note,
-            category: category
-        )
-        add(item)
+    func add(_ input: TransactionInput) async {
+        do {
+            try await repo.add(input)
+            await reload()
+        } catch { print(error) }
     }
 
-    func add(_ item: TransactionModel) {
-        try? repo.add(item)
-        reload()
+    func update(id: PersistentIdentifier, with input: TransactionInput) async {
+        do {
+            try await repo.update(id: id, with: input)
+            await reload()
+        } catch { print(error) }
     }
 
-    func update() {
-        try? repo.update()
-        reload()
-    }
-    
     private func doFilterItemBySearchText() {
         if searchText.isEmpty {
             self.filteredItems = transactions
@@ -104,24 +93,38 @@ final class TransactionListViewModel {
             }
         }
     }
-    
-    private func groupTransactions() {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filteredItems) { calendar.startOfDay(for: $0.timestamp) }
-        // ponytail: sort Date keys directly — avoids O(n log n) calendar.startOfDay calls in comparator
-        groupedItems = grouped
-            .sorted { $0.key > $1.key }
-            .map { (date, items) in
-                (date.formattedForTransaction(), items.sorted { $0.timestamp > $1.timestamp })
+
+    private func updateGroupedItems() {
+        Task.detached(priority: .userInitiated) { [weak self] in
+            let grouped = Self.group(self?.filteredItems ?? [])
+            await MainActor.run {
+                self?.groupedItems = grouped
             }
+        }
     }
-    
-    func delete(_ item: TransactionModel) {
+
+    nonisolated private static func group(_ items: [TransactionSnapshot]) -> [(String, [TransactionSnapshot])] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: items) { item in
+            calendar.startOfDay(for: item.timestamp)
+        }
+
+        return grouped.map { (date, items) in
+            (date.formattedForTransaction(), items.sorted { $0.timestamp > $1.timestamp })
+        }.sorted { first, second in
+            // Sort sections by date (newest first)
+            let firstDate = calendar.startOfDay(for: first.1.first?.timestamp ?? Date())
+            let secondDate = calendar.startOfDay(for: second.1.first?.timestamp ?? Date())
+            return firstDate > secondDate
+        }
+    }
+
+    func delete(_ item: TransactionSnapshot) {
         scheduleDeletion([item])
     }
 
-    func deleteItemsFromSection(dayItems: [TransactionModel], offsets: IndexSet) {
-        let items = offsets.compactMap { i -> TransactionModel? in
+    func deleteItemsFromSection(dayItems: [TransactionSnapshot], offsets: IndexSet) {
+        let items = offsets.compactMap { i -> TransactionSnapshot? in
             guard i < dayItems.count else { return nil }
             return transactions.first { $0.id == dayItems[i].id }
         }
@@ -129,7 +132,7 @@ final class TransactionListViewModel {
         scheduleDeletion(items)
     }
 
-    private func scheduleDeletion(_ items: [TransactionModel]) {
+    private func scheduleDeletion(_ items: [TransactionSnapshot]) {
         pendingDeletionTask?.cancel()
         pendingDeletion.append(contentsOf: items)
         let ids = Set(items.map(\.id))
@@ -146,13 +149,23 @@ final class TransactionListViewModel {
                 if deleteProgress >= 1.0 { break }
             }
             guard !Task.isCancelled else { return }
-            commitPendingDeletion()
+            await commitPendingDeletion()
         }
     }
 
-    func commitPendingDeletion() {
+    func commitPendingDeletion() async {
+        var failedItems: [TransactionSnapshot] = []
         for item in pendingDeletion {
-            try? repo.delete(item)
+            do {
+                try await repo.delete(id: item.id)
+            } catch {
+                failedItems.append(item)
+            }
+        }
+        // Re-insert failed items and re-filter
+        if !failedItems.isEmpty {
+            transactions.append(contentsOf: failedItems)
+            doFilterItemBySearchText()
         }
         pendingDeletion = []
         pendingDeletionTask?.cancel()
@@ -169,8 +182,8 @@ final class TransactionListViewModel {
         deleteProgress = 0.0
         reload()
     }
-    
-    func totalForDate(items: [TransactionModel]) -> Decimal {
+
+    func totalForDate(items: [TransactionSnapshot]) -> Decimal {
         return items.reduce(0) { total, item in
             let convertedAmount = currencyService.convertToBase(item.amount, from: item.currencyCode)
             return total + convertedAmount
@@ -196,9 +209,9 @@ final class TransactionListViewModel {
 
     var csvFile: CSVFile? = nil
     var columnMapping = ColumnMapping()
-    var categoryResolution: [String: CategoryModel] = [:]
+    var categoryResolution: [String: CategorySnapshot] = [:]
     var mappedRows: [MappedRow] = []
-    var availableCategories: [CategoryModel] = []
+    var availableCategories: [CategorySnapshot] = []
     var showingImportFlow = false
     var importNavigationPath: [ImportStep] = []
     var importError: String? = nil
@@ -219,7 +232,7 @@ final class TransactionListViewModel {
                 columnMapping = mapping
                 columnMapping.defaultCurrency = currencyService.baseCurrency
                 // Let the outer catch surface any fetch failure rather than silently hiding it
-                availableCategories = try repo.fetchCategories()
+                availableCategories = try await repo.fetchCategories()
                 categoryResolution = [:]
                 importNavigationPath = []
                 showingImportFlow = true
@@ -231,7 +244,7 @@ final class TransactionListViewModel {
     }
 
     /// Offloads per-row work (date parsing, Decimal conversion) to a background thread.
-    /// CategoryModel re-resolution happens back on the MainActor after the task completes.
+    /// CategorySnapshot re-resolution happens back on the MainActor after the task completes.
     func applyMapping() async {
         guard let file = csvFile else { return }
         let uuidResolution: [String: UUID] = categoryResolution.mapValues { $0.id }
@@ -241,39 +254,40 @@ final class TransactionListViewModel {
             CSVColumnMapper.applyRaw(mapping: mapping, to: file, categoryResolution: uuidResolution)
         }.value
 
-        // Re-resolve CategoryModel references on MainActor
+        // Re-resolve CategorySnapshot references on MainActor
         mappedRows = rawRows.map { raw in
             guard let data = raw.data else {
-                return MappedRow(transaction: nil, error: raw.error, rowIndex: raw.rowIndex)
+                return MappedRow(input: nil, error: raw.error, rowIndex: raw.rowIndex)
             }
-            let categoryModel = data.resolvedCategoryUUID.flatMap { uuid in
+            let _resolvedCategory = data.resolvedCategoryUUID.flatMap { uuid in
                 availableCategories.first { $0.id == uuid }
             }
-            let transaction = TransactionModel(
+            let input = TransactionInput(
                 timestamp: data.timestamp,
                 amount: data.amount,
                 note: data.note,
                 category: data.category,
-                categoryModel: categoryModel,
                 currencyCode: data.currencyCode
             )
-            return MappedRow(transaction: transaction, error: nil, rowIndex: raw.rowIndex)
+            return MappedRow(input: input, error: nil, rowIndex: raw.rowIndex)
         }
     }
 
-    func confirmImport(_ transactions: [TransactionModel]) {
+    func confirmImport(_ inputs: [TransactionInput]) {
         var failCount = 0
-        for t in transactions {
-            do {
-                try repo.add(t)
-            } catch {
-                failCount += 1
+        Task {
+            for input in inputs {
+                do {
+                    try await repo.add(input)
+                } catch {
+                    failCount += 1
+                }
             }
-        }
-        showingImportFlow = false
-        reload()
-        if failCount > 0 {
-            importError = "Failed to save \(failCount) of \(transactions.count) transaction(s). Check available storage and try again."
+            showingImportFlow = false
+            await reload()
+            if failCount > 0 {
+                importError = "Failed to save \(failCount) of \(inputs.count) transaction(s). Check available storage and try again."
+            }
         }
     }
 

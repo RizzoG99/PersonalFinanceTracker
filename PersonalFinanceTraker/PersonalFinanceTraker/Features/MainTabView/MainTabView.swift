@@ -10,6 +10,7 @@ import SwiftData
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: TabItem = .home
     @State private var showingAddItemView: Bool = false
     @State private var viewModel: TransactionListViewModel
@@ -17,9 +18,10 @@ struct MainTabView: View {
     @State private var profileViewModel = ProfileViewModel()
     @State private var appSettings = AppSettings()
 
-    init(context: ModelContext) {
-        _viewModel = State(wrappedValue: TransactionListViewModel(repo: TransactionRepository(context: context)))
-        _dashboardViewModel = State(wrappedValue: DashboardViewModel(repo: TransactionRepository(context: context)))
+    init(modelContainer: ModelContainer) {
+        let actor = TransactionActor(modelContainer: modelContainer)
+        _viewModel = State(wrappedValue: TransactionListViewModel(repo: actor))
+        _dashboardViewModel = State(wrappedValue: DashboardViewModel(repo: actor))
     }
 
     var body: some View {
@@ -42,7 +44,6 @@ struct MainTabView: View {
             }
             .environment(\.symbolVariants, .none)
             .tint(Color.accentIndigo)
-            .tabBarMinimizeBehavior(.onScrollDown)
             .environment(viewModel)
             .environment(dashboardViewModel)
             .environment(profileViewModel)
@@ -83,10 +84,15 @@ struct MainTabView: View {
         }
         .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
         .onChange(of: viewModel.pendingDeletion) { _, pending in
-            if !pending.isEmpty { dashboardViewModel.optimisticRemove(pending) }
+            if !pending.isEmpty { dashboardViewModel.optimisticRemove(ids: pending.map(\.id)) }
         }
         .onChange(of: viewModel.showUndoBanner) { _, isShowing in
-            if !isShowing { dashboardViewModel.load() }
+            if !isShowing { dashboardViewModel.reload() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                Task { await viewModel.commitPendingDeletion() }
+            }
         }
         .task { viewModel.load() }  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
         .appBackground()
@@ -100,7 +106,7 @@ struct MainTabView: View {
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
         SampleData.populateModelContext(container.mainContext)
-        return MainTabView(context: container.mainContext)
+        return MainTabView(modelContainer: container)
             .modelContainer(container)
     } catch {
         return Text("Failed to create preview container: \(error.localizedDescription)")
