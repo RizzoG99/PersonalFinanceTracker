@@ -13,7 +13,7 @@ struct AuthenticationWrapper: View {
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
 
     private let pinService = PINService()
-    let context: ModelContext
+    let modelContainer: ModelContainer
 
     var body: some View {
         ZStack {
@@ -26,7 +26,7 @@ struct AuthenticationWrapper: View {
                 )
                 .transition(.opacity)
             } else if authService.isUnlocked {
-                MainTabView(context: context)
+                MainTabView(modelContainer: modelContainer)
                     .transition(.opacity)
             } else {
                 PINEntryView(

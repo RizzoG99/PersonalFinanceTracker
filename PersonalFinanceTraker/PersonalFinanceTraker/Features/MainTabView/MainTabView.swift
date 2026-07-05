@@ -87,7 +87,7 @@ struct MainTabView: View {
             if !pending.isEmpty { dashboardViewModel.optimisticRemove(ids: pending.map(\.id)) }
         }
         .onChange(of: viewModel.showUndoBanner) { _, isShowing in
-            if !isShowing { dashboardViewModel.load() }
+            if !isShowing { dashboardViewModel.reload() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {

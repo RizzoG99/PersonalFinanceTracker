@@ -58,7 +58,7 @@ struct PersonalFinanceTrakerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            AuthenticationWrapper(context: sharedModelContainer.mainContext)
+            AuthenticationWrapper(modelContainer: sharedModelContainer)
         }
         .modelContainer(sharedModelContainer)
     }
