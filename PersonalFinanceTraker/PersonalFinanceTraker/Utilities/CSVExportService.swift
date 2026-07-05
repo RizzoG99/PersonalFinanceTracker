@@ -13,7 +13,7 @@ public class CSVExportService {
     /// Generates a CSV string from an array of transaction models
     /// - Parameter transactions: The transactions to export
     /// - Returns: A formatted CSV string
-    public static func generateCSV(from transactions: [TransactionModel]) -> String {
+    public static func generateCSV(from transactions: [TransactionSnapshot]) -> String {
         let header = "Date,Amount,Currency,Category,Note,Type\n"
         
         let dateFormatter = DateFormatter()

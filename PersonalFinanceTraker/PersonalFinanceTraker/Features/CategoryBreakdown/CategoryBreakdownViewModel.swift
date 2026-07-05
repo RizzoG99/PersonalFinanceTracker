@@ -8,24 +8,30 @@ import SwiftUI
 
 @Observable @MainActor
 final class CategoryBreakdownViewModel {
-    var transactions: [TransactionModel] = []
+    var transactions: [TransactionSnapshot] = []
     var selectedTimePeriod: TimePeriod = .month
     var selectedPieChartType: PieChartDataType = .expenses
     var loadError: String? = nil
 
-    private let repo: ITransactionRepository
+    private let repo: any ITransactionRepository
     private var dataService = PieChartDataService()
-    
-    init(repo: ITransactionRepository) {
+
+    init(repo: any ITransactionRepository) {
         self.repo = repo
     }
-    
+
     func load() {
+        Task {
+            await fetchTransactions()
+        }
+    }
+
+    private func fetchTransactions() async {
         do {
-            transactions = try repo.fetchAll()
+            transactions = try await repo.fetchAll()
         } catch { loadError = error.localizedDescription }
     }
-    
+
     var summaryStats: (totalAmount: Decimal, categoryCount: Int) {
         dataService.getSummaryStats(
             from: transactions,
@@ -34,7 +40,7 @@ final class CategoryBreakdownViewModel {
             payCycleStartDay: AppSettings.storedStartDay
         )
     }
-    
+
     var pieChartData: [PieChartDataPoint] {
         dataService.generatePieChartData(
             from: transactions,
