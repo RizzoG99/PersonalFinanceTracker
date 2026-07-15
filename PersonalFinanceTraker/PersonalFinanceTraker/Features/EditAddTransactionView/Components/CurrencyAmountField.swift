@@ -12,10 +12,11 @@ struct CurrencyAmountField: View {
     @Binding var currencyCode: String
     @FocusState private var isFocused: Bool
     @State private var displayText: String = ""
-    
+
     let label: String
     let placeholder: String
-    
+    let shouldAutoFocus: Bool
+
     // Currency formatter for display
     private var currencyFormatter: NumberFormatter {
         let formatter = NumberFormatter()
@@ -31,12 +32,14 @@ struct CurrencyAmountField: View {
         label: String = "Amount",
         placeholder: String = "0",
         amount: Binding<Double>,
-        currencyCode: Binding<String>
+        currencyCode: Binding<String>,
+        shouldAutoFocus: Bool = false
     ) {
         self.label = label
         self.placeholder = placeholder
         self._amount = amount
         self._currencyCode = currencyCode
+        self.shouldAutoFocus = shouldAutoFocus
     }
     
     private var currencySymbol: String {
@@ -92,6 +95,11 @@ struct CurrencyAmountField: View {
                     }
                     .onAppear {
                         updateDisplayText()
+                        if shouldAutoFocus {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                isFocused = true
+                            }
+                        }
                     }
                     .onChange(of: amount) { _, _ in
                         if !isFocused {
@@ -162,16 +170,6 @@ struct CurrencyAmountField: View {
     }
 }
 
-// MARK: - Focus Control Extension
-
-extension CurrencyAmountField {
-    /// Programmatically focus the amount field
-    func focused(_ isFocused: Bool) -> some View {
-        self.onAppear {
-            self.isFocused = isFocused
-        }
-    }
-}
 
 // MARK: - Preview
 
@@ -186,7 +184,8 @@ extension CurrencyAmountField {
                     label: "Amount",
                     placeholder: "0",
                     amount: $amount,
-                    currencyCode: $currency
+                    currencyCode: $currency,
+                    shouldAutoFocus: true
                 )
                 
                 Text("Current amount: \(amount, specifier: "%.2f")")

@@ -30,7 +30,7 @@ struct CategoryTrendRow: View {
                 categoryIcon
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(trend.category.category)
+                    Text(trend.category.category.removingLeadingEmoji)
                         .font(.body)
                         .foregroundStyle(.textPrimary)
                         .lineLimit(1)
@@ -64,16 +64,30 @@ struct CategoryTrendRow: View {
     }
 
     private var trendBadge: some View {
-        HStack(spacing: 3) {
-            Image(systemName: trendArrow)
-                .font(.caption2.bold())
-            Text(String(format: "%.0f%%", abs(trend.changePercent)))
-                .font(.caption.bold())
+        if trend.isNew {
+            return AnyView(
+                Text("new")
+                    .font(.caption.bold())
+                    .foregroundStyle(.textDim)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.textDim.opacity(0.12))
+                    .clipShape(.capsule)
+            )
+        } else {
+            return AnyView(
+                HStack(spacing: 3) {
+                    Image(systemName: trendArrow)
+                        .font(.caption2.bold())
+                    Text(String(format: "%.0f%%", abs(trend.changePercent)))
+                        .font(.caption.bold())
+                }
+                .foregroundStyle(trendColor)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(trendColor.opacity(0.12))
+                .clipShape(.capsule)
+            )
         }
-        .foregroundStyle(trendColor)
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
-        .background(trendColor.opacity(0.12))
-        .clipShape(.capsule)
     }
 }

@@ -26,7 +26,7 @@ struct CategoryBreakdownView: View {
     @State private var showingSettings = false
     
     init(context: ModelContext) {
-        _viewModel = State(wrappedValue: CategoryBreakdownViewModel(repo: TransactionRepository(context: context)))
+        _viewModel = State(wrappedValue: CategoryBreakdownViewModel(repo: TransactionActor(modelContainer: context.container)))
     }
     
     var body: some View {

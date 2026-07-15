@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 @Observable @MainActor
 final class TransactionListViewModel {
@@ -18,12 +19,32 @@ final class TransactionListViewModel {
     }
     var groupedItems: [(String, [TransactionSnapshot])] = []
 
+    /// Category chip selection on the Activity screen; nil means "All"
+    var selectedCategory: String? = nil
+
+    /// Categories offered as filter chips, most-used first (stable within a data set)
+    var filterCategories: [String] {
+        let counts = Dictionary(grouping: filteredItems, by: \.category).mapValues(\.count)
+        return counts.sorted { ($0.value, $1.key) > ($1.value, $0.key) }.map(\.key)
+    }
+
+    /// selectedCategory, ignored when it no longer exists in the current data (e.g. after a search)
+    var effectiveCategory: String? {
+        selectedCategory.flatMap { filterCategories.contains($0) ? $0 : nil }
+    }
+
+    /// Totals always match the visible list (search + category filter); no period scoping
+    private func scopedItems() -> [TransactionSnapshot] {
+        guard let category = effectiveCategory else { return filteredItems }
+        return filteredItems.filter { $0.category == category }
+    }
+
     var totalFilteredIncome: Decimal {
-        filteredItems.filter { $0.amount > 0 }.reduce(.zero) { $0 + $1.amount }
+        scopedItems().filter { $0.amount > 0 }.reduce(.zero) { $0 + $1.amount }
     }
 
     var totalFilteredExpenses: Decimal {
-        abs(filteredItems.filter { $0.amount < 0 }.reduce(.zero) { $0 + $1.amount })
+        abs(scopedItems().filter { $0.amount < 0 }.reduce(.zero) { $0 + $1.amount })
     }
 
     var searchText: String = "" {
@@ -39,6 +60,8 @@ final class TransactionListViewModel {
     var deleteProgress: Double = 0.0
 
     let repo: any ITransactionRepository
+    /// Set by the owning view; notifies the app that persisted data changed
+    @ObservationIgnored var onDataChanged: (() -> Void)?
 
     private let dataService = ChartDataService()
     public let currencyService = CurrencyService()
@@ -48,10 +71,13 @@ final class TransactionListViewModel {
         self.repo = repo
     }
 
+    /// Handle to the in-flight fetch so tests (and callers) can await completion
+    @ObservationIgnored private(set) var loadTask: Task<Void, Never>?
+
     func load() {
         guard !isLoaded else { return }
         isLoaded = true
-        Task {
+        loadTask = Task {
             await fetchAndRefresh()
         }
     }
@@ -95,8 +121,8 @@ final class TransactionListViewModel {
     }
 
     private func updateGroupedItems() {
-        Task.detached(priority: .userInitiated) { [weak self] in
-            let grouped = Self.group(self?.filteredItems ?? [])
+        Task.detached(priority: .userInitiated) { [weak self, items = filteredItems] in
+            let grouped = Self.group(items)
             await MainActor.run {
                 self?.groupedItems = grouped
             }
@@ -172,6 +198,7 @@ final class TransactionListViewModel {
         pendingDeletionTask = nil
         showUndoBanner = false
         deleteProgress = 0.0
+        onDataChanged?()
     }
 
     func undoDelete() {
@@ -195,9 +222,29 @@ final class TransactionListViewModel {
     }
 
     var currentPeriodLabel: String? {
-        guard selectedTimePeriod == .month, AppSettings.storedStartDay != 1 else { return nil }
-        let (start, _) = PayCycleService.currentFinancialMonth(startDay: AppSettings.storedStartDay)
-        return "Since \(start.formatted(.dateTime.month(.abbreviated).day()))"
+        let (start, end) = periodBounds
+        guard start != end else { return nil }
+
+        let startFormatted = start.formatted(.dateTime.month(.abbreviated).day())
+        let endFormatted = end.formatted(.dateTime.month(.abbreviated).day())
+        return "This period · \(startFormatted) – \(endFormatted)"
+    }
+
+    private var periodBounds: (start: Date, end: Date) {
+        switch selectedTimePeriod {
+        case .month:
+            return PayCycleService.currentFinancialMonth(startDay: AppSettings.storedStartDay)
+        case .week:
+            let calendar = Calendar.current
+            let now = Date.now
+            let startDate = calendar.date(byAdding: .day, value: -7, to: now) ?? now
+            return (start: startDate, end: now)
+        case .year:
+            let calendar = Calendar.current
+            let now = Date.now
+            let startDate = calendar.date(byAdding: .day, value: -365, to: now) ?? now
+            return (start: startDate, end: now)
+        }
     }
 
     /// Generates a CSV export of all currently filtered transactions
@@ -209,13 +256,17 @@ final class TransactionListViewModel {
 
     var csvFile: CSVFile? = nil
     var columnMapping = ColumnMapping()
-    var categoryResolution: [String: CategorySnapshot] = [:]
+    var categoryResolutionSelections: [String: String] = [:]  // UUID strings or "__new__" sentinel
+    var csvCategories: [String] = []                          // Unique CSV categories (computed once)
+    var csvCategoryTypes: [String: TransactionType] = [:]      // Inferred type per CSV category
     var mappedRows: [MappedRow] = []
     var availableCategories: [CategorySnapshot] = []
     var showingImportFlow = false
     var importNavigationPath: [ImportStep] = []
     var importError: String? = nil
     var isLoadingCSV = false
+    var isImporting = false                                    // UI state during batch insert
+    var hasAutoMappedCategories = false                        // Guard to prevent re-running autoMap on back-nav
 
     func loadCSVFile(from url: URL) {
         isLoadingCSV = true
@@ -233,8 +284,11 @@ final class TransactionListViewModel {
                 columnMapping.defaultCurrency = currencyService.baseCurrency
                 // Let the outer catch surface any fetch failure rather than silently hiding it
                 availableCategories = try await repo.fetchCategories()
-                categoryResolution = [:]
+                categoryResolutionSelections = [:]
+                csvCategories = []
+                csvCategoryTypes = [:]
                 importNavigationPath = []
+                hasAutoMappedCategories = false
                 showingImportFlow = true
             } catch {
                 isLoadingCSV = false
@@ -243,50 +297,188 @@ final class TransactionListViewModel {
         }
     }
 
+    /// Cancel the import flow and reset state
+    func cancelImport() {
+        showingImportFlow = false
+        csvFile = nil
+        columnMapping = ColumnMapping()
+        categoryResolutionSelections = [:]
+        csvCategories = []
+        csvCategoryTypes = [:]
+        mappedRows = []
+        importNavigationPath = []
+        hasAutoMappedCategories = false
+        importError = nil
+        isImporting = false
+    }
+
     /// Offloads per-row work (date parsing, Decimal conversion) to a background thread.
     /// CategorySnapshot re-resolution happens back on the MainActor after the task completes.
     func applyMapping() async {
         guard let file = csvFile else { return }
-        let uuidResolution: [String: UUID] = categoryResolution.mapValues { $0.id }
+        // Build UUID resolution only for existing categories; "__new__" entries will have nil UUID
+        let uuidResolution: [String: UUID?] = categoryResolutionSelections.mapValues { sel in
+            sel == "__new__" ? nil : UUID(uuidString: sel)
+        }
         let mapping = columnMapping
 
         let rawRows = await Task.detached(priority: .userInitiated) {
             CSVColumnMapper.applyRaw(mapping: mapping, to: file, categoryResolution: uuidResolution)
         }.value
 
+        // Build category lookup dictionary once to avoid O(N*M) linear searches
+        // ponytail: category lookup optimization
+        let categoryById: [UUID: CategorySnapshot] = Dictionary(
+            uniqueKeysWithValues: availableCategories.map { ($0.id, $0) }
+        )
+
+        // Mark rows that already exist in the store so the preview shows them
+        // as duplicates instead of surprising the user at confirm time
+        let existingKeys = (try? await repo.fetchAll()).map { Set($0.map(Self.duplicateKey)) } ?? []
+
         // Re-resolve CategorySnapshot references on MainActor
         mappedRows = rawRows.map { raw in
             guard let data = raw.data else {
                 return MappedRow(input: nil, error: raw.error, rowIndex: raw.rowIndex)
             }
-            let _resolvedCategory = data.resolvedCategoryUUID.flatMap { uuid in
-                availableCategories.first { $0.id == uuid }
-            }
+            let resolvedCategory = data.resolvedCategoryUUID.flatMap { categoryById[$0] }
             let input = TransactionInput(
                 timestamp: data.timestamp,
                 amount: data.amount,
                 note: data.note,
                 category: data.category,
-                currencyCode: data.currencyCode
+                currencyCode: data.currencyCode,
+                categoryPersistentId: resolvedCategory?.persistentId
             )
-            return MappedRow(input: input, error: nil, rowIndex: raw.rowIndex)
+            let isDuplicate = existingKeys.contains(
+                Self.duplicateKey(timestamp: data.timestamp, amount: data.amount, note: data.note)
+            )
+            return MappedRow(input: input, error: nil, rowIndex: raw.rowIndex, isDuplicate: isDuplicate)
         }
     }
 
+    private static func duplicateKey(timestamp: Date, amount: Decimal, note: String) -> String {
+        "\(timestamp.timeIntervalSince1970)_\(amount)_\(note)"
+    }
+
+    private static func duplicateKey(_ t: TransactionSnapshot) -> String {
+        duplicateKey(timestamp: t.timestamp, amount: t.amount, note: t.note)
+    }
+
     func confirmImport(_ inputs: [TransactionInput]) {
-        var failCount = 0
         Task {
-            for input in inputs {
+            // Step 1: Create any new categories that need to be created
+            var newCategoryPersistentIds: [String: PersistentIdentifier] = [:]
+            for (csvCatName, selection) in categoryResolutionSelections {
+                guard selection == "__new__" else { continue }
+                let type = csvCategoryTypes[csvCatName] ?? .expense
+                let categoryInput = CategoryInput(
+                    name: csvCatName.removingLeadingEmoji.trimmingCharacters(in: .whitespaces),
+                    systemImage: "tag",
+                    type: type.rawValue,
+                    colorToken: "blue",
+                    monthlyBudget: nil,
+                    currencyCode: currencyService.baseCurrency
+                )
                 do {
-                    try await repo.add(input)
+                    try await repo.addCategory(categoryInput)
                 } catch {
-                    failCount += 1
+                    importError = "Failed to create category '\(csvCatName)': \(error.localizedDescription)"
+                    showingImportFlow = false
+                    return
                 }
             }
+
+            // Step 2: Fetch updated categories to get persistentIds for new categories
+            let updatedCategories: [CategorySnapshot]
+            do {
+                updatedCategories = try await repo.fetchCategories()
+            } catch {
+                importError = "Failed to fetch updated categories: \(error.localizedDescription)"
+                showingImportFlow = false
+                return
+            }
+
+            // Step 3: Map CSV category names to persistentIds for newly created categories
+            for (csvCatName, selection) in categoryResolutionSelections {
+                guard selection == "__new__" else { continue }
+                let createdName = csvCatName.removingLeadingEmoji.trimmingCharacters(in: .whitespaces)
+                if let catSnapshot = updatedCategories.first(where: { $0.name == createdName }) {
+                    newCategoryPersistentIds[csvCatName] = catSnapshot.persistentId
+                }
+            }
+
+            // Step 4: Update transaction inputs to link to new categories
+            var updatedInputs = inputs
+            for i in updatedInputs.indices {
+                if updatedInputs[i].categoryPersistentId == nil,
+                   let persistentId = newCategoryPersistentIds[updatedInputs[i].category] {
+                    updatedInputs[i] = TransactionInput(
+                        timestamp: updatedInputs[i].timestamp,
+                        amount: updatedInputs[i].amount,
+                        note: updatedInputs[i].note,
+                        category: updatedInputs[i].category,
+                        currencyCode: updatedInputs[i].currencyCode,
+                        categoryPersistentId: persistentId
+                    )
+                }
+            }
+
+            // Step 5: Fetch existing transactions once to detect duplicates
+            let existing: [TransactionSnapshot]
+            do {
+                existing = try await repo.fetchAll()
+            } catch {
+                importError = "Failed to fetch existing transactions: \(error.localizedDescription)"
+                showingImportFlow = false
+                return
+            }
+
+            // Step 6: Filter duplicates and prepare batch insert
+            // Build Set for O(1) duplicate detection instead of O(N*M) contains checks
+            // ponytail: O(N) duplicate detection with Set
+            let existingKeys = Set(existing.map(Self.duplicateKey))
+            var toInsert: [TransactionInput] = []
+            var skippedDuplicates = 0
+            for input in updatedInputs {
+                let key = Self.duplicateKey(timestamp: input.timestamp, amount: input.amount, note: input.note)
+                if existingKeys.contains(key) {
+                    skippedDuplicates += 1
+                } else {
+                    toInsert.append(input)
+                }
+            }
+
+            // Step 7: Batch insert with UI feedback
+            isImporting = true
+            defer { isImporting = false }
+            var failCount = 0
+            do {
+                try await repo.addBatch(toInsert)
+            } catch {
+                failCount = toInsert.count  // All failed in batch
+            }
+
             showingImportFlow = false
-            await reload()
-            if failCount > 0 {
-                importError = "Failed to save \(failCount) of \(inputs.count) transaction(s). Check available storage and try again."
+            onDataChanged?()
+            reload()
+
+            // Build summary message (show for both success and partial failures)
+            let importedCount = toInsert.count - failCount
+            if importedCount > 0 || failCount > 0 || skippedDuplicates > 0 {
+                var summary = ""
+                if importedCount > 0 {
+                    summary += "Imported \(importedCount) transaction\(importedCount == 1 ? "" : "s")."
+                }
+                if skippedDuplicates > 0 {
+                    if !summary.isEmpty { summary += " " }
+                    summary += "Skipped \(skippedDuplicates) duplicate\(skippedDuplicates == 1 ? "" : "s")."
+                }
+                if failCount > 0 {
+                    if !summary.isEmpty { summary += " " }
+                    summary += "Failed to save \(failCount) of \(toInsert.count). Check available storage and try again."
+                }
+                importError = summary
             }
         }
     }

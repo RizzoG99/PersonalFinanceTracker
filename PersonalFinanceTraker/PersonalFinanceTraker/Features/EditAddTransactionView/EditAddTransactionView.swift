@@ -9,22 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct EditAddTransactionView: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Environment(TransactionListViewModel.self) private var transactionViewModel
-    @Environment(DashboardViewModel.self) private var dashboardViewModel
+    @Environment(DataChangedSignal.self) private var dataChanged
     @State private var viewModel: EditAddTransactionViewModel
 
-    private let transaction: TransactionModel?
-
-    init(_ transaction: TransactionModel) {
-        self.transaction = transaction
-        _viewModel = State(wrappedValue: EditAddTransactionViewModel(transaction: transaction))
-    }
-
-    init() {
-        self.transaction = nil
-        _viewModel = State(wrappedValue: EditAddTransactionViewModel())
+    init(_ snapshot: TransactionSnapshot? = nil, repo: any ITransactionRepository) {
+        _viewModel = State(wrappedValue: EditAddTransactionViewModel(editingItem: snapshot, repo: repo))
     }
 
     var body: some View {
@@ -39,12 +29,10 @@ struct EditAddTransactionView: View {
         .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if let transaction {
+            if viewModel.editingItem != nil {
                 ToolbarItem(placement: .destructiveAction) {
                     Button(role: .destructive) {
-                        transactionViewModel.delete(transaction)
-                        dashboardViewModel.load()
-                        dismiss()
+                        deleteTransaction()
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
@@ -52,21 +40,28 @@ struct EditAddTransactionView: View {
             }
         }
         .onAppear {
-            viewModel.setTransactionViewModel(transactionViewModel)
+            viewModel.setTransactionViewModel()
         }
     }
 
     private func saveTransaction() {
-        if viewModel.editingItem == nil {
-            if let newItem = viewModel.getTransactionData() {
-                transactionViewModel.add(newItem)
-                dashboardViewModel.load()
-                dismiss()
+        guard let input = viewModel.buildInput() else { return }
+        Task {
+            if let existing = viewModel.editingItem {
+                try? await viewModel.repo.update(id: existing.id, with: input)
+            } else {
+                try? await viewModel.repo.add(input)
             }
-        } else {
-            viewModel.updateTransaction()
-            transactionViewModel.update()
-            dashboardViewModel.load()
+            dataChanged.bump()
+            dismiss()
+        }
+    }
+
+    private func deleteTransaction() {
+        guard let existing = viewModel.editingItem else { return }
+        Task {
+            try? await viewModel.repo.delete(id: existing.id)
+            dataChanged.bump()
             dismiss()
         }
     }

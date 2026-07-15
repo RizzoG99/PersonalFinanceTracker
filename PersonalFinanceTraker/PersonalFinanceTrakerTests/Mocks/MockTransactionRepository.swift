@@ -16,6 +16,7 @@ final class MockTransactionRepository: ITransactionRepository {
 
     // MARK: Spies
     var fetchAllCalled = false
+    var fetchAllCallCount = 0
     var addCalledCount = 0
     var deleteCalledCount = 0
     var updateCalledCount = 0
@@ -27,12 +28,18 @@ final class MockTransactionRepository: ITransactionRepository {
     // MARK: Transactions
     func fetchAll() async throws -> [TransactionSnapshot] {
         fetchAllCalled = true
+        fetchAllCallCount += 1
         if shouldThrow { throw MockError.forced }
         return stubbedTransactions
     }
 
     func add(_ input: TransactionInput) async throws {
         addCalledCount += 1
+        if shouldThrow { throw MockError.forced }
+    }
+
+    func addBatch(_ inputs: [TransactionInput]) async throws {
+        addCalledCount += inputs.count
         if shouldThrow { throw MockError.forced }
     }
 

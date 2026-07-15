@@ -6,20 +6,25 @@
 import SwiftUI
 
 struct CSVCategoryMappingView: View {
-    @Environment(\.modelContext) private var modelContext
-
     let csvCategories: [String]
     /// Inferred income/expense type for each CSV category. Nil = unknown (show all).
     let categoryTypes: [String: TransactionType]
-    let availableCategories: [CategoryModel]
-    @Binding var resolution: [String: CategoryModel]
+    let availableCategories: [CategorySnapshot]
+    @Binding var selections: [String: String]
+    let currentStep: Int
+    let totalSteps: Int
     let onContinue: () -> Void
 
+    @Environment(TransactionListViewModel.self) private var viewModel
+
     private let newSentinel = "__new__"
-    @State private var selections: [String: String] = [:]
 
     private var allMapped: Bool {
         csvCategories.allSatisfy { selections[$0] != nil }
+    }
+
+    private var unmappedCount: Int {
+        csvCategories.filter { selections[$0] == nil }.count
     }
 
     var body: some View {
@@ -33,7 +38,13 @@ struct CSVCategoryMappingView: View {
                         .font(.subheadline.bold())
                 }
                 .padding(.vertical, 4)
+            } footer: {
+                if !allMapped {
+                    Text("Map all \(unmappedCount) remaining categor\(unmappedCount == 1 ? "y" : "ies") to continue.")
+                        .foregroundStyle(.red)
+                }
             }
+            .appFormSectionBackground()
 
             let expenseCategories = csvCategories.filter { categoryTypes[$0] != .income }
             let incomeCategories  = csvCategories.filter { categoryTypes[$0] == .income }
@@ -44,6 +55,7 @@ struct CSVCategoryMappingView: View {
                         categoryRow(for: csv)
                     }
                 }
+                .appFormSectionBackground()
             }
             if !incomeCategories.isEmpty {
                 Section("Income") {
@@ -51,9 +63,12 @@ struct CSVCategoryMappingView: View {
                         categoryRow(for: csv)
                     }
                 }
+                .appFormSectionBackground()
             }
         }
+        .scrollContentBackground(.hidden)
         .navigationTitle("Map Categories")
+        .navigationSubtitle("Step \(currentStep) of \(totalSteps)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -62,13 +77,21 @@ struct CSVCategoryMappingView: View {
                     .disabled(!allMapped)
             }
         }
+        .onAppear {
+            // Auto-map on first appear only (guard against re-running on back-nav)
+            if !viewModel.hasAutoMappedCategories {
+                autoMap()
+                viewModel.hasAutoMappedCategories = true
+            }
+        }
     }
 
     // MARK: - Row
 
     private func categoryRow(for csv: String) -> some View {
-        HStack {
-            Text(csv)
+        let displayName = csv.removingLeadingEmoji.isEmpty ? "\(csv) (unnamed)" : csv
+        return HStack {
+            Text(displayName)
                 .font(.subheadline)
 
             Spacer()
@@ -111,7 +134,7 @@ struct CSVCategoryMappingView: View {
                 Button {
                     selections[csv] = newSentinel
                 } label: {
-                    Label("Create \"\(csv)\"", systemImage: "plus.circle")
+                    Label("Create \"\(csv.removingLeadingEmoji.trimmingCharacters(in: .whitespaces))\"", systemImage: "plus.circle")
                 }
             } label: {
                 HStack(spacing: 4) {
@@ -142,7 +165,7 @@ struct CSVCategoryMappingView: View {
     // MARK: - Helpers
 
     /// Returns categories filtered to the matching type, or all if type is unknown.
-    private func filteredCategories(for type: TransactionType?) -> [CategoryModel] {
+    private func filteredCategories(for type: TransactionType?) -> [CategorySnapshot] {
         guard let type else { return availableCategories }
         return availableCategories.filter { $0.transactionType == type }
     }
@@ -221,7 +244,7 @@ struct CSVCategoryMappingView: View {
         return keys
     }
 
-    private func bestMatch(for csv: String, in pool: [CategoryModel]) -> CategoryModel? {
+    private func bestMatch(for csv: String, in pool: [CategorySnapshot]) -> CategorySnapshot? {
         // 1. Exact name match
         if let exact = pool.first(where: { $0.name.caseInsensitiveCompare(csv) == .orderedSame }) {
             return exact
@@ -229,7 +252,7 @@ struct CSVCategoryMappingView: View {
         let csvKeys = canonicalKeywords(for: csv)
         // 2. Most-keyword-overlap match
         var bestScore = 0
-        var bestMatch: CategoryModel? = nil
+        var bestMatch: CategorySnapshot? = nil
         for cat in pool {
             let catKeys = canonicalKeywords(for: cat.name)
             let overlap = csvKeys.intersection(catKeys).count
@@ -247,20 +270,8 @@ struct CSVCategoryMappingView: View {
     }
 
     private func buildResolutionAndContinue() {
-        var result: [String: CategoryModel] = [:]
-        for csv in csvCategories {
-            guard let sel = selections[csv] else { continue }
-            if sel == newSentinel {
-                let type = categoryTypes[csv] ?? .expense
-                let newCat = CategoryModel(name: csv, systemImage: "tag", type: type)
-                modelContext.insert(newCat)
-                result[csv] = newCat
-            } else if let cat = availableCategories.first(where: { $0.id.uuidString == sel }) {
-                result[csv] = cat
-            }
-        }
-        try? modelContext.save()
-        resolution = result
+        // Selections already contain the choices (UUID strings or newSentinel).
+        // Actual category creation happens in confirmImport; nothing to do here except continue.
         onContinue()
     }
 }

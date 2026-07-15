@@ -33,6 +33,26 @@ actor TransactionActor: ITransactionRepository {
         try modelContext.save()
     }
 
+    func addBatch(_ inputs: [TransactionInput]) async throws {
+        // Insert all models first, then save once to minimize round-trips
+        for input in inputs {
+            let model = TransactionModel(
+                timestamp: input.timestamp,
+                amount: input.amount,
+                note: input.note,
+                category: input.category,
+                currencyCode: input.currencyCode,
+                goalId: input.goalId
+            )
+            if let pid = input.categoryPersistentId,
+               let cat = modelContext.model(for: pid) as? CategoryModel {
+                model.categoryModel = cat
+            }
+            modelContext.insert(model)
+        }
+        try modelContext.save()
+    }
+
     func delete(id: PersistentIdentifier) async throws {
         guard let model = modelContext.model(for: id) as? TransactionModel else { return }
         modelContext.delete(model)
@@ -161,5 +181,12 @@ actor TransactionActor: ITransactionRepository {
         )
         modelContext.insert(model)
         try modelContext.save()
+    }
+}
+
+extension TransactionActor {
+    // #Preview macro expansion can't see the @ModelActor-generated init; this hand-written factory is visible there
+    static func make(_ container: ModelContainer) -> TransactionActor {
+        TransactionActor(modelContainer: container)
     }
 }

@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct GoalCard: View {
-    let goal: GoalModel
+    let goal: GoalSnapshot
     let currentAmount: Decimal
     let onTap: () -> Void
 

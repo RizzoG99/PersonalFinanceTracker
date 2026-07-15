@@ -9,7 +9,7 @@ struct SpendingForecastService {
     let currencyService: CurrencyService
 
     func compute(
-        expenseTransactions: [TransactionModel],
+        expenseTransactions: [TransactionSnapshot],
         cache: ForecastCacheState?,
         now: Date = .now
     ) -> (forecast: SpendingForecast, updatedCache: ForecastCacheState) {
@@ -106,7 +106,7 @@ struct SpendingForecastService {
         return "\(comps.year ?? 0)-\(String(format: "%02d", comps.month ?? 0))"
     }
 
-    private func sumExpenses(_ items: [TransactionModel]) -> Decimal {
+    private func sumExpenses(_ items: [TransactionSnapshot]) -> Decimal {
         abs(items.reduce(Decimal(0)) { $0 + currencyService.convertToBase($1.amount, from: $1.currencyCode) })
     }
 }

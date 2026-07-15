@@ -20,10 +20,10 @@ struct ScoreComponentRow: View {
             }
             .frame(width: 60, height: 5)
 
-            Text("\(component.score)")
+            Text("\(component.score)/\(component.max)")
                 .font(.caption.bold())
                 .foregroundStyle(.textMid)
-                .frame(width: 20, alignment: .trailing)
+                .frame(width: 35, alignment: .trailing)
         }
     }
 }

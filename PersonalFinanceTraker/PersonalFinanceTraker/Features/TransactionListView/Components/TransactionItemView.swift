@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct TransactionItemView: View {
-    let item: TransactionModel
+    let item: TransactionSnapshot
 
     private var categoryColor: Color {
-        item.categoryModel?.categoryColor ?? CategoryInfo.info(for: item.category).color
+        item.categoryColorToken.map { Color($0) } ?? CategoryInfo.info(for: item.category).color
     }
 
     private var categorySymbol: String {
-        item.categoryModel?.systemImage ?? CategoryInfo.info(for: item.category).symbol
+        item.categorySystemImage ?? CategoryInfo.info(for: item.category).symbol
     }
 
     var body: some View {
@@ -28,12 +28,14 @@ struct TransactionItemView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(item.note.isEmpty ? item.category : item.note)
+                Text(item.note.isEmpty ? item.category.removingLeadingEmoji : item.note)
                     .font(.body)
                     .foregroundStyle(.textPrimary)
-                Text(item.category)
-                    .font(.caption)
-                    .foregroundStyle(.textDim)
+                if !item.note.isEmpty {
+                    Text(item.category.removingLeadingEmoji)
+                        .font(.caption)
+                        .foregroundStyle(.textDim)
+                }
             }
 
             Spacer()
@@ -52,20 +54,20 @@ struct TransactionItemView: View {
     NavigationStack {
         List {
             TransactionItemView(
-                item: TransactionModel(
+                item: TransactionSnapshot(TransactionModel(
                     timestamp: Date(),
                     amount: 25.50,
                     note: "Coffee and pastry",
                     category: "☕ Coffee & Drinks"
-                )
+                ))
             )
             TransactionItemView(
-                item: TransactionModel(
+                item: TransactionSnapshot(TransactionModel(
                     timestamp: Date().addingTimeInterval(-3600),
                     amount: -15.99,
                     note: "Subscription fee",
                     category: "📱 Subscriptions"
-                )
+                ))
             )
         }
         .scrollContentBackground(.hidden)

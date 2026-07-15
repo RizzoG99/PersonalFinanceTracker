@@ -5,6 +5,12 @@
 
 import Foundation
 
+enum SignConvention: String, CaseIterable {
+    case signed = "Signed (positive/negative as-is)"
+    case allExpenses = "All expenses (store as negative)"
+    case allIncome = "All income (store as positive)"
+}
+
 struct ColumnMapping {
     var dateColumn: String? = nil
     var amountColumn: String? = nil
@@ -14,14 +20,17 @@ struct ColumnMapping {
     var currencyColumn: String? = nil
     var dateFormat: String = "yyyy-MM-dd HH:mm:ss"
     var defaultCurrency: String = "EUR"
+    var signConvention: SignConvention = .signed  // Used only when typeColumn is nil
 }
 
 struct MappedRow {
-    let transaction: TransactionModel?
+    let input: TransactionInput?
     let error: String?
     let rowIndex: Int
+    // Row matches a transaction already in the store (timestamp+amount+note)
+    var isDuplicate: Bool = false
 
-    var isValid: Bool { transaction != nil }
+    var isValid: Bool { input != nil }
 }
 
 /// Sendable intermediate produced on a background thread — holds plain value types only.
@@ -48,11 +57,12 @@ enum ImportStep: Hashable {
 class CSVColumnMapper {
 
     /// Background-safe mapping: takes UUID-keyed resolution to avoid passing non-Sendable CategoryModel.
+    /// Nil UUID means category will be created later (pending new category).
     /// Call this from Task.detached; assemble MappedRow on MainActor afterwards.
     static func applyRaw(
         mapping: ColumnMapping,
         to file: CSVFile,
-        categoryResolution: [String: UUID]
+        categoryResolution: [String: UUID?]
     ) -> [RawMappedRow] {
         guard let dateCol = mapping.dateColumn, let amountCol = mapping.amountColumn else {
             return []
@@ -65,9 +75,7 @@ class CSVColumnMapper {
         var results: [RawMappedRow] = []
         var rowIdx = 0
 
-        file.processRows { row in
-            let rowNum = rowIdx + 2
-
+        file.processRowsWithLineNumbers { lineNumber, row in
             func value(for column: String) -> String? {
                 guard let idx = file.columnIndex(for: column), idx < row.count else { return nil }
                 let v = row[idx].trimmingCharacters(in: .whitespaces)
@@ -86,7 +94,7 @@ class CSVColumnMapper {
                   let date = dateFormatter.date(from: dateStr) else {
                 results.append(RawMappedRow(
                     data: nil,
-                    error: "Row \(rowNum): invalid date '\(value(for: dateCol) ?? "")' — expected \(mapping.dateFormat)",
+                    error: "Row \(lineNumber): invalid date '\(value(for: dateCol) ?? "")' — expected \(mapping.dateFormat)",
                     rowIndex: rowIdx
                 ))
                 return
@@ -95,7 +103,7 @@ class CSVColumnMapper {
             guard let amountStr = value(for: amountCol) else {
                 results.append(RawMappedRow(
                     data: nil,
-                    error: "Row \(rowNum): invalid amount ''",
+                    error: "Row \(lineNumber): invalid amount ''",
                     rowIndex: rowIdx
                 ))
                 return
@@ -106,7 +114,7 @@ class CSVColumnMapper {
             guard decimalNumber != NSDecimalNumber.notANumber else {
                 results.append(RawMappedRow(
                     data: nil,
-                    error: "Row \(rowNum): invalid amount '\(amountStr)'",
+                    error: "Row \(lineNumber): invalid amount '\(amountStr)'",
                     rowIndex: rowIdx
                 ))
                 return
@@ -115,16 +123,21 @@ class CSVColumnMapper {
 
             let signedAmount: Decimal
             if let typeCol = mapping.typeColumn, let typeStr = value(for: typeCol) {
-                let lower = typeStr.lowercased()
-                let isIncome = lower.contains("inc") || lower.contains("income") ||
-                               lower.contains("entrata") || lower.contains("credit")
-                signedAmount = isIncome ? abs(rawAmount) : -abs(rawAmount)
+                signedAmount = Self.isIncome(typeStr) ? abs(rawAmount) : -abs(rawAmount)
             } else {
-                signedAmount = rawAmount
+                // No type column — apply sign convention
+                switch mapping.signConvention {
+                case .signed:
+                    signedAmount = rawAmount
+                case .allExpenses:
+                    signedAmount = -abs(rawAmount)
+                case .allIncome:
+                    signedAmount = abs(rawAmount)
+                }
             }
 
             let categoryStr = mapping.categoryColumn.flatMap { value(for: $0) } ?? ""
-            let resolvedUUID = categoryResolution[categoryStr]
+            let resolvedUUID: UUID? = categoryResolution[categoryStr] ?? nil
             let note = mapping.noteColumn.flatMap { value(for: $0) } ?? ""
             let currency = mapping.currencyColumn.flatMap { value(for: $0) } ?? mapping.defaultCurrency
 
@@ -188,6 +201,12 @@ class CSVColumnMapper {
         return mapping
     }
 
+    static func isIncome(_ typeString: String) -> Bool {
+        let lower = typeString.lowercased()
+        return lower.contains("inc") || lower.contains("income") ||
+               lower.contains("entrat") || lower.contains("credit")
+    }
+
     static func isTransfer(_ typeString: String) -> Bool {
         let lower = typeString.lowercased()
         return lower.contains("transfer") || lower.contains("trasferim") ||
@@ -212,6 +231,44 @@ class CSVColumnMapper {
             }
         }
         return result
+    }
+
+    /// Single-pass extraction of unique categories and their inferred types.
+    /// Returns (uniqueCategories, categoryTypes) extracted in one scan to avoid O(2N) overhead.
+    /// ponytail: consolidated categories + types extraction
+    static func extractCategoriesAndTypes(
+        from file: CSVFile,
+        mapping: ColumnMapping
+    ) -> (categories: [String], types: [String: TransactionType]) {
+        guard let catCol = mapping.categoryColumn,
+              let catIdx = file.columnIndex(for: catCol) else {
+            return ([], [:])
+        }
+        let typeIdx = mapping.typeColumn.flatMap { file.columnIndex(for: $0) }
+        var seenCats = Set<String>()
+        var categories: [String] = []
+        var types: [String: TransactionType] = [:]
+
+        file.processRows { row in
+            // Skip transfers
+            if let tIdx = typeIdx, tIdx < row.count,
+               isTransfer(row[tIdx].trimmingCharacters(in: .whitespaces)) { return }
+            guard catIdx < row.count else { return }
+            let cat = row[catIdx].trimmingCharacters(in: .whitespaces)
+            guard !cat.isEmpty else { return }
+
+            // Collect unique categories
+            if seenCats.insert(cat).inserted {
+                categories.append(cat)
+            }
+
+            // Infer type if not yet determined
+            if types[cat] == nil, let tIdx = typeIdx, tIdx < row.count {
+                let typeStr = row[tIdx].trimmingCharacters(in: .whitespaces)
+                types[cat] = isIncome(typeStr) ? .income : .expense
+            }
+        }
+        return (categories, types)
     }
 
     private static func inferDateFormat(from sample: String) -> String {

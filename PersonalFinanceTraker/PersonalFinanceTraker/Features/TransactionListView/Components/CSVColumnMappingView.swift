@@ -8,7 +8,10 @@ import SwiftUI
 struct CSVColumnMappingView: View {
     let file: CSVFile
     @Binding var mapping: ColumnMapping
+    let currentStep: Int
+    let totalSteps: Int
     let onContinue: () -> Void
+    let onCancel: () -> Void
 
     private let noneOption = "(None)"
 
@@ -26,6 +29,28 @@ struct CSVColumnMappingView: View {
         mapping.dateColumn != nil && mapping.amountColumn != nil
     }
 
+    private var dateFormatCheckMessage: String {
+        guard let dateCol = mapping.dateColumn,
+              let preview = file.preview(maxRows: 1).first,
+              let colIdx = file.headers.firstIndex(of: dateCol),
+              colIdx < preview.count else {
+            return "Select a Date column to preview"
+        }
+        let dateString = preview[colIdx]
+        let formatter = DateFormatter()
+        formatter.dateFormat = mapping.dateFormat
+        if let _ = formatter.date(from: dateString) {
+            // Try to format back for display
+            if let parsed = formatter.date(from: dateString) {
+                let display = parsed.formatted(.dateTime.month(.abbreviated).day().year())
+                return "✓ \(dateString) → \(display)"
+            }
+            return "✓ \(dateString) parsed successfully"
+        } else {
+            return "✗ Cannot parse '\(dateString)' with this format"
+        }
+    }
+
     var body: some View {
         List {
             Section("Preview") {
@@ -34,6 +59,7 @@ struct CSVColumnMappingView: View {
                         .padding(.vertical, 4)
                 }
             }
+            .appFormSectionBackground()
 
             Section {
                 requiredPicker(title: "Date", keyPath: \.dateColumn)
@@ -46,6 +72,7 @@ struct CSVColumnMappingView: View {
                         .foregroundStyle(.red)
                 }
             }
+            .appFormSectionBackground()
 
             Section("Optional") {
                 optionalPicker(title: "Type", keyPath: \.typeColumn)
@@ -53,11 +80,34 @@ struct CSVColumnMappingView: View {
                 optionalPicker(title: "Note / Description", keyPath: \.noteColumn)
                 optionalPicker(title: "Currency", keyPath: \.currencyColumn)
             }
+            .appFormSectionBackground()
+
+            // Show sign convention picker only when Type column is not mapped
+            if mapping.typeColumn == nil {
+                Section {
+                    Picker("Sign Convention", selection: $mapping.signConvention) {
+                        ForEach(SignConvention.allCases, id: \.self) { convention in
+                            Text(convention.rawValue).tag(convention)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                } header: {
+                    Text("Amount Sign")
+                } footer: {
+                    Text("Specify how to interpret amount signs when no Type column is mapped.")
+                }
+                .appFormSectionBackground()
+            }
 
             Section {
                 Picker("Preset", selection: $mapping.dateFormat) {
                     ForEach(commonDateFormats, id: \.self) { fmt in
                         Text(fmt).tag(fmt)
+                    }
+                    // Show "Custom" option when current format is not in presets
+                    if !commonDateFormats.contains(mapping.dateFormat) {
+                        Divider()
+                        Text("Custom").tag(mapping.dateFormat)
                     }
                 }
                 .pickerStyle(.menu)
@@ -74,12 +124,20 @@ struct CSVColumnMappingView: View {
             } header: {
                 Text("Date Format")
             } footer: {
-                Text("Edit the format string directly if none of the presets match your CSV.")
+                Text(dateFormatCheckMessage)
+                    .foregroundStyle(dateFormatCheckMessage.starts(with: "✗") ? .red : .secondary)
             }
+            .appFormSectionBackground()
         }
+        .scrollContentBackground(.hidden)
         .navigationTitle("Map Columns")
+        .navigationSubtitle("Step \(currentStep) of \(totalSteps)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Cancel") { onCancel() }
+                    .foregroundStyle(.red)
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Continue") { onContinue() }
                     .bold()
@@ -123,9 +181,14 @@ struct CSVColumnMappingView: View {
 
     // MARK: - Preview Table
 
+    // ponytail: hard cap so a malformed file (e.g. thousands of parsed "columns")
+    // can never freeze this non-lazy HStack
+    private static let previewColumnCap = 30
+
     @ViewBuilder
     private var previewTable: some View {
         let previewRows = file.preview(maxRows: 3)
+        let shownColumns = min(file.headers.count, Self.previewColumnCap)
         if previewRows.isEmpty {
             Text("No data rows")
                 .font(.caption)
@@ -134,13 +197,20 @@ struct CSVColumnMappingView: View {
         } else {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 0) {
-                    ForEach(file.headers, id: \.self) { header in
+                    ForEach(file.headers.prefix(shownColumns), id: \.self) { header in
                         Text(header)
                             .font(.caption.bold())
+                            .lineLimit(1)
                             .frame(width: 110, alignment: .leading)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 6)
                             .background(Color(.systemGray5))
+                    }
+                    if file.headers.count > shownColumns {
+                        Text("… +\(file.headers.count - shownColumns) more")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 6)
                     }
                 }
 
@@ -148,8 +218,8 @@ struct CSVColumnMappingView: View {
 
                 ForEach(previewRows.indices, id: \.self) { rowIdx in
                     HStack(spacing: 0) {
-                        ForEach(0..<file.headers.count, id: \.self) { colIdx in
-                            let val = colIdx < previewRows[rowIdx].count ? previewRows[rowIdx][colIdx] : ""
+                        ForEach(0..<shownColumns, id: \.self) { colIdx in
+                            let val = colIdx < previewRows[rowIdx].count ? String(previewRows[rowIdx][colIdx].prefix(80)) : ""
                             Text(val.isEmpty ? "—" : val)
                                 .font(.caption)
                                 .foregroundStyle(val.isEmpty ? .tertiary : .primary)

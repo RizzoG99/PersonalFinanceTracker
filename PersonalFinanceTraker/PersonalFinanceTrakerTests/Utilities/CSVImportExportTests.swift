@@ -32,10 +32,28 @@ struct CSVImportServiceTests {
         #expect(file.rowCount == 0)
     }
 
-    @Test func windowsLineEndingsStripped() throws {
-        let csv = "Date,Amount\r\n2024-01-15,100\r\n"
+    @Test func handlesSimpleLineEndings() throws {
+        let csv = "Date,Amount\n2024-01-15,100\n2024-01-16,50"
+        let file = try CSVImportService.parse(csv)
+        #expect(file.rowCount == 2)
+    }
+
+    @Test func quotedNewlinePreservedInField() throws {
+        let csv = "Date,Description,Amount\n2024-01-15,\"Multi-line\ndescription\",100"
         let file = try CSVImportService.parse(csv)
         #expect(file.rowCount == 1)
+        let row = file.preview(maxRows: 1)[0]
+        #expect(row[1] == "Multi-line\ndescription")
+    }
+
+    @Test func quotedDelimiterInHeaderForDetection() throws {
+        // Header has a delimiter inside quotes; detectDelimiter should ignore it
+        let csv = "Date,Amount,Description\n2024-01-15,100,\"A, B, C\"\n2024-01-16,200,\"X, Y\""
+        let file = try CSVImportService.parse(csv)
+        // Should detect comma as delimiter (3 commas outside quotes in header)
+        #expect(file.delimiter == ",")
+        #expect(file.headers == ["Date", "Amount", "Description"])
+        #expect(file.rowCount == 2)
     }
 
     @Test func duplicateHeadersDeduped() throws {
@@ -74,14 +92,60 @@ struct CSVImportServiceTests {
         let fields = CSVImportService.parseRow("2024-01-15,100,Food", delimiter: ",")
         #expect(fields == ["2024-01-15", "100", "Food"])
     }
+
+    // MARK: - Stray / non-RFC quotes (files that don't quote fields at all)
+
+    @Test func strayQuoteMidFieldDoesNotMergeRows() throws {
+        let csv = "Date,Note,Amount\n2026-01-01,TV 30\" nuova,5\n2026-01-02,Cena,7"
+        let file = try CSVImportService.parse(csv)
+        #expect(file.rowCount == 2)
+        #expect(file.preview(maxRows: 1)[0][1] == "TV 30\" nuova")
+    }
+
+    @Test func strayQuoteInHeaderDoesNotSwallowFile() throws {
+        let csv = "Date,No\"te,Amount\n2026-01-01,a,5\n2026-01-02,b,7"
+        let file = try CSVImportService.parse(csv)
+        #expect(file.headers.count == 3)
+        #expect(file.rowCount == 2)
+    }
+
+    @Test func unterminatedFieldStartQuoteFallsBackToLineSplit() throws {
+        // Quote opens a field but never closes — parser must not merge the rest of the file
+        let csv = "Date,Note,Amount\n2026-01-01,\"oops,5\n2026-01-02,b,7"
+        let file = try CSVImportService.parse(csv)
+        #expect(file.rowCount == 2)
+    }
+
+    @Test func crlfLineEndingsSplitCorrectly() throws {
+        // \r\n is a single Character (grapheme cluster) in Swift — the splitter
+        // must still detect it as a line ending (real-world export regression)
+        let csv = "Date;Note;Amount\r\n21/05/2026;Spesa;5\r\n20/05/2026;Cena;7\r\n"
+        let file = try CSVImportService.parse(csv)
+        #expect(file.headers == ["Date", "Note", "Amount"])
+        #expect(file.rowCount == 2)
+        #expect(file.preview(maxRows: 1)[0] == ["21/05/2026", "Spesa", "5"])
+    }
+
+    @Test func absurdColumnCountThrows() {
+        // A binary/one-line garbage file must not produce thousands of "headers"
+        let garbage = Array(repeating: "x", count: 2000).joined(separator: ";")
+        #expect(throws: CSVReadError.self) {
+            _ = try CSVImportService.parse(garbage)
+        }
+    }
+
+    @Test func parseRowStrayQuoteMidFieldIsLiteral() {
+        let fields = CSVImportService.parseRow("2026-01-01,TV 30\" nuova,5", delimiter: ",")
+        #expect(fields == ["2026-01-01", "TV 30\" nuova", "5"])
+    }
 }
 
 // MARK: - CSVExportService
 
 struct CSVExportServiceTests {
 
-    private func makeTx(amount: Decimal, category: String, note: String = "") -> TransactionModel {
-        TransactionModel(timestamp: Date(timeIntervalSince1970: 0), amount: amount, note: note, category: category)
+    private func makeTx(amount: Decimal, category: String, note: String = "") -> TransactionSnapshot {
+        .test(timestamp: Date(timeIntervalSince1970: 0), amount: amount, note: note, category: category)
     }
 
     @Test func generateCSVHasCorrectHeader() {

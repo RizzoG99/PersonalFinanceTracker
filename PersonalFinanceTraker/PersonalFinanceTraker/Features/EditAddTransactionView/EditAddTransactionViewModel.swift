@@ -24,52 +24,35 @@ final class EditAddTransactionViewModel {
     var errorMessage: String = ""
 
     let editingItem: TransactionSnapshot?
-    private var repo: (any ITransactionRepository)?
+    let repo: any ITransactionRepository
 
-    init(transaction: TransactionSnapshot) {
-        self.editingItem = transaction
-        let type: TransactionType = transaction.goalId != nil ? .transfer
-            : transaction.amount < 0 ? .expense : .income
-        self.transactionName = transaction.note
-        self.amount = abs(Double(truncating: transaction.amount as NSDecimalNumber))
-        self.transactionType = type
-        self.currencyCode = transaction.currencyCode
-        self.date = transaction.timestamp
-    }
-
-    init() {
-        self.editingItem = nil
-    }
-
-    func setRepository(_ repo: any ITransactionRepository) {
+    init(editingItem: TransactionSnapshot? = nil, repo: any ITransactionRepository) {
+        self.editingItem = editingItem
         self.repo = repo
-        Task {
-            do {
-                self.availableCategories = try await repo.fetchCategories()
-                self.availableGoals = try await repo.fetchGoals()
-
-                // If editing and selectedCategory is nil, try to find it by name for migration
-                if let editingItem = editingItem, self.selectedCategory == nil, editingItem.goalId == nil {
-                    self.selectedCategory = availableCategories.first(where: { editingItem.category.contains($0.name) })
-                }
-
-                // Pre-select goal when editing a transfer
-                if let editingItem = editingItem, let goalId = editingItem.goalId {
-                    self.selectedGoal = availableGoals.first(where: { $0.id == goalId })
-                }
-
-                if editingItem == nil {
-                    self.currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
-                }
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+        if let item = editingItem {
+            populateForm(from: item)
         }
     }
 
-    func setupForEditing(_ transaction: TransactionSnapshot) {
-        // This method can be used if we need to set up editing after the view model is created
-        // Currently the setup is done in the init, but this provides flexibility
+    func setTransactionViewModel() {
+        Task {
+            availableCategories = (try? await repo.fetchCategories()) ?? []
+            availableGoals = (try? await repo.fetchGoals()) ?? []
+
+            // Set selectedCategory from editingItem.categoryId if editing
+            if let catId = editingItem?.categoryId {
+                selectedCategory = availableCategories.first { $0.persistentId == catId }
+            }
+
+            // Pre-select goal when editing a transfer
+            if let editingItem = editingItem, let goalId = editingItem.goalId {
+                selectedGoal = availableGoals.first { $0.id == goalId }
+            }
+
+            if editingItem == nil {
+                currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
+            }
+        }
     }
 
     var isFormValid: Bool {
@@ -97,63 +80,57 @@ final class EditAddTransactionViewModel {
         availableCategories.filter { $0.transactionType == transactionType }
     }
 
-    func getTransactionData() -> TransactionInput? {
+    func buildInput() -> TransactionInput? {
+        guard amount > 0 else { return nil }
         if transactionType == .transfer {
-            guard let goal = selectedGoal else { return nil }
-            let input = TransactionInput(
-                timestamp: date,
-                amount: -Decimal(amount),
-                note: transactionName,
-                category: "→ \(goal.name)",
-                currencyCode: currencyCode
-            )
-            resetForm()
-            return input
+            guard selectedGoal != nil else { return nil }
+        } else {
+            guard selectedCategory != nil else { return nil }
         }
-
-        guard let selectedCategory = selectedCategory else { return nil }
+        // expenses and transfers stored negative, income positive
         let finalAmount = transactionType == .income ? Decimal(amount) : -Decimal(amount)
-        let input = TransactionInput(
+        // transfers have no category; label them by their goal
+        let categoryLabel = transactionType == .transfer
+            ? selectedGoal.map { "→ \($0.name)" } ?? ""
+            : selectedCategory?.name ?? ""
+        return TransactionInput(
             timestamp: date,
             amount: finalAmount,
             note: transactionName,
-            category: selectedCategory.name,
-            currencyCode: currencyCode
+            category: categoryLabel,
+            currencyCode: currencyCode,
+            goalId: selectedGoal?.id,
+            categoryPersistentId: selectedCategory?.persistentId
         )
-        resetForm()
-        return input
     }
 
-    func getUpdateInput() -> TransactionInput? {
-        guard let item = editingItem else { return nil }
-
-        if transactionType == .transfer {
-            guard let goal = selectedGoal else { return nil }
-            let input = TransactionInput(
-                timestamp: date,
-                amount: -Decimal(amount),
-                note: transactionName,
-                category: "→ \(goal.name)",
-                currencyCode: currencyCode
-            )
-            return input
+    func saveTransaction() {
+        guard let input = buildInput() else { return }
+        Task {
+            if let existing = editingItem {
+                try? await repo.update(id: existing.id, with: input)
+            } else {
+                try? await repo.add(input)
+            }
         }
+    }
 
-        guard let selectedCategory = selectedCategory else { return nil }
-        let finalAmount = transactionType == .income ? Decimal(amount) : -Decimal(amount)
-        let input = TransactionInput(
-            timestamp: date,
-            amount: finalAmount,
-            note: transactionName,
-            category: selectedCategory.name,
-            currencyCode: currencyCode
-        )
-        return input
+    private func populateForm(from item: TransactionSnapshot) {
+        date = item.timestamp
+        amount = abs(Double(truncating: item.amount as NSDecimalNumber))
+        transactionName = item.note
+        currencyCode = item.currencyCode
+
+        let type: TransactionType = item.goalId != nil ? .transfer
+            : item.amount < 0 ? .expense : .income
+        transactionType = type
+
+        // selectedCategory set in setTransactionViewModel() after categories load
     }
 
     func resetForm() {
         transactionName = ""
-        amount = 0.0
+        amount = 0
         transactionType = .expense
         currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         date = Date()

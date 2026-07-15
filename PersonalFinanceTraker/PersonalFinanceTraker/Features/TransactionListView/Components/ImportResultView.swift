@@ -7,10 +7,17 @@ import SwiftUI
 
 struct ImportResultView: View {
     let rows: [MappedRow]
-    let onConfirm: ([TransactionModel]) -> Void
+    let isImporting: Bool
+    let currentStep: Int
+    let totalSteps: Int
+    let onConfirm: ([TransactionInput]) -> Void
 
-    private var validTransactions: [TransactionModel] {
-        rows.compactMap(\.transaction)
+    private var validTransactions: [TransactionInput] {
+        rows.filter { !$0.isDuplicate }.compactMap(\.input)
+    }
+
+    private var duplicateCount: Int {
+        rows.count { $0.isDuplicate }
     }
 
     private var errors: [MappedRow] {
@@ -25,13 +32,21 @@ struct ImportResultView: View {
                 HStack(spacing: 0) {
                     statCell(value: "\(rows.count)", label: "Total", color: .primary)
                     Divider()
-                    statCell(value: "\(validTransactions.count)", label: "Valid", color: .green)
+                    statCell(value: "\(validTransactions.count)", label: "New", color: .green)
+                    Divider()
+                    statCell(value: "\(duplicateCount)", label: "Duplicates", color: duplicateCount == 0 ? .secondary : .orange)
                     Divider()
                     statCell(value: "\(errors.count)", label: "Errors", color: errors.isEmpty ? .secondary : .red)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
+                if duplicateCount > 0 {
+                    Text("\(duplicateCount) transaction\(duplicateCount == 1 ? " is" : "s are") already in the app and will be skipped.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .appFormSectionBackground()
 
             if !validTransactions.isEmpty {
                 Section("To Import (\(validTransactions.count))") {
@@ -44,6 +59,7 @@ struct ImportResultView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                .appFormSectionBackground()
             }
 
             if !errors.isEmpty {
@@ -61,23 +77,40 @@ struct ImportResultView: View {
                             .font(.caption)
                     }
                 }
+                .appFormSectionBackground()
             }
         }
+        .scrollContentBackground(.hidden)
         .navigationTitle("Import Preview")
+        .navigationSubtitle("Step \(currentStep) of \(totalSteps)")
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
-            Button {
-                onConfirm(validTransactions)
-            } label: {
-                Text("Import \(validTransactions.count) Transactions")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(validTransactions.isEmpty ? Color(.systemGray4) : Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            ZStack {
+                Button {
+                    onConfirm(validTransactions)
+                } label: {
+                    if isImporting {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .tint(.white)
+                            Text("Importing…")
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                    } else {
+                        Text("Import \(validTransactions.count) Transactions")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
+                }
+                .background(validTransactions.isEmpty || isImporting ? Color(.systemGray4) : Color.accentColor)
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .disabled(validTransactions.isEmpty || isImporting)
             }
-            .disabled(validTransactions.isEmpty)
             .padding(.horizontal)
             .padding(.vertical, 8)
             .background(.ultraThinMaterial)
@@ -96,10 +129,10 @@ struct ImportResultView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func transactionRow(_ t: TransactionModel) -> some View {
+    private func transactionRow(_ t: TransactionInput) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(t.category)
+                Text(t.category.removingLeadingEmoji)
                     .font(.subheadline)
                 if !t.note.isEmpty {
                     Text(t.note)

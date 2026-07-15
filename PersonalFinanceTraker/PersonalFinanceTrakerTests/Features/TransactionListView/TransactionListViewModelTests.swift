@@ -5,6 +5,14 @@ import Foundation
 @Suite(.serialized)
 struct TransactionListViewModelTests {
 
+    @MainActor
+    private func loadedVM(_ repo: MockTransactionRepository) async -> TransactionListViewModel {
+        let vm = TransactionListViewModel(repo: repo)
+        vm.load()
+        await vm.loadTask?.value
+        return vm
+    }
+
     @Test @MainActor func testClearSearch() async throws {
         let mockRepo = MockTransactionRepository()
         let viewModel = TransactionListViewModel(repo: mockRepo)
@@ -15,54 +23,54 @@ struct TransactionListViewModelTests {
 
     @Test @MainActor func loadFetchesAllTransactions() async throws {
         let mockRepo = MockTransactionRepository()
-        mockRepo.transactions = [
-            TransactionModel(timestamp: Date(), amount: -50, note: "Coffee", category: "Food"),
-            TransactionModel(timestamp: Date(), amount: 1000, note: "Salary", category: "Income"),
+        mockRepo.stubbedTransactions = [
+            .test(amount: -50, note: "Coffee", category: "Food"),
+            .test(amount: 1000, note: "Salary", category: "Income"),
         ]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let vm = await loadedVM(mockRepo)
         #expect(vm.transactions.count == 2)
     }
 
     @Test @MainActor func addTransactionCallsRepoAndReloads() async throws {
         let mockRepo = MockTransactionRepository()
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.add(date: Date(), amount: -30, note: "Coffee", category: "Food")
+        let vm = await loadedVM(mockRepo)
+
+        let input = TransactionInput(timestamp: Date(), amount: -30, note: "Coffee", category: "Food", currencyCode: "EUR")
+        await vm.add(input)
+        await vm.loadTask?.value
+
         #expect(mockRepo.addCalledCount == 1)
-        #expect(vm.transactions.count == 1)
+        #expect(mockRepo.fetchAllCallCount >= 2) // initial load + reload after add
     }
 
     @Test @MainActor func totalFilteredIncomeSumsPositiveAmounts() async throws {
         let mockRepo = MockTransactionRepository()
-        mockRepo.transactions = [
-            TransactionModel(timestamp: Date(), amount: 1000, note: "Salary", category: "Income"),
-            TransactionModel(timestamp: Date(), amount: 500, note: "Freelance", category: "Income"),
-            TransactionModel(timestamp: Date(), amount: -200, note: "Food", category: "Food"),
+        mockRepo.stubbedTransactions = [
+            .test(amount: 1000, note: "Salary", category: "Income"),
+            .test(amount: 500, note: "Freelance", category: "Income"),
+            .test(amount: -200, note: "Food", category: "Food"),
         ]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let vm = await loadedVM(mockRepo)
         #expect(vm.totalFilteredIncome == 1500)
     }
 
     @Test @MainActor func totalFilteredExpensesReturnsPositiveValue() async throws {
         let mockRepo = MockTransactionRepository()
-        mockRepo.transactions = [
-            TransactionModel(timestamp: Date(), amount: -200, note: "Food", category: "Food"),
-            TransactionModel(timestamp: Date(), amount: -50, note: "Coffee", category: "Food"),
-            TransactionModel(timestamp: Date(), amount: 1000, note: "Salary", category: "Income"),
+        mockRepo.stubbedTransactions = [
+            .test(amount: -200, note: "Food", category: "Food"),
+            .test(amount: -50, note: "Coffee", category: "Food"),
+            .test(amount: 1000, note: "Salary", category: "Income"),
         ]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let vm = await loadedVM(mockRepo)
         #expect(vm.totalFilteredExpenses == 250)
     }
 
     @Test @MainActor func exportCSVContainsHeaderAndTransactionData() async throws {
         let mockRepo = MockTransactionRepository()
-        mockRepo.transactions = [
-            TransactionModel(timestamp: Date(), amount: -50, note: "Lunch", category: "Food"),
+        mockRepo.stubbedTransactions = [
+            .test(amount: -50, note: "Lunch", category: "Food"),
         ]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let vm = await loadedVM(mockRepo)
         let csv = vm.exportCSV()
         #expect(csv.hasPrefix("Date,Amount,Currency,Category,Note,Type"))
         #expect(csv.contains("Food"))
@@ -71,28 +79,24 @@ struct TransactionListViewModelTests {
 
     @Test @MainActor func searchTextFiltersTransactionsByNote() async throws {
         let mockRepo = MockTransactionRepository()
-        mockRepo.transactions = [
-            TransactionModel(timestamp: Date(), amount: -50, note: "Coffee", category: "Food"),
-            TransactionModel(timestamp: Date(), amount: -20, note: "Bus ticket", category: "Transport"),
+        mockRepo.stubbedTransactions = [
+            .test(amount: -50, note: "Coffee", category: "Food"),
+            .test(amount: -20, note: "Bus ticket", category: "Transport"),
         ]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let vm = await loadedVM(mockRepo)
         vm.searchText = "Coffee"
         #expect(vm.filteredItems.count == 1)
         #expect(vm.filteredItems.first?.note == "Coffee")
     }
 
-
-
     // MARK: - Deferred delete
 
     @Test @MainActor func deleteItemsFromSectionSetsUndoBannerAndDoesNotCallRepo() async throws {
         let mockRepo = MockTransactionRepository()
-        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
-        let t2 = TransactionModel(timestamp: Date(), amount: -20, note: "B", category: "Food")
-        mockRepo.transactions = [t1, t2]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "A", category: "Food")
+        let t2 = TransactionSnapshot.test(amount: -20, note: "B", category: "Food")
+        mockRepo.stubbedTransactions = [t1, t2]
+        let vm = await loadedVM(mockRepo)
 
         vm.deleteItemsFromSection(dayItems: [t1, t2], offsets: IndexSet([0]))
 
@@ -105,13 +109,12 @@ struct TransactionListViewModelTests {
 
     @Test @MainActor func commitPendingDeletionCallsRepoAndClearsBanner() async throws {
         let mockRepo = MockTransactionRepository()
-        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
-        mockRepo.transactions = [t1]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "A", category: "Food")
+        mockRepo.stubbedTransactions = [t1]
+        let vm = await loadedVM(mockRepo)
 
         vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
-        vm.commitPendingDeletion()
+        await vm.commitPendingDeletion()
 
         #expect(mockRepo.deleteCalledCount == 1)
         #expect(vm.pendingDeletion.isEmpty)
@@ -121,15 +124,15 @@ struct TransactionListViewModelTests {
 
     @Test @MainActor func undoDeleteRestoresTransactionsAndClearsBanner() async throws {
         let mockRepo = MockTransactionRepository()
-        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
-        mockRepo.transactions = [t1]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "A", category: "Food")
+        mockRepo.stubbedTransactions = [t1]
+        let vm = await loadedVM(mockRepo)
 
         vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
         #expect(vm.transactions.count == 0) // optimistically removed
 
         vm.undoDelete()
+        await vm.loadTask?.value
 
         #expect(vm.showUndoBanner == false)
         #expect(vm.pendingDeletion.isEmpty)
@@ -140,11 +143,10 @@ struct TransactionListViewModelTests {
 
     @Test @MainActor func mergeDeleteWhilePendingPoolsItemsAndResetsBanner() async throws {
         let mockRepo = MockTransactionRepository()
-        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
-        let t2 = TransactionModel(timestamp: Date(), amount: -20, note: "B", category: "Food")
-        mockRepo.transactions = [t1, t2]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "A", category: "Food")
+        let t2 = TransactionSnapshot.test(amount: -20, note: "B", category: "Food")
+        mockRepo.stubbedTransactions = [t1, t2]
+        let vm = await loadedVM(mockRepo)
 
         // First delete — starts timer
         vm.deleteItemsFromSection(dayItems: [t1, t2], offsets: IndexSet([0]))
@@ -162,17 +164,83 @@ struct TransactionListViewModelTests {
 
     @Test @MainActor func deleteBatchGroupsAllItemsUnderOnePendingSet() async throws {
         let mockRepo = MockTransactionRepository()
-        let t1 = TransactionModel(timestamp: Date(), amount: -10, note: "A", category: "Food")
-        let t2 = TransactionModel(timestamp: Date(), amount: -20, note: "B", category: "Food")
-        let t3 = TransactionModel(timestamp: Date(), amount: -30, note: "C", category: "Food")
-        mockRepo.transactions = [t1, t2, t3]
-        let vm = TransactionListViewModel(repo: mockRepo)
-        vm.load()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "A", category: "Food")
+        let t2 = TransactionSnapshot.test(amount: -20, note: "B", category: "Food")
+        let t3 = TransactionSnapshot.test(amount: -30, note: "C", category: "Food")
+        mockRepo.stubbedTransactions = [t1, t2, t3]
+        let vm = await loadedVM(mockRepo)
 
         vm.deleteItemsFromSection(dayItems: [t1, t2, t3], offsets: IndexSet([0, 1, 2]))
 
         #expect(vm.pendingDeletion.count == 3)
         #expect(vm.transactions.isEmpty)
         #expect(mockRepo.deleteCalledCount == 0)
+    }
+
+    // MARK: - Totals match the list
+
+    @Test @MainActor func totalsIncludeAllListedTransactionsRegardlessOfAge() async throws {
+        let mockRepo = MockTransactionRepository()
+        let pastDate = Calendar.current.date(byAdding: .day, value: -100, to: .now) ?? .now
+
+        mockRepo.stubbedTransactions = [
+            .test(timestamp: .now, amount: 1000, note: "Recent Salary", category: "Income"),
+            .test(timestamp: pastDate, amount: 500, note: "Old Income", category: "Income"),
+            .test(timestamp: pastDate, amount: -300, note: "Old Expense", category: "Food"),
+        ]
+        let vm = await loadedVM(mockRepo)
+        vm.selectedTimePeriod = .week
+
+        // Activity totals mirror the visible list — selectedTimePeriod only drives the chart
+        #expect(vm.totalFilteredIncome == 1500)
+        #expect(vm.totalFilteredExpenses == 300)
+    }
+
+    // MARK: - Category Filter
+
+    @Test @MainActor func totalsScopedToSelectedCategory() async throws {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = [
+            .test(amount: -200, note: "Espresso", category: "Coffee"),
+            .test(amount: -300, note: "Groceries", category: "Food"),
+            .test(amount: 1000, note: "Salary", category: "Income"),
+        ]
+        let vm = await loadedVM(mockRepo)
+
+        vm.selectedCategory = "Coffee"
+        #expect(vm.totalFilteredExpenses == 200)
+        #expect(vm.totalFilteredIncome == 0)
+
+        vm.selectedCategory = nil
+        #expect(vm.totalFilteredExpenses == 500)
+        #expect(vm.totalFilteredIncome == 1000)
+    }
+
+    @Test @MainActor func staleCategorySelectionIsIgnored() async throws {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = [
+            .test(amount: -200, note: "Espresso", category: "Coffee"),
+            .test(amount: -300, note: "Groceries", category: "Food"),
+        ]
+        let vm = await loadedVM(mockRepo)
+
+        vm.selectedCategory = "Coffee"
+        // Search narrows the data so "Coffee" no longer exists — selection must not zero everything out
+        vm.searchText = "Groceries"
+        #expect(vm.effectiveCategory == nil)
+        #expect(vm.totalFilteredExpenses == 300)
+    }
+
+    @Test @MainActor func filterCategoriesSortedByFrequencyThenName() async throws {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = [
+            .test(amount: -1, note: "a", category: "Food"),
+            .test(amount: -1, note: "b", category: "Food"),
+            .test(amount: -1, note: "c", category: "Coffee"),
+            .test(amount: -1, note: "d", category: "Bar"),
+        ]
+        let vm = await loadedVM(mockRepo)
+
+        #expect(vm.filterCategories == ["Food", "Bar", "Coffee"])
     }
 }

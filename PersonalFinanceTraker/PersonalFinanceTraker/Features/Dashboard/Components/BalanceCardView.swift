@@ -26,16 +26,22 @@ struct BalanceCardView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                HStack(spacing: 12) {
-                    StatCard(icon: "arrow.down",
-                             label: "Income",
-                             value: "+\(viewModel.monthlyIncome.formattedEUR())",
-                             color: .positive)
+                if viewModel.monthlyIncome == 0 && viewModel.monthlyExpenses == 0 {
+                    Text("No transactions yet this period")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    HStack(spacing: 12) {
+                        StatCard(icon: "arrow.down.left",
+                                 label: "Income",
+                                 value: "+\(viewModel.monthlyIncome.formattedEUR())",
+                                 color: .positive)
 
-                    StatCard(icon: "arrow.up",
-                             label: "Expenses",
-                             value: "-\(viewModel.monthlyExpenses.formattedEUR())",
-                             color: .negative)
+                        StatCard(icon: "arrow.up.right",
+                                 label: "Expenses",
+                                 value: "-\(viewModel.monthlyExpenses.formattedEUR())",
+                                 color: .negative)
+                    }
                 }
             }
         }
@@ -47,7 +53,7 @@ struct BalanceCardView: View {
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
-    let repo = TransactionRepository(context: container.mainContext)
+    let repo = TransactionActor.make(container)
     let dashVM = DashboardViewModel(repo: repo)
     return BalanceCardView()
         .environment(dashVM)

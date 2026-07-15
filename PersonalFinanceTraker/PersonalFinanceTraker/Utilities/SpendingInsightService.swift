@@ -69,6 +69,7 @@ struct SpendingInsightService {
 
         return Array(current.prefix(6)).map { cat in
             let prev = lastDict[cat.category] ?? 0
+            let isNew = prev == 0 && cat.amount > 0
             let change: Double
             if prev > 0 {
                 change = Double(truncating: ((cat.amount - prev) / prev * 100) as NSDecimalNumber)
@@ -76,7 +77,7 @@ struct SpendingInsightService {
                 change = cat.amount > 0 ? 100 : 0
             }
             let direction: TrendDirection = change > 5 ? .up : change < -5 ? .down : .flat
-            return CategoryTrend(category: cat, changePercent: change, direction: direction)
+            return CategoryTrend(category: cat, changePercent: change, direction: direction, isNew: isNew)
         }
     }
 

@@ -1,120 +1,33 @@
-//
-//  TransactionListViewRepository.swift
+//  TransactionRepository.swift
 //  PersonalFinanceTraker
-//
-//  Created by Gabriele Rizzo on 14/10/25.
-//
 
-import SwiftData
 import Foundation
+import SwiftData
 
 protocol ITransactionRepository {
-    func fetchAll() throws -> [TransactionModel]
-    func add(_ item: TransactionModel) throws
-    func delete(_ item: TransactionModel) throws
-    func update() throws
+    // Transactions
+    func fetchAll() async throws -> [TransactionSnapshot]
+    func add(_ input: TransactionInput) async throws
+    func addBatch(_ inputs: [TransactionInput]) async throws
+    func delete(id: PersistentIdentifier) async throws
+    func update(id: PersistentIdentifier, with input: TransactionInput) async throws
 
-    // Category management
-    func fetchCategories() throws -> [CategoryModel]
-    func addCategory(_ item: CategoryModel) throws
-    func deleteCategory(_ item: CategoryModel) throws
+    // Categories
+    func fetchCategories() async throws -> [CategorySnapshot]
+    func addCategory(_ input: CategoryInput) async throws
+    func deleteCategory(id: PersistentIdentifier) async throws
 
-    // Goal management
-    func fetchGoals() throws -> [GoalModel]
-    func addGoal(_ item: GoalModel) throws
-    func updateGoal() throws
-    func deleteGoal(_ item: GoalModel) throws
+    // Goals
+    func fetchGoals() async throws -> [GoalSnapshot]
+    func addGoal(_ input: GoalInput) async throws
+    func updateGoal(id: UUID, with input: GoalInput) async throws
+    func deleteGoal(id: UUID) async throws
 
-    // Snapshot management
-    func saveSnapshot(_ snapshot: HealthScoreSnapshot) throws
-    func fetchSnapshots(limit: Int) throws -> [HealthScoreSnapshot]
+    // Health snapshots
+    func saveSnapshot(_ data: HealthScoreSnapshotData) async throws
+    func fetchSnapshots(limit: Int) async throws -> [HealthScoreSnapshotData]
 
-    // Forecast cache management
-    func fetchForecastCache() throws -> DailyForecastCache?
-    func saveForecastCache(_ cache: DailyForecastCache) throws
-}
-
-final class TransactionRepository: ITransactionRepository {
-    private let context: ModelContext
-    
-    init(context: ModelContext) {
-        self.context = context
-    }
-    
-    func fetchAll() throws -> [TransactionModel] {
-        let desc = FetchDescriptor<TransactionModel>(sortBy: [SortDescriptor(\.timestamp)])
-        return try context.fetch(desc)
-    }
-    
-    func add(_ item: TransactionModel) throws {
-        context.insert(item)
-        try context.save()
-    }
-    
-    func delete(_ item: TransactionModel) throws {
-        context.delete(item)
-        try context.save()
-    }
-    
-    func update() throws {
-        try context.save()
-    }
-    
-    func fetchCategories() throws -> [CategoryModel] {
-        let desc = FetchDescriptor<CategoryModel>(sortBy: [SortDescriptor(\.name)])
-        return try context.fetch(desc)
-    }
-    
-    func addCategory(_ item: CategoryModel) throws {
-        context.insert(item)
-        try context.save()
-    }
-    
-    func deleteCategory(_ item: CategoryModel) throws {
-        context.delete(item)
-        try context.save()
-    }
-
-    func fetchGoals() throws -> [GoalModel] {
-        let desc = FetchDescriptor<GoalModel>(sortBy: [SortDescriptor(\.createdAt)])
-        return try context.fetch(desc)
-    }
-
-    func addGoal(_ item: GoalModel) throws {
-        context.insert(item)
-        try context.save()
-    }
-
-    func updateGoal() throws {
-        try context.save()
-    }
-
-    func deleteGoal(_ item: GoalModel) throws {
-        context.delete(item)
-        try context.save()
-    }
-
-    func saveSnapshot(_ snapshot: HealthScoreSnapshot) throws {
-        context.insert(snapshot)
-        try context.save()
-    }
-
-    func fetchSnapshots(limit: Int) throws -> [HealthScoreSnapshot] {
-        var desc = FetchDescriptor<HealthScoreSnapshot>(
-            sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
-        )
-        desc.fetchLimit = limit
-        return try context.fetch(desc)
-    }
-
-    func fetchForecastCache() throws -> DailyForecastCache? {
-        try context.fetch(FetchDescriptor<DailyForecastCache>()).first
-    }
-
-    func saveForecastCache(_ cache: DailyForecastCache) throws {
-        let existing = try context.fetch(FetchDescriptor<DailyForecastCache>())
-        existing.forEach { context.delete($0) }
-        context.insert(cache)
-        try context.save()
-    }
+    // Forecast cache
+    func fetchForecastCache() async throws -> DailyForecastCacheData?
+    func saveForecastCache(_ data: DailyForecastCacheData) async throws
 }

@@ -1,17 +1,27 @@
 import Testing
 import Foundation
+import SwiftData
 @testable import PersonalFinanceTraker
 
 struct StatisticalAverageServiceTests {
 
-    private func income(_ amount: Decimal, monthsAgo: Int = 0) -> TransactionModel {
+    private func snapshot(_ amount: Decimal, monthsAgo: Int, category: String) -> TransactionSnapshot {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: TransactionModel.self, configurations: config)
+        let ctx = ModelContext(container)
         let date = Calendar.current.date(byAdding: .month, value: -monthsAgo, to: .now) ?? .now
-        return TransactionModel(timestamp: date, amount: amount, note: "", category: "Salary")
+        let model = TransactionModel(timestamp: date, amount: amount, note: "", category: category)
+        ctx.insert(model)
+        try! ctx.save()
+        return TransactionSnapshot(model)
     }
 
-    private func expense(_ amount: Decimal, monthsAgo: Int = 0) -> TransactionModel {
-        let date = Calendar.current.date(byAdding: .month, value: -monthsAgo, to: .now) ?? .now
-        return TransactionModel(timestamp: date, amount: -amount, note: "", category: "Food")
+    private func income(_ amount: Decimal, monthsAgo: Int = 0) -> TransactionSnapshot {
+        snapshot(amount, monthsAgo: monthsAgo, category: "Salary")
+    }
+
+    private func expense(_ amount: Decimal, monthsAgo: Int = 0) -> TransactionSnapshot {
+        snapshot(-amount, monthsAgo: monthsAgo, category: "Food")
     }
 
     @Test func averageIncomeAcrossSixMonths() {

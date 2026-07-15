@@ -7,6 +7,7 @@ final class PINEntryViewModel {
     var isShaking: Bool = false
     var eyesOpen: Bool = true
     var errorMessage: String = ""
+    var showForgotPINSheet: Bool = false
 
     private let pinService: PINService
     let authService: BiometricAuthService
@@ -41,6 +42,16 @@ final class PINEntryViewModel {
 
     func triggerBiometric() {
         authService.authenticate { _ in }
+    }
+
+    func triggerForgotPIN() {
+        authService.authenticate { [weak self] success in
+            if success {
+                self?.showForgotPINSheet = true
+            } else {
+                self?.errorMessage = "Biometric authentication required to reset PIN"
+            }
+        }
     }
 
     private func verifyPIN() {

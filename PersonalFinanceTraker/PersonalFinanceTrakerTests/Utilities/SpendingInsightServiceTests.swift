@@ -18,8 +18,8 @@ struct SpendingInsightServiceTests {
         return cal.date(from: components) ?? Date()
     }
 
-    private func makeExpense(amount: Decimal, category: String = "🛒 Groceries", on date: Date) -> TransactionModel {
-        TransactionModel(timestamp: date, amount: -abs(amount), note: "", category: category, currencyCode: "EUR", goalId: nil)
+    private func makeExpense(amount: Decimal, category: String = "🛒 Groceries", on date: Date) -> TransactionSnapshot {
+        .test(timestamp: date, amount: -abs(amount), category: category)
     }
 
     // Returns a Date in a specific calendar week, offset from current week

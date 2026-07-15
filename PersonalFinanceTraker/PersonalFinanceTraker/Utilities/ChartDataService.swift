@@ -7,13 +7,13 @@
 
 import Foundation
 
-public class ChartDataService {
+class ChartDataService {
 
     private let currencyService = CurrencyService()
 
-    public init() {}
+    init() {}
 
-    public func generateChartData(from items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [ChartDataPoint] {
+    func generateChartData(from items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [ChartDataPoint] {
         let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
 
         switch timePeriod {
@@ -26,7 +26,7 @@ public class ChartDataService {
         }
     }
 
-    public func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
+    func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
         switch timePeriod {
         case .month:
             let (start, end) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)

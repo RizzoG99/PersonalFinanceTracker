@@ -15,13 +15,18 @@ struct MainTabView: View {
     @State private var showingAddItemView: Bool = false
     @State private var viewModel: TransactionListViewModel
     @State private var dashboardViewModel: DashboardViewModel
+    @State private var compassViewModel: CompassViewModel
     @State private var profileViewModel = ProfileViewModel()
     @State private var appSettings = AppSettings()
+    @State private var dataChanged = DataChangedSignal()
+    private let repo: TransactionActor
 
     init(modelContainer: ModelContainer) {
         let actor = TransactionActor(modelContainer: modelContainer)
+        repo = actor
         _viewModel = State(wrappedValue: TransactionListViewModel(repo: actor))
         _dashboardViewModel = State(wrappedValue: DashboardViewModel(repo: actor))
+        _compassViewModel = State(wrappedValue: CompassViewModel(repo: actor))
     }
 
     var body: some View {
@@ -36,7 +41,7 @@ struct MainTabView: View {
                         .payCycleAware { viewModel.load() }
                 }
                 Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {
-                    CompassView(context: modelContext, showingAddItemView: $showingAddItemView)
+                    CompassView(viewModel: compassViewModel, showingAddItemView: $showingAddItemView)
                 }
 // Tab("Credit", systemImage: selectedTab == .credit ? "creditcard.fill" : "creditcard", value: .credit) {
 //     CreditView(context: modelContext, showingAddItemView: $showingAddItemView)
@@ -48,23 +53,19 @@ struct MainTabView: View {
             .environment(dashboardViewModel)
             .environment(profileViewModel)
             .environment(appSettings)
-            .sheet(isPresented: $showingAddItemView, onDismiss: { dashboardViewModel.load() }) {
+            .environment(dataChanged)
+            .sheet(isPresented: $showingAddItemView) {
                 NavigationStack {
-                    EditAddTransactionView()
-                        .environment(viewModel)
-                        .environment(dashboardViewModel)
+                    EditAddTransactionView(repo: repo)
+                        .environment(dataChanged)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
             }
-            .sheet(item: $viewModel.transactionToEdit, onDismiss: {
-                // Skip reload if a deletion is pending — dashboard reloads when the snackbar settles
-                if !viewModel.showUndoBanner { dashboardViewModel.load() }
-            }) { item in
+            .sheet(item: $viewModel.transactionToEdit) { item in
                 NavigationStack {
-                    EditAddTransactionView(item)
-                        .environment(viewModel)
-                        .environment(dashboardViewModel)
+                    EditAddTransactionView(item, repo: repo)
+                        .environment(dataChanged)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
@@ -89,12 +90,20 @@ struct MainTabView: View {
         .onChange(of: viewModel.showUndoBanner) { _, isShowing in
             if !isShowing { dashboardViewModel.reload() }
         }
+        .onChange(of: dataChanged.revision) { _, _ in
+            dashboardViewModel.reload()
+            viewModel.reload()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 Task { await viewModel.commitPendingDeletion() }
             }
         }
-        .task { viewModel.load() }  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
+        .task {
+            viewModel.onDataChanged = { dataChanged.bump() }
+            compassViewModel.onDataChanged = { dataChanged.bump() }
+            viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
+        }
         .appBackground()
         .preferredColorScheme(.dark)
     }

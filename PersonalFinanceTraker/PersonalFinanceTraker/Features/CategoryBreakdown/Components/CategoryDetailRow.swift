@@ -22,7 +22,7 @@ struct CategoryDetailRow: View {
                     .frame(width: 16, height: 16)
                 
                 // Category name
-                Text(dataPoint.category)
+                Text(dataPoint.category.removingLeadingEmoji)
                     .font(.subheadline)
                     .fontWeight(.medium)
                 

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HealthScoreSection: View {
     let healthScore: HealthScore?
-    let snapshots: [HealthScoreSnapshot]
+    let snapshots: [HealthScoreSnapshotData]
     let payCycleStartDay: Int
     @Binding var ignoreSubscriptions: Bool
 

@@ -9,6 +9,7 @@ import SwiftUI
 @Observable @MainActor
 final class CategoryBreakdownViewModel {
     var transactions: [TransactionSnapshot] = []
+    var categories: [CategorySnapshot] = []
     var selectedTimePeriod: TimePeriod = .month
     var selectedPieChartType: PieChartDataType = .expenses
     var loadError: String? = nil
@@ -28,7 +29,10 @@ final class CategoryBreakdownViewModel {
 
     private func fetchTransactions() async {
         do {
-            transactions = try await repo.fetchAll()
+            async let txs = repo.fetchAll()
+            async let cats = repo.fetchCategories()
+            transactions = try await txs
+            categories = try await cats
         } catch { loadError = error.localizedDescription }
     }
 
@@ -46,7 +50,8 @@ final class CategoryBreakdownViewModel {
             from: transactions,
             for: selectedPieChartType,
             timePeriod: selectedTimePeriod,
-            payCycleStartDay: AppSettings.storedStartDay
+            payCycleStartDay: AppSettings.storedStartDay,
+            categories: categories
         )
     }
 }

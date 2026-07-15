@@ -8,25 +8,31 @@ import SwiftUI
 struct ImportFlowView: View {
     @Bindable var viewModel: TransactionListViewModel
 
+    private var totalSteps: Int {
+        viewModel.columnMapping.categoryColumn != nil ? 3 : 2
+    }
+
     var body: some View {
         NavigationStack(path: $viewModel.importNavigationPath) {
             if let file = viewModel.csvFile {
                 CSVColumnMappingView(
                     file: file,
                     mapping: $viewModel.columnMapping,
-                    onContinue: { handleColumnMappingContinue() }
+                    currentStep: 1,
+                    totalSteps: totalSteps,
+                    onContinue: { handleColumnMappingContinue() },
+                    onCancel: { viewModel.cancelImport() }
                 )
                 .navigationDestination(for: ImportStep.self) { step in
                     switch step {
                     case .categoryMapping:
-                        let cats = viewModel.csvFile.map {
-                            CSVColumnMapper.uniqueCategories(from: $0, mapping: viewModel.columnMapping)
-                        } ?? []
                         CSVCategoryMappingView(
-                            csvCategories: cats,
-                            categoryTypes: inferCategoryTypes(cats),
+                            csvCategories: viewModel.csvCategories,
+                            categoryTypes: viewModel.csvCategoryTypes,
                             availableCategories: viewModel.availableCategories,
-                            resolution: $viewModel.categoryResolution,
+                            selections: $viewModel.categoryResolutionSelections,
+                            currentStep: 2,
+                            totalSteps: totalSteps,
                             onContinue: {
                                 Task {
                                     await viewModel.applyMapping()
@@ -37,45 +43,40 @@ struct ImportFlowView: View {
                     case .results:
                         ImportResultView(
                             rows: viewModel.mappedRows,
+                            isImporting: viewModel.isImporting,
+                            currentStep: totalSteps,
+                            totalSteps: totalSteps,
                             onConfirm: { viewModel.confirmImport($0) }
                         )
                     }
                 }
             }
         }
+        .presentationBackground { AppBackground() }
     }
 
     private func handleColumnMappingContinue() {
         if viewModel.columnMapping.categoryColumn != nil {
-            viewModel.importNavigationPath.append(.categoryMapping)
+            // Compute categories and types on background thread before navigating
+            Task.detached(priority: .userInitiated) { [weak viewModel, columnMapping = viewModel.columnMapping] in
+                guard let viewModel = viewModel,
+                      let file = viewModel.csvFile else { return }
+                let (categories, types) = CSVColumnMapper.extractCategoriesAndTypes(
+                    from: file,
+                    mapping: columnMapping
+                )
+                await MainActor.run {
+                    viewModel.csvCategories = categories
+                    viewModel.csvCategoryTypes = types
+                    viewModel.importNavigationPath.append(.categoryMapping)
+                }
+            }
         } else {
-            viewModel.categoryResolution = [:]
+            viewModel.categoryResolutionSelections = [:]
             Task {
                 await viewModel.applyMapping()
                 viewModel.importNavigationPath.append(.results)
             }
         }
-    }
-
-    /// Determines income vs expense for each unique CSV category by scanning the type column.
-    private func inferCategoryTypes(_ csvCategories: [String]) -> [String: TransactionType] {
-        guard let file = viewModel.csvFile,
-              let typeCol = viewModel.columnMapping.typeColumn,
-              let catCol = viewModel.columnMapping.categoryColumn,
-              let typeIdx = file.columnIndex(for: typeCol),
-              let catIdx = file.columnIndex(for: catCol) else {
-            return [:]
-        }
-        var result: [String: TransactionType] = [:]
-        file.processRows { row in
-            guard catIdx < row.count, typeIdx < row.count else { return }
-            let cat = row[catIdx].trimmingCharacters(in: .whitespaces)
-            guard !cat.isEmpty, result[cat] == nil else { return }
-            let lower = row[typeIdx].lowercased()
-            let isIncome = lower.contains("inc") || lower.contains("income") ||
-                           lower.contains("entrata") || lower.contains("credit")
-            result[cat] = isIncome ? .income : .expense
-        }
-        return result
     }
 }

@@ -46,7 +46,7 @@ struct AppToolbarModifier: ViewModifier {
                 if isShowing { showingProfile = false }
             }
             .alert(
-                "Import Error",
+                "Import",
                 isPresented: Binding(
                     get: { transactionViewModel.importError != nil },
                     set: { if !$0 { transactionViewModel.importError = nil } }
@@ -55,17 +55,6 @@ struct AppToolbarModifier: ViewModifier {
                 Button("OK") { transactionViewModel.importError = nil }
             } message: {
                 Text(transactionViewModel.importError ?? "")
-            }
-            .alert(
-                "Load Error",
-                isPresented: Binding(
-                    get: { transactionViewModel.loadError != nil },
-                    set: { if !$0 { transactionViewModel.loadError = nil } }
-                )
-            ) {
-                Button("OK") { transactionViewModel.loadError = nil }
-            } message: {
-                Text(transactionViewModel.loadError ?? "")
             }
     }
 }

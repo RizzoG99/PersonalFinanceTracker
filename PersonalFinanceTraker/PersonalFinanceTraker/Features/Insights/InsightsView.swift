@@ -8,12 +8,11 @@ import SwiftData
 import Charts
 
 struct CompassView: View {
-    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: CompassViewModel
     @Binding var showingAddItemView: Bool
 
-    init(context: ModelContext, showingAddItemView: Binding<Bool>) {
-        _viewModel = State(wrappedValue: CompassViewModel(repo: TransactionRepository(context: context)))
+    init(viewModel: CompassViewModel, showingAddItemView: Binding<Bool>) {
+        _viewModel = State(wrappedValue: viewModel)
         _showingAddItemView = showingAddItemView
     }
 
@@ -52,7 +51,7 @@ struct CompassView: View {
                 .padding(16)
             }
             .appBackground()
-            .navigationTitle("Compass")
+            .navigationTitle("Insights")
             .navigationBarTitleDisplayMode(.large)
             .appToolbar(showingAddItemView: $showingAddItemView)
         }
@@ -68,9 +67,15 @@ struct CompassView: View {
             .presentationDetents([.large])
             .presentationBackground { AppBackground() }
         }
-        .sheet(item: $viewModel.goalToEdit) { goal in
+        .sheet(isPresented: Binding(
+            get: { viewModel.goalEditDraft != nil },
+            set: { if !$0 { viewModel.goalEditDraft = nil; viewModel.goalEditId = nil } }
+        )) {
             NavigationStack {
-                AddGoalSheet(goal: goal) { _ in viewModel.saveGoalEdits() }
+                AddGoalSheet(initialGoalInput: viewModel.goalEditDraft) { input in
+                    viewModel.goalEditDraft = input
+                    viewModel.saveGoalEdits()
+                }
             }
             .presentationDetents([.large])
             .presentationBackground { AppBackground() }
@@ -78,7 +83,7 @@ struct CompassView: View {
         .sheet(item: $viewModel.selectedGoal) { goal in
             GoalDetailSheet(goal: goal, viewModel: viewModel) {
                 viewModel.selectedGoal = nil
-                viewModel.goalToEdit = goal
+                viewModel.beginEditingGoal(goal)
             }
             .presentationDetents([.large])
             .presentationBackground { AppBackground() }
@@ -88,13 +93,20 @@ struct CompassView: View {
 
 // MARK: - Preview
 
-#Preview {
+// Hoisted out of #Preview: the macro expansion trips a type-checker crash on TransactionActor construction
+@MainActor private func compassPreview() -> some View {
     let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self, GoalModel.self])
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
-    return CompassView(context: container.mainContext, showingAddItemView: .constant(false))
+    let repo: any ITransactionRepository = TransactionActor(modelContainer: container)
+    return CompassView(
+        viewModel: CompassViewModel(repo: repo),
+        showingAddItemView: .constant(false)
+    )
         .environment(ProfileViewModel())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }
+
+#Preview { compassPreview() }

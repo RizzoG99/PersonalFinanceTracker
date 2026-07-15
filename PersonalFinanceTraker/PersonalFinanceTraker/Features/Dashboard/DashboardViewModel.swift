@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftData
 
 @Observable @MainActor
 final class DashboardViewModel {
@@ -22,10 +23,13 @@ final class DashboardViewModel {
         self.repo = repo
     }
 
+    /// Handle to the in-flight fetch so tests (and callers) can await completion
+    @ObservationIgnored private(set) var loadTask: Task<Void, Never>?
+
     func load() {
         guard !isLoaded else { return }
         isLoaded = true  // ponytail: mark loaded before fetch; call reload() to retry after failure
-        Task {
+        loadTask = Task {
             await fetchAndCompute()
         }
     }
@@ -38,7 +42,7 @@ final class DashboardViewModel {
     private func fetchAndCompute() async {
         do {
             transactions = try await repo.fetchAll()
-            calculateMetrics()
+            await calculateMetrics()
         } catch {
             loadError = error.localizedDescription
         }
@@ -46,11 +50,28 @@ final class DashboardViewModel {
 
     func optimisticRemove(ids: [PersistentIdentifier]) {
         transactions.removeAll { ids.contains($0.id) }
-        calculateMetrics()
+        Task { await calculateMetrics() }
     }
 
-    private func calculateMetrics() {
+    private func calculateMetrics() async {
         let payCycleStartDay = AppSettings.storedStartDay
+        // ponytail: metrics computed off the MainActor from the already-fetched snapshots;
+        // move aggregation into TransactionActor if the dataset ever makes the fetch itself the bottleneck
+        let (balance, income, expenses, recent) = await Task.detached(priority: .userInitiated) { [transactions, currencyService] in
+            Self.computeMetrics(transactions, currencyService: currencyService, payCycleStartDay: payCycleStartDay)
+        }.value
+
+        totalBalance = balance
+        monthlyIncome = income
+        monthlyExpenses = expenses
+        recentTransactions = recent
+    }
+
+    nonisolated private static func computeMetrics(
+        _ transactions: [TransactionSnapshot],
+        currencyService: CurrencyService,
+        payCycleStartDay: Int
+    ) -> (balance: Decimal, income: Decimal, expenses: Decimal, recent: [TransactionSnapshot]) {
         let (monthStart, monthEnd) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
 
         var balance = Decimal(0)
@@ -73,17 +94,16 @@ final class DashboardViewModel {
             }
         }
 
-        totalBalance = balance
-        monthlyIncome = income
-        monthlyExpenses = expenses
-        recentTransactions = recent
+        return (balance, income, expenses, recent)
     }
 
     var financialMonthLabel: String {
         let startDay = AppSettings.storedStartDay
         guard startDay != 1 else { return "This Month" }
-        let (start, _) = PayCycleService.currentFinancialMonth(startDay: startDay)
-        return "Since \(start.formatted(.dateTime.month(.abbreviated).day()))"
+        let (start, end) = PayCycleService.currentFinancialMonth(startDay: startDay)
+        let startFormatted = start.formatted(.dateTime.month(.abbreviated).day())
+        let endFormatted = end.formatted(.dateTime.month(.abbreviated).day())
+        return "This period · \(startFormatted) – \(endFormatted)"
     }
 
 }

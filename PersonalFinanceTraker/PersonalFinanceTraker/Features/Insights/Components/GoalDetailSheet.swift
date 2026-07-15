@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct GoalDetailSheet: View {
-    let goal: GoalModel
+    let goal: GoalSnapshot
     let viewModel: CompassViewModel
     let onEdit: () -> Void
 

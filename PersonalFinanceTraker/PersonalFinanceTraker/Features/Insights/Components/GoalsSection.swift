@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct GoalsSection: View {
-    let goals: [GoalModel]
+    let goals: [GoalSnapshot]
     @Binding var showingAddGoal: Bool
-    let transferTotal: (GoalModel) -> Decimal
-    let onSelectGoal: (GoalModel) -> Void
-    let onDeleteGoal: (GoalModel) -> Void
+    let transferTotal: (GoalSnapshot) -> Decimal
+    let onSelectGoal: (GoalSnapshot) -> Void
+    let onDeleteGoal: (GoalSnapshot) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HealthScoreCard: View {
     let healthScore: HealthScore
-    let snapshots: [HealthScoreSnapshot]
+    let snapshots: [HealthScoreSnapshotData]
     let onTap: () -> Void
 
     private var scoreColor: Color {

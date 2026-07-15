@@ -38,7 +38,7 @@ struct DashboardView: View {
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
-    let repo = TransactionRepository(context: container.mainContext)
+    let repo = TransactionActor.make(container)
     let dashVM = DashboardViewModel(repo: repo)
     return DashboardView(showingAddItemView: .constant(false))
         .environment(dashVM)

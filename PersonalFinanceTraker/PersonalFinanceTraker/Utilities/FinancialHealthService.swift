@@ -6,7 +6,7 @@ struct FinancialHealthService {
     func compute(
         transactions: [TransactionSnapshot],
         expenseTransactions: [TransactionSnapshot],
-        budgetedCategories: [CategoryModel],
+        budgetedCategories: [CategorySnapshot],
         payCycleStartDay: Int = 1,
         ignoreSubscriptions: Bool = false
     ) -> HealthScore {

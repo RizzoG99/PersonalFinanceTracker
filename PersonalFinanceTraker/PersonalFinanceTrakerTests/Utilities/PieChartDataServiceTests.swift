@@ -4,12 +4,12 @@ import Foundation
 
 struct PieChartDataServiceTests {
 
-    private func expense(_ amount: Decimal, category: String) -> TransactionModel {
-        TransactionModel(timestamp: Date(), amount: -amount, note: "", category: category)
+    private func expense(_ amount: Decimal, category: String) -> TransactionSnapshot {
+        .test(amount: -amount, category: category)
     }
 
-    private func income(_ amount: Decimal, category: String) -> TransactionModel {
-        TransactionModel(timestamp: Date(), amount: amount, note: "", category: category)
+    private func income(_ amount: Decimal, category: String) -> TransactionSnapshot {
+        .test(amount: amount, category: category)
     }
 
     @Test func groupsByCategory() {
@@ -71,7 +71,7 @@ struct PieChartDataServiceTests {
 
     @Test func emptyCategoryFallsBackToOther() {
         let sut = PieChartDataService()
-        let tx = TransactionModel(timestamp: Date(), amount: -30, note: "", category: "")
+        let tx = TransactionSnapshot.test(amount: -30, category: "")
         let result = sut.generatePieChartData(from: [tx], for: .expenses, timePeriod: .week)
         #expect(result.first?.category == "Other")
     }

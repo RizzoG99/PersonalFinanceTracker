@@ -23,17 +23,17 @@ import SwiftUI
 /// - Segmented control style for easy selection
 /// - Consistent styling with other pickers in the app
 /// - Clear labels for expenses vs income
-public struct PieChartTypePicker: View {
+struct PieChartTypePicker: View {
     /// The currently selected pie chart data type
-    @Binding public var selection: PieChartDataType
+    @Binding var selection: PieChartDataType
     
     /// Creates a new PieChartTypePicker
     /// - Parameter selection: A binding to the currently selected data type
-    public init(selection: Binding<PieChartDataType>) {
+    init(selection: Binding<PieChartDataType>) {
         self._selection = selection
     }
     
-    public var body: some View {
+    var body: some View {
         Picker("Chart Type", selection: $selection) {
             Text("Expenses").tag(PieChartDataType.expenses)
             Text("Income").tag(PieChartDataType.income)

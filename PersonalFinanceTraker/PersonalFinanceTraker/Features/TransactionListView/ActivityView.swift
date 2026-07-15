@@ -10,11 +10,10 @@ struct ActivityView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
-    @State private var selectedCategory: String? = nil
 
     private func categorySymbol(for categoryName: String) -> String {
         viewModel.filteredItems
-            .first(where: { $0.category == categoryName })?.categoryModel?.systemImage
+            .first(where: { $0.category == categoryName })?.categorySystemImage
             ?? CategoryInfo.info(for: categoryName).symbol
     }
 
@@ -27,45 +26,48 @@ struct ActivityView: View {
         return NavigationStack {
             List {
                 Section {
+                    // ponytail: chips live in the scroll content — any pinned-bar backdrop clashes with the gradient
                     ScrollView(.horizontal) {
                         HStack(spacing: 8) {
-                            ActivityFilterChip(label: "All", isSelected: selectedCategory == nil) {
-                                selectedCategory = nil
+                            ActivityFilterChip(label: "All", isSelected: viewModel.effectiveCategory == nil) {
+                                viewModel.selectedCategory = nil
                             }
-                            ForEach(availableCategories, id: \.self) { category in
+                            ForEach(viewModel.filterCategories, id: \.self) { category in
                                 ActivityFilterChip(
-                                    label: category,
+                                    label: category.removingLeadingEmoji,
                                     systemImage: categorySymbol(for: category),
-                                    isSelected: selectedCategory == category
+                                    isSelected: viewModel.effectiveCategory == category
                                 ) {
-                                    selectedCategory = selectedCategory == category ? nil : category
+                                    viewModel.selectedCategory = viewModel.selectedCategory == category ? nil : category
                                 }
                             }
                         }
+                        .padding(.horizontal, 16)
                         .padding(.vertical, 4)
                     }
                     .scrollIndicators(.hidden)
+                    .listRowInsets(EdgeInsets())
 
-                    if let label = viewModel.currentPeriodLabel {
-                        Text(label)
+                    if viewModel.totalFilteredIncome == 0 && viewModel.totalFilteredExpenses == 0 {
+                        Text("No transactions yet")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal)
-                    }
-
-                    HStack(spacing: 12) {
-                        StatCard(
-                            icon: "arrow.down",
-                            label: "Income",
-                            value: viewModel.totalFilteredIncome.formattedEUR(),
-                            color: .positive
-                        )
-                        StatCard(
-                            icon: "arrow.up",
-                            label: "Expenses",
-                            value: viewModel.totalFilteredExpenses.formattedEUR(),
-                            color: .negative
-                        )
+                    } else {
+                        HStack(spacing: 12) {
+                            StatCard(
+                                icon: "arrow.down.left",
+                                label: "Income",
+                                value: viewModel.totalFilteredIncome.formattedEUR(),
+                                color: .positive
+                            )
+                            StatCard(
+                                icon: "arrow.up.right",
+                                label: "Expenses",
+                                value: viewModel.totalFilteredExpenses.formattedEUR(),
+                                color: .negative
+                            )
+                        }
                     }
                 }
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 8, trailing: 16))
@@ -106,14 +108,8 @@ struct ActivityView: View {
         }
     }
 
-    private var availableCategories: [String] {
-        let all = viewModel.filteredItems.map(\.category)
-        var seen = Set<String>()
-        return all.filter { seen.insert($0).inserted }
-    }
-
-    private var groupedFiltered: [(String, [TransactionModel])] {
-        guard let category = selectedCategory else { return viewModel.groupedItems }
+    private var groupedFiltered: [(String, [TransactionSnapshot])] {
+        guard let category = viewModel.effectiveCategory else { return viewModel.groupedItems }
         return viewModel.groupedItems.compactMap { (dateString, items) in
             let filtered = items.filter { $0.category == category }
             return filtered.isEmpty ? nil : (dateString, filtered)
@@ -127,7 +123,7 @@ struct ActivityView: View {
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
-    let vm = TransactionListViewModel(repo: TransactionRepository(context: container.mainContext))
+    let vm = TransactionListViewModel(repo: TransactionActor.make(container))
     return ActivityView(showingAddItemView: .constant(false))
         .environment(vm)
         .environment(ProfileViewModel())

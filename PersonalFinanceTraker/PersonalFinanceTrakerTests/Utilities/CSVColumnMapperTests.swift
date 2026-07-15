@@ -45,6 +45,26 @@ struct CSVColumnMapperTests {
         #expect(m.currencyColumn == "Currency")
     }
 
+    // MARK: isIncome
+
+    @Test func isIncomeEnglish() {
+        #expect(CSVColumnMapper.isIncome("Income"))
+        #expect(CSVColumnMapper.isIncome("Incoming"))
+        #expect(CSVColumnMapper.isIncome("INCOME"))
+        #expect(CSVColumnMapper.isIncome("Credit"))
+    }
+
+    @Test func isIncomeItalian() {
+        #expect(CSVColumnMapper.isIncome("Entrata"))
+        #expect(CSVColumnMapper.isIncome("entrate"))
+    }
+
+    @Test func isIncomeFalseForExpense() {
+        #expect(!CSVColumnMapper.isIncome("Expense"))
+        #expect(!CSVColumnMapper.isIncome("Food"))
+        #expect(!CSVColumnMapper.isIncome("Outgoing"))
+    }
+
     // MARK: isTransfer
 
     @Test func isTransferEnglish() {
@@ -118,5 +138,94 @@ struct CSVColumnMapperTests {
         m.dateFormat = "yyyy-MM-dd"
         let result = CSVColumnMapper.applyRaw(mapping: m, to: file, categoryResolution: [:])
         #expect(result.count == 1)
+    }
+
+    @Test func applyRawReportsCorrectLineNumbersWithQuotedNewlines() throws {
+        // A quoted newline in row 1 doesn't change the actual line number of row 2
+        let csv = "Date,Amount,Description\n2024-01-15,100,\"Multi\nline\"\n2024-01-17,200,Valid"
+        let file = try makeFile(csv)
+        var m = ColumnMapping()
+        m.dateColumn = "Date"
+        m.amountColumn = "Amount"
+        m.dateFormat = "yyyy-MM-dd"
+        let result = CSVColumnMapper.applyRaw(mapping: m, to: file, categoryResolution: [:])
+        #expect(result.count == 2)
+        #expect(result[0].data?.amount == Decimal(100))
+        #expect(result[1].data?.amount == Decimal(200))
+    }
+
+    @Test func applyRawErrorMessagesContainOriginalLineNumber() throws {
+        let csv = "Date,Amount\n2024-01-15,100\ninvalid-date,200"
+        let file = try makeFile(csv)
+        var m = ColumnMapping()
+        m.dateColumn = "Date"
+        m.amountColumn = "Amount"
+        m.dateFormat = "yyyy-MM-dd"
+        let result = CSVColumnMapper.applyRaw(mapping: m, to: file, categoryResolution: [:])
+        // First row valid, second row invalid
+        #expect(result.count == 2)
+        #expect(result[0].data != nil)
+        #expect(result[1].error != nil)
+        // Error should reference line 3 (header is line 1, first data row is line 2, second data row is line 3)
+        #expect(result[1].error?.contains("Row 3") == true)
+    }
+
+    // MARK: Sign Convention
+
+    @Test func signConventionSignedKeepsAmountAsIs() throws {
+        let csv = "Date,Amount\n2024-01-15,100\n2024-01-16,-50"
+        let file = try makeFile(csv)
+        var m = ColumnMapping()
+        m.dateColumn = "Date"
+        m.amountColumn = "Amount"
+        m.dateFormat = "yyyy-MM-dd"
+        m.signConvention = .signed
+        let result = CSVColumnMapper.applyRaw(mapping: m, to: file, categoryResolution: [:])
+        #expect(result.count == 2)
+        #expect(result[0].data?.amount == Decimal(100))
+        #expect(result[1].data?.amount == Decimal(-50))
+    }
+
+    @Test func signConventionAllExpensesConvertsToNegative() throws {
+        let csv = "Date,Amount\n2024-01-15,100\n2024-01-16,50"
+        let file = try makeFile(csv)
+        var m = ColumnMapping()
+        m.dateColumn = "Date"
+        m.amountColumn = "Amount"
+        m.dateFormat = "yyyy-MM-dd"
+        m.signConvention = .allExpenses
+        let result = CSVColumnMapper.applyRaw(mapping: m, to: file, categoryResolution: [:])
+        #expect(result.count == 2)
+        #expect(result[0].data?.amount == Decimal(-100))
+        #expect(result[1].data?.amount == Decimal(-50))
+    }
+
+    @Test func signConventionAllIncomeConvertsToPositive() throws {
+        let csv = "Date,Amount\n2024-01-15,100\n2024-01-16,-50"
+        let file = try makeFile(csv)
+        var m = ColumnMapping()
+        m.dateColumn = "Date"
+        m.amountColumn = "Amount"
+        m.dateFormat = "yyyy-MM-dd"
+        m.signConvention = .allIncome
+        let result = CSVColumnMapper.applyRaw(mapping: m, to: file, categoryResolution: [:])
+        #expect(result.count == 2)
+        #expect(result[0].data?.amount == Decimal(100))
+        #expect(result[1].data?.amount == Decimal(50))
+    }
+
+    @Test func typeColumnOverridesSignConvention() throws {
+        let csv = "Date,Amount,Type\n2024-01-15,100,Income\n2024-01-16,50,Expense"
+        let file = try makeFile(csv)
+        var m = ColumnMapping()
+        m.dateColumn = "Date"
+        m.amountColumn = "Amount"
+        m.typeColumn = "Type"
+        m.dateFormat = "yyyy-MM-dd"
+        m.signConvention = .allExpenses  // This should be ignored when typeColumn is present
+        let result = CSVColumnMapper.applyRaw(mapping: m, to: file, categoryResolution: [:])
+        #expect(result.count == 2)
+        #expect(result[0].data?.amount == Decimal(100))  // Income, should be positive
+        #expect(result[1].data?.amount == Decimal(-50))  // Expense, should be negative
     }
 }

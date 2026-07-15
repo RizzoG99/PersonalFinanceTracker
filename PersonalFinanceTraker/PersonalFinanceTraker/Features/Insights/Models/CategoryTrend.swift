@@ -5,4 +5,5 @@ struct CategoryTrend: Identifiable {
     let category: PieChartDataPoint
     let changePercent: Double
     let direction: TrendDirection
+    let isNew: Bool
 }

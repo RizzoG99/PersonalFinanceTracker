@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PINEntryView: View {
     @State var viewModel: PINEntryViewModel
+    @State private var setupViewModel: PINSetupViewModel?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,14 +37,24 @@ struct PINEntryView: View {
                 onDelete: { viewModel.deleteDigit() }
             )
 
-            if viewModel.showBiometricButton {
-                Button(action: { viewModel.triggerBiometric() }) {
-                    Image(systemName: viewModel.biometricIcon)
-                        .font(.system(size: 28))
-                        .foregroundStyle(.accentIndigo)
-                        .padding(.top, 32)
+            VStack(spacing: 16) {
+                if viewModel.showBiometricButton {
+                    Button(action: { viewModel.triggerBiometric() }) {
+                        Image(systemName: viewModel.biometricIcon)
+                            .font(.system(size: 28))
+                            .foregroundStyle(.accentIndigo)
+                    }
+                }
+
+                if viewModel.showBiometricButton {
+                    Button("Forgot PIN?") {
+                        viewModel.triggerForgotPIN()
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
                 }
             }
+            .padding(.top, 32)
 
             Spacer()
         }
@@ -51,5 +62,19 @@ struct PINEntryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appBackground()
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $viewModel.showForgotPINSheet) {
+            if let setupViewModel = setupViewModel {
+                PINSetupView(viewModel: setupViewModel)
+            }
+        }
+        .onChange(of: viewModel.showForgotPINSheet) { _, isPresented in
+            if isPresented {
+                setupViewModel = PINSetupViewModel(pinService: PINService(), isChangeMode: false)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .pinSetupComplete)) { _ in
+            viewModel.showForgotPINSheet = false
+            setupViewModel = nil
+        }
     }
 }

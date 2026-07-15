@@ -9,8 +9,8 @@ struct StatisticalAverageService {
     let currencyService: CurrencyService
 
     func calculate(
-        transactions: [TransactionModel],
-        expenseTransactions: [TransactionModel]
+        transactions: [TransactionSnapshot],
+        expenseTransactions: [TransactionSnapshot]
     ) -> (income: Decimal, expenses: Decimal, savings: Decimal) {
         let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: .now) ?? .now
         let recent = transactions.filter { $0.timestamp >= sixMonthsAgo }
@@ -26,7 +26,7 @@ struct StatisticalAverageService {
         return (income: income, expenses: expenses, savings: income - expenses)
     }
 
-    private func sumExpenses(_ items: [TransactionModel]) -> Decimal {
+    private func sumExpenses(_ items: [TransactionSnapshot]) -> Decimal {
         abs(items.reduce(Decimal(0)) { $0 + currencyService.convertToBase($1.amount, from: $1.currencyCode) })
     }
 }

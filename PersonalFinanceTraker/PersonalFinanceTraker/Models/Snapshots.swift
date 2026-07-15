@@ -3,6 +3,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 // MARK: - Read snapshots (Sendable value types for crossing actor boundaries)
 
@@ -15,6 +16,8 @@ struct TransactionSnapshot: Identifiable, Sendable, Hashable {
     let currencyCode: String
     let goalId: UUID?
     let categoryId: PersistentIdentifier?
+    let categorySystemImage: String?
+    let categoryColorToken: String?
 
     init(_ model: TransactionModel) {
         self.id = model.persistentModelID
@@ -25,6 +28,8 @@ struct TransactionSnapshot: Identifiable, Sendable, Hashable {
         self.currencyCode = model.currencyCode
         self.goalId = model.goalId
         self.categoryId = model.categoryModel?.persistentModelID
+        self.categorySystemImage = model.categoryModel?.systemImage
+        self.categoryColorToken = model.categoryModel?.colorToken
     }
 }
 
@@ -52,6 +57,10 @@ struct CategorySnapshot: Identifiable, Sendable, Hashable {
     var transactionType: TransactionType {
         TransactionType(rawValue: type) ?? .expense
     }
+
+    var categoryColor: Color {
+        Color(colorToken)
+    }
 }
 
 struct GoalSnapshot: Identifiable, Sendable, Hashable {
@@ -74,15 +83,29 @@ struct GoalSnapshot: Identifiable, Sendable, Hashable {
         self.iconName = model.iconName
         self.createdAt = model.createdAt
     }
+
+    var goalColor: Color {
+        Color(colorToken)
+    }
 }
 
-struct HealthScoreSnapshotData: Sendable {
+struct HealthScoreSnapshotData: Sendable, Identifiable {
+    var id: Date { timestamp }
     let timestamp: Date
     let score: Int
     let savingsScore: Int
     let stabilityScore: Int
     let adherenceScore: Int
     let subscriptionScore: Int
+
+    init(timestamp: Date, score: Int, savingsScore: Int, stabilityScore: Int, adherenceScore: Int, subscriptionScore: Int) {
+        self.timestamp = timestamp
+        self.score = score
+        self.savingsScore = savingsScore
+        self.stabilityScore = stabilityScore
+        self.adherenceScore = adherenceScore
+        self.subscriptionScore = subscriptionScore
+    }
 
     init(_ model: HealthScoreSnapshot) {
         self.timestamp = model.timestamp
@@ -99,6 +122,13 @@ struct DailyForecastCacheData: Sendable {
     let computedUpToDay: Int
     let days: [Int]
     let amounts: [Double]
+
+    init(monthKey: String, computedUpToDay: Int, days: [Int], amounts: [Double]) {
+        self.monthKey = monthKey
+        self.computedUpToDay = computedUpToDay
+        self.days = days
+        self.amounts = amounts
+    }
 
     init(_ model: DailyForecastCache) {
         self.monthKey = model.monthKey
@@ -118,6 +148,16 @@ struct TransactionInput: Sendable {
     let currencyCode: String
     let goalId: UUID?
     let categoryPersistentId: PersistentIdentifier?
+
+    init(timestamp: Date, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil) {
+        self.timestamp = timestamp
+        self.amount = amount
+        self.note = note
+        self.category = category
+        self.currencyCode = currencyCode
+        self.goalId = goalId
+        self.categoryPersistentId = categoryPersistentId
+    }
 }
 
 struct CategoryInput: Sendable {

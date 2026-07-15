@@ -1,12 +1,19 @@
 import Testing
 @testable import PersonalFinanceTraker
 import Foundation
+import SwiftData
 
 @Suite(.serialized)
 struct ChartDataServiceTests {
 
-    private func makeExpense(on date: Date, amount: Decimal = -50) -> TransactionModel {
-        TransactionModel(timestamp: date, amount: amount, note: "", category: "Food", currencyCode: "EUR")
+    private func makeExpense(on date: Date, amount: Decimal = -50) -> TransactionSnapshot {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: TransactionModel.self, configurations: config)
+        let ctx = ModelContext(container)
+        let model = TransactionModel(timestamp: date, amount: amount, note: "", category: "Food", currencyCode: "EUR")
+        ctx.insert(model)
+        try! ctx.save()
+        return TransactionSnapshot(model)
     }
 
     @Test func monthFilterUsesFinancialMonthStart() {

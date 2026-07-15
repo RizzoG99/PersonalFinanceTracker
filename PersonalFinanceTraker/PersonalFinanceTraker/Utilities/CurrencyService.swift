@@ -72,28 +72,34 @@ public class CurrencyService: ObservableObject {
 
 extension Decimal {
     public func formattedEUR() -> String {
+        // ponytail: name says EUR but formats base currency; rename in a follow-up
+        let baseCurrency = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
-        fmt.currencyCode = "EUR"
-        return fmt.string(from: self as NSDecimalNumber) ?? "€0.00"
+        fmt.currencyCode = baseCurrency
+        let fallbackSymbol = Locale.current.localizedString(forCurrencyCode: baseCurrency) ?? "€"
+        return fmt.string(from: self as NSDecimalNumber) ?? "\(fallbackSymbol)0.00"
     }
 
     public func formattedEURCompact() -> String {
+        // ponytail: name says EUR but formats base currency; rename in a follow-up
+        let baseCurrency = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         let double = Double(truncating: self as NSDecimalNumber)
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
-        fmt.currencyCode = "EUR"
+        fmt.currencyCode = baseCurrency
         fmt.maximumFractionDigits = 1
         fmt.minimumFractionDigits = 0
+        let currencySymbol = fmt.currencySymbol ?? Locale.current.localizedString(forCurrencyCode: baseCurrency) ?? "€"
         switch abs(double) {
         case 1_000_000...:
-            fmt.positiveSuffix = "M \(fmt.currencySymbol ?? "€")"
-            fmt.negativeSuffix = "M \(fmt.currencySymbol ?? "€")"
+            fmt.positiveSuffix = "M \(currencySymbol)"
+            fmt.negativeSuffix = "M \(currencySymbol)"
             fmt.currencySymbol = ""
             return fmt.string(from: NSNumber(value: double / 1_000_000)) ?? self.formattedEUR()
         case 1_000...:
-            fmt.positiveSuffix = "K \(fmt.currencySymbol ?? "€")"
-            fmt.negativeSuffix = "K \(fmt.currencySymbol ?? "€")"
+            fmt.positiveSuffix = "K \(currencySymbol)"
+            fmt.negativeSuffix = "K \(currencySymbol)"
             fmt.currencySymbol = ""
             return fmt.string(from: NSNumber(value: double / 1_000)) ?? self.formattedEUR()
         default:

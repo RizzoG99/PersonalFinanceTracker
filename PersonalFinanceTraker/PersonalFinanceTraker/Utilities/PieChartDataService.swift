@@ -51,41 +51,42 @@ public class PieChartDataService {
     ///   - referenceDate: The reference date for calculations (defaults to current date)
     ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Array of pie chart data points ready for display
-    public func generatePieChartData(
-        from items: [TransactionModel],
+    func generatePieChartData(
+        from items: [TransactionSnapshot],
         for dataType: PieChartDataType,
         timePeriod: TimePeriod,
         referenceDate: Date = Date(),
-        payCycleStartDay: Int = 1
+        payCycleStartDay: Int = 1,
+        categories: [CategorySnapshot] = []
     ) -> [PieChartDataPoint] {
 
         // Filter items by time period and transaction type
         let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
-        
+
         // Group by category and calculate totals
-        let categoryGroupedData = groupByCategoryModels(typeFilteredItems)
-        
+        let categoryGroupedData = groupByCategory(typeFilteredItems)
+        let budgetsByName = Dictionary(uniqueKeysWithValues: categories.map { ($0.name, $0.monthlyBudget) })
+
         // Calculate total amount for percentage calculations
-        let totalAmount = categoryGroupedData.values.map { $0.total }.reduce(0, +)
-        
+        let totalAmount = categoryGroupedData.values.reduce(0, +)
+
         // Generate pie chart data points
         var pieChartData: [PieChartDataPoint] = []
-        
-        for (index, (categoryName, data)) in categoryGroupedData.sorted(by: { $0.value.total > $1.value.total }).enumerated() {
-            let percentage = totalAmount > 0 ? Double(truncating: (data.total / totalAmount * 100) as NSDecimalNumber) : 0
+
+        for (index, (categoryName, total)) in categoryGroupedData.sorted(by: { $0.value > $1.value }).enumerated() {
+            let percentage = totalAmount > 0 ? Double(truncating: (total / totalAmount * 100) as NSDecimalNumber) : 0
             let color = categoryColors[index % categoryColors.count]
-            
+
             pieChartData.append(PieChartDataPoint(
                 category: categoryName,
-                amount: data.total,
+                amount: total,
                 color: color,
                 percentage: percentage,
-                budget: data.model?.monthlyBudget,
-                categoryModel: data.model
+                budget: budgetsByName[categoryName] ?? nil
             ))
         }
-        
+
         return pieChartData
     }
     
@@ -97,8 +98,8 @@ public class PieChartDataService {
     ///   - referenceDate: Reference date for calculations
     ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: A tuple containing total amount and number of categories
-    public func getSummaryStats(
-        from items: [TransactionModel],
+    func getSummaryStats(
+        from items: [TransactionSnapshot],
         for dataType: PieChartDataType,
         timePeriod: TimePeriod,
         referenceDate: Date = Date(),
@@ -107,10 +108,10 @@ public class PieChartDataService {
 
         let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
-        let categoryTotals = groupByCategoryModels(typeFilteredItems)
-        
-        let totalAmount = categoryTotals.values.map { $0.total }.reduce(0, +)
-        
+        let categoryTotals = groupByCategory(typeFilteredItems)
+
+        let totalAmount = categoryTotals.values.reduce(0, +)
+
         return (totalAmount: totalAmount, categoryCount: categoryTotals.count)
     }
     
@@ -123,7 +124,7 @@ public class PieChartDataService {
     ///   - referenceDate: Reference date for calculations
     ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Filtered array of items within the time period
-    private func filterItems(_ items: [TransactionModel], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1) -> [TransactionModel] {
+    private func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
         switch timePeriod {
         case .month:
             let (start, end) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
@@ -140,7 +141,7 @@ public class PieChartDataService {
     ///   - items: Array of items to filter
     ///   - dataType: Type of data to include
     /// - Returns: Filtered array of items
-    private func filterByDataType(_ items: [TransactionModel], dataType: PieChartDataType) -> [TransactionModel] {
+    private func filterByDataType(_ items: [TransactionSnapshot], dataType: PieChartDataType) -> [TransactionSnapshot] {
         switch dataType {
         case .expenses:
             return items.filter { $0.amount < 0 }
@@ -152,20 +153,15 @@ public class PieChartDataService {
     /// Groups items by category and calculates totals
     /// - Parameter items: Array of items to group
     /// - Returns: Dictionary with category names as keys and total amounts as values
-    private func groupByCategoryModels(_ items: [TransactionModel]) -> [String: (total: Decimal, model: CategoryModel?)] {
-        var categoryData: [String: (total: Decimal, model: CategoryModel?)] = [:]
-        
+    private func groupByCategory(_ items: [TransactionSnapshot]) -> [String: Decimal] {
+        var categoryData: [String: Decimal] = [:]
+
         for item in items {
             let categoryName = item.category.isEmpty ? "Other" : item.category
             let amount = abs(currencyService.convertToBase(item.amount, from: item.currencyCode))
-            
-            if let existing = categoryData[categoryName] {
-                categoryData[categoryName] = (existing.total + amount, existing.model ?? item.categoryModel)
-            } else {
-                categoryData[categoryName] = (amount, item.categoryModel)
-            }
+            categoryData[categoryName, default: 0] += amount
         }
-        
+
         return categoryData
     }
 }
@@ -181,8 +177,8 @@ extension PieChartDataService {
     ///   - limit: Maximum number of categories to return
     ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Array of the top categories by amount
-    public func getTopCategories(
-        from items: [TransactionModel],
+    func getTopCategories(
+        from items: [TransactionSnapshot],
         for dataType: PieChartDataType,
         timePeriod: TimePeriod,
         limit: Int = 5,

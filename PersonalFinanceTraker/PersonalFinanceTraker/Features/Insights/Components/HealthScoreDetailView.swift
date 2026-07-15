@@ -3,11 +3,11 @@ import Charts
 
 struct HealthScoreDetailView: View {
     let healthScore: HealthScore
-    let snapshots: [HealthScoreSnapshot]
+    let snapshots: [HealthScoreSnapshotData]
     let payCycleStartDay: Int
     @Binding var ignoreSubscriptions: Bool
 
-    private var sortedSnapshots: [HealthScoreSnapshot] {
+    private var sortedSnapshots: [HealthScoreSnapshotData] {
         snapshots.sorted { $0.timestamp < $1.timestamp }
     }
 

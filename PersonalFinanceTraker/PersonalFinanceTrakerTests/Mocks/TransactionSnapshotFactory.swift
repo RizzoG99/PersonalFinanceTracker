@@ -1,0 +1,77 @@
+//
+//  TransactionSnapshotFactory.swift
+//  PersonalFinanceTrakerTests
+//
+//  Test factories for Sendable snapshot value types. Snapshots can only be
+//  built from SwiftData models, so each helper inserts a model into a shared
+//  in-memory container and snapshots it.
+//
+
+import Foundation
+import SwiftData
+@testable import PersonalFinanceTraker
+
+private enum SnapshotTestSupport {
+    static let container: ModelContainer = {
+        let schema = Schema([TransactionModel.self, CategoryModel.self, GoalModel.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        return try! ModelContainer(for: schema, configurations: [config])
+    }()
+}
+
+extension TransactionSnapshot {
+    static func test(
+        timestamp: Date = .now,
+        amount: Decimal,
+        note: String = "",
+        category: String,
+        currencyCode: String = "EUR",
+        goalId: UUID? = nil
+    ) -> TransactionSnapshot {
+        let context = ModelContext(SnapshotTestSupport.container)
+        let model = TransactionModel(
+            timestamp: timestamp,
+            amount: amount,
+            note: note,
+            category: category,
+            currencyCode: currencyCode,
+            goalId: goalId
+        )
+        context.insert(model)
+        return TransactionSnapshot(model)
+    }
+}
+
+extension CategorySnapshot {
+    static func test(
+        name: String,
+        systemImage: String = "tag",
+        type: TransactionType = .expense,
+        monthlyBudget: Decimal? = nil,
+        currencyCode: String = "EUR"
+    ) -> CategorySnapshot {
+        let context = ModelContext(SnapshotTestSupport.container)
+        let model = CategoryModel(
+            name: name,
+            systemImage: systemImage,
+            type: type,
+            monthlyBudget: monthlyBudget,
+            currencyCode: currencyCode
+        )
+        context.insert(model)
+        return CategorySnapshot(model)
+    }
+}
+
+extension GoalSnapshot {
+    static func test(
+        name: String,
+        targetAmount: Decimal,
+        deadline: Date? = nil
+    ) -> GoalSnapshot {
+        let context = ModelContext(SnapshotTestSupport.container)
+        let model = GoalModel(name: name, targetAmount: targetAmount, deadline: deadline)
+        context.insert(model)
+        return GoalSnapshot(model)
+    }
+}

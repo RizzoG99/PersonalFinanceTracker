@@ -60,4 +60,25 @@ struct CurrencyServiceTests {
         let result = Decimal(1_500_000).formattedEURCompact()
         #expect(result.contains("M"))
     }
+
+    @Test func formattedEURUsesBaseCurrencyFromUserDefaults() {
+        defer { UserDefaults.standard.removeObject(forKey: "app_base_currency") }
+
+        // Test with USD
+        UserDefaults.standard.set("USD", forKey: "app_base_currency")
+        let usdFormatted = Decimal(100).formattedEUR()
+        #expect(usdFormatted.contains("$"))
+        #expect(!usdFormatted.contains("€"))
+
+        // Test with GBP
+        UserDefaults.standard.set("GBP", forKey: "app_base_currency")
+        let gbpFormatted = Decimal(100).formattedEUR()
+        #expect(gbpFormatted.contains("£"))
+
+        // Test compact format with USD
+        UserDefaults.standard.set("USD", forKey: "app_base_currency")
+        let usdCompact = Decimal(2500).formattedEURCompact()
+        #expect(usdCompact.contains("K"))
+        #expect(usdCompact.contains("$"))
+    }
 }

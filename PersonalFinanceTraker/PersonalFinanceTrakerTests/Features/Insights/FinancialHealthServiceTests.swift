@@ -9,14 +9,14 @@ struct FinancialHealthServiceTests {
         FinancialHealthService(currencyService: CurrencyService())
     }
 
-    private func makeIncome(amount: Decimal, monthsAgo: Int = 0) -> TransactionModel {
+    private func makeIncome(amount: Decimal, monthsAgo: Int = 0) -> TransactionSnapshot {
         let date = Calendar.current.date(byAdding: .month, value: -monthsAgo, to: Date()) ?? Date()
-        return TransactionModel(timestamp: date, amount: amount, note: "", category: "Salary", currencyCode: "EUR", goalId: nil)
+        return .test(timestamp: date, amount: amount, category: "Salary")
     }
 
-    private func makeExpense(amount: Decimal, category: String = "Groceries", monthsAgo: Int = 0) -> TransactionModel {
+    private func makeExpense(amount: Decimal, category: String = "Groceries", monthsAgo: Int = 0) -> TransactionSnapshot {
         let date = Calendar.current.date(byAdding: .month, value: -monthsAgo, to: Date()) ?? Date()
-        return TransactionModel(timestamp: date, amount: -abs(amount), note: "", category: category, currencyCode: "EUR", goalId: nil)
+        return .test(timestamp: date, amount: -abs(amount), category: category)
     }
 
     @Test("tip is nil when savings score is maxed (≥20% savings rate)")
@@ -97,12 +97,12 @@ struct FinancialHealthServiceTests {
     }
 
     @Test("MockRepository saveSnapshot is called after compute")
-    func snapshotSavedAfterCompute() throws {
+    func snapshotSavedAfterCompute() async throws {
         let mock = MockTransactionRepository()
         let service = makeService()
         let income = (0..<6).map { makeIncome(amount: 1000, monthsAgo: $0) }
         let expenses = (0..<6).map { makeExpense(amount: 800, monthsAgo: $0) }
-        mock.transactions = income + expenses
+        mock.stubbedTransactions = income + expenses
 
         // Simulate what CompassViewModel.saveSnapshotIfNeeded does
         let result = service.compute(
@@ -111,7 +111,7 @@ struct FinancialHealthServiceTests {
             budgetedCategories: [],
             ignoreSubscriptions: false
         )
-        let snapshot = HealthScoreSnapshot(
+        let snapshot = HealthScoreSnapshotData(
             timestamp: Date.now,
             score: result.score,
             savingsScore: result.components.first(where: { $0.name == "Savings rate" })?.score ?? 0,
@@ -119,8 +119,8 @@ struct FinancialHealthServiceTests {
             adherenceScore: result.components.first(where: { $0.name == "Budget" })?.score ?? 0,
             subscriptionScore: result.components.first(where: { $0.name == "Subscriptions" })?.score ?? 0
         )
-        try mock.saveSnapshot(snapshot)
-        let fetched = try mock.fetchSnapshots(limit: 6)
+        try await mock.saveSnapshot(snapshot)
+        let fetched = try await mock.fetchSnapshots(limit: 6)
 
         #expect(mock.saveSnapshotCalledCount == 1)
         #expect(fetched.count == 1)

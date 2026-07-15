@@ -30,20 +30,20 @@ struct AddGoalSheet: View {
         return Decimal(string: parts.count > 2 ? parts.joined() : parts.joined(separator: "."))
     }
 
-    private let existingGoal: GoalModel?
-    private let onSave: (GoalModel) -> Void
+    private let initialGoalInput: GoalInput?
+    private let onSave: (GoalInput) -> Void
 
-    init(goal: GoalModel? = nil, onSave: @escaping (GoalModel) -> Void) {
-        self.existingGoal = goal
+    init(initialGoalInput: GoalInput? = nil, onSave: @escaping (GoalInput) -> Void) {
+        self.initialGoalInput = initialGoalInput
         self.onSave = onSave
-        _name = State(initialValue: goal?.name ?? "")
-        _targetAmountText = State(initialValue: goal.map {
+        _name = State(initialValue: initialGoalInput?.name ?? "")
+        _targetAmountText = State(initialValue: initialGoalInput.map {
             AddGoalSheet.amountFormatter.string(for: $0.targetAmount as NSDecimalNumber) ?? "\($0.targetAmount)"
         } ?? "")
-        _deadline = State(initialValue: goal?.deadline ?? Calendar.current.date(byAdding: .month, value: 6, to: Date())!)
-        _includeDeadline = State(initialValue: goal?.deadline != nil)
-        _selectedIcon = State(initialValue: goal?.iconName ?? GoalIcon.other.rawValue)
-        _selectedToken = State(initialValue: goal?.colorToken ?? "categoryIndigo")
+        _deadline = State(initialValue: initialGoalInput?.deadline ?? Calendar.current.date(byAdding: .month, value: 6, to: Date())!)
+        _includeDeadline = State(initialValue: initialGoalInput?.deadline != nil)
+        _selectedIcon = State(initialValue: initialGoalInput?.iconName ?? GoalIcon.other.rawValue)
+        _selectedToken = State(initialValue: initialGoalInput?.colorToken ?? "categoryIndigo")
     }
 
     private var isValid: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty && parsedAmount != nil }
@@ -129,7 +129,7 @@ struct AddGoalSheet: View {
             .appFormBackground()
 
             Button(action: save) {
-                Text(existingGoal == nil ? "Add Goal" : "Update Goal")
+                Text(initialGoalInput == nil ? "Add Goal" : "Update Goal")
                     .font(.headline)
                     .foregroundStyle(.textPrimary)
                     .frame(maxWidth: .infinity)
@@ -146,24 +146,14 @@ struct AddGoalSheet: View {
                 name = GoalIcon(rawValue: new)?.label ?? ""
             }
         }
-        .navigationTitle(existingGoal == nil ? "New Goal" : "Edit Goal")
+        .navigationTitle(initialGoalInput == nil ? "New Goal" : "Edit Goal")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private func save() {
         let target = parsedAmount ?? 0
         let dl: Date? = includeDeadline ? deadline : nil
-
-        if let existing = existingGoal {
-            existing.name = name
-            existing.targetAmount = target
-            existing.deadline = dl
-            existing.iconName = selectedIcon
-            existing.colorToken = selectedToken
-            onSave(existing)
-        } else {
-            onSave(GoalModel(name: name, targetAmount: target, deadline: dl, colorToken: selectedToken, iconName: selectedIcon))
-        }
+        onSave(GoalInput(name: name, targetAmount: target, deadline: dl, colorToken: selectedToken, iconName: selectedIcon))
         dismiss()
     }
 }

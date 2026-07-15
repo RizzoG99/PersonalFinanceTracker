@@ -33,18 +33,18 @@ import Charts
 /// - Support for both expenses and income
 /// - Responsive design
 /// - Empty state handling
-public struct CategoryPieChart: View {
+struct CategoryPieChart: View {
     /// Array of pie chart data points to display
-    public let data: [PieChartDataPoint]
+    let data: [PieChartDataPoint]
     
     /// Type of data being displayed (expenses or income)
-    public let dataType: PieChartDataType
+    let dataType: PieChartDataType
     
     /// Currency code for formatting amounts
-    public let currencyCode: String
+    let currencyCode: String
     
     /// Size of the pie chart
-    public let chartSize: CGFloat
+    let chartSize: CGFloat
     
     /// Creates a new category pie chart
     /// - Parameters:
@@ -52,7 +52,7 @@ public struct CategoryPieChart: View {
     ///   - dataType: Whether showing expenses or income
     ///   - currencyCode: Currency code for formatting (defaults to "EUR")
     ///   - chartSize: Size of the pie chart (defaults to 200)
-    public init(
+    init(
         data: [PieChartDataPoint],
         dataType: PieChartDataType,
         currencyCode: String = "EUR",
@@ -64,7 +64,7 @@ public struct CategoryPieChart: View {
         self.chartSize = chartSize
     }
     
-    public var body: some View {
+    var body: some View {
         VStack(spacing: 16) {
             if data.isEmpty {
                 EmptyPieChartView(dataType: dataType)
@@ -123,7 +123,7 @@ private struct CategoryLegendItem: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 // Category name
-                Text(dataPoint.category)
+                Text(dataPoint.category.removingLeadingEmoji)
                     .font(.caption)
                     .fontWeight(.medium)
                     .lineLimit(1)

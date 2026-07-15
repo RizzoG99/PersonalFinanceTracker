@@ -39,10 +39,7 @@ public struct PieChartDataPoint: Identifiable {
     
     /// Monthly budget for this category
     public let budget: Decimal?
-    
-    /// The actual category model
-    public let categoryModel: CategoryModel?
-    
+
     /// Creates a new pie chart data point
     /// - Parameters:
     ///   - category: The category name
@@ -50,14 +47,12 @@ public struct PieChartDataPoint: Identifiable {
     ///   - color: Color for the chart segment
     ///   - percentage: Percentage of total (0-100)
     ///   - budget: Optional monthly budget
-    ///   - categoryModel: Optional CategoryModel
-    public init(category: String, amount: Decimal, color: Color, percentage: Double = 0, budget: Decimal? = nil, categoryModel: CategoryModel? = nil) {
+    public init(category: String, amount: Decimal, color: Color, percentage: Double = 0, budget: Decimal? = nil) {
         self.category = category
         self.amount = amount
         self.color = color
         self.percentage = percentage
         self.budget = budget
-        self.categoryModel = categoryModel
     }
     
     /// Whether this category has any financial activity

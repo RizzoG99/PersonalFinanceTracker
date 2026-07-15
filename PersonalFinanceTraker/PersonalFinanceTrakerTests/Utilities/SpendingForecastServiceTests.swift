@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import SwiftData
 @testable import PersonalFinanceTraker
 
 struct SpendingForecastServiceTests {
@@ -10,11 +11,17 @@ struct SpendingForecastServiceTests {
         cal.date(from: DateComponents(year: year, month: month, day: day))!
     }
 
-    private func tx(on date: Date, amount: Double) -> TransactionModel {
-        TransactionModel(
+    private func tx(on date: Date, amount: Double) -> TransactionSnapshot {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: TransactionModel.self, configurations: config)
+        let ctx = ModelContext(container)
+        let model = TransactionModel(
             timestamp: date, amount: Decimal(amount),
             note: "", category: "Food", currencyCode: "EUR", goalId: nil
         )
+        ctx.insert(model)
+        try! ctx.save()
+        return TransactionSnapshot(model)
     }
 
     @Test("nil cache computes all elapsed days")

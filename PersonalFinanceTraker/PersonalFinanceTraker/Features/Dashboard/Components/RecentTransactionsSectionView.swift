@@ -42,7 +42,7 @@ struct RecentTransactionsSectionView: View {
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
-    let repo = TransactionRepository(context: container.mainContext)
+    let repo = TransactionActor.make(container)
     let dashVM = DashboardViewModel(repo: repo)
     let txVM = TransactionListViewModel(repo: repo)
     return RecentTransactionsSectionView()
