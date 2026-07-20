@@ -25,6 +25,14 @@ extension Color {
     static let categoryTeal = Color("categoryTeal")
     static let categoryGray = Color("categoryGray")
     static let formRow = Color.white.opacity(0.06)
+
+    /// Safe category token lookup — validates token exists, falls back to categoryIndigo if not found.
+    /// Prevents "No color named 'X' found in asset catalog" runtime errors.
+    init(categoryToken: String) {
+        let validTokens = Set(CategoryConstants.colorTokenNames)
+        let safeToken = validTokens.contains(categoryToken) ? categoryToken : "categoryIndigo"
+        self.init(safeToken)
+    }
 }
 
 extension ShapeStyle where Self == Color {

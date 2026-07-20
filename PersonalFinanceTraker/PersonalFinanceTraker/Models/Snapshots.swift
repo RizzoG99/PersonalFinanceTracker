@@ -59,7 +59,7 @@ struct CategorySnapshot: Identifiable, Sendable, Hashable {
     }
 
     var categoryColor: Color {
-        Color(colorToken)
+        Color(categoryToken: colorToken)
     }
 }
 
@@ -85,7 +85,7 @@ struct GoalSnapshot: Identifiable, Sendable, Hashable {
     }
 
     var goalColor: Color {
-        Color(colorToken)
+        Color(categoryToken: colorToken)
     }
 }
 

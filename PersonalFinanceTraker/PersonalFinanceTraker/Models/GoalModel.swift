@@ -17,7 +17,7 @@ final class GoalModel {
     var iconName: String
     var createdAt: Date
 
-    var goalColor: Color { Color(colorToken) }
+    var goalColor: Color { Color(categoryToken: colorToken) }
 
     init(
         name: String,
