@@ -21,10 +21,6 @@ struct DashboardViewModelTests {
     }
 
     @Test func excludesTransactionBeforeFinancialMonthStart() async {
-        // Set payCycleStartDay = 10 in UserDefaults
-        UserDefaults.standard.set(10, forKey: "payCycleStartDay")
-        defer { UserDefaults.standard.removeObject(forKey: "payCycleStartDay") }
-
         let (financialStart, _) = PayCycleService.currentFinancialMonth(startDay: 10)
         let calendar = Calendar.current
         let dayBefore = calendar.date(byAdding: .day, value: -1, to: financialStart)!
@@ -36,6 +32,7 @@ struct DashboardViewModelTests {
             TransactionSnapshot.test(timestamp: dayAfter, amount: 500, note: "", category: "Salary", currencyCode: "EUR")
         ]
         let vm = DashboardViewModel(repo: repo)
+        vm.payCycleStartDay = { 10 }
         vm.load()
         await vm.loadTask?.value
 
@@ -43,9 +40,6 @@ struct DashboardViewModelTests {
     }
 
     @Test func includesTransactionOnFinancialMonthStart() async {
-        UserDefaults.standard.set(10, forKey: "payCycleStartDay")
-        defer { UserDefaults.standard.removeObject(forKey: "payCycleStartDay") }
-
         let (financialStart, _) = PayCycleService.currentFinancialMonth(startDay: 10)
 
         let repo = MockTransactionRepository()
@@ -53,6 +47,7 @@ struct DashboardViewModelTests {
             TransactionSnapshot.test(timestamp: financialStart, amount: -200, note: "", category: "Food", currencyCode: "EUR")
         ]
         let vm = DashboardViewModel(repo: repo)
+        vm.payCycleStartDay = { 10 }
         vm.load()
         await vm.loadTask?.value
 

@@ -42,7 +42,7 @@ struct TransactionItemView: View {
 
             Text(item.amount, format: .currency(code: item.currencyCode))
                 .font(.headline)
-                .foregroundStyle(item.amount >= 0 ? .positive : .textPrimary)
+                .foregroundStyle(item.amount >= 0 ? .positive : .negative)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)

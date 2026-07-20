@@ -14,48 +14,68 @@ final class TransactionListViewModel {
     var filteredItems: [TransactionSnapshot] = [] {
         didSet {
             updateGroupedItems()
-            chartData = dataService.generateChartData(from: filteredItems, for: selectedTimePeriod, payCycleStartDay: AppSettings.storedStartDay)
+            recomputeDerivedFilterState()
         }
     }
     var groupedItems: [(String, [TransactionSnapshot])] = []
 
     /// Category chip selection on the Activity screen; nil means "All"
-    var selectedCategory: String? = nil
-
-    /// Categories offered as filter chips, most-used first (stable within a data set)
-    var filterCategories: [String] {
-        let counts = Dictionary(grouping: filteredItems, by: \.category).mapValues(\.count)
-        return counts.sorted { ($0.value, $1.key) > ($1.value, $0.key) }.map(\.key)
+    var selectedCategory: String? = nil {
+        didSet { recomputeDerivedFilterState() }
     }
+
+    /// Categories offered as filter chips, most-used first (stable within a data set).
+    /// Computed once per `filteredItems`/`selectedCategory` change rather than per render —
+    /// SwiftUI re-evaluates the Activity body several times per keystroke while searching.
+    private(set) var filterCategories: [String] = []
 
     /// selectedCategory, ignored when it no longer exists in the current data (e.g. after a search)
-    var effectiveCategory: String? {
-        selectedCategory.flatMap { filterCategories.contains($0) ? $0 : nil }
-    }
+    private(set) var effectiveCategory: String? = nil
 
     /// Totals always match the visible list (search + category filter); no period scoping
-    private func scopedItems() -> [TransactionSnapshot] {
-        guard let category = effectiveCategory else { return filteredItems }
-        return filteredItems.filter { $0.category == category }
-    }
+    private(set) var totalFilteredIncome: Decimal = .zero
+    private(set) var totalFilteredExpenses: Decimal = .zero
 
-    var totalFilteredIncome: Decimal {
-        scopedItems().filter { $0.amount > 0 }.reduce(.zero) { $0 + $1.amount }
-    }
+    private func recomputeDerivedFilterState() {
+        let counts = Dictionary(grouping: filteredItems, by: \.category).mapValues(\.count)
+        filterCategories = counts.sorted { ($0.value, $1.key) > ($1.value, $0.key) }.map(\.key)
+        effectiveCategory = selectedCategory.flatMap { filterCategories.contains($0) ? $0 : nil }
 
-    var totalFilteredExpenses: Decimal {
-        abs(scopedItems().filter { $0.amount < 0 }.reduce(.zero) { $0 + $1.amount })
+        let scoped: [TransactionSnapshot]
+        if let category = effectiveCategory {
+            scoped = filteredItems.filter { $0.category == category }
+        } else {
+            scoped = filteredItems
+        }
+        var income = Decimal.zero
+        var expenses = Decimal.zero
+        for item in scoped {
+            if item.amount > 0 { income += item.amount } else { expenses += item.amount }
+        }
+        totalFilteredIncome = income
+        totalFilteredExpenses = abs(expenses)
     }
 
     var searchText: String = "" {
-        didSet { doFilterItemBySearchText() }
+        didSet {
+            searchDebounceTask?.cancel()
+            searchDebounceTask = Task {
+                try? await Task.sleep(for: .milliseconds(250))
+                guard !Task.isCancelled else { return }
+                await doFilterItemBySearchText()
+            }
+        }
     }
-    var chartData: [ChartDataPoint] = []
+    var filters = SearchFilters() {
+        didSet { Task { await doFilterItemBySearchText() } }
+    }
     var selectedTimePeriod: TimePeriod = .month
     var transactionToEdit: TransactionSnapshot? = nil
 
     private(set) var pendingDeletion: [TransactionSnapshot] = []
     private var pendingDeletionTask: Task<Void, Never>?
+    /// Exposed so tests can await debounced filtering instead of racing the 250ms delay
+    @ObservationIgnored private(set) var searchDebounceTask: Task<Void, Never>?
     var showUndoBanner: Bool = false
     var deleteProgress: Double = 0.0
 
@@ -63,7 +83,6 @@ final class TransactionListViewModel {
     /// Set by the owning view; notifies the app that persisted data changed
     @ObservationIgnored var onDataChanged: (() -> Void)?
 
-    private let dataService = ChartDataService()
     public let currencyService = CurrencyService()
     private var isLoaded = false
 
@@ -90,7 +109,7 @@ final class TransactionListViewModel {
     private func fetchAndRefresh() async {
         do {
             transactions = try await repo.fetchAll()
-            doFilterItemBySearchText()  // triggers filteredItems.didSet → updateGroupedItems() + chartData
+            await doFilterItemBySearchText()  // triggers filteredItems.didSet → updateGroupedItems() + chartData
         } catch { print(error) }
     }
 
@@ -108,16 +127,30 @@ final class TransactionListViewModel {
         } catch { print(error) }
     }
 
-    private func doFilterItemBySearchText() {
-        if searchText.isEmpty {
+    private func doFilterItemBySearchText() async {
+        guard !searchText.isEmpty || filters.isActive else {
+            // Fast path: no filtering needed
             self.filteredItems = transactions
-        } else {
-            self.filteredItems = transactions.filter { item in
-                item.note.localizedStandardContains(searchText) ||
-                item.amount.description.localizedStandardContains(searchText) ||
-                item.category.localizedStandardContains(searchText)
-            }
+            return
         }
+
+        let searchText = searchText
+        let filters = filters
+        let transactions = transactions
+        let filtered = await Task.detached(priority: .userInitiated) {
+            let dateBounds = filters.resolvedDateBounds()
+            return transactions.filter { item in
+                let textMatch = searchText.isEmpty || (
+                    item.note.localizedStandardContains(searchText) ||
+                    item.amount.description.localizedStandardContains(searchText) ||
+                    item.category.localizedStandardContains(searchText)
+                )
+                let filterMatch = filters.matches(item, dateBounds: dateBounds)
+                return textMatch && filterMatch
+            }
+        }.value
+
+        self.filteredItems = filtered
     }
 
     private func updateGroupedItems() {
@@ -163,7 +196,7 @@ final class TransactionListViewModel {
         pendingDeletion.append(contentsOf: items)
         let ids = Set(items.map(\.id))
         transactions.removeAll { ids.contains($0.id) }
-        doFilterItemBySearchText()
+        Task { await doFilterItemBySearchText() }
         deleteProgress = 0.0
         showUndoBanner = true
         pendingDeletionTask = Task {
@@ -191,7 +224,7 @@ final class TransactionListViewModel {
         // Re-insert failed items and re-filter
         if !failedItems.isEmpty {
             transactions.append(contentsOf: failedItems)
-            doFilterItemBySearchText()
+            await doFilterItemBySearchText()
         }
         pendingDeletion = []
         pendingDeletionTask?.cancel()
@@ -210,15 +243,12 @@ final class TransactionListViewModel {
         reload()
     }
 
-    func totalForDate(items: [TransactionSnapshot]) -> Decimal {
-        return items.reduce(0) { total, item in
-            let convertedAmount = currencyService.convertToBase(item.amount, from: item.currencyCode)
-            return total + convertedAmount
-        }
-    }
-
     func clearSearch() {
+        searchDebounceTask?.cancel()
+        searchDebounceTask = nil
         self.searchText = ""
+        self.filters = SearchFilters()
+        Task { await doFilterItemBySearchText() }
     }
 
     var currentPeriodLabel: String? {
@@ -376,7 +406,7 @@ final class TransactionListViewModel {
                     name: csvCatName.removingLeadingEmoji.trimmingCharacters(in: .whitespaces),
                     systemImage: "tag",
                     type: type.rawValue,
-                    colorToken: "blue",
+                    colorToken: "categoryIndigo",
                     monthlyBudget: nil,
                     currencyCode: currencyService.baseCurrency
                 )

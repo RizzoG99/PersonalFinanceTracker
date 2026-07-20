@@ -28,14 +28,17 @@ public class CurrencyService: ObservableObject {
     ]
     
     private let kBaseCurrencyKey = "app_base_currency"
-    
-    public init() {
-        self.baseCurrency = UserDefaults.standard.string(forKey: kBaseCurrencyKey) ?? "EUR"
+    private let defaults: UserDefaults
+
+    /// Injectable so tests don't race on shared UserDefaults across parallel suites
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.baseCurrency = defaults.string(forKey: kBaseCurrencyKey) ?? "EUR"
     }
-    
+
     public func setBaseCurrency(_ code: String) {
         baseCurrency = code
-        UserDefaults.standard.set(code, forKey: kBaseCurrencyKey)
+        defaults.set(code, forKey: kBaseCurrencyKey)
     }
     
     /// Converts an amount from one currency to another
@@ -71,9 +74,9 @@ public class CurrencyService: ObservableObject {
 }
 
 extension Decimal {
-    public func formattedEUR() -> String {
+    public func formattedEUR(currency: String? = nil) -> String {
         // ponytail: name says EUR but formats base currency; rename in a follow-up
-        let baseCurrency = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
+        let baseCurrency = currency ?? UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
         fmt.currencyCode = baseCurrency
@@ -81,9 +84,9 @@ extension Decimal {
         return fmt.string(from: self as NSDecimalNumber) ?? "\(fallbackSymbol)0.00"
     }
 
-    public func formattedEURCompact() -> String {
+    public func formattedEURCompact(currency: String? = nil) -> String {
         // ponytail: name says EUR but formats base currency; rename in a follow-up
-        let baseCurrency = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
+        let baseCurrency = currency ?? UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         let double = Double(truncating: self as NSDecimalNumber)
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
@@ -96,14 +99,14 @@ extension Decimal {
             fmt.positiveSuffix = "M \(currencySymbol)"
             fmt.negativeSuffix = "M \(currencySymbol)"
             fmt.currencySymbol = ""
-            return fmt.string(from: NSNumber(value: double / 1_000_000)) ?? self.formattedEUR()
+            return fmt.string(from: NSNumber(value: double / 1_000_000)) ?? self.formattedEUR(currency: baseCurrency)
         case 1_000...:
             fmt.positiveSuffix = "K \(currencySymbol)"
             fmt.negativeSuffix = "K \(currencySymbol)"
             fmt.currencySymbol = ""
-            return fmt.string(from: NSNumber(value: double / 1_000)) ?? self.formattedEUR()
+            return fmt.string(from: NSNumber(value: double / 1_000)) ?? self.formattedEUR(currency: baseCurrency)
         default:
-            return self.formattedEUR()
+            return self.formattedEUR(currency: baseCurrency)
         }
     }
 }

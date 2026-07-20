@@ -39,7 +39,7 @@ The active `tabIdentifier` is always `"windowtab1"`.
 - **Currency**: EUR hardcoded throughout
 - **Testing**: Swift Testing (`@Test`, `#expect`), NOT XCTest; `@testable import PersonalFinanceTraker`
 - **Sample data**: `SampleData.populateModelContext()` — use in previews and tests
-- **Search tab**: exists in `MainTabView` but unimplemented (placeholder only)
+- **Search & filters**: live in the Activity tab — text search via `.searchable`, plus type/date/amount filter chips (`FilterChipsView`); filter semantics in `SearchFilters.matches` (`Models/TransactionRepository.swift`), covered by `SearchTests`
 
 ## graphify
 

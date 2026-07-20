@@ -4,6 +4,55 @@
 import Foundation
 import SwiftData
 
+struct SearchFilters: Equatable, Sendable {
+    var type: TransactionTypeFilter = .all
+    var categories: Set<String> = []
+    var dateRange: SearchDateRange? = nil
+    var amountMin: Decimal? = nil
+    var amountMax: Decimal? = nil
+
+    var isActive: Bool {
+        type != .all || !categories.isEmpty || dateRange != nil || amountMin != nil || amountMax != nil
+    }
+}
+
+enum TransactionTypeFilter: String, CaseIterable, Equatable, Sendable {
+    case all = "All"
+    case income = "Income"
+    case expense = "Expense"
+}
+
+enum SearchDateRange: Equatable, Sendable {
+    case thisMonth, last3Months, thisYear
+    case custom(from: Date, to: Date)
+
+    var dateInterval: (start: Date, end: Date) {
+        let cal = Calendar.current
+        let now = Date()
+        switch self {
+        case .thisMonth:
+            return (cal.date(from: cal.dateComponents([.year, .month], from: now))!, now)
+        case .last3Months:
+            return (cal.date(byAdding: .month, value: -3, to: now)!, now)
+        case .thisYear:
+            return (cal.date(from: cal.dateComponents([.year], from: now))!, now)
+        case .custom(let from, let to):
+            // Convert end date to end-of-day (start of next day) to include all transactions on that day
+            let endOfDay = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: to))!
+            return (from, endOfDay)
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .thisMonth: "This month"
+        case .last3Months: "Last 3 months"
+        case .thisYear: "This year"
+        case .custom: "Custom"
+        }
+    }
+}
+
 protocol ITransactionRepository {
     // Transactions
     func fetchAll() async throws -> [TransactionSnapshot]
@@ -30,4 +79,46 @@ protocol ITransactionRepository {
     // Forecast cache
     func fetchForecastCache() async throws -> DailyForecastCacheData?
     func saveForecastCache(_ data: DailyForecastCacheData) async throws
+}
+
+extension SearchFilters {
+    /// Bounds resolved once per filter pass; dateInterval does Calendar math
+    func resolvedDateBounds() -> (start: Date, end: Date)? {
+        dateRange?.dateInterval
+    }
+
+    /// True when the transaction passes every active filter. Pass precomputed
+    /// bounds from resolvedDateBounds() when filtering many items.
+    func matches(_ tx: TransactionSnapshot, dateBounds: (start: Date, end: Date)?) -> Bool {
+        // Type filter: income (positive) or expense (negative)
+        switch type {
+        case .income:
+            if tx.amount <= 0 { return false }
+        case .expense:
+            if tx.amount >= 0 { return false }
+        case .all:
+            break
+        }
+
+        // Category filter: if categories set is non-empty, must contain tx.category
+        if !categories.isEmpty, !categories.contains(tx.category) {
+            return false
+        }
+
+        // Date range filter: tx.timestamp must be within the interval
+        if dateRange != nil, let (start, end) = dateBounds {
+            guard tx.timestamp >= start && tx.timestamp < end else { return false }
+        }
+
+        // Amount bounds filter: check absolute value against min/max
+        if let min = amountMin, abs(tx.amount) < min { return false }
+        if let max = amountMax, abs(tx.amount) > max { return false }
+
+        return true
+    }
+
+    /// Convenience one-argument form that computes bounds internally
+    func matches(_ tx: TransactionSnapshot) -> Bool {
+        matches(tx, dateBounds: resolvedDateBounds())
+    }
 }

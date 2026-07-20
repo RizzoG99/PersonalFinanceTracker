@@ -76,6 +76,7 @@ actor TransactionActor: ITransactionRepository {
         try modelContext.save()
     }
 
+
     // MARK: Categories
 
     func fetchCategories() async throws -> [CategorySnapshot] {

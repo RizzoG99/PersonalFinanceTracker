@@ -85,6 +85,7 @@ struct TransactionListViewModelTests {
         ]
         let vm = await loadedVM(mockRepo)
         vm.searchText = "Coffee"
+        await vm.searchDebounceTask?.value
         #expect(vm.filteredItems.count == 1)
         #expect(vm.filteredItems.first?.note == "Coffee")
     }
@@ -227,6 +228,7 @@ struct TransactionListViewModelTests {
         vm.selectedCategory = "Coffee"
         // Search narrows the data so "Coffee" no longer exists — selection must not zero everything out
         vm.searchText = "Groceries"
+        await vm.searchDebounceTask?.value
         #expect(vm.effectiveCategory == nil)
         #expect(vm.totalFilteredExpenses == 300)
     }
