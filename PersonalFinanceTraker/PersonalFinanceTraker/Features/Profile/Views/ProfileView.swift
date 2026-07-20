@@ -1,11 +1,18 @@
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
     @Bindable var viewModel: ProfileViewModel
     @Binding var selectedDetent: PresentationDetent
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
     @State private var showingFileImporter = false
+    @State private var showingDeleteConfirmation = false
+    @State private var showingPINConfirmation = false
+    @State private var showingDeleteSuccess = false
+    @State private var deleteErrorMessage: String?
+    private let pinService = PINService()
 
     var body: some View {
         NavigationStack {
@@ -43,6 +50,12 @@ struct ProfileView: View {
                             }
                         }
                         .disabled(transactionViewModel.isLoadingCSV)
+
+                        Button(role: .destructive) {
+                            showingDeleteConfirmation = true
+                        } label: {
+                            Label("Delete All Data", systemImage: "trash")
+                        }
                     } header: {
                         Text("DATA")
                             .font(.caption.weight(.semibold))
@@ -88,6 +101,49 @@ struct ProfileView: View {
                     transactionViewModel.importError = error.localizedDescription
                 }
             }
+            .alert("Delete All Data?", isPresented: $showingDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
+                    if pinService.isPINSet() {
+                        showingPINConfirmation = true
+                    } else {
+                        performWipe()
+                    }
+                }
+            } message: {
+                Text("This will permanently erase every transaction, category, credit card, and goal. This cannot be undone.")
+            }
+            .sheet(isPresented: $showingPINConfirmation) {
+                PINConfirmationView(
+                    viewModel: PINConfirmationViewModel(pinService: pinService) {
+                        showingPINConfirmation = false
+                        performWipe()
+                    }
+                )
+            }
+            .alert("All Data Deleted", isPresented: $showingDeleteSuccess) {
+                Button("OK") { dismiss() }
+            }
+            .alert(
+                "Delete Failed",
+                isPresented: Binding(
+                    get: { deleteErrorMessage != nil },
+                    set: { if !$0 { deleteErrorMessage = nil } }
+                )
+            ) {
+                Button("OK") { deleteErrorMessage = nil }
+            } message: {
+                Text(deleteErrorMessage ?? "")
+            }
+        }
+    }
+
+    private func performWipe() {
+        do {
+            try DataWipeService.wipeAllData(context: modelContext)
+            showingDeleteSuccess = true
+        } catch {
+            deleteErrorMessage = error.localizedDescription
         }
     }
 }
