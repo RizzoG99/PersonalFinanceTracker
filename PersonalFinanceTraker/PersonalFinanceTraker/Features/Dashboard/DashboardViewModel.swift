@@ -26,6 +26,9 @@ final class DashboardViewModel {
     /// Handle to the in-flight fetch so tests (and callers) can await completion
     @ObservationIgnored private(set) var loadTask: Task<Void, Never>?
 
+    /// Injectable so tests don't race on shared UserDefaults across parallel suites
+    @ObservationIgnored var payCycleStartDay: () -> Int = { AppSettings.storedStartDay }
+
     func load() {
         guard !isLoaded else { return }
         isLoaded = true  // ponytail: mark loaded before fetch; call reload() to retry after failure
@@ -54,7 +57,7 @@ final class DashboardViewModel {
     }
 
     private func calculateMetrics() async {
-        let payCycleStartDay = AppSettings.storedStartDay
+        let payCycleStartDay = payCycleStartDay()
         // ponytail: metrics computed off the MainActor from the already-fetched snapshots;
         // move aggregation into TransactionActor if the dataset ever makes the fetch itself the bottleneck
         let (balance, income, expenses, recent) = await Task.detached(priority: .userInitiated) { [transactions, currencyService] in

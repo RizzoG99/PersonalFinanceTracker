@@ -33,11 +33,14 @@ struct CurrencyServiceTests {
     }
 
     @Test func setBaseCurrencyPersistsToUserDefaults() {
-        defer { UserDefaults.standard.removeObject(forKey: "app_base_currency") }
-        let sut = CurrencyService()
+        // Isolated suite: writing app_base_currency to .standard races parallel test suites
+        let suiteName = "CurrencyServiceTests"
+        let suite = UserDefaults(suiteName: suiteName)!
+        suite.removePersistentDomain(forName: suiteName)
+        let sut = CurrencyService(defaults: suite)
         sut.setBaseCurrency("USD")
         #expect(sut.baseCurrency == "USD")
-        #expect(UserDefaults.standard.string(forKey: "app_base_currency") == "USD")
+        #expect(suite.string(forKey: "app_base_currency") == "USD")
     }
 
     @Test func formatterHasCurrencyStyle() {
@@ -61,23 +64,16 @@ struct CurrencyServiceTests {
         #expect(result.contains("M"))
     }
 
-    @Test func formattedEURUsesBaseCurrencyFromUserDefaults() {
-        defer { UserDefaults.standard.removeObject(forKey: "app_base_currency") }
-
-        // Test with USD
-        UserDefaults.standard.set("USD", forKey: "app_base_currency")
-        let usdFormatted = Decimal(100).formattedEUR()
+    @Test func formattedEURUsesExplicitCurrency() {
+        // Explicit currency parameter: writing app_base_currency to .standard races parallel suites
+        let usdFormatted = Decimal(100).formattedEUR(currency: "USD")
         #expect(usdFormatted.contains("$"))
         #expect(!usdFormatted.contains("€"))
 
-        // Test with GBP
-        UserDefaults.standard.set("GBP", forKey: "app_base_currency")
-        let gbpFormatted = Decimal(100).formattedEUR()
+        let gbpFormatted = Decimal(100).formattedEUR(currency: "GBP")
         #expect(gbpFormatted.contains("£"))
 
-        // Test compact format with USD
-        UserDefaults.standard.set("USD", forKey: "app_base_currency")
-        let usdCompact = Decimal(2500).formattedEURCompact()
+        let usdCompact = Decimal(2500).formattedEURCompact(currency: "USD")
         #expect(usdCompact.contains("K"))
         #expect(usdCompact.contains("$"))
     }
