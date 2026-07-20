@@ -11,6 +11,7 @@ struct AuthenticationWrapper: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
+    @State private var showSplash = true
 
     private let pinService = PINService()
     let modelContainer: ModelContainer
@@ -34,14 +35,26 @@ struct AuthenticationWrapper: View {
                 )
                 .transition(.opacity)
             }
+
+            if showSplash {
+                SplashView()
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
         .animation(.easeInOut(duration: 0.25), value: isPINSetup)
         .animation(.easeInOut(duration: 0.25), value: authService.isUnlocked)
         .onAppear {
             if !isPINSetup {
                 try? pinService.clearPIN()
-            } else if authService.isBiometricFeatureEnabled {
-                authService.authenticate { _ in }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showSplash = false
+                }
+                if isPINSetup && authService.isBiometricFeatureEnabled {
+                    authService.authenticate { _ in }
+                }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .pinSetupComplete)) { _ in
