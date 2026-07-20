@@ -11,12 +11,6 @@ struct ActivityView: View {
     @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
 
-    private func categorySymbol(for categoryName: String) -> String {
-        viewModel.filteredItems
-            .first(where: { $0.category == categoryName })?.categorySystemImage
-            ?? CategoryInfo.info(for: categoryName).symbol
-    }
-
     init(showingAddItemView: Binding<Bool>) {
         _showingAddItemView = showingAddItemView
     }
@@ -26,27 +20,10 @@ struct ActivityView: View {
         return NavigationStack {
             List {
                 Section {
-                    // ponytail: chips live in the scroll content — any pinned-bar backdrop clashes with the gradient
-                    ScrollView(.horizontal) {
-                        HStack(spacing: 8) {
-                            ActivityFilterChip(label: "All", isSelected: viewModel.effectiveCategory == nil) {
-                                viewModel.selectedCategory = nil
-                            }
-                            ForEach(viewModel.filterCategories, id: \.self) { category in
-                                ActivityFilterChip(
-                                    label: category.removingLeadingEmoji,
-                                    systemImage: categorySymbol(for: category),
-                                    isSelected: viewModel.effectiveCategory == category
-                                ) {
-                                    viewModel.selectedCategory = viewModel.selectedCategory == category ? nil : category
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 4)
-                    }
-                    .scrollIndicators(.hidden)
-                    .listRowInsets(EdgeInsets())
+                    FilterChipsView()
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
 
                     if viewModel.totalFilteredIncome == 0 && viewModel.totalFilteredExpenses == 0 {
                         Text("No transactions yet")
@@ -96,6 +73,12 @@ struct ActivityView: View {
                             .foregroundStyle(.textPrimary)
                     }
                 }
+
+                // Bottom spacing for floating tab bar — matches DashboardView and CompassView pattern
+                Spacer(minLength: 80)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -104,6 +87,11 @@ struct ActivityView: View {
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $viewModel.searchText, prompt: "Search transactions...")
             .appToolbar(showingAddItemView: $showingAddItemView)
+            .overlay {
+                if groupedFiltered.isEmpty && (!viewModel.searchText.isEmpty || viewModel.filters.isActive) {
+                    ContentUnavailableView.search(text: viewModel.searchText)
+                }
+            }
             .onAppear { viewModel.load() }
         }
     }
