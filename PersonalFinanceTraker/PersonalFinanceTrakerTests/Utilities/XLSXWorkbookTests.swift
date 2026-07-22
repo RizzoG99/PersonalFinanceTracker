@@ -108,4 +108,45 @@ struct XLSXWorkbookTests {
             try XLSXWorkbook.read(from: url)
         }
     }
+
+    @Test func convertsHeaderRowAndDataRows() throws {
+        let url = Self.writeTempFile(base64: Self.sampleXLSXBase64, name: "sample-\(UUID()).xlsx")
+        let workbook = try XLSXWorkbook.read(from: url)
+        let file = try workbook.csvFile(forSheet: "Transactions")
+        #expect(file.headers == ["Date", "Amount", "Note"])
+        #expect(file.rowCount == 2)
+    }
+
+    @Test func convertsDateCellsToCanonicalISOStrings() throws {
+        let url = Self.writeTempFile(base64: Self.sampleXLSXBase64, name: "sample-\(UUID()).xlsx")
+        let workbook = try XLSXWorkbook.read(from: url)
+        let file = try workbook.csvFile(forSheet: "Transactions")
+        var dates: [String] = []
+        file.processRows { row in dates.append(row[0]) }
+        // Serials 46027 / 46096 verified against the Excel/OLE epoch (1899-12-30 + N days)
+        #expect(dates == ["2026-01-05 00:00:00", "2026-03-15 00:00:00"])
+    }
+
+    @Test func convertsNumberAndStringCellsAsPlainText() throws {
+        let url = Self.writeTempFile(base64: Self.sampleXLSXBase64, name: "sample-\(UUID()).xlsx")
+        let workbook = try XLSXWorkbook.read(from: url)
+        let file = try workbook.csvFile(forSheet: "Transactions")
+        var amounts: [String] = []
+        var notes: [String] = []
+        file.processRows { row in
+            amounts.append(row[1])
+            notes.append(row[2])
+        }
+        #expect(amounts == ["-42.5", "1500"])
+        #expect(notes == ["Groceries", "Salary"])
+    }
+
+    @Test func isDateNumberFormatMatchesBuiltInDateAndTimeIds() {
+        #expect(XLSXWorkbook.isDateNumberFormat(14))
+        #expect(XLSXWorkbook.isDateNumberFormat(22))
+        #expect(XLSXWorkbook.isDateNumberFormat(46))
+        #expect(!XLSXWorkbook.isDateNumberFormat(0))
+        #expect(!XLSXWorkbook.isDateNumberFormat(9))
+        #expect(!XLSXWorkbook.isDateNumberFormat(164))
+    }
 }
