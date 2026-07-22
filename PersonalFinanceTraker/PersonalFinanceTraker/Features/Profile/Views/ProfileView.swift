@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ProfileView: View {
     @Bindable var viewModel: ProfileViewModel
@@ -39,7 +40,7 @@ struct ProfileView: View {
                                     Text("Reading file…")
                                 }
                             } else {
-                                Label("Import CSV", systemImage: "square.and.arrow.down")
+                                Label("Import CSV or Excel", systemImage: "square.and.arrow.down")
                             }
                         }
                         .disabled(transactionViewModel.isLoadingCSV)
@@ -78,12 +79,16 @@ struct ProfileView: View {
             }
             .fileImporter(
                 isPresented: $showingFileImporter,
-                allowedContentTypes: [.commaSeparatedText, .plainText]
+                allowedContentTypes: [.commaSeparatedText, .plainText, UTType(filenameExtension: "xlsx")!]
             ) { result in
                 switch result {
                 case .success(let url):
                     dismiss()
-                    transactionViewModel.loadCSVFile(from: url)
+                    if url.pathExtension.lowercased() == "xlsx" {
+                        transactionViewModel.loadExcelFile(from: url)
+                    } else {
+                        transactionViewModel.loadCSVFile(from: url)
+                    }
                 case .failure(let error):
                     transactionViewModel.importError = error.localizedDescription
                 }
