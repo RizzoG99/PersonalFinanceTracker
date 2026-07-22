@@ -7,6 +7,7 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
+    @Environment(DataChangedSignal.self) private var dataChanged
     @State private var showingFileImporter = false
     @State private var showingDeleteConfirmation = false
     @State private var showingPINConfirmation = false
@@ -55,6 +56,7 @@ struct ProfileView: View {
                             showingDeleteConfirmation = true
                         } label: {
                             Label("Delete All Data", systemImage: "trash")
+                                .foregroundStyle(.negative)
                         }
                     } header: {
                         Text("DATA")
@@ -141,6 +143,16 @@ struct ProfileView: View {
     private func performWipe() {
         do {
             try DataWipeService.wipeAllData(context: modelContext)
+            // Categories are core app data (needed to add a transaction), not sample
+            // data — reseed immediately so the user isn't stuck until next launch.
+            for category in SampleData.createSampleCategories() {
+                modelContext.insert(category)
+            }
+            try modelContext.save()
+            // DashboardViewModel/TransactionListViewModel cache their own in-memory
+            // arrays; bump the shared signal so MainTabView reloads them (same
+            // pattern EditAddTransactionView uses after a save/delete).
+            dataChanged.bump()
             showingDeleteSuccess = true
         } catch {
             deleteErrorMessage = error.localizedDescription
