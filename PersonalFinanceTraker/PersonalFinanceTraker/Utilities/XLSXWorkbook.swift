@@ -98,6 +98,10 @@ struct XLSXWorkbook {
         return result
     }
 
+    // CoreXLSX 0.14.2 doesn't expose ColumnReference.intValue; this workaround
+    // calls String(describing:) to extract column letters. Relies on the default
+    // description producing plain letters only (verified empirically by
+    // XLSXWorkbookTests multi-column fixtures). Revisit on CoreXLSX upgrade.
     private static func columnIndex(from column: ColumnReference) -> Int {
         // Convert Excel column letters (A, B, ..., Z, AA, AB, ...) to 1-based index
         var result = 0
