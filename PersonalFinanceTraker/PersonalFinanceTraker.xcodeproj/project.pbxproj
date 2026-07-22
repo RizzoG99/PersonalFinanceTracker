@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F885D75730117AE20060FBCD /* CoreXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = F885D75630117AE20060FBCD /* CoreXLSX */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		F8A524952E67A8CA0000E48D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F885D75730117AE20060FBCD /* CoreXLSX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,12 +90,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F885D75530117AE20060FBCD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F8A5247A2E67A8C80000E48D = {
 			isa = PBXGroup;
 			children = (
 				F8A524852E67A8C90000E48D /* PersonalFinanceTraker */,
 				F8A524972E67A8CA0000E48D /* PersonalFinanceTrakerTests */,
 				F8A524A12E67A8CA0000E48D /* PersonalFinanceTrakerUITests */,
+				F885D75530117AE20060FBCD /* Frameworks */,
 				F8A524842E67A8C90000E48D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -125,6 +138,7 @@
 			);
 			name = PersonalFinanceTraker;
 			packageProductDependencies = (
+				F885D75630117AE20060FBCD /* CoreXLSX */,
 			);
 			productName = PersonalFinanceTraker;
 			productReference = F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */;
@@ -605,6 +619,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F885D75630117AE20060FBCD /* CoreXLSX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F885D47A301178170060FBCD /* XCRemoteSwiftPackageReference "CoreXLSX" */;
+			productName = CoreXLSX;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F8A5247B2E67A8C80000E48D /* Project object */;
 }
