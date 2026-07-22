@@ -285,6 +285,7 @@ final class TransactionListViewModel {
     // MARK: - CSV Import
 
     var csvFile: CSVFile? = nil
+    var xlsxWorkbook: XLSXWorkbook? = nil
     var columnMapping = ColumnMapping()
     var categoryResolutionSelections: [String: String] = [:]  // UUID strings or "__new__" sentinel
     var csvCategories: [String] = []                          // Unique CSV categories (computed once)
@@ -327,10 +328,58 @@ final class TransactionListViewModel {
         }
     }
 
+    func loadExcelFile(from url: URL) {
+        isLoadingCSV = true
+        Task {
+            do {
+                let workbook = try await Task.detached(priority: .userInitiated) {
+                    try XLSXWorkbook.read(from: url)
+                }.value
+                isLoadingCSV = false
+                availableCategories = try await repo.fetchCategories()
+                categoryResolutionSelections = [:]
+                csvCategories = []
+                csvCategoryTypes = [:]
+                importNavigationPath = []
+                hasAutoMappedCategories = false
+
+                if workbook.sheetNames.count == 1, let onlySheet = workbook.sheetNames.first {
+                    try applySheet(onlySheet, of: workbook)
+                    xlsxWorkbook = nil
+                } else {
+                    xlsxWorkbook = workbook
+                    csvFile = nil
+                }
+                showingImportFlow = true
+            } catch {
+                isLoadingCSV = false
+                importError = error.localizedDescription
+            }
+        }
+    }
+
+    func selectSheet(_ name: String) {
+        guard let workbook = xlsxWorkbook else { return }
+        do {
+            try applySheet(name, of: workbook)
+            xlsxWorkbook = nil
+        } catch {
+            importError = error.localizedDescription
+        }
+    }
+
+    private func applySheet(_ name: String, of workbook: XLSXWorkbook) throws {
+        let file = try workbook.csvFile(forSheet: name)
+        csvFile = file
+        columnMapping = CSVColumnMapper.autoDetect(from: file)
+        columnMapping.defaultCurrency = currencyService.baseCurrency
+    }
+
     /// Cancel the import flow and reset state
     func cancelImport() {
         showingImportFlow = false
         csvFile = nil
+        xlsxWorkbook = nil
         columnMapping = ColumnMapping()
         categoryResolutionSelections = [:]
         csvCategories = []
