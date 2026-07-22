@@ -30,6 +30,7 @@ struct AppToolbarModifier: ViewModifier {
                     }
                     .font(.headline)
                     .foregroundStyle(.textPrimary)
+                    .glassEffect(.regular.tint(Color.accentIndigo).interactive())
                 }
             }
             .sheet(isPresented: $showingProfile) {

@@ -155,13 +155,27 @@ final class CompassViewModel {
 
     private func computeHealthScore() async {
         let budgetedCategories = (try? await repo.fetchCategories())?.filter { $0.monthlyBudget != nil } ?? []
-        healthScore = healthService.compute(
-            transactions: transactions,
-            expenseTransactions: expenseTransactions,
-            budgetedCategories: budgetedCategories,
-            payCycleStartDay: AppSettings.storedStartDay,
-            ignoreSubscriptions: ignoreSubscriptions
-        )
+
+        // ponytail: Require at least some income or expense in the 6-month window.
+        // Could later be tightened (e.g., N transactions minimum) if all-zero turns out too lenient.
+        let calendar = Calendar.current
+        let now = Date.now
+        let financialMonths = PayCycleService.financialMonths(count: 6, before: now, startDay: AppSettings.storedStartDay, calendar: calendar)
+        let sixMonthsAgo = financialMonths.first?.start ?? calendar.date(byAdding: .month, value: -6, to: now) ?? now
+        let hasRecentIncome = transactions.contains { $0.timestamp >= sixMonthsAgo && $0.amount > 0 }
+        let hasRecentExpense = expenseTransactions.contains { $0.timestamp >= sixMonthsAgo }
+
+        if !hasRecentIncome && !hasRecentExpense {
+            healthScore = nil
+        } else {
+            healthScore = healthService.compute(
+                transactions: transactions,
+                expenseTransactions: expenseTransactions,
+                budgetedCategories: budgetedCategories,
+                payCycleStartDay: AppSettings.storedStartDay,
+                ignoreSubscriptions: ignoreSubscriptions
+            )
+        }
         await saveSnapshotIfNeeded()
         scoreSnapshots = (try? await repo.fetchSnapshots(limit: 6)) ?? []
     }

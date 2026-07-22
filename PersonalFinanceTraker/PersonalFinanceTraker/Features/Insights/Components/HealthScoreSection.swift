@@ -22,6 +22,12 @@ struct HealthScoreSection: View {
                 HealthScoreCard(healthScore: score, snapshots: snapshots) {
                     showingDetail = true
                 }
+            } else {
+                EmptyStateView(
+                    icon: "gauge.medium",
+                    message: "Add transactions to unlock your Health Score",
+                    subtitle: "Your score builds from at least a few weeks of activity."
+                )
             }
         }
         .sheet(isPresented: $showingDetail) {

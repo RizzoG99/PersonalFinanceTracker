@@ -30,13 +30,10 @@ struct SpendingTimelineChart: View {
                     .frame(maxWidth: 200)
             }
 
-            GlassCard {
-                if data.isEmpty || data.allSatisfy({ $0.expenses == 0 }) {
-                    Text("No data")
-                        .foregroundStyle(.textDim)
-                        .frame(height: 200)
-                        .frame(maxWidth: .infinity)
-                } else {
+            if data.isEmpty || data.allSatisfy({ $0.expenses == 0 }) {
+                EmptyStateView(message: "No spending data yet")
+            } else {
+                GlassCard {
                     Chart {
                         ForEach(data) { point in
                             AreaMark(
