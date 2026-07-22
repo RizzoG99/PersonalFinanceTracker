@@ -138,6 +138,16 @@ struct CSVImportServiceTests {
         let fields = CSVImportService.parseRow("2026-01-01,TV 30\" nuova,5", delimiter: ",")
         #expect(fields == ["2026-01-01", "TV 30\" nuova", "5"])
     }
+
+    @Test func dedupeHeadersAppendsSuffixToRepeats() {
+        let result = CSVImportService.dedupeHeaders(["Accounts", "Date", "Accounts", "Accounts"])
+        #expect(result == ["Accounts", "Date", "Accounts_2", "Accounts_3"])
+    }
+
+    @Test func dedupeHeadersLeavesUniqueNamesUnchanged() {
+        let result = CSVImportService.dedupeHeaders(["Date", "Amount", "Category"])
+        #expect(result == ["Date", "Amount", "Category"])
+    }
 }
 
 // MARK: - CSVExportService

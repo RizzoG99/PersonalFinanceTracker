@@ -120,12 +120,7 @@ class CSVImportService {
         // malformed/binary file, and downstream UI (pickers) must never see it
         guard rawHeaders.count <= 256 else { throw CSVReadError.unreadableFile }
 
-        var seen: [String: Int] = [:]
-        let headers = rawHeaders.map { name -> String in
-            let count = (seen[name] ?? 0) + 1
-            seen[name] = count
-            return count == 1 ? name : "\(name)_\(count)"
-        }
+        let headers = dedupeHeaders(rawHeaders)
 
         // Store raw lines with their 1-based line numbers from the original file
         // dropFirst() removes header, enumerated() gives us index (0-based for data rows)
@@ -134,6 +129,15 @@ class CSVImportService {
         }
 
         return CSVFile(headers: headers, delimiter: delimiter, lines: dataLines)
+    }
+
+    static func dedupeHeaders(_ rawHeaders: [String]) -> [String] {
+        var seen: [String: Int] = [:]
+        return rawHeaders.map { name in
+            let count = (seen[name] ?? 0) + 1
+            seen[name] = count
+            return count == 1 ? name : "\(name)_\(count)"
+        }
     }
 
     private static func detectDelimiter(_ line: String) -> Character {
