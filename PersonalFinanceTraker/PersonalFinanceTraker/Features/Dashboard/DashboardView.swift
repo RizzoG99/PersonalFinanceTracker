@@ -17,6 +17,15 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     GreetingHeaderView()
                     BalanceCardView()
+                    if viewModel.hasNoTransactions {
+                        EmptyStateView(
+                            icon: "plus.circle",
+                            message: "Add your first transaction",
+                            subtitle: "Track an expense or income to see your balance grow.",
+                            actionTitle: "Add Transaction",
+                            action: { showingAddItemView = true }
+                        )
+                    }
                     if !viewModel.recentTransactions.isEmpty {
                         RecentTransactionsSectionView()
                     }

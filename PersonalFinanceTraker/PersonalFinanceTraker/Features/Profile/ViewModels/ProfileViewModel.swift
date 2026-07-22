@@ -59,11 +59,10 @@ final class ProfileViewModel {
     var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date.now)
         let firstName = fullName.split(separator: " ").first.map(String.init) ?? ""
-        let name = firstName.isEmpty ? "there" : firstName
         let salutation: String
         if hour < 12 { salutation = "Good morning" }
         else if hour < 17 { salutation = "Good afternoon" }
         else { salutation = "Good evening" }
-        return "\(salutation), \(name)"
+        return firstName.isEmpty ? salutation : "\(salutation), \(firstName)"
     }
 }

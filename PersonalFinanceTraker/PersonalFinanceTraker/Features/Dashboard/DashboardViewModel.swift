@@ -109,4 +109,8 @@ final class DashboardViewModel {
         return "This period · \(startFormatted) – \(endFormatted)"
     }
 
+    var hasNoTransactions: Bool {
+        transactions.isEmpty
+    }
+
 }
