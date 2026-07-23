@@ -20,11 +20,6 @@ struct CreditView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    CreditScoreCard(
-                        creditScore: viewModel.creditScore,
-                        creditStatus: viewModel.creditStatusLabel,
-                        onEditScore: { viewModel.updateCreditScore($0) }
-                    )
                     if !viewModel.creditCards.isEmpty {
                         CreditUtilizationCard(
                             totalBalance: viewModel.totalBalance,

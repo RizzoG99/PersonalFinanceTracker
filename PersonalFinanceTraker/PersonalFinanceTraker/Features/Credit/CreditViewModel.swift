@@ -8,16 +8,12 @@ import Foundation
 @Observable @MainActor
 final class CreditViewModel {
     var creditCards: [CreditCardModel] = []
-    var creditScore: Int
     var errorMessage: String? = nil
 
     private let repo: CreditCardRepository
-    private let scoreKey = "credit_score_value"
 
     init(repo: CreditCardRepository) {
         self.repo = repo
-        let stored = UserDefaults.standard.integer(forKey: scoreKey)
-        creditScore = stored > 0 ? stored : 742
     }
 
     func load() {
@@ -55,11 +51,6 @@ final class CreditViewModel {
         }
     }
 
-    func updateCreditScore(_ score: Int) {
-        creditScore = score
-        UserDefaults.standard.set(score, forKey: scoreKey)
-    }
-
     var totalBalance: Decimal {
         creditCards.reduce(0) { $0 + $1.balance }
     }
@@ -75,15 +66,5 @@ final class CreditViewModel {
     var totalUtilization: Double {
         guard totalLimit > 0 else { return 0 }
         return min(1.0, Double(truncating: (totalBalance / totalLimit) as NSDecimalNumber))
-    }
-
-    var creditStatusLabel: String {
-        switch creditScore {
-        case 800...: return "Excellent"
-        case 740...: return "Very Good"
-        case 670...: return "Good"
-        case 580...: return "Fair"
-        default: return "Poor"
-        }
     }
 }
