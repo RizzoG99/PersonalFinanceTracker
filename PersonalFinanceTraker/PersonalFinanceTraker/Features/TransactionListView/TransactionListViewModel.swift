@@ -328,9 +328,12 @@ final class TransactionListViewModel {
         }
     }
 
+    /// Handle to the in-flight load so tests (and callers) can await completion
+    @ObservationIgnored private(set) var loadExcelTask: Task<Void, Never>?
+
     func loadExcelFile(from url: URL) {
         isLoadingCSV = true
-        Task {
+        loadExcelTask = Task {
             do {
                 let workbook = try await Task.detached(priority: .userInitiated) {
                     try XLSXWorkbook.read(from: url)
