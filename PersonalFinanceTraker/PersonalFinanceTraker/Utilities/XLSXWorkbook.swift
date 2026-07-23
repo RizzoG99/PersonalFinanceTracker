@@ -135,11 +135,27 @@ struct XLSXWorkbook {
         if cell.type == .sharedString {
             return sharedStrings.flatMap { cell.stringValue($0) } ?? ""
         }
+        if let raw = cell.value, let number = Double(raw) {
+            return Self.cleanNumberString(number)
+        }
         return cell.value ?? ""
     }
 
     private func isDateNumberFormat(_ id: Int) -> Bool {
         Self.isBuiltInDateNumberFormat(id) || customDateFormatIds.contains(id)
+    }
+
+    // Some spreadsheet exporters (seen from a real bank export) serialize
+    // amounts with IEEE 754 round-trip noise, e.g. "78.09999999999999" for
+    // what is really 78.1. Round to 9 decimal places — well past any
+    // real-world financial precision — to strip that noise before it
+    // reaches NSDecimalNumber's exact-string parsing downstream.
+    static func cleanNumberString(_ value: Double) -> String {
+        let rounded = (value * 1e9).rounded() / 1e9
+        var str = String(format: "%.9f", rounded)
+        while str.contains("."), str.hasSuffix("0") { str.removeLast() }
+        if str.hasSuffix(".") { str.removeLast() }
+        return str
     }
 
     // Excel's built-in date/time numFmtIds (14-22 dates/times, 45-47 mm:ss

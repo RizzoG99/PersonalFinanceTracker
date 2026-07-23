@@ -190,4 +190,11 @@ struct XLSXWorkbookTests {
         #expect(!XLSXWorkbook.isDateFormatCode("\"units\" 0"))
         #expect(!XLSXWorkbook.isDateFormatCode("General"))
     }
+
+    @Test func cleanNumberStringStripsFloatingPointNoise() {
+        #expect(XLSXWorkbook.cleanNumberString(78.09999999999999) == "78.1")
+        #expect(XLSXWorkbook.cleanNumberString(-78.09999999999999) == "-78.1")
+        #expect(XLSXWorkbook.cleanNumberString(1500) == "1500")
+        #expect(XLSXWorkbook.cleanNumberString(-42.5) == "-42.5")
+    }
 }
