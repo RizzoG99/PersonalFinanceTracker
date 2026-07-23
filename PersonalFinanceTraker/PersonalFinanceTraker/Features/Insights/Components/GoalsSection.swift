@@ -30,22 +30,11 @@ struct GoalsSection: View {
             }
 
             if goals.isEmpty {
-                GlassCard {
-                    VStack(spacing: 8) {
-                        Image(systemName: "flag.fill")
-                            .font(.title2)
-                            .foregroundStyle(.accentIndigo.opacity(0.6))
-                        Text("Set your first goal")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.textMid)
-                        Text("Trip fund, emergency buffer, dream purchase — make it visual.")
-                            .font(.caption)
-                            .foregroundStyle(.textDim)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                }
+                EmptyStateView(
+                    icon: "flag.fill",
+                    message: "Set your first goal",
+                    subtitle: "Trip fund, emergency buffer, dream purchase — make it visual."
+                )
             } else {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     ForEach(goals) { goal in

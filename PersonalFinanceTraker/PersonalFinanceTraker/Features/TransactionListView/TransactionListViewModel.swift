@@ -11,6 +11,7 @@ import SwiftData
 @Observable @MainActor
 final class TransactionListViewModel {
     var transactions: [TransactionSnapshot] = []
+    var hasNoTransactions: Bool { transactions.isEmpty }
     var filteredItems: [TransactionSnapshot] = [] {
         didSet {
             updateGroupedItems()

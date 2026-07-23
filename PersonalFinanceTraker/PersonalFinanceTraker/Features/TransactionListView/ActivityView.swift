@@ -20,16 +20,26 @@ struct ActivityView: View {
         return NavigationStack {
             List {
                 Section {
-                    FilterChipsView()
-                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
+                    if !viewModel.hasNoTransactions {
+                        FilterChipsView()
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
 
                     if viewModel.totalFilteredIncome == 0 && viewModel.totalFilteredExpenses == 0 {
-                        Text("No transactions yet")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal)
+                        if viewModel.hasNoTransactions {
+                            EmptyStateView(
+                                icon: "tray",
+                                message: "No transactions yet",
+                                subtitle: "Add your first transaction to start tracking.",
+                                actionTitle: "Add Transaction",
+                                action: { showingAddItemView = true }
+                            )
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                        }
                     } else {
                         HStack(spacing: 12) {
                             StatCard(
@@ -85,7 +95,11 @@ struct ActivityView: View {
             .appBackground()
             .navigationTitle("Activity")
             .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $viewModel.searchText, prompt: "Search transactions...")
+            .modifier(ConditionalSearchable(
+                isActive: !viewModel.hasNoTransactions,
+                text: $viewModel.searchText,
+                prompt: "Search transactions..."
+            ))
             .appToolbar(showingAddItemView: $showingAddItemView)
             .overlay {
                 if groupedFiltered.isEmpty && (!viewModel.searchText.isEmpty || viewModel.filters.isActive) {
@@ -105,6 +119,19 @@ struct ActivityView: View {
     }
 }
 
+private struct ConditionalSearchable: ViewModifier {
+    let isActive: Bool
+    @Binding var text: String
+    let prompt: String
+
+    func body(content: Content) -> some View {
+        if isActive {
+            content.searchable(text: $text, prompt: prompt)
+        } else {
+            content
+        }
+    }
+}
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self])
