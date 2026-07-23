@@ -5,13 +5,13 @@
 
 import Foundation
 
-enum SignConvention: String, CaseIterable {
+enum SignConvention: String, CaseIterable, Codable {
     case signed = "Signed (positive/negative as-is)"
     case allExpenses = "All expenses (store as negative)"
     case allIncome = "All income (store as positive)"
 }
 
-struct ColumnMapping {
+struct ColumnMapping: Codable, Equatable {
     var dateColumn: String? = nil
     var amountColumn: String? = nil
     var typeColumn: String? = nil

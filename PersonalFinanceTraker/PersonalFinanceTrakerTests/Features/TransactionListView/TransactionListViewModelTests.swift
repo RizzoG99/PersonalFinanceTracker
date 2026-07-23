@@ -233,4 +233,36 @@ struct TransactionListViewModelTests {
 
         #expect(vm.filterCategories == ["Food", "Bar", "Coffee"])
     }
+
+    @Test @MainActor func savedSelectionsPrefillOnlyValidCategories() {
+        let vm = TransactionListViewModel(repo: MockTransactionRepository())
+        let food = CategorySnapshot.test(name: "Food")
+        vm.availableCategories = [food]
+        vm.csvCategories = ["🍕 Food", "Ghost"]
+        vm.importProfileStore = ImportProfileStore(
+            defaults: UserDefaults(suiteName: "test-\(UUID().uuidString)")!
+        )
+
+        // Simulate a stored profile: one valid selection, one pointing at a deleted category
+        let sig = ImportProfileStore.signature(headers: ["A"], delimiter: ",")
+        vm.importProfileStore.save(
+            ImportProfile(
+                mapping: ColumnMapping(),
+                categorySelections: [
+                    "🍕 Food": food.id.uuidString,
+                    "Ghost": UUID().uuidString,
+                ]
+            ),
+            for: sig
+        )
+        // Feed the saved selections through the same path applyImportProfileIfAvailable uses
+        vm.setSavedCategorySelectionsForTesting(
+            vm.importProfileStore.profile(for: sig)?.categorySelections
+        )
+
+        vm.applySavedCategorySelections()
+
+        #expect(vm.categoryResolutionSelections["🍕 Food"] == food.id.uuidString)
+        #expect(vm.categoryResolutionSelections["Ghost"] == nil)
+    }
 }
