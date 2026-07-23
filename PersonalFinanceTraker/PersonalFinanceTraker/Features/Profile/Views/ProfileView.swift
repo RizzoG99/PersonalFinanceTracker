@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import SwiftData
 
 struct ProfileView: View {
@@ -40,17 +41,17 @@ struct ProfileView: View {
                         Button {
                             showingFileImporter = true
                         } label: {
-                            if transactionViewModel.isLoadingCSV {
+                            if transactionViewModel.isLoadingImportFile {
                                 HStack {
                                     ProgressView()
                                         .controlSize(.small)
                                     Text("Reading file…")
                                 }
                             } else {
-                                Label("Import CSV", systemImage: "square.and.arrow.down")
+                                Label("Import CSV or Excel", systemImage: "square.and.arrow.down")
                             }
                         }
-                        .disabled(transactionViewModel.isLoadingCSV)
+                        .disabled(transactionViewModel.isLoadingImportFile)
 
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
@@ -93,12 +94,16 @@ struct ProfileView: View {
             }
             .fileImporter(
                 isPresented: $showingFileImporter,
-                allowedContentTypes: [.commaSeparatedText, .plainText]
+                allowedContentTypes: [.commaSeparatedText, .plainText, UTType(filenameExtension: "xlsx")!]
             ) { result in
                 switch result {
                 case .success(let url):
                     dismiss()
-                    transactionViewModel.loadCSVFile(from: url)
+                    if url.pathExtension.lowercased() == "xlsx" {
+                        transactionViewModel.loadExcelFile(from: url)
+                    } else {
+                        transactionViewModel.loadCSVFile(from: url)
+                    }
                 case .failure(let error):
                     transactionViewModel.importError = error.localizedDescription
                 }

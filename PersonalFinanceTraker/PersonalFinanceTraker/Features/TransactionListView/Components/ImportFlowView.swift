@@ -50,6 +50,12 @@ struct ImportFlowView: View {
                         )
                     }
                 }
+            } else if let workbook = viewModel.xlsxWorkbook {
+                SheetPickerView(
+                    sheetNames: workbook.sheetNames,
+                    onSelect: { viewModel.selectSheet($0) },
+                    onCancel: { viewModel.cancelImport() }
+                )
             }
         }
         .presentationBackground { AppBackground() }
