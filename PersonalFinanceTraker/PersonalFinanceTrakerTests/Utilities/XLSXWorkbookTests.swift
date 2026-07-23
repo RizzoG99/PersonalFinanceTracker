@@ -174,11 +174,20 @@ struct XLSXWorkbookTests {
     }
 
     @Test func isDateNumberFormatMatchesBuiltInDateAndTimeIds() {
-        #expect(XLSXWorkbook.isDateNumberFormat(14))
-        #expect(XLSXWorkbook.isDateNumberFormat(22))
-        #expect(XLSXWorkbook.isDateNumberFormat(46))
-        #expect(!XLSXWorkbook.isDateNumberFormat(0))
-        #expect(!XLSXWorkbook.isDateNumberFormat(9))
-        #expect(!XLSXWorkbook.isDateNumberFormat(164))
+        #expect(XLSXWorkbook.isBuiltInDateNumberFormat(14))
+        #expect(XLSXWorkbook.isBuiltInDateNumberFormat(22))
+        #expect(XLSXWorkbook.isBuiltInDateNumberFormat(46))
+        #expect(!XLSXWorkbook.isBuiltInDateNumberFormat(0))
+        #expect(!XLSXWorkbook.isBuiltInDateNumberFormat(9))
+        #expect(!XLSXWorkbook.isBuiltInDateNumberFormat(164))
+    }
+
+    @Test func isDateFormatCodeDetectsCustomDateAndTimeFormats() {
+        #expect(XLSXWorkbook.isDateFormatCode("dd/MM/yyyy"))
+        #expect(XLSXWorkbook.isDateFormatCode("yyyy-mm-dd hh:mm:ss"))
+        #expect(XLSXWorkbook.isDateFormatCode("[$-409]d\\-mmm\\-yy;@"))
+        #expect(!XLSXWorkbook.isDateFormatCode("#,##0.00"))
+        #expect(!XLSXWorkbook.isDateFormatCode("\"units\" 0"))
+        #expect(!XLSXWorkbook.isDateFormatCode("General"))
     }
 }

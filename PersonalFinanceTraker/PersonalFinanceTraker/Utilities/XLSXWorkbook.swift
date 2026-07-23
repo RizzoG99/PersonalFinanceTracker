@@ -23,6 +23,7 @@ struct XLSXWorkbook {
     private let styles: Styles
     private let sharedStrings: SharedStrings?
     private let sheets: [(name: String, path: String)]
+    private let customDateFormatIds: Set<Int>
 
     var sheetNames: [String] { sheets.map(\.name) }
 
@@ -48,7 +49,19 @@ struct XLSXWorkbook {
             (name: entry.name ?? "Sheet \(idx + 1)", path: entry.path)
         }
 
-        return XLSXWorkbook(file: coreFile, styles: styles, sharedStrings: sharedStrings, sheets: sheets)
+        let customDateFormatIds = Set(
+            (styles.numberFormats?.items ?? [])
+                .filter { isDateFormatCode($0.formatCode) }
+                .map(\.id)
+        )
+
+        return XLSXWorkbook(
+            file: coreFile,
+            styles: styles,
+            sharedStrings: sharedStrings,
+            sheets: sheets,
+            customDateFormatIds: customDateFormatIds
+        )
     }
 
     /// Converts one worksheet into a CSVFile: first row becomes headers, the
@@ -116,7 +129,7 @@ struct XLSXWorkbook {
 
     private func stringify(_ cell: Cell) -> String {
         let numFmtId = cell.format(in: styles)?.numberFormatId ?? 0
-        if Self.isDateNumberFormat(numFmtId), let raw = cell.value, let serial = Double(raw) {
+        if isDateNumberFormat(numFmtId), let raw = cell.value, let serial = Double(raw) {
             return Self.canonicalDateString(fromSerial: serial)
         }
         if cell.type == .sharedString {
@@ -125,12 +138,34 @@ struct XLSXWorkbook {
         return cell.value ?? ""
     }
 
-    // ponytail: only the built-in date/time numFmtIds Excel assigns
-    // automatically (14-22 dates/times, 45-47 mm:ss variants). Custom,
-    // locale-specific date formats (numFmtId >= 164) aren't detected — extend
-    // this if a real-world export needs it.
-    static func isDateNumberFormat(_ id: Int) -> Bool {
+    private func isDateNumberFormat(_ id: Int) -> Bool {
+        Self.isBuiltInDateNumberFormat(id) || customDateFormatIds.contains(id)
+    }
+
+    // Excel's built-in date/time numFmtIds (14-22 dates/times, 45-47 mm:ss
+    // variants). IDs >= 164 are workbook-defined custom formats (e.g. a bank
+    // export using "dd/MM/yyyy") — detected separately via isDateFormatCode
+    // against each workbook's own <numFmts> since their meaning isn't fixed.
+    static func isBuiltInDateNumberFormat(_ id: Int) -> Bool {
         (14...22).contains(id) || (45...47).contains(id)
+    }
+
+    // Heuristic: strip quoted literal text (e.g. "\"units\"") and bracketed
+    // locale/color tags (e.g. "[$-409]"), then check for date/time pattern
+    // letters. Good enough for real-world exports; doesn't attempt full
+    // OOXML format-code parsing.
+    static func isDateFormatCode(_ formatCode: String) -> Bool {
+        var stripped = ""
+        var inQuotes = false
+        var inBrackets = false
+        for char in formatCode {
+            if char == "\"" { inQuotes.toggle(); continue }
+            if char == "[" { inBrackets = true; continue }
+            if char == "]" { inBrackets = false; continue }
+            if inQuotes || inBrackets { continue }
+            stripped.append(char)
+        }
+        return stripped.lowercased().contains(where: { "ymdhs".contains($0) })
     }
 
     private static let canonicalDateFormatter: DateFormatter = {
