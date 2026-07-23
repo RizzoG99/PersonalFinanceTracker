@@ -9,10 +9,12 @@ A personal finance app for tracking income and expenses, understanding spending 
 ## Features
 
 - **Dashboard** — total balance, income/expense summary for the current pay cycle, and recent transactions
-- **Activity** — full transaction list with grouped history and swipe-to-delete with undo
-- **Insights** — spending breakdown by category with charts and narrative summaries
+- **Activity** — full transaction list with grouped history, live search with type/date/amount filters, and swipe-to-delete with undo
+- **Insights** — health score, spending forecast, goal pockets, habit insights, category trends and charts
 - **Categories** — customizable categories with icons and colors
 - **Add / Edit transactions** — quick entry sheet with category, amount, date, and notes
+- **Import / Export** — CSV and Excel import with column & category mapping; CSV/Excel export
+- **Security** — Face ID / Touch ID and PIN lock; PIN-confirmed delete-all-data
 - **Profile** — pay cycle configuration and personal info
 
 ## Tech Stack
@@ -27,10 +29,10 @@ A personal finance app for tracking income and expenses, understanding spending 
 
 ## Work in Progress
 
-- Biometric authorization
-- Full-text search
 - iCloud sync
 - Budgeting / spending limits
+- Recurring transactions
+- Home-screen widgets
 
 ## Development
 
