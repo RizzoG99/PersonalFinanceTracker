@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ABCD00012E67A8C900000001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ABCD00022E67A8C900000002 /* ZIPFoundation */; };
 		F885D75730117AE20060FBCD /* CoreXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = F885D75630117AE20060FBCD /* CoreXLSX */; };
 /* End PBXBuildFile section */
 
@@ -70,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F885D75730117AE20060FBCD /* CoreXLSX in Frameworks */,
+				ABCD00012E67A8C900000001 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +141,7 @@
 			name = PersonalFinanceTraker;
 			packageProductDependencies = (
 				F885D75630117AE20060FBCD /* CoreXLSX */,
+				ABCD00022E67A8C900000002 /* ZIPFoundation */,
 			);
 			productName = PersonalFinanceTraker;
 			productReference = F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */;
@@ -224,6 +227,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F885D47A301178170060FBCD /* XCRemoteSwiftPackageReference "CoreXLSX" */,
+				ABCD00032E67A8C900000003 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F8A524842E67A8C90000E48D /* Products */;
@@ -610,6 +614,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		ABCD00032E67A8C900000003 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.20;
+			};
+		};
 		F885D47A301178170060FBCD /* XCRemoteSwiftPackageReference "CoreXLSX" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/CoreOffice/CoreXLSX.git";
@@ -621,6 +633,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		ABCD00022E67A8C900000002 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ABCD00032E67A8C900000003 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
 		F885D75630117AE20060FBCD /* CoreXLSX */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F885D47A301178170060FBCD /* XCRemoteSwiftPackageReference "CoreXLSX" */;

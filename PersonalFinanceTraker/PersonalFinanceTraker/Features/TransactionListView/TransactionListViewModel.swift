@@ -278,11 +278,6 @@ final class TransactionListViewModel {
         }
     }
 
-    /// Generates a CSV export of all currently filtered transactions
-    func exportCSV() -> String {
-        return CSVExportService.generateCSV(from: transactions)
-    }
-
     // MARK: - CSV Import
 
     var csvFile: CSVFile? = nil

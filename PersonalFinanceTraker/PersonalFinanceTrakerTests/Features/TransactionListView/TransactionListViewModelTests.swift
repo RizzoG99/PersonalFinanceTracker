@@ -65,18 +65,6 @@ struct TransactionListViewModelTests {
         #expect(vm.totalFilteredExpenses == 250)
     }
 
-    @Test @MainActor func exportCSVContainsHeaderAndTransactionData() async throws {
-        let mockRepo = MockTransactionRepository()
-        mockRepo.stubbedTransactions = [
-            .test(amount: -50, note: "Lunch", category: "Food"),
-        ]
-        let vm = await loadedVM(mockRepo)
-        let csv = vm.exportCSV()
-        #expect(csv.hasPrefix("Date,Amount,Currency,Category,Note,Type"))
-        #expect(csv.contains("Food"))
-        #expect(csv.contains("Lunch"))
-    }
-
     @Test @MainActor func searchTextFiltersTransactionsByNote() async throws {
         let mockRepo = MockTransactionRepository()
         mockRepo.stubbedTransactions = [

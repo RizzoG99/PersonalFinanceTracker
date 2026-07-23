@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import SwiftData
+import CoreTransferable
 
 struct ProfileView: View {
     @Bindable var viewModel: ProfileViewModel
@@ -52,6 +53,24 @@ struct ProfileView: View {
                             }
                         }
                         .disabled(transactionViewModel.isLoadingImportFile)
+
+                        Menu {
+                            ShareLink(
+                                item: TransactionsExport(format: .csv, repo: transactionViewModel.repo),
+                                preview: SharePreview("Transactions CSV")
+                            ) {
+                                Label("CSV", systemImage: "tablecells")
+                            }
+
+                            ShareLink(
+                                item: TransactionsExport(format: .xlsx, repo: transactionViewModel.repo),
+                                preview: SharePreview("Transactions Excel")
+                            ) {
+                                Label("Excel", systemImage: "tablecells.badge.ellipsis")
+                            }
+                        } label: {
+                            Label("Export Data", systemImage: "square.and.arrow.up")
+                        }
 
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
@@ -162,6 +181,38 @@ struct ProfileView: View {
         } catch {
             deleteErrorMessage = error.localizedDescription
         }
+    }
+}
+
+/// Lazily exports all transactions when the user picks a destination in the
+/// share sheet — nothing is fetched or written until then.
+struct TransactionsExport: Transferable {
+    enum Format: String {
+        case csv, xlsx
+    }
+
+    let format: Format
+    let repo: any ITransactionRepository
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .commaSeparatedText) { export in
+            try await export.writeTempFile { Data(CSVExportService.generateCSV(from: $0).utf8) }
+        }
+        .exportingCondition { $0.format == .csv }
+
+        FileRepresentation(exportedContentType: UTType(filenameExtension: "xlsx")!) { export in
+            try await export.writeTempFile { try XLSXExportService.generateXLSX(from: $0) }
+        }
+        .exportingCondition { $0.format == .xlsx }
+    }
+
+    private func writeTempFile(_ make: ([TransactionSnapshot]) throws -> Data) async throws -> SentTransferredFile {
+        let transactions = try await repo.fetchAll()
+        let stamp = Date.now.formatted(.iso8601.year().month().day().dateSeparator(.dash))
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("Transactions-\(stamp).\(format.rawValue)")
+        try make(transactions).write(to: url, options: .atomic)
+        return SentTransferredFile(url)
     }
 }
 
