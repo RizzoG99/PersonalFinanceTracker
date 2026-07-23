@@ -174,6 +174,13 @@ struct ExcelImportFlowTests {
         var rows: [[String]] = []
         vm.csvFile?.processRows { rows.append($0) }
         #expect(rows == [["February entry"]], "Should convert the chosen sheet's own rows, not the other sheet's")
+
+        // Column mapping auto-detect ran on the selected sheet: this fixture only
+        // has a "Note" column, so it should be recognized as the note column and
+        // nothing else should be guessed.
+        #expect(vm.columnMapping.noteColumn == "Note")
+        #expect(vm.columnMapping.dateColumn == nil)
+        #expect(vm.columnMapping.amountColumn == nil)
     }
 
     @Test @MainActor
