@@ -295,12 +295,12 @@ final class TransactionListViewModel {
     var showingImportFlow = false
     var importNavigationPath: [ImportStep] = []
     var importError: String? = nil
-    var isLoadingCSV = false
+    var isLoadingImportFile = false
     var isImporting = false                                    // UI state during batch insert
     var hasAutoMappedCategories = false                        // Guard to prevent re-running autoMap on back-nav
 
     func loadCSVFile(from url: URL) {
-        isLoadingCSV = true
+        isLoadingImportFile = true
         Task {
             do {
                 // Parse file off the main thread — can be slow for large files
@@ -309,20 +309,16 @@ final class TransactionListViewModel {
                     let m = CSVColumnMapper.autoDetect(from: f)
                     return (f, m)
                 }.value
-                isLoadingCSV = false
+                isLoadingImportFile = false
                 csvFile = file
                 columnMapping = mapping
                 columnMapping.defaultCurrency = currencyService.baseCurrency
                 // Let the outer catch surface any fetch failure rather than silently hiding it
                 availableCategories = try await repo.fetchCategories()
-                categoryResolutionSelections = [:]
-                csvCategories = []
-                csvCategoryTypes = [:]
-                importNavigationPath = []
-                hasAutoMappedCategories = false
+                resetImportSelectionState()
                 showingImportFlow = true
             } catch {
-                isLoadingCSV = false
+                isLoadingImportFile = false
                 importError = error.localizedDescription
             }
         }
@@ -332,19 +328,15 @@ final class TransactionListViewModel {
     @ObservationIgnored private(set) var loadExcelTask: Task<Void, Never>?
 
     func loadExcelFile(from url: URL) {
-        isLoadingCSV = true
+        isLoadingImportFile = true
         loadExcelTask = Task {
             do {
                 let workbook = try await Task.detached(priority: .userInitiated) {
                     try XLSXWorkbook.read(from: url)
                 }.value
-                isLoadingCSV = false
+                isLoadingImportFile = false
                 availableCategories = try await repo.fetchCategories()
-                categoryResolutionSelections = [:]
-                csvCategories = []
-                csvCategoryTypes = [:]
-                importNavigationPath = []
-                hasAutoMappedCategories = false
+                resetImportSelectionState()
 
                 if workbook.sheetNames.count == 1, let onlySheet = workbook.sheetNames.first {
                     try applySheet(onlySheet, of: workbook)
@@ -355,7 +347,7 @@ final class TransactionListViewModel {
                 }
                 showingImportFlow = true
             } catch {
-                isLoadingCSV = false
+                isLoadingImportFile = false
                 importError = error.localizedDescription
             }
         }
@@ -376,6 +368,16 @@ final class TransactionListViewModel {
         csvFile = file
         columnMapping = CSVColumnMapper.autoDetect(from: file)
         columnMapping.defaultCurrency = currencyService.baseCurrency
+    }
+
+    /// Resets per-file import selection state; shared by loadCSVFile and loadExcelFile
+    /// so a newly loaded file always starts with a clean category-mapping slate.
+    private func resetImportSelectionState() {
+        categoryResolutionSelections = [:]
+        csvCategories = []
+        csvCategoryTypes = [:]
+        importNavigationPath = []
+        hasAutoMappedCategories = false
     }
 
     /// Cancel the import flow and reset state

@@ -86,6 +86,9 @@ struct XLSXWorkbook {
 
         let rawHeaders = fields(for: headerRow, columnCount: columnCount)
             .map { $0.trimmingCharacters(in: .whitespaces) }
+        guard rawHeaders.contains(where: { !$0.isEmpty }) else {
+            throw XLSXReadError.unreadable
+        }
         let headers = CSVImportService.dedupeHeaders(rawHeaders)
 
         let dataLines: [(lineNumber: Int, text: String)] = rows.dropFirst().enumerated().map { idx, row in

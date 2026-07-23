@@ -33,7 +33,7 @@ struct ProfileView: View {
                         Button {
                             showingFileImporter = true
                         } label: {
-                            if transactionViewModel.isLoadingCSV {
+                            if transactionViewModel.isLoadingImportFile {
                                 HStack {
                                     ProgressView()
                                         .controlSize(.small)
@@ -43,7 +43,7 @@ struct ProfileView: View {
                                 Label("Import CSV or Excel", systemImage: "square.and.arrow.down")
                             }
                         }
-                        .disabled(transactionViewModel.isLoadingCSV)
+                        .disabled(transactionViewModel.isLoadingImportFile)
                     } header: {
                         Text("DATA")
                             .font(.caption.weight(.semibold))

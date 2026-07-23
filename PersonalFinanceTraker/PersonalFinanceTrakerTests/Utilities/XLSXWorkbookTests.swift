@@ -133,11 +133,63 @@ struct XLSXWorkbookTests {
         #expect(workbook.sheetNames == ["Jan", "Feb"])
     }
 
+    // Header row (row 1) has zero cells; data row 2 populates columns A-C.
+    static let blankHeaderXLSXBase64 = """
+    UEsDBBQAAAAAAORk91z5bOZCuAIAALgCAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbDw/eG1sIHZlcnNpb249IjEuMCIgZW5jb2Rpbmc9IlVU
+    Ri04IiBzdGFuZGFsb25lPSJ5ZXMiPz4KPFR5cGVzIHhtbG5zPSJodHRwOi8vc2NoZW1hcy5vcGVueG1sZm9ybWF0cy5vcmcvcGFja2FnZS8y
+    MDA2L2NvbnRlbnQtdHlwZXMiPgogIDxEZWZhdWx0IEV4dGVuc2lvbj0icmVscyIgQ29udGVudFR5cGU9ImFwcGxpY2F0aW9uL3ZuZC5vcGVu
+    eG1sZm9ybWF0cy1wYWNrYWdlLnJlbGF0aW9uc2hpcHMreG1sIi8+CiAgPERlZmF1bHQgRXh0ZW5zaW9uPSJ4bWwiIENvbnRlbnRUeXBlPSJh
+    cHBsaWNhdGlvbi94bWwiLz4KICA8T3ZlcnJpZGUgUGFydE5hbWU9Ii94bC93b3JrYm9vay54bWwiIENvbnRlbnRUeXBlPSJhcHBsaWNhdGlv
+    bi92bmQub3BlbnhtbGZvcm1hdHMtb2ZmaWNlZG9jdW1lbnQuc3ByZWFkc2hlZXRtbC5zaGVldC5tYWluK3htbCIvPgogIDxPdmVycmlkZSBQ
+    YXJ0TmFtZT0iL3hsL3dvcmtzaGVldHMvc2hlZXQxLnhtbCIgQ29udGVudFR5cGU9ImFwcGxpY2F0aW9uL3ZuZC5vcGVueG1sZm9ybWF0cy1v
+    ZmZpY2Vkb2N1bWVudC5zcHJlYWRzaGVldG1sLndvcmtzaGVldCt4bWwiLz4KICA8T3ZlcnJpZGUgUGFydE5hbWU9Ii94bC9zdHlsZXMueG1s
+    IiBDb250ZW50VHlwZT0iYXBwbGljYXRpb24vdm5kLm9wZW54bWxmb3JtYXRzLW9mZmljZWRvY3VtZW50LnNwcmVhZHNoZWV0bWwuc3R5bGVz
+    K3htbCIvPgo8L1R5cGVzPlBLAwQUAAAAAADkZPdcXYf0LiwBAAAsAQAACwAAAF9yZWxzLy5yZWxzPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
+    ZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8UmVsYXRpb25zaGlwcyB4bWxucz0iaHR0cDovL3NjaGVtYXMub3BlbnhtbGZvcm1h
+    dHMub3JnL3BhY2thZ2UvMjAwNi9yZWxhdGlvbnNoaXBzIj4KICA8UmVsYXRpb25zaGlwIElkPSJySWQxIiBUeXBlPSJodHRwOi8vc2NoZW1h
+    cy5vcGVueG1sZm9ybWF0cy5vcmcvb2ZmaWNlRG9jdW1lbnQvMjAwNi9yZWxhdGlvbnNoaXBzL29mZmljZURvY3VtZW50IiBUYXJnZXQ9Inhs
+    L3dvcmtib29rLnhtbCIvPgo8L1JlbGF0aW9uc2hpcHM+UEsDBBQAAAAAAORk91w4LK3HJwEAACcBAAAPAAAAeGwvd29ya2Jvb2sueG1sPD94
+    bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8d29ya2Jvb2sgeG1sbnM9Imh0dHA6Ly9zY2hl
+    bWFzLm9wZW54bWxmb3JtYXRzLm9yZy9zcHJlYWRzaGVldG1sLzIwMDYvbWFpbiIgeG1sbnM6cj0iaHR0cDovL3NjaGVtYXMub3BlbnhtbGZv
+    cm1hdHMub3JnL29mZmljZURvY3VtZW50LzIwMDYvcmVsYXRpb25zaGlwcyI+CiAgPHNoZWV0cz4KICAgIDxzaGVldCBuYW1lPSJCbGFuayIg
+    c2hlZXRJZD0iMSIgcjppZD0icklkMSIvPgogIDwvc2hlZXRzPgo8L3dvcmtib29rPlBLAwQUAAAAAADkZPdc9WADgi0BAAAtAQAAGgAAAHhs
+    L19yZWxzL3dvcmtib29rLnhtbC5yZWxzPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8
+    UmVsYXRpb25zaGlwcyB4bWxucz0iaHR0cDovL3NjaGVtYXMub3BlbnhtbGZvcm1hdHMub3JnL3BhY2thZ2UvMjAwNi9yZWxhdGlvbnNoaXBz
+    Ij4KICA8UmVsYXRpb25zaGlwIElkPSJySWQxIiBUeXBlPSJodHRwOi8vc2NoZW1hcy5vcGVueG1sZm9ybWF0cy5vcmcvb2ZmaWNlRG9jdW1l
+    bnQvMjAwNi9yZWxhdGlvbnNoaXBzL3dvcmtzaGVldCIgVGFyZ2V0PSJ3b3Jrc2hlZXRzL3NoZWV0MS54bWwiLz4KPC9SZWxhdGlvbnNoaXBz
+    PlBLAwQUAAAAAADkZPdc1+AJH0ECAABBAgAADQAAAHhsL3N0eWxlcy54bWw8P3htbCB2ZXJzaW9uPSIxLjAiIGVuY29kaW5nPSJVVEYtOCIg
+    c3RhbmRhbG9uZT0ieWVzIj8+CjxzdHlsZVNoZWV0IHhtbG5zPSJodHRwOi8vc2NoZW1hcy5vcGVueG1sZm9ybWF0cy5vcmcvc3ByZWFkc2hl
+    ZXRtbC8yMDA2L21haW4iPgogIDxmb250cyBjb3VudD0iMSI+PGZvbnQ+PHN6IHZhbD0iMTEiLz48bmFtZSB2YWw9IkNhbGlicmkiLz48L2Zv
+    bnQ+PC9mb250cz4KICA8ZmlsbHMgY291bnQ9IjEiPjxmaWxsPjxwYXR0ZXJuRmlsbCBwYXR0ZXJuVHlwZT0ibm9uZSIvPjwvZmlsbD48L2Zp
+    bGxzPgogIDxib3JkZXJzIGNvdW50PSIxIj48Ym9yZGVyPjxsZWZ0Lz48cmlnaHQvPjx0b3AvPjxib3R0b20vPjxkaWFnb25hbC8+PC9ib3Jk
+    ZXI+PC9ib3JkZXJzPgogIDxjZWxsU3R5bGVYZnMgY291bnQ9IjEiPjx4ZiBudW1GbXRJZD0iMCIgZm9udElkPSIwIiBmaWxsSWQ9IjAiIGJv
+    cmRlcklkPSIwIi8+PC9jZWxsU3R5bGVYZnM+CiAgPGNlbGxYZnMgY291bnQ9IjEiPjx4ZiBudW1GbXRJZD0iMCIgZm9udElkPSIwIiBmaWxs
+    SWQ9IjAiIGJvcmRlcklkPSIwIiB4ZklkPSIwIi8+PC9jZWxsWGZzPgo8L3N0eWxlU2hlZXQ+UEsDBBQAAAAAAORk91wL6FyYNwEAADcBAAAY
+    AAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1sPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/
+    Pgo8d29ya3NoZWV0IHhtbG5zPSJodHRwOi8vc2NoZW1hcy5vcGVueG1sZm9ybWF0cy5vcmcvc3ByZWFkc2hlZXRtbC8yMDA2L21haW4iPgog
+    IDxzaGVldERhdGE+CiAgICA8cm93IHI9IjEiPjwvcm93PgogICAgPHJvdyByPSIyIj4KICAgICAgPGMgcj0iQTIiPjx2PjE8L3Y+PC9jPgog
+    ICAgICA8YyByPSJCMiI+PHY+Mjwvdj48L2M+CiAgICAgIDxjIHI9IkMyIj48dj4zPC92PjwvYz4KICAgIDwvcm93PgogIDwvc2hlZXREYXRh
+    Pgo8L3dvcmtzaGVldD5QSwECFAMUAAAAAADkZPdc+WzmQrgCAAC4AgAAEwAAAAAAAAAAAAAAgAEAAAAAW0NvbnRlbnRfVHlwZXNdLnhtbFBL
+    AQIUAxQAAAAAAORk91xdh/QuLAEAACwBAAALAAAAAAAAAAAAAACAAekCAABfcmVscy8ucmVsc1BLAQIUAxQAAAAAAORk91w4LK3HJwEAACcB
+    AAAPAAAAAAAAAAAAAACAAT4EAAB4bC93b3JrYm9vay54bWxQSwECFAMUAAAAAADkZPdc9WADgi0BAAAtAQAAGgAAAAAAAAAAAAAAgAGSBQAA
+    eGwvX3JlbHMvd29ya2Jvb2sueG1sLnJlbHNQSwECFAMUAAAAAADkZPdc1+AJH0ECAABBAgAADQAAAAAAAAAAAAAAgAH3BgAAeGwvc3R5bGVz
+    LnhtbFBLAQIUAxQAAAAAAORk91wL6FyYNwEAADcBAAAYAAAAAAAAAAAAAACAAWMJAAB4bC93b3Jrc2hlZXRzL3NoZWV0MS54bWxQSwUGAAAA
+    AAYABgCAAQAA0AoAAAAA
+    """
+
     @Test func corruptFileThrowsUnreadable() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("corrupt-\(UUID()).xlsx")
         try! "not a zip file".write(to: url, atomically: true, encoding: .utf8)
         #expect(throws: XLSXReadError.unreadable) {
             try XLSXWorkbook.read(from: url)
+        }
+    }
+
+    @Test func blankHeaderRowThrowsUnreadable() throws {
+        let url = Self.writeTempFile(base64: Self.blankHeaderXLSXBase64, name: "blank-\(UUID()).xlsx")
+        let workbook = try XLSXWorkbook.read(from: url)
+        #expect(throws: XLSXReadError.unreadable) {
+            try workbook.csvFile(forSheet: "Blank")
         }
     }
 
