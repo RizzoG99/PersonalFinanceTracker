@@ -27,6 +27,9 @@ struct QuickAddService {
         categories: [CategorySnapshot],
         now: Date = .now
     ) throws -> TransactionInput {
+        // Sign comes from the Type parameter; a minus typed on the system
+        // number pad is forgiven rather than rejected.
+        let amount = abs(amount)
         guard amount > 0 else { throw QuickAddError.invalidAmount }
         // Round via string to avoid Double's binary representation noise
         guard let magnitude = Decimal(

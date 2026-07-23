@@ -17,6 +17,14 @@ struct QuickAddServiceTests {
         #expect(input.amount == Decimal(string: "-12.5"))
     }
 
+    @Test func negativeAmountIsForgivenAsMagnitude() throws {
+        let input = try QuickAddService.makeInput(
+            amount: -100, categoryName: "Food", isExpense: true,
+            note: "", categories: []
+        )
+        #expect(input.amount == Decimal(-100))
+    }
+
     @Test func incomeIsStoredPositive() throws {
         let input = try QuickAddService.makeInput(
             amount: 100, categoryName: "Salary", isExpense: false,

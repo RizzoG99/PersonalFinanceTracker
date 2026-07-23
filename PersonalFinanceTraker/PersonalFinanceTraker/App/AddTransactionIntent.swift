@@ -47,10 +47,10 @@ struct AddTransactionIntent: AppIntent {
     @Parameter(title: "Amount", requestValueDialog: "How much?")
     var amount: Double
 
-    @Parameter(title: "Category")
-    var category: CategoryEntity?
+    @Parameter(title: "Category", requestValueDialog: "Which category?")
+    var category: CategoryEntity
 
-    @Parameter(title: "Type", default: .expense)
+    @Parameter(title: "Type", requestValueDialog: "Is this an expense or income?")
     var type: QuickAddType
 
     @Parameter(title: "Note")
@@ -67,7 +67,7 @@ struct AddTransactionIntent: AppIntent {
         let categories = try await repo.fetchCategories()
         let input = try QuickAddService.makeInput(
             amount: amount,
-            categoryName: category?.id ?? "Other",
+            categoryName: category.id,
             isExpense: type == .expense,
             note: note ?? "",
             categories: categories
