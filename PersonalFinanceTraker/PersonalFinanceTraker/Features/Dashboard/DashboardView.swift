@@ -17,6 +17,11 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     GreetingHeaderView()
                     BalanceCardView()
+                    if let callout = viewModel.anomalyCallout {
+                        AnomalyCalloutView(message: callout.message) {
+                            viewModel.dismissAnomaly()
+                        }
+                    }
                     if viewModel.hasNoTransactions {
                         EmptyStateView(
                             icon: "plus.circle",
