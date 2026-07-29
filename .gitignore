@@ -63,5 +63,7 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 .DS_Store
 
-graphify-out/cost.json        # local only
-graphify-out/cache/         # optional: commit for speed, skip to keep repo small.claude/worktrees/
+# graphify: cost.json is local-only; cache/ is optional (commit for speed, skip to keep repo small)
+graphify-out/**/cost.json
+graphify-out/cache/
+.claude/worktrees/
