@@ -34,6 +34,11 @@ struct BudgetProgressBarView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(progress.categoryName), \(progress.spent.formatted(.currency(code: "EUR"))) of \(progress.budget.formatted(.currency(code: "EUR")))\(progress.isOverBudget ? ", over budget" : ", near budget limit")"
+        )
+        .accessibilityAddTraits(.isButton)
     }
 }
 

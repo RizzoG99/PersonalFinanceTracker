@@ -56,6 +56,7 @@ struct DashboardView: View {
                 }
                 .padding(16)
             }
+            .safeAreaInset(edge: .top) { Color.clear.frame(height: 44) }
             .appBackground()
             .navigationBarTitleDisplayMode(.inline)
             .appToolbar(showingAddItemView: $showingAddItemView)
