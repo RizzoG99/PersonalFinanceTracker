@@ -97,34 +97,44 @@
   },
   "nodes": [
     {
-      "label": "PINConfirmationView.swift",
+      "label": "ProfileView.swift",
       "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "security_pinconfirmationview",
-      "community": 213,
-      "norm_label": "pinconfirmationview.swift"
+      "id": "views_profileview",
+      "community": 15,
+      "norm_label": "profileview.swift"
     },
     {
       "label": "SwiftUI",
       "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "personalfinancetraker_personalfinancetraker_features_security_pinconfirmationview_swift_swiftui",
-      "community": 213,
+      "id": "swiftui",
+      "community": 15,
       "norm_label": "swiftui"
     },
     {
-      "label": "PINConfirmationView",
+      "label": "SwiftData",
       "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
-      "source_location": "L3",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L2",
       "_origin": "ast",
-      "id": "security_pinconfirmationview_pinconfirmationview",
-      "community": 213,
-      "norm_label": "pinconfirmationview"
+      "id": "swiftdata",
+      "community": 15,
+      "norm_label": "swiftdata"
+    },
+    {
+      "label": "ProfileView",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "views_profileview_profileview",
+      "community": 15,
+      "norm_label": "profileview"
     },
     {
       "label": "View",
@@ -137,14 +147,94 @@
       "norm_label": "view"
     },
     {
+      "label": "ProfileViewModel",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "profileviewmodel",
+      "community": 15,
+      "norm_label": "profileviewmodel"
+    },
+    {
+      "label": "PresentationDetent",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "presentationdetent",
+      "community": 15,
+      "norm_label": "presentationdetent"
+    },
+    {
+      "label": "TransactionListViewModel",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "transactionlistviewmodel",
+      "community": 15,
+      "norm_label": "transactionlistviewmodel"
+    },
+    {
+      "label": "String",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "string",
+      "community": 207,
+      "norm_label": "string"
+    },
+    {
+      "label": ".performWipe()",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L141",
+      "_origin": "ast",
+      "id": "views_profileview_profileview_performwipe",
+      "community": 15,
+      "norm_label": ".performwipe()"
+    },
+    {
+      "label": "PINConfirmationView.swift",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 213,
+      "norm_label": "pinconfirmationview.swift",
+      "id": "security_pinconfirmationview"
+    },
+    {
+      "label": "SwiftUI",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 213,
+      "norm_label": "swiftui",
+      "id": "personalfinancetraker_personalfinancetraker_features_security_pinconfirmationview_swift_swiftui"
+    },
+    {
+      "label": "PINConfirmationView",
+      "file_type": "code",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_location": "L3",
+      "_origin": "ast",
+      "community": 213,
+      "norm_label": "pinconfirmationview",
+      "id": "security_pinconfirmationview_pinconfirmationview"
+    },
+    {
       "label": "PINConfirmationViewModel",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
       "source_location": "L4",
       "_origin": "ast",
-      "id": "pinconfirmationviewmodel",
       "community": 213,
-      "norm_label": "pinconfirmationviewmodel"
+      "norm_label": "pinconfirmationviewmodel",
+      "id": "pinconfirmationviewmodel"
     },
     {
       "label": "PINConfirmationViewModel.swift",
@@ -152,9 +242,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "viewmodels_pinconfirmationviewmodel",
       "community": 210,
-      "norm_label": "pinconfirmationviewmodel.swift"
+      "norm_label": "pinconfirmationviewmodel.swift",
+      "id": "viewmodels_pinconfirmationviewmodel"
     },
     {
       "label": "SwiftUI",
@@ -162,9 +252,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "personalfinancetraker_personalfinancetraker_features_security_viewmodels_pinconfirmationviewmodel_swift_swiftui",
       "community": 210,
-      "norm_label": "swiftui"
+      "norm_label": "swiftui",
+      "id": "personalfinancetraker_personalfinancetraker_features_security_viewmodels_pinconfirmationviewmodel_swift_swiftui"
     },
     {
       "label": "PINConfirmationViewModel",
@@ -172,19 +262,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L3",
       "_origin": "ast",
-      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
       "community": 210,
-      "norm_label": "pinconfirmationviewmodel"
-    },
-    {
-      "label": "String",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L5",
-      "_origin": "ast",
-      "id": "string",
-      "community": 207,
-      "norm_label": "string"
+      "norm_label": "pinconfirmationviewmodel",
+      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel"
     },
     {
       "label": "Bool",
@@ -192,9 +272,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L6",
       "_origin": "ast",
-      "id": "bool",
       "community": 210,
-      "norm_label": "bool"
+      "norm_label": "bool",
+      "id": "bool"
     },
     {
       "label": "PINService",
@@ -202,9 +282,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L10",
       "_origin": "ast",
-      "id": "pinservice",
       "community": 210,
-      "norm_label": "pinservice"
+      "norm_label": "pinservice",
+      "id": "pinservice"
     },
     {
       "label": "Void",
@@ -212,9 +292,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L11",
       "_origin": "ast",
-      "id": "void",
       "community": 210,
-      "norm_label": "void"
+      "norm_label": "void",
+      "id": "void"
     },
     {
       "label": ".init()",
@@ -222,9 +302,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_init",
       "community": 210,
-      "norm_label": ".init()"
+      "norm_label": ".init()",
+      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_init"
     },
     {
       "label": ".appendDigit()",
@@ -232,9 +312,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_appenddigit",
       "community": 210,
-      "norm_label": ".appenddigit()"
+      "norm_label": ".appenddigit()",
+      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_appenddigit"
     },
     {
       "label": ".deleteDigit()",
@@ -242,9 +322,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_deletedigit",
       "community": 210,
-      "norm_label": ".deletedigit()"
+      "norm_label": ".deletedigit()",
+      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_deletedigit"
     },
     {
       "label": ".verifyPIN()",
@@ -252,9 +332,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_verifypin",
       "community": 210,
-      "norm_label": ".verifypin()"
+      "norm_label": ".verifypin()",
+      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_verifypin"
     },
     {
       "label": ".triggerShake()",
@@ -262,9 +342,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L42",
       "_origin": "ast",
-      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_triggershake",
       "community": 210,
-      "norm_label": ".triggershake()"
+      "norm_label": ".triggershake()",
+      "id": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_triggershake"
     },
     {
       "label": "DataWipeService.swift",
@@ -5672,7 +5752,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 93,
+      "community": 126,
       "norm_label": "hashable",
       "id": "hashable"
     },
@@ -6145,66 +6225,6 @@
       "community": 71,
       "norm_label": "bool",
       "id": "personalfinancetraker_personalfinancetraker_features_profile_views_editfullnameview_swift_bool"
-    },
-    {
-      "label": "ProfileView.swift",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 15,
-      "norm_label": "profileview.swift",
-      "id": "users_gabrielerizzo_develop_personalfinancetracker_claude_worktrees_agent_ad2e807277904c025_personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift"
-    },
-    {
-      "label": "SwiftUI",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 15,
-      "norm_label": "swiftui",
-      "id": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_swiftui"
-    },
-    {
-      "label": "ProfileView",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L3",
-      "_origin": "ast",
-      "community": 15,
-      "norm_label": "profileview",
-      "id": "views_profileview_profileview"
-    },
-    {
-      "label": "ProfileViewModel",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L4",
-      "_origin": "ast",
-      "community": 15,
-      "norm_label": "profileviewmodel",
-      "id": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_profileviewmodel"
-    },
-    {
-      "label": "PresentationDetent",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L5",
-      "_origin": "ast",
-      "community": 15,
-      "norm_label": "presentationdetent",
-      "id": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_presentationdetent"
-    },
-    {
-      "label": "TransactionListViewModel",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L7",
-      "_origin": "ast",
-      "community": 15,
-      "norm_label": "transactionlistviewmodel",
-      "id": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_transactionlistviewmodel"
     },
     {
       "label": "MonkeyAnimationView.swift",
@@ -7452,7 +7472,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 76,
+      "community": 214,
       "norm_label": "filterchipsview.swift",
       "id": "users_gabrielerizzo_develop_personalfinancetracker_claude_worktrees_feature_search_tab_personalfinancetraker_personalfinancetraker_features_transactionlistview_components_filterchipsview_swift"
     },
@@ -7462,7 +7482,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 76,
+      "community": 214,
       "norm_label": "swiftui",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_filterchipsview_swift_swiftui"
     },
@@ -7472,7 +7492,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 76,
+      "community": 214,
       "norm_label": "filterchipsview",
       "id": "components_filterchipsview_filterchipsview"
     },
@@ -7482,7 +7502,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 76,
+      "community": 214,
       "norm_label": "bool",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_filterchipsview_swift_bool"
     },
@@ -7492,7 +7512,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 76,
+      "community": 214,
       "norm_label": "string",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_filterchipsview_swift_string"
     },
@@ -7502,7 +7522,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift",
       "source_location": "L123",
       "_origin": "ast",
-      "community": 76,
+      "community": 214,
       "norm_label": ".chip()",
       "id": "components_filterchipsview_filterchipsview_chip"
     },
@@ -7512,7 +7532,7 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift",
       "source_location": "L145",
       "_origin": "ast",
-      "community": 76,
+      "community": 214,
       "norm_label": "customdaterangesheet",
       "id": "components_filterchipsview_customdaterangesheet"
     },
@@ -21919,43 +21939,108 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "views_profileview",
+      "target": "swiftdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
       "source_location": "L1",
       "weight": 1.0,
-      "source": "security_pinconfirmationview",
-      "target": "personalfinancetraker_personalfinancetraker_features_security_pinconfirmationview_swift_swiftui",
+      "source": "views_profileview",
+      "target": "swiftui",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "security_pinconfirmationview",
-      "target": "security_pinconfirmationview_pinconfirmationview",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
       "source_location": "L4",
       "weight": 1.0,
-      "context": "field",
-      "source": "security_pinconfirmationview_pinconfirmationview",
-      "target": "pinconfirmationviewmodel",
+      "source": "views_profileview",
+      "target": "views_profileview_profileview",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/AppToolbarModifier.swift",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "utilities_apptoolbarmodifier_apptoolbarmodifier_body",
+      "target": "views_profileview_profileview"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
       "source_location": "L6",
       "weight": 1.0,
       "context": "field",
-      "source": "security_pinconfirmationview_pinconfirmationview",
-      "target": "view",
+      "source": "views_profileview_profileview",
+      "target": "presentationdetent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L5",
+      "weight": 1.0,
+      "context": "field",
+      "source": "views_profileview_profileview",
+      "target": "profileviewmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "field",
+      "source": "views_profileview_profileview",
+      "target": "string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "field",
+      "source": "views_profileview_profileview",
+      "target": "transactionlistviewmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "views_profileview_profileview",
+      "target": "view"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "views_profileview_profileview",
+      "target": "views_profileview_profileview_performwipe",
       "confidence_score": 1.0
     },
     {
@@ -22995,6 +23080,17 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "security_pinconfirmationview_pinconfirmationview",
+      "target": "view"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINEntryView.swift",
       "source_location": "L6",
       "weight": 1.0,
@@ -23090,132 +23186,6 @@
       "confidence_score": 1.0,
       "source": "views_editfullnameview_editfullnameview",
       "target": "view"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "views_profileview_profileview",
-      "target": "view"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "viewmodels_pinconfirmationviewmodel",
-      "target": "personalfinancetraker_personalfinancetraker_features_security_viewmodels_pinconfirmationviewmodel_swift_swiftui",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "viewmodels_pinconfirmationviewmodel",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "bool",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L10",
-      "weight": 1.0,
-      "context": "field",
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "pinservice",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "context": "field",
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L18",
-      "weight": 1.0,
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_appenddigit",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L27",
-      "weight": 1.0,
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_deletedigit",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L13",
-      "weight": 1.0,
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_init",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L42",
-      "weight": 1.0,
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_triggershake",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L32",
-      "weight": 1.0,
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_verifypin",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
-      "source_location": "L11",
-      "weight": 1.0,
-      "context": "field",
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
-      "target": "void",
-      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -23407,12 +23377,23 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "string"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L18",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_appenddigit",
-      "target": "string",
-      "confidence_score": 1.0
+      "target": "string"
     },
     {
       "relation": "references",
@@ -23426,15 +23407,140 @@
       "target": "string"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "security_pinconfirmationview",
+      "target": "personalfinancetraker_personalfinancetraker_features_security_pinconfirmationview_swift_swiftui"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "security_pinconfirmationview",
+      "target": "security_pinconfirmationview_pinconfirmationview"
+    },
+    {
       "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINConfirmationView.swift",
+      "source_location": "L4",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "security_pinconfirmationview_pinconfirmationview",
+      "target": "pinconfirmationviewmodel"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel",
+      "target": "personalfinancetraker_personalfinancetraker_features_security_viewmodels_pinconfirmationviewmodel_swift_swiftui"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel",
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "bool"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L10",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "pinservice"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_appenddigit"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_deletedigit"
+    },
+    {
+      "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L13",
       "weight": 1.0,
-      "context": "parameter_type",
-      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_init",
-      "target": "pinservice",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_init"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_triggershake"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_verifypin"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel",
+      "target": "void"
     },
     {
       "relation": "references",
@@ -23443,9 +23549,20 @@
       "source_location": "L13",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_init",
-      "target": "void",
-      "confidence_score": 1.0
+      "target": "pinservice"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_init",
+      "target": "void"
     },
     {
       "relation": "calls",
@@ -23454,9 +23571,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_appenddigit",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_verifypin",
-      "confidence_score": 1.0
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_verifypin"
     },
     {
       "relation": "calls",
@@ -23465,9 +23582,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINConfirmationViewModel.swift",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_verifypin",
-      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_triggershake",
-      "confidence_score": 1.0
+      "target": "viewmodels_pinconfirmationviewmodel_pinconfirmationviewmodel_triggershake"
     },
     {
       "relation": "imports",
@@ -30762,71 +30879,6 @@
       "confidence_score": 1.0,
       "source": "views_editfullnameview_editfullnameview",
       "target": "personalfinancetraker_personalfinancetraker_features_profile_views_editfullnameview_swift_string"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "users_gabrielerizzo_develop_personalfinancetracker_claude_worktrees_agent_ad2e807277904c025_personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift",
-      "target": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_swiftui"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "users_gabrielerizzo_develop_personalfinancetracker_claude_worktrees_agent_ad2e807277904c025_personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift",
-      "target": "views_profileview_profileview"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/AppToolbarModifier.swift",
-      "source_location": "L34",
-      "weight": 1.0,
-      "source": "utilities_apptoolbarmodifier_apptoolbarmodifier_body",
-      "target": "views_profileview_profileview"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L5",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "views_profileview_profileview",
-      "target": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_presentationdetent"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L4",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "views_profileview_profileview",
-      "target": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_profileviewmodel"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "context": "field",
-      "confidence_score": 1.0,
-      "source": "views_profileview_profileview",
-      "target": "personalfinancetraker_personalfinancetraker_features_profile_views_profileview_swift_transactionlistviewmodel"
     },
     {
       "relation": "contains",
@@ -53734,5 +53786,5 @@
       "source_file": "AppIcon/v2/Icon Exports/"
     }
   ],
-  "built_at_commit": "39405976d79aaae6864f128c8420fa7cc22c6933"
+  "built_at_commit": "50ef4fbeff8926c4c7cc7af5c5f810fdd38e5071"
 }
