@@ -87,7 +87,11 @@ struct MainTabView: View {
         }
         .overlay(alignment: .top) {
             if showPrivacyToast {
-                PrivacyToastView(hidden: appSettings.hideAmounts)
+                ToastBanner(
+                    icon: appSettings.hideAmounts ? "eye.slash.fill" : "eye.fill",
+                    message: appSettings.hideAmounts ? "Amounts hidden" : "Amounts shown"
+                ) { EmptyView() }
+                    .accessibilityElement(children: .combine)
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
@@ -140,27 +144,6 @@ struct MainTabView: View {
                 if !Task.isCancelled { showPrivacyToast = false }
             }
         }
-    }
-}
-
-/// Brief confirmation that shake (or the eye-icon toggle) actually changed something —
-/// the gesture alone gives no visual feedback of what state it left the app in.
-private struct PrivacyToastView: View {
-    let hidden: Bool
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: hidden ? "eye.slash.fill" : "eye.fill")
-            Text(hidden ? "Amounts hidden" : "Amounts shown")
-                .font(.subheadline.weight(.semibold))
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background {
-            Capsule().fill(Color.black.opacity(0.75))
-        }
-        .foregroundStyle(.white)
-        .accessibilityElement(children: .combine)
     }
 }
 

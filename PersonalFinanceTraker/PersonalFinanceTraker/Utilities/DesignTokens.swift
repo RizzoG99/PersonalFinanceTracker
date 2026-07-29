@@ -159,6 +159,39 @@ extension View {
     }
 }
 
+// MARK: - Toast Banner
+
+/// Shared black-pill toast used for transient status/undo messages. Convention: place
+/// informational-only toasts (no `action`) near the top; actionable/destructive-adjacent
+/// ones (with an `action`) near the bottom, close to the thumb.
+///
+/// Does NOT combine its accessibility children by default — an `action` slot may contain
+/// an interactive control (e.g. an Undo button), and `.accessibilityElement(children: .combine)`
+/// would swallow it into one non-interactive element, making it untappable via VoiceOver.
+/// Callers with no interactive action (icon + text only) can safely add
+/// `.accessibilityElement(children: .combine)` themselves at the call site.
+struct ToastBanner<Action: View>: View {
+    let icon: String
+    let message: String
+    @ViewBuilder let action: () -> Action
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+            Text(message)
+                .font(.subheadline.weight(.semibold))
+            Spacer(minLength: 0)
+            action()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background {
+            Capsule().fill(Color.black.opacity(0.75))
+        }
+        .foregroundStyle(.white)
+    }
+}
+
 // MARK: - Glass Card Component
 
 struct GlassCard<Content: View>: View {
