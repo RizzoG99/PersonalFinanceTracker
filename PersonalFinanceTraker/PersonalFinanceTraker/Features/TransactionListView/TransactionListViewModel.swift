@@ -317,12 +317,27 @@ final class TransactionListViewModel {
                 // Let the outer catch surface any fetch failure rather than silently hiding it
                 availableCategories = try await repo.fetchCategories()
                 resetImportSelectionState()
-                showingImportFlow = true
+                await presentImportFlowOrInform()
             } catch {
                 isLoadingImportFile = false
                 importError = error.localizedDescription
             }
         }
+    }
+
+    /// Runs dedup detection up front (requires a resolved date+amount mapping,
+    /// which autoDetect/import profiles usually provide). If every row turns
+    /// out to be a duplicate, informs the user instead of opening a wizard
+    /// that dead-ends on a disabled "Import 0 Transactions" button.
+    private func presentImportFlowOrInform() async {
+        await applyMapping()
+        if !mappedRows.isEmpty && mappedRows.allSatisfy(\.isDuplicate) {
+            let n = mappedRows.count.formatted()
+            cancelImport()
+            importError = "All \(n) transactions in this file are already in the app — nothing new to import."
+            return
+        }
+        showingImportFlow = true
     }
 
     /// Handle to the in-flight load so tests (and callers) can await completion
@@ -342,11 +357,12 @@ final class TransactionListViewModel {
                 if workbook.sheetNames.count == 1, let onlySheet = workbook.sheetNames.first {
                     try applySheet(onlySheet, of: workbook)
                     xlsxWorkbook = nil
+                    await presentImportFlowOrInform()
                 } else {
                     xlsxWorkbook = workbook
                     csvFile = nil
+                    showingImportFlow = true
                 }
-                showingImportFlow = true
             } catch {
                 isLoadingImportFile = false
                 importError = error.localizedDescription
