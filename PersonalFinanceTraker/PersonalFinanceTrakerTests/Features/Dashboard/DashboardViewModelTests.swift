@@ -140,4 +140,36 @@ struct DashboardViewModelTests {
         #expect(vm.monthlyIncome == 0)
         #expect(vm.monthlyExpenses == 0)
     }
+
+    @Test func anomalyCalloutDetectsSpike() {
+        // One large expense today, otherwise-quiet pay cycle → spike week flagged
+        let transactions = [
+            TransactionSnapshot.test(timestamp: .now, amount: -1000, category: "Shopping")
+        ]
+        let callout = DashboardViewModel.computeAnomalyCallout(
+            transactions, payCycleStartDay: 1, dismissedKey: nil
+        )
+        #expect(callout != nil)
+        #expect(callout?.message.contains("€") == true)
+    }
+
+    @Test func anomalyCalloutRespectsDismissal() {
+        let transactions = [
+            TransactionSnapshot.test(timestamp: .now, amount: -1000, category: "Shopping")
+        ]
+        let first = DashboardViewModel.computeAnomalyCallout(
+            transactions, payCycleStartDay: 1, dismissedKey: nil
+        )
+        let second = DashboardViewModel.computeAnomalyCallout(
+            transactions, payCycleStartDay: 1, dismissedKey: first?.dismissKey
+        )
+        #expect(second == nil)
+    }
+
+    @Test func anomalyCalloutNilWithoutSpike() {
+        let callout = DashboardViewModel.computeAnomalyCallout(
+            [], payCycleStartDay: 1, dismissedKey: nil
+        )
+        #expect(callout == nil)
+    }
 }

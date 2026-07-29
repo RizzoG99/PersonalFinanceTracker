@@ -35,6 +35,10 @@ struct ProfileView: View {
                     }
                     .appFormSectionBackground()
                     Section {
+                        ProfileReminderSection()
+                    }
+                    .appFormSectionBackground()
+                    Section {
                         ProfileCategoriesSection(selectedDetent: $selectedDetent)
                     }
                     .appFormSectionBackground()

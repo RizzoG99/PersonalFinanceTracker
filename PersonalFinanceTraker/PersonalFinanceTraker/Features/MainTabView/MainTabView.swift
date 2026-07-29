@@ -98,6 +98,19 @@ struct MainTabView: View {
             if phase == .background {
                 Task { await viewModel.commitPendingDeletion() }
             }
+            if phase == .active {
+                // Data may have changed outside the UI (App Intent quick-add)
+                dashboardViewModel.reload()
+                viewModel.reload()
+            }
+            if phase == .active || phase == .background {
+                // ponytail: in-memory check may lag a just-saved transaction by one
+                // phase change; the next foreground/background pass corrects it
+                let hasLoggedToday = viewModel.transactions.contains {
+                    Calendar.current.isDateInToday($0.timestamp)
+                }
+                ReminderService.shared.reschedule(hasLoggedToday: hasLoggedToday)
+            }
         }
         .task {
             viewModel.onDataChanged = { dataChanged.bump() }

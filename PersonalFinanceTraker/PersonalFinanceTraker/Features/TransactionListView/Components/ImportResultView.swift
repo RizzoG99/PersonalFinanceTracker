@@ -11,6 +11,7 @@ struct ImportResultView: View {
     let currentStep: Int
     let totalSteps: Int
     let onConfirm: ([TransactionInput]) -> Void
+    let onDone: () -> Void
 
     private var validTransactions: [TransactionInput] {
         rows.filter { !$0.isDuplicate }.compactMap(\.input)
@@ -86,30 +87,46 @@ struct ImportResultView: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             ZStack {
-                Button {
-                    onConfirm(validTransactions)
-                } label: {
-                    if isImporting {
-                        HStack(spacing: 8) {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                                .tint(.white)
-                            Text("Importing…")
-                                .fontWeight(.semibold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                    } else {
-                        Text("Import \(validTransactions.count) Transactions")
+                if validTransactions.isEmpty && !isImporting {
+                    // Nothing to import (e.g. every row was a duplicate) — let
+                    // the user finish instead of staring at a dead-end button.
+                    Button {
+                        onDone()
+                    } label: {
+                        Text("Done")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
                     }
+                    .background(Color.accentColor)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else {
+                    Button {
+                        onConfirm(validTransactions)
+                    } label: {
+                        if isImporting {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                    .tint(.white)
+                                Text("Importing…")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                        } else {
+                            Text("Import \(validTransactions.count) Transactions")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        }
+                    }
+                    .background(isImporting ? Color(.systemGray4) : Color.accentColor)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .disabled(isImporting)
                 }
-                .background(validTransactions.isEmpty || isImporting ? Color(.systemGray4) : Color.accentColor)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .disabled(validTransactions.isEmpty || isImporting)
             }
             .padding(.horizontal)
             .padding(.vertical, 8)

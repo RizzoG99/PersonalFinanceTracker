@@ -295,6 +295,10 @@ final class TransactionListViewModel {
     var isImporting = false                                    // UI state during batch insert
     var hasAutoMappedCategories = false                        // Guard to prevent re-running autoMap on back-nav
 
+    @ObservationIgnored var importProfileStore = ImportProfileStore()
+    @ObservationIgnored private(set) var currentImportSignature: String? = nil
+    @ObservationIgnored private var savedCategorySelections: [String: String]? = nil
+
     func loadCSVFile(from url: URL) {
         isLoadingImportFile = true
         Task {
@@ -308,16 +312,32 @@ final class TransactionListViewModel {
                 isLoadingImportFile = false
                 csvFile = file
                 columnMapping = mapping
+                applyImportProfileIfAvailable(for: file)
                 columnMapping.defaultCurrency = currencyService.baseCurrency
                 // Let the outer catch surface any fetch failure rather than silently hiding it
                 availableCategories = try await repo.fetchCategories()
                 resetImportSelectionState()
-                showingImportFlow = true
+                await presentImportFlowOrInform()
             } catch {
                 isLoadingImportFile = false
                 importError = error.localizedDescription
             }
         }
+    }
+
+    /// Runs dedup detection up front (requires a resolved date+amount mapping,
+    /// which autoDetect/import profiles usually provide). If every row turns
+    /// out to be a duplicate, informs the user instead of opening a wizard
+    /// that dead-ends on a disabled "Import 0 Transactions" button.
+    private func presentImportFlowOrInform() async {
+        await applyMapping()
+        if !mappedRows.isEmpty && mappedRows.allSatisfy(\.isDuplicate) {
+            let n = mappedRows.count.formatted()
+            cancelImport()
+            importError = "All \(n) transactions in this file are already in the app — nothing new to import."
+            return
+        }
+        showingImportFlow = true
     }
 
     /// Handle to the in-flight load so tests (and callers) can await completion
@@ -337,11 +357,12 @@ final class TransactionListViewModel {
                 if workbook.sheetNames.count == 1, let onlySheet = workbook.sheetNames.first {
                     try applySheet(onlySheet, of: workbook)
                     xlsxWorkbook = nil
+                    await presentImportFlowOrInform()
                 } else {
                     xlsxWorkbook = workbook
                     csvFile = nil
+                    showingImportFlow = true
                 }
-                showingImportFlow = true
             } catch {
                 isLoadingImportFile = false
                 importError = error.localizedDescription
@@ -363,7 +384,38 @@ final class TransactionListViewModel {
         let file = try workbook.csvFile(forSheet: name)
         csvFile = file
         columnMapping = CSVColumnMapper.autoDetect(from: file)
+        applyImportProfileIfAvailable(for: file)
         columnMapping.defaultCurrency = currencyService.baseCurrency
+    }
+
+    /// Prefill the wizard from a previously saved profile for this file layout.
+    private func applyImportProfileIfAvailable(for file: CSVFile) {
+        let signature = ImportProfileStore.signature(
+            headers: file.headers, delimiter: file.delimiter
+        )
+        currentImportSignature = signature
+        guard let profile = importProfileStore.profile(for: signature) else { return }
+        columnMapping = profile.mapping
+        savedCategorySelections = profile.categorySelections
+    }
+
+    /// Called after csvCategories are computed; prefills selections that still
+    /// point at an existing category. Unknown/deleted categories fall back to
+    /// the normal auto-mapping flow.
+    func applySavedCategorySelections() {
+        guard let saved = savedCategorySelections else { return }
+        let validIds = Set(availableCategories.map { $0.id.uuidString })
+        for category in csvCategories {
+            if let selection = saved[category], validIds.contains(selection) {
+                categoryResolutionSelections[category] = selection
+            }
+        }
+    }
+
+    /// Test seam: savedCategorySelections is private because production code
+    /// only sets it via applyImportProfileIfAvailable (which needs a CSVFile).
+    func setSavedCategorySelectionsForTesting(_ selections: [String: String]?) {
+        savedCategorySelections = selections
     }
 
     /// Resets per-file import selection state; shared by loadCSVFile and loadExcelFile
@@ -374,6 +426,8 @@ final class TransactionListViewModel {
         csvCategoryTypes = [:]
         importNavigationPath = []
         hasAutoMappedCategories = false
+        savedCategorySelections = nil
+        currentImportSignature = nil
     }
 
     /// Cancel the import flow and reset state
@@ -390,6 +444,8 @@ final class TransactionListViewModel {
         hasAutoMappedCategories = false
         importError = nil
         isImporting = false
+        savedCategorySelections = nil
+        currentImportSignature = nil
     }
 
     /// Offloads per-row work (date parsing, Decimal conversion) to a background thread.
@@ -486,6 +542,23 @@ final class TransactionListViewModel {
                 if let catSnapshot = updatedCategories.first(where: { $0.name == createdName }) {
                     newCategoryPersistentIds[csvCatName] = catSnapshot.persistentId
                 }
+            }
+
+            // Persist the profile so the next import of this layout is prefilled.
+            // "__new__" selections are stored as the just-created category's UUID.
+            if let signature = currentImportSignature {
+                var resolvedSelections = categoryResolutionSelections
+                for (csvCatName, selection) in resolvedSelections where selection == "__new__" {
+                    let createdName = csvCatName.removingLeadingEmoji
+                        .trimmingCharacters(in: .whitespaces)
+                    if let created = updatedCategories.first(where: { $0.name == createdName }) {
+                        resolvedSelections[csvCatName] = created.id.uuidString
+                    }
+                }
+                importProfileStore.save(
+                    ImportProfile(mapping: columnMapping, categorySelections: resolvedSelections),
+                    for: signature
+                )
             }
 
             // Step 4: Update transaction inputs to link to new categories

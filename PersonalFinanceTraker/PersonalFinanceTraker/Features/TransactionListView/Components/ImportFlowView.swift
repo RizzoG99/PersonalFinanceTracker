@@ -46,7 +46,8 @@ struct ImportFlowView: View {
                             isImporting: viewModel.isImporting,
                             currentStep: totalSteps,
                             totalSteps: totalSteps,
-                            onConfirm: { viewModel.confirmImport($0) }
+                            onConfirm: { viewModel.confirmImport($0) },
+                            onDone: { viewModel.cancelImport() }
                         )
                     }
                 }
@@ -74,6 +75,7 @@ struct ImportFlowView: View {
                 await MainActor.run {
                     viewModel.csvCategories = categories
                     viewModel.csvCategoryTypes = types
+                    viewModel.applySavedCategorySelections()
                     viewModel.importNavigationPath.append(.categoryMapping)
                 }
             }
