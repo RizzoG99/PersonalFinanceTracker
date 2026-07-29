@@ -22,6 +22,9 @@ struct DashboardView: View {
                             viewModel.dismissAnomaly()
                         }
                     }
+                    ForEach(viewModel.nearLimitBudgets) { progress in
+                        BudgetProgressBarView(progress: progress)
+                    }
                     if viewModel.hasNoTransactions {
                         EmptyStateView(
                             icon: "plus.circle",
