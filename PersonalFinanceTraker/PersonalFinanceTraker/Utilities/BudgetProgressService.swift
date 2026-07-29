@@ -18,6 +18,7 @@ struct BudgetProgress: Identifiable, Equatable, Sendable {
     }
 
     var isOverBudget: Bool { spent > budget }
+    var isNearLimit: Bool { !isOverBudget && percent >= 0.8 }
 }
 
 enum BudgetProgressService {

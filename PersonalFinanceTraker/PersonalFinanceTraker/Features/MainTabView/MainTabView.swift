@@ -33,7 +33,7 @@ struct MainTabView: View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: selectedTab == .home ? "house.fill" : "house", value: .home) {
-                    DashboardView(showingAddItemView: $showingAddItemView)
+                    DashboardView(showingAddItemView: $showingAddItemView, selectedTab: $selectedTab)
                         .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {

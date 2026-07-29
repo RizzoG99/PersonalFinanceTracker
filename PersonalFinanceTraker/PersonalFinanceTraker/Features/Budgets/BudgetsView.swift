@@ -23,7 +23,7 @@ struct BudgetsView: View {
                     BudgetRow(category: category, isFocused: $focusedCategoryID)
                 }
             } header: {
-                Text("EXPENSE CATEGORIES")
+                Text("MONTHLY BUDGET · EXPENSE CATEGORIES")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.textDim)
             } footer: {

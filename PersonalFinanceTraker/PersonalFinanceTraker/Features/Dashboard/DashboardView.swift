@@ -9,7 +9,9 @@ import SwiftData
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(DashboardViewModel.self) private var viewModel
+    @Environment(TransactionListViewModel.self) private var transactionListViewModel
     @Binding var showingAddItemView: Bool
+    @Binding var selectedTab: TabItem
 
     var body: some View {
         NavigationStack {
@@ -22,8 +24,21 @@ struct DashboardView: View {
                             viewModel.dismissAnomaly()
                         }
                     }
-                    ForEach(viewModel.nearLimitBudgets) { progress in
-                        BudgetProgressBarView(progress: progress)
+                    if !viewModel.nearLimitBudgets.isEmpty {
+                        Text("NEAR BUDGET LIMIT")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.textDim)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        GlassEffectContainer(spacing: 20) {
+                            VStack(spacing: 20) {
+                                ForEach(viewModel.nearLimitBudgets) { progress in
+                                    BudgetProgressBarView(progress: progress) {
+                                        transactionListViewModel.selectedCategory = progress.categoryName
+                                        selectedTab = .activity
+                                    }
+                                }
+                            }
+                        }
                     }
                     if viewModel.hasNoTransactions {
                         EmptyStateView(
@@ -57,8 +72,9 @@ struct DashboardView: View {
     SampleData.populateModelContext(container.mainContext)
     let repo = TransactionActor.make(container)
     let dashVM = DashboardViewModel(repo: repo)
-    return DashboardView(showingAddItemView: .constant(false))
+    return DashboardView(showingAddItemView: .constant(false), selectedTab: .constant(.home))
         .environment(dashVM)
+        .environment(TransactionListViewModel(repo: repo))
         .environment(ProfileViewModel())
         .modelContainer(container)
         .preferredColorScheme(.dark)
