@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileSecuritySection: View {
     @Bindable var viewModel: ProfileViewModel
     @Binding var selectedDetent: PresentationDetent
+    @Binding var route: ProfileRoute?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -11,21 +12,21 @@ struct ProfileSecuritySection: View {
                 .foregroundStyle(.textDim)
                 .padding(.horizontal, 4)
             VStack {
-                NavigationLink {
-                    PINSetupView(
-                        viewModel: PINSetupViewModel(
-                            pinService: PINService(),
-                            isChangeMode: true
-                        )
-                    )
+                Button {
+                    selectedDetent = .large
+                    route = .changePIN
                 } label: {
-                    Text("Change PIN")
-                        .foregroundStyle(.textPrimary)
+                    HStack {
+                        Text("Change PIN")
+                            .foregroundStyle(.textPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.textDim)
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .simultaneousGesture(TapGesture().onEnded {
-                    selectedDetent = .large
-                })
 
                 if viewModel.isBiometricsAvailable {
                     Divider()

@@ -3,6 +3,10 @@ import UniformTypeIdentifiers
 import SwiftData
 import CoreTransferable
 
+enum ProfileRoute: Hashable {
+    case categories, budgets, changePIN
+}
+
 struct ProfileView: View {
     @Bindable var viewModel: ProfileViewModel
     @Binding var selectedDetent: PresentationDetent
@@ -15,6 +19,7 @@ struct ProfileView: View {
     @State private var showingPINConfirmation = false
     @State private var showingDeleteSuccess = false
     @State private var deleteErrorMessage: String?
+    @State private var route: ProfileRoute?
     private let pinService = PINService()
 
     var body: some View {
@@ -39,11 +44,11 @@ struct ProfileView: View {
                     }
                     .appFormSectionBackground()
                     Section {
-                        ProfileCategoriesSection(selectedDetent: $selectedDetent)
+                        ProfileCategoriesSection(selectedDetent: $selectedDetent, route: $route)
                     }
                     .appFormSectionBackground()
                     Section {
-                        ProfileBudgetsSection(selectedDetent: $selectedDetent)
+                        ProfileBudgetsSection(selectedDetent: $selectedDetent, route: $route)
                     }
                     .appFormSectionBackground()
                     Section {
@@ -94,11 +99,21 @@ struct ProfileView: View {
                     }
                     .appFormSectionBackground()
                     Section {
-                        ProfileSecuritySection(viewModel: viewModel, selectedDetent: $selectedDetent)
+                        ProfileSecuritySection(viewModel: viewModel, selectedDetent: $selectedDetent, route: $route)
                     }
                     .appFormSectionBackground()
                 }
                 .appFormBackground()
+                .navigationDestination(item: $route) { route in
+                    switch route {
+                    case .categories: CategorySettingsView()
+                    case .budgets: BudgetsView()
+                    case .changePIN:
+                        PINSetupView(
+                            viewModel: PINSetupViewModel(pinService: pinService, isChangeMode: true)
+                        )
+                    }
+                }
             }
             .padding(.top, 24)
             .appBackground()
