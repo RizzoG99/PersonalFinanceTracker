@@ -71,7 +71,7 @@ struct TransactionCategory: Identifiable, Hashable, Codable {
         TransactionCategory(systemImage: "graduationcap", label: "Education"),
         TransactionCategory(systemImage: "pawprint", label: "Pets"),
         TransactionCategory(systemImage: "creditcard", label: "Banking Fees"),
-        TransactionCategory(systemImage: "questionmark", label: "Other")
+        TransactionCategory(systemImage: "ellipsis.circle", label: "Other")
     ]
     
     static let defaultCategories: [TransactionCategory] = incomeCategories + expenseCategories

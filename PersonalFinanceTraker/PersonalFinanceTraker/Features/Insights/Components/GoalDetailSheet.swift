@@ -180,7 +180,7 @@ struct GoalDetailSheet: View {
                     .glassEffect(.regular)
 
                     Button("Confirm") {
-                        if let amount = Decimal(string: fundAmountText), amount > 0 {
+                        if let amount = AmountParser.parse(fundAmountText, requirePositive: true) {
                             viewModel.addFunds(amount: amount, to: goal)
                         }
                         fundAmountText = ""
@@ -191,7 +191,7 @@ struct GoalDetailSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .glassEffect(.regular.tint(goalColor).interactive())
-                    .disabled(Decimal(string: fundAmountText) == nil || fundAmountText.isEmpty)
+                    .disabled(AmountParser.parse(fundAmountText, requirePositive: true) == nil)
                 }
             }
         }

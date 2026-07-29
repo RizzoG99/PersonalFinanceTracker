@@ -20,10 +20,12 @@ final class DashboardViewModel {
     var recentTransactions: [TransactionSnapshot] = []
     var loadError: String? = nil
     var anomalyCallout: AnomalyCallout? = nil
+    var nearLimitBudgets: [BudgetProgress] = []
 
     private let repo: any ITransactionRepository
     private let currencyService = CurrencyService()
     private var isLoaded = false
+    private var categories: [CategorySnapshot] = []
 
     init(repo: any ITransactionRepository) {
         self.repo = repo
@@ -50,7 +52,10 @@ final class DashboardViewModel {
 
     private func fetchAndCompute() async {
         do {
-            transactions = try await repo.fetchAll()
+            async let txs = repo.fetchAll()
+            async let cats = repo.fetchCategories()
+            transactions = try await txs
+            categories = try await cats
             await calculateMetrics()
         } catch {
             loadError = error.localizedDescription
@@ -79,6 +84,7 @@ final class DashboardViewModel {
             payCycleStartDay: payCycleStartDay,
             dismissedKey: UserDefaults.standard.string(forKey: Self.dismissedAnomalyDefaultsKey)
         )
+        nearLimitBudgets = Self.computeNearLimitBudgets(transactions, categories, payCycleStartDay: payCycleStartDay)
     }
 
     nonisolated private static func computeMetrics(
@@ -112,6 +118,17 @@ final class DashboardViewModel {
     }
 
     private static let dismissedAnomalyDefaultsKey = "dismissedAnomalyCalloutKey"
+
+    nonisolated static func computeNearLimitBudgets(
+        _ transactions: [TransactionSnapshot],
+        _ categories: [CategorySnapshot],
+        payCycleStartDay: Int
+    ) -> [BudgetProgress] {
+        let progress = BudgetProgressService.computeProgress(
+            categories: categories, transactions: transactions, payCycleStartDay: payCycleStartDay
+        )
+        return BudgetProgressService.nearLimit(progress)
+    }
 
     nonisolated static func computeAnomalyCallout(
         _ transactions: [TransactionSnapshot],

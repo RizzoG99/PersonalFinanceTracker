@@ -172,4 +172,44 @@ struct DashboardViewModelTests {
         )
         #expect(callout == nil)
     }
+
+    @Test func nearLimitBudgetsIncludesCategoryOverThreshold() async {
+        let (cycleStart, _) = PayCycleService.currentFinancialMonth(startDay: 1)
+        let repo = MockTransactionRepository()
+        repo.stubbedCategories = [CategorySnapshot.test(name: "Groceries", monthlyBudget: 100)]
+        repo.stubbedTransactions = [
+            TransactionSnapshot.test(timestamp: cycleStart, amount: -90, category: "Groceries")
+        ]
+        let vm = DashboardViewModel(repo: repo)
+        vm.payCycleStartDay = { 1 }
+        vm.load()
+        await vm.loadTask?.value
+
+        #expect(vm.nearLimitBudgets.count == 1)
+        #expect(vm.nearLimitBudgets.first?.categoryName == "Groceries")
+    }
+
+    @Test func nearLimitBudgetsExcludesCategoryUnderThreshold() async {
+        let (cycleStart, _) = PayCycleService.currentFinancialMonth(startDay: 1)
+        let repo = MockTransactionRepository()
+        repo.stubbedCategories = [CategorySnapshot.test(name: "Groceries", monthlyBudget: 100)]
+        repo.stubbedTransactions = [
+            TransactionSnapshot.test(timestamp: cycleStart, amount: -10, category: "Groceries")
+        ]
+        let vm = DashboardViewModel(repo: repo)
+        vm.payCycleStartDay = { 1 }
+        vm.load()
+        await vm.loadTask?.value
+
+        #expect(vm.nearLimitBudgets.isEmpty)
+    }
+
+    @Test func computeNearLimitBudgetsIsStaticallyTestable() {
+        let category = CategorySnapshot.test(name: "Fun", monthlyBudget: 50)
+        let tx = TransactionSnapshot.test(timestamp: .now, amount: -45, category: "Fun")
+
+        let result = DashboardViewModel.computeNearLimitBudgets([tx], [category], payCycleStartDay: 1)
+
+        #expect(result.count == 1)
+    }
 }

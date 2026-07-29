@@ -30,8 +30,8 @@ struct AddEditCreditCardSheet: View {
     var isValid: Bool {
         !name.isEmpty &&
         lastFour.count == 4 &&
-        Decimal(string: balanceText) != nil &&
-        Decimal(string: limitText) != nil
+        AmountParser.parse(balanceText) != nil &&
+        AmountParser.parse(limitText) != nil
     }
 
     var body: some View {
@@ -120,8 +120,8 @@ struct AddEditCreditCardSheet: View {
     }
 
     private func save() {
-        guard let balance = Decimal(string: balanceText),
-              let limit = Decimal(string: limitText) else { return }
+        guard let balance = AmountParser.parse(balanceText),
+              let limit = AmountParser.parse(limitText) else { return }
 
         if let card = cardToEdit {
             card.name = name
