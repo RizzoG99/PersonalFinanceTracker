@@ -33,6 +33,7 @@ struct CategoryDetailRow: View {
                     Text(dataPoint.amount, format: .currency(code: currencyCode).precision(.fractionLength(0)))
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .privacyBlur()
                     
                     Text(dataPoint.formattedPercentage)
                         .font(.caption)
@@ -66,6 +67,7 @@ struct CategoryDetailRow: View {
                         Text("Budget: \(budget, format: .currency(code: currencyCode).precision(.fractionLength(0)))")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
+                            .privacyBlur()
                     }
                 }
             }

@@ -17,6 +17,10 @@ struct AnomalyCalloutView: View {
                 .font(.subheadline)
                 .foregroundStyle(.textMid)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                // ponytail: message is one free-text string with the amount embedded
+                // (built in DashboardViewModel); blurring the whole sentence is simpler
+                // than restructuring it into separate amount/text parts for one banner.
+                .privacyBlur()
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 12, weight: .semibold))

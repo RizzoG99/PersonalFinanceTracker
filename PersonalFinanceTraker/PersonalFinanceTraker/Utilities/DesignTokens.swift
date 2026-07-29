@@ -119,6 +119,46 @@ extension View {
     }
 }
 
+// MARK: - Privacy Blur (shake-to-hide amounts)
+
+private struct PrivacyBlur: ViewModifier {
+    // Optional: previews/hosts that don't inject AppSettings just render unblurred,
+    // rather than crashing.
+    @Environment(AppSettings.self) private var settings: AppSettings?
+    let radius: CGFloat
+
+    func body(content: Content) -> some View {
+        let hidden = settings?.hideAmounts ?? false
+        Group {
+            if hidden {
+                // Mask the value from VoiceOver too — a visual blur alone still lets
+                // the screen reader speak the real amount aloud. Both label AND value
+                // need overriding: a view like a TextField carries its own
+                // accessibilityValue independent of the label, and that value would
+                // otherwise still announce the real amount. Only overridden while
+                // hidden, so the view's own accessibility label/value is untouched
+                // the rest of the time.
+                content
+                    .accessibilityLabel("Amount hidden")
+                    .accessibilityValue("")
+            } else {
+                content
+            }
+        }
+        .blur(radius: hidden ? radius : 0)
+        .opacity(hidden ? 0.85 : 1)
+        .animation(.easeInOut(duration: 0.25), value: hidden)
+    }
+}
+
+extension View {
+    /// Blurs an amount when privacy mode (`AppSettings.hideAmounts`) is on. Use the
+    /// default radius (~6) for small row/list amounts; pass ~8 for large hero totals.
+    func privacyBlur(radius: CGFloat = 6) -> some View {
+        modifier(PrivacyBlur(radius: radius))
+    }
+}
+
 // MARK: - Glass Card Component
 
 struct GlassCard<Content: View>: View {

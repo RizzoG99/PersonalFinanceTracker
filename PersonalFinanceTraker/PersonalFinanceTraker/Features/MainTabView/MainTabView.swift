@@ -19,6 +19,8 @@ struct MainTabView: View {
     @State private var profileViewModel = ProfileViewModel()
     @State private var appSettings = AppSettings()
     @State private var dataChanged = DataChangedSignal()
+    @State private var showPrivacyToast = false
+    @State private var privacyToastTask: Task<Void, Never>?
     private let repo: TransactionActor
 
     init(modelContainer: ModelContainer) {
@@ -83,7 +85,15 @@ struct MainTabView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .overlay(alignment: .top) {
+            if showPrivacyToast {
+                PrivacyToastView(hidden: appSettings.hideAmounts)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
         .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
+        .animation(.spring(duration: 0.3), value: showPrivacyToast)
         .onChange(of: viewModel.pendingDeletion) { _, pending in
             if !pending.isEmpty { dashboardViewModel.optimisticRemove(ids: pending.map(\.id)) }
         }
@@ -119,6 +129,38 @@ struct MainTabView: View {
         }
         .appBackground()
         .preferredColorScheme(.dark)
+        .onShake {
+            appSettings.toggleHideAmounts()
+        }
+        .onChange(of: appSettings.hideAmounts) { _, _ in
+            privacyToastTask?.cancel()
+            showPrivacyToast = true
+            privacyToastTask = Task {
+                try? await Task.sleep(for: .seconds(1.5))
+                if !Task.isCancelled { showPrivacyToast = false }
+            }
+        }
+    }
+}
+
+/// Brief confirmation that shake (or the eye-icon toggle) actually changed something —
+/// the gesture alone gives no visual feedback of what state it left the app in.
+private struct PrivacyToastView: View {
+    let hidden: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: hidden ? "eye.slash.fill" : "eye.fill")
+            Text(hidden ? "Amounts hidden" : "Amounts shown")
+                .font(.subheadline.weight(.semibold))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background {
+            Capsule().fill(Color.black.opacity(0.75))
+        }
+        .foregroundStyle(.white)
+        .accessibilityElement(children: .combine)
     }
 }
 

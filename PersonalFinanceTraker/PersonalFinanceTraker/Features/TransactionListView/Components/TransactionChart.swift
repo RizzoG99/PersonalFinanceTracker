@@ -83,6 +83,7 @@ public struct TransactionChart: View {
                 AxisValueLabel {
                     if let doubleValue = value.as(Double.self) {
                         Text(Decimal(doubleValue), format: .currency(code: currencyCode).precision(.fractionLength(0)))
+                            .privacyBlur()
                     }
                 }
             }

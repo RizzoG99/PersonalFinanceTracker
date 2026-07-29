@@ -133,6 +133,7 @@ private struct CategoryLegendItem: View {
                     Text(dataPoint.amount, format: .currency(code: currencyCode).precision(.fractionLength(0)))
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                        .privacyBlur()
                     
                     Text("(\(dataPoint.formattedPercentage))")
                         .font(.caption2)
