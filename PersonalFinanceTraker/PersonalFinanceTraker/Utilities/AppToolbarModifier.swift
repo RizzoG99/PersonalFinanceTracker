@@ -8,6 +8,7 @@ import SwiftUI
 struct AppToolbarModifier: ViewModifier {
     @Environment(ProfileViewModel.self) private var profileViewModel: ProfileViewModel
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
+    @Environment(DataChangedSignal.self) private var dataChanged: DataChangedSignal
     @Binding var showingAddItemView: Bool
     @State private var showingProfile = false
     @State private var selectedDetent: PresentationDetent = .large
@@ -35,6 +36,7 @@ struct AppToolbarModifier: ViewModifier {
             }
             .sheet(isPresented: $showingProfile) {
                 ProfileView(viewModel: profileViewModel, selectedDetent: $selectedDetent)
+                    .environment(dataChanged)
                     .presentationDetents([.medium, .large], selection: $selectedDetent)
                     .presentationBackground { AppBackground() }
             }

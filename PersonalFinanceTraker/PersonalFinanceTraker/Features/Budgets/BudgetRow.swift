@@ -7,6 +7,7 @@ import SwiftData
 struct BudgetRow: View {
     @Bindable var category: CategoryModel
     @Environment(\.modelContext) private var modelContext
+    @Environment(DataChangedSignal.self) private var dataChanged
     @FocusState private var isFocused: Bool
     @State private var text: String = ""
 
@@ -45,5 +46,6 @@ struct BudgetRow: View {
             text = ""
         }
         try? modelContext.save()
+        dataChanged.bump()
     }
 }
