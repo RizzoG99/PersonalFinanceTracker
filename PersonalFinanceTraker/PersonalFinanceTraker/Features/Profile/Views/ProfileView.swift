@@ -43,6 +43,10 @@ struct ProfileView: View {
                     }
                     .appFormSectionBackground()
                     Section {
+                        ProfileBudgetsSection(selectedDetent: $selectedDetent)
+                    }
+                    .appFormSectionBackground()
+                    Section {
                         Button {
                             showingFileImporter = true
                         } label: {
