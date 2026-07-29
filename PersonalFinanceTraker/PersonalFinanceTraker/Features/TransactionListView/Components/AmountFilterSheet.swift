@@ -55,13 +55,12 @@ struct AmountFilterSheet: View {
         }
     }
 
-    // ponytail: comma→period for European locale decimal input
     private var parsedMin: Decimal? {
-        Decimal(string: minText.replacingOccurrences(of: ",", with: "."))
+        AmountParser.parse(minText)
     }
 
     private var parsedMax: Decimal? {
-        Decimal(string: maxText.replacingOccurrences(of: ",", with: "."))
+        AmountParser.parse(maxText)
     }
 
     private var isInvalidRange: Bool {
