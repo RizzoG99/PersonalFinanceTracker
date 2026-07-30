@@ -23,7 +23,7 @@ struct BudgetProgressBarView: View {
                 HStack {
                     Image(systemName: progress.systemImage)
                         .foregroundStyle(Color(categoryToken: progress.colorToken))
-                    Text(progress.categoryName)
+                    Text(progress.categoryName.removingLeadingEmoji.localizedCategoryDisplay)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.textPrimary)
                     Spacer()
@@ -39,12 +39,23 @@ struct BudgetProgressBarView: View {
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            hideAmounts
-                ? "\(progress.categoryName), amount hidden"
-                : "\(progress.categoryName), \(progress.spent.formatted(.currency(code: "EUR"))) of \(progress.budget.formatted(.currency(code: "EUR")))\(progress.isOverBudget ? ", over budget" : ", near budget limit")"
-        )
+        .accessibilityLabel(accessibilityFullLabel)
         .accessibilityAddTraits(.isButton)
+    }
+
+    // ponytail: built from pre-localized fragments (not one raw ternary/interpolation) so the
+    // category name, amounts, and each status phrase all go through the catalog independently.
+    private var accessibilityFullLabel: String {
+        let name = progress.categoryName.removingLeadingEmoji.localizedCategoryDisplay
+        if hideAmounts {
+            return String(localized: "\(name), amount hidden")
+        }
+        let spent = progress.spent.formatted(.currency(code: "EUR"))
+        let budget = progress.budget.formatted(.currency(code: "EUR"))
+        let status = progress.isOverBudget
+            ? String(localized: ", over budget")
+            : String(localized: ", near budget limit")
+        return String(localized: "\(name), \(spent) of \(budget)") + status
     }
 }
 

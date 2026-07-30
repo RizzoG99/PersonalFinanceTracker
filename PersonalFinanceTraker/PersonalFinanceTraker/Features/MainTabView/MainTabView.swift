@@ -93,7 +93,7 @@ struct MainTabView: View {
             if showPrivacyToast {
                 ToastBanner(
                     icon: appSettings.hideAmounts ? "eye.slash.fill" : "eye.fill",
-                    message: appSettings.hideAmounts ? "Amounts hidden" : "Amounts shown"
+                    message: appSettings.hideAmounts ? String(localized: "Amounts hidden") : String(localized: "Amounts shown")
                 ) { EmptyView() }
                     .accessibilityElement(children: .combine)
                     .padding(.horizontal, 16)

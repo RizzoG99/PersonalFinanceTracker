@@ -26,7 +26,7 @@ struct BalanceCardView: View {
                         Image(systemName: appSettings.hideAmounts ? "eye.slash" : "eye")
                             .foregroundStyle(.textMid)
                     }
-                    .accessibilityLabel(appSettings.hideAmounts ? "Show amounts" : "Hide amounts")
+                    .accessibilityLabel(appSettings.hideAmounts ? String(localized: "Show amounts") : String(localized: "Hide amounts"))
                 }
 
                 // Fixed-width mask when hidden — a plain blur would still leak the

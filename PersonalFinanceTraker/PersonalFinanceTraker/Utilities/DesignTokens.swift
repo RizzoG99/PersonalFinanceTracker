@@ -139,7 +139,7 @@ private struct PrivacyBlur: ViewModifier {
                 // hidden, so the view's own accessibility label/value is untouched
                 // the rest of the time.
                 content
-                    .accessibilityLabel("Amount hidden")
+                    .accessibilityLabel(String(localized: "Amount hidden"))
                     .accessibilityValue("")
             } else {
                 content

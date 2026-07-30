@@ -119,12 +119,32 @@
         }
       }
     },
+    "%@, %@ of %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@ di %@"
+          }
+        }
+      }
+    },
     "%@, %@ of %@%@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "new",
             "value": "%1$@, %2$@ of %3$@%4$@"
+          }
+        }
+      }
+    },
+    "%@, amount hidden": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, importo nascosto"
           }
         }
       }
@@ -416,6 +436,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "+%@"
+          }
+        }
+      }
+    },
+    ", near budget limit": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", vicino al limite del budget"
+          }
+        }
+      }
+    },
+    ", over budget": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", fuori budget"
           }
         }
       }
@@ -733,6 +773,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Segno dell'importo"
+          }
+        }
+      }
+    },
+    "Amount hidden": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importo nascosto"
+          }
+        }
+      }
+    },
+    "Amounts hidden": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importi nascosti"
+          }
+        }
+      }
+    },
+    "Amounts shown": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importi visibili"
           }
         }
       }
@@ -2556,6 +2626,16 @@
         }
       }
     },
+    "Hide amounts": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi importi"
+          }
+        }
+      }
+    },
     "Hobbies": {
       "extractionState": "manual",
       "localizations": {
@@ -4227,6 +4307,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mostra"
+          }
+        }
+      }
+    },
+    "Show amounts": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra importi"
           }
         }
       }
