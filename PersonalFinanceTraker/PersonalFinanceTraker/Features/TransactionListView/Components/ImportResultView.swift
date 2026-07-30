@@ -42,7 +42,8 @@ struct ImportResultView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
                 if duplicateCount > 0 {
-                    Text("\(duplicateCount) transaction\(duplicateCount == 1 ? " is" : "s are") already in the app and will be skipped.")
+                    // ponytail: "transaction is"/"transactions are" plural handled by the catalog's plural variation
+                    Text("\(duplicateCount) transaction already in the app and will be skipped.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -66,7 +67,7 @@ struct ImportResultView: View {
             if !errors.isEmpty {
                 Section(isExpanded: $showErrors) {
                     ForEach(errors, id: \.rowIndex) { row in
-                        Text(row.error ?? "Unknown error")
+                        Text(row.error ?? String(localized: "Unknown error"))
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
@@ -134,7 +135,7 @@ struct ImportResultView: View {
         }
     }
 
-    private func statCell(value: String, label: String, color: Color) -> some View {
+    private func statCell(value: String, label: LocalizedStringKey, color: Color) -> some View {
         VStack(spacing: 4) {
             Text(value)
                 .font(.title2.bold())
@@ -144,6 +145,13 @@ struct ImportResultView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // ponytail: was manually interpolating the raw Decimal (unlocalized description, wrong decimal
+    // separator outside en-US) — formattedEUR(currency:) handles locale + currency correctly.
+    private func formattedSignedAmount(_ amount: Decimal, currencyCode: String) -> String {
+        let magnitude = amount.formattedEUR(currency: currencyCode)
+        return amount >= 0 ? "+\(magnitude)" : magnitude
     }
 
     private func transactionRow(_ t: TransactionInput) -> some View {
@@ -160,7 +168,7 @@ struct ImportResultView: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(t.amount >= 0 ? "+" : "")\(t.amount) \(t.currencyCode)")
+                Text(formattedSignedAmount(t.amount, currencyCode: t.currencyCode))
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(t.amount >= 0 ? .green : .red)
                 Text(t.timestamp, style: .date)

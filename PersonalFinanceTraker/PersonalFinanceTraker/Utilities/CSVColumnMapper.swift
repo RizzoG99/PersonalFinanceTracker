@@ -94,7 +94,7 @@ class CSVColumnMapper {
                   let date = dateFormatter.date(from: dateStr) else {
                 results.append(RawMappedRow(
                     data: nil,
-                    error: "Row \(lineNumber): invalid date '\(value(for: dateCol) ?? "")' — expected \(mapping.dateFormat)",
+                    error: String(localized: "Row \(lineNumber): invalid date '\(value(for: dateCol) ?? "")' — expected \(mapping.dateFormat)"),
                     rowIndex: rowIdx
                 ))
                 return
@@ -103,7 +103,7 @@ class CSVColumnMapper {
             guard let amountStr = value(for: amountCol) else {
                 results.append(RawMappedRow(
                     data: nil,
-                    error: "Row \(lineNumber): invalid amount ''",
+                    error: String(localized: "Row \(lineNumber): invalid amount ''"),
                     rowIndex: rowIdx
                 ))
                 return
@@ -114,7 +114,7 @@ class CSVColumnMapper {
             guard decimalNumber != NSDecimalNumber.notANumber else {
                 results.append(RawMappedRow(
                     data: nil,
-                    error: "Row \(lineNumber): invalid amount '\(amountStr)'",
+                    error: String(localized: "Row \(lineNumber): invalid amount '\(amountStr)'"),
                     rowIndex: rowIdx
                 ))
                 return

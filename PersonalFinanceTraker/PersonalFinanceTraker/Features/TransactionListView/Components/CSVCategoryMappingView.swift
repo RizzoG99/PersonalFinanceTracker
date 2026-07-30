@@ -40,7 +40,8 @@ struct CSVCategoryMappingView: View {
                 .padding(.vertical, 4)
             } footer: {
                 if !allMapped {
-                    Text("Map all \(unmappedCount) remaining categor\(unmappedCount == 1 ? "y" : "ies") to continue.")
+                    // ponytail: "category"/"categories" plural handled by the catalog's plural variation, not a hand-rolled ternary
+                    Text("Map all \(unmappedCount) remaining category to continue.")
                         .foregroundStyle(.red)
                 }
             }
@@ -89,7 +90,7 @@ struct CSVCategoryMappingView: View {
     // MARK: - Row
 
     private func categoryRow(for csv: String) -> some View {
-        let displayName = csv.removingLeadingEmoji.isEmpty ? "\(csv) (unnamed)" : csv
+        let displayName = csv.removingLeadingEmoji.isEmpty ? String(localized: "\(csv) (unnamed)") : csv
         return HStack {
             Text(displayName)
                 .font(.subheadline)
@@ -108,7 +109,7 @@ struct CSVCategoryMappingView: View {
                         Section("Income") {
                             ForEach(income) { cat in
                                 Button { selections[csv] = cat.id.uuidString } label: {
-                                    Label(cat.name, systemImage: cat.systemImage)
+                                    Label(cat.name.localizedCategoryDisplay, systemImage: cat.systemImage)
                                 }
                             }
                         }
@@ -117,7 +118,7 @@ struct CSVCategoryMappingView: View {
                         Section("Expense") {
                             ForEach(expense) { cat in
                                 Button { selections[csv] = cat.id.uuidString } label: {
-                                    Label(cat.name, systemImage: cat.systemImage)
+                                    Label(cat.name.localizedCategoryDisplay, systemImage: cat.systemImage)
                                 }
                             }
                         }
@@ -126,7 +127,7 @@ struct CSVCategoryMappingView: View {
                     // Type known — flat sorted list
                     ForEach(filtered) { cat in
                         Button { selections[csv] = cat.id.uuidString } label: {
-                            Label(cat.name, systemImage: cat.systemImage)
+                            Label(cat.name.localizedCategoryDisplay, systemImage: cat.systemImage)
                         }
                     }
                 }

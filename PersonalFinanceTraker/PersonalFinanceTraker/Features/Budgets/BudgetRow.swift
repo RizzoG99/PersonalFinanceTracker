@@ -31,8 +31,8 @@ struct BudgetRow: View {
                 .frame(width: 100)
                 .foregroundStyle(!rowFocused && hasBudget ? .accentIndigo : .textPrimary)
                 .fontWeight(!rowFocused && hasBudget ? .medium : .regular)
-                .accessibilityLabel("\(category.name) budget")
-                .accessibilityValue(text.isEmpty ? "No limit" : text)
+                .accessibilityLabel("\(category.name.removingLeadingEmoji.localizedCategoryDisplay) budget")
+                .accessibilityValue(text.isEmpty ? String(localized: "No limit") : text)
         }
         .contentShape(Rectangle())
         .onTapGesture { isFocused.wrappedValue = category.id }

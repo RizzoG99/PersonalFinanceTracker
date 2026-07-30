@@ -34,7 +34,7 @@ struct CSVColumnMappingView: View {
               let preview = file.preview(maxRows: 1).first,
               let colIdx = file.headers.firstIndex(of: dateCol),
               colIdx < preview.count else {
-            return "Select a Date column to preview"
+            return String(localized: "Select a Date column to preview")
         }
         let dateString = preview[colIdx]
         let formatter = DateFormatter()
@@ -43,11 +43,11 @@ struct CSVColumnMappingView: View {
             // Try to format back for display
             if let parsed = formatter.date(from: dateString) {
                 let display = parsed.formatted(.dateTime.month(.abbreviated).day().year())
-                return "✓ \(dateString) → \(display)"
+                return String(localized: "✓ \(dateString) → \(display)")
             }
-            return "✓ \(dateString) parsed successfully"
+            return String(localized: "✓ \(dateString) parsed successfully")
         } else {
-            return "✗ Cannot parse '\(dateString)' with this format"
+            return String(localized: "✗ Cannot parse '\(dateString)' with this format")
         }
     }
 
@@ -87,7 +87,7 @@ struct CSVColumnMappingView: View {
                 Section {
                     Picker("Sign Convention", selection: $mapping.signConvention) {
                         ForEach(SignConvention.allCases, id: \.self) { convention in
-                            Text(convention.rawValue).tag(convention)
+                            Text(String(localized: String.LocalizationValue(convention.rawValue))).tag(convention)
                         }
                     }
                     .pickerStyle(.menu)
@@ -149,23 +149,28 @@ struct CSVColumnMappingView: View {
     // MARK: - Pickers
 
     @ViewBuilder
-    private func requiredPicker(title: String, keyPath: WritableKeyPath<ColumnMapping, String?>) -> some View {
+    private func requiredPicker(title: LocalizedStringKey, keyPath: WritableKeyPath<ColumnMapping, String?>) -> some View {
         Picker(title, selection: requiredBinding(keyPath)) {
             ForEach(Array(columnOptions.enumerated()), id: \.offset) { _, col in
-                Text(col).tag(col)
+                columnOptionText(col).tag(col)
             }
         }
         .pickerStyle(.menu)
     }
 
     @ViewBuilder
-    private func optionalPicker(title: String, keyPath: WritableKeyPath<ColumnMapping, String?>) -> some View {
+    private func optionalPicker(title: LocalizedStringKey, keyPath: WritableKeyPath<ColumnMapping, String?>) -> some View {
         Picker(title, selection: optionalBinding(keyPath)) {
             ForEach(Array(columnOptions.enumerated()), id: \.offset) { _, col in
-                Text(col).tag(col)
+                columnOptionText(col).tag(col)
             }
         }
         .pickerStyle(.menu)
+    }
+
+    /// CSV headers are user data and must stay verbatim; only the "(None)" sentinel is app UI text.
+    private func columnOptionText(_ col: String) -> Text {
+        col == noneOption ? Text("(None)") : Text(col)
     }
 
     private func requiredBinding(_ keyPath: WritableKeyPath<ColumnMapping, String?>) -> Binding<String> {
