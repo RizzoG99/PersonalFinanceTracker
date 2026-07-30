@@ -3,8 +3,8 @@ import SwiftUI
 
 extension Date {
     func formattedForTransaction() -> String {
-        if Calendar.current.isDateInToday(self) { return "Today" }
-        if Calendar.current.isDateInYesterday(self) { return "Yesterday" }
+        if Calendar.current.isDateInToday(self) { return String(localized: "Today") }
+        if Calendar.current.isDateInYesterday(self) { return String(localized: "Yesterday") }
         return self.formatted(date: .abbreviated, time: .omitted)
     }
 

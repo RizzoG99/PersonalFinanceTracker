@@ -17,7 +17,8 @@ struct UndoDeleteBanner: View {
             Image(systemName: "trash")
                 .foregroundStyle(.secondary)
 
-            Text("\(count) transaction\(count == 1 ? "" : "s") deleted")
+            // ponytail: "transaction"/"transactions" plural handled by the catalog's plural variation, not a hand-rolled ternary
+            Text("\(count) transaction deleted")
                 .font(.subheadline)
 
             Spacer()

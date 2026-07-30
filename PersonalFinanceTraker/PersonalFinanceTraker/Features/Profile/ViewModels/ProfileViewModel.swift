@@ -46,23 +46,23 @@ final class ProfileViewModel {
     }
 
     var displayName: String {
-        fullName.isEmpty ? "Your Name" : fullName
+        fullName.isEmpty ? String(localized: "Your Name") : fullName
     }
 
     var memberSince: String {
         let ts = memberSinceTimestamp > 0 ? memberSinceTimestamp : Date.now.timeIntervalSince1970
         let fmt = DateFormatter()
         fmt.dateFormat = "MMM yyyy"
-        return "Member since \(fmt.string(from: Date(timeIntervalSince1970: ts)))"
+        return String(localized: "Member since \(fmt.string(from: Date(timeIntervalSince1970: ts)))")
     }
 
     var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date.now)
         let firstName = fullName.split(separator: " ").first.map(String.init) ?? ""
         let salutation: String
-        if hour < 12 { salutation = "Good morning" }
-        else if hour < 17 { salutation = "Good afternoon" }
-        else { salutation = "Good evening" }
-        return firstName.isEmpty ? salutation : "\(salutation), \(firstName)"
+        if hour < 12 { salutation = String(localized: "Good morning") }
+        else if hour < 17 { salutation = String(localized: "Good afternoon") }
+        else { salutation = String(localized: "Good evening") }
+        return firstName.isEmpty ? salutation : String(localized: "\(salutation), \(firstName)")
     }
 }

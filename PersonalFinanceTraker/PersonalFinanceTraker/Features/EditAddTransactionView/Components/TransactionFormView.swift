@@ -20,7 +20,7 @@ struct TransactionFormView: View {
                 Section {
                     Picker("Type", selection: $viewModel.transactionType) {
                         ForEach(TransactionType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+                            Text(String(localized: String.LocalizationValue(type.rawValue))).tag(type)
                         }
                     }
                     .pickerStyle(.segmented)

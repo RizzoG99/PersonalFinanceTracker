@@ -82,17 +82,17 @@ struct FinancialHealthService {
             total = savingsScore + stabilityScore + adherenceScore
             components = [
                 ScoreComponent(
-                    name: "Savings rate", score: savingsScore, max: 34,
+                    name: String(localized: "Savings rate"), score: savingsScore, max: 34,
                     explanation: savingsExplanation(rate: savingsRate),
                     tip: savingsScore < 34 ? savingsTip(rate: savingsRate, income: income) : nil
                 ),
                 ScoreComponent(
-                    name: "Stability", score: stabilityScore, max: 33,
+                    name: String(localized: "Stability"), score: stabilityScore, max: 33,
                     explanation: stabilityExplanation(cov: cov),
                     tip: stabilityScore < 33 ? stabilityTip(cov: cov) : nil
                 ),
                 ScoreComponent(
-                    name: "Budget", score: adherenceScore, max: 33,
+                    name: String(localized: "Budget"), score: adherenceScore, max: 33,
                     explanation: adherenceExplanation(adhering: adheringCount, total: budgetedCategories.count),
                     tip: adherenceScore < 33 ? adherenceTip(adhering: adheringCount, total: budgetedCategories.count) : nil
                 ),
@@ -101,22 +101,22 @@ struct FinancialHealthService {
             total = rawSavingsScore + rawStabilityScore + rawAdherenceScore + rawSubscriptionScore
             components = [
                 ScoreComponent(
-                    name: "Savings rate", score: rawSavingsScore, max: 25,
+                    name: String(localized: "Savings rate"), score: rawSavingsScore, max: 25,
                     explanation: savingsExplanation(rate: savingsRate),
                     tip: rawSavingsScore < 25 ? savingsTip(rate: savingsRate, income: income) : nil
                 ),
                 ScoreComponent(
-                    name: "Stability", score: rawStabilityScore, max: 25,
+                    name: String(localized: "Stability"), score: rawStabilityScore, max: 25,
                     explanation: stabilityExplanation(cov: cov),
                     tip: rawStabilityScore < 25 ? stabilityTip(cov: cov) : nil
                 ),
                 ScoreComponent(
-                    name: "Budget", score: rawAdherenceScore, max: 25,
+                    name: String(localized: "Budget"), score: rawAdherenceScore, max: 25,
                     explanation: adherenceExplanation(adhering: adheringCount, total: budgetedCategories.count),
                     tip: rawAdherenceScore < 25 ? adherenceTip(adhering: adheringCount, total: budgetedCategories.count) : nil
                 ),
                 ScoreComponent(
-                    name: "Subscriptions", score: rawSubscriptionScore, max: 25,
+                    name: String(localized: "Subscriptions"), score: rawSubscriptionScore, max: 25,
                     explanation: subscriptionExplanation(ratio: subRatio),
                     tip: rawSubscriptionScore < 25 ? subscriptionTip() : nil
                 ),

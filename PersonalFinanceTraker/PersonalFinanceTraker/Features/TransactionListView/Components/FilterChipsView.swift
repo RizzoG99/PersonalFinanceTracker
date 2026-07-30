@@ -52,7 +52,7 @@ struct FilterChipsView: View {
                     }
                 }
             } label: {
-                chip("Category", isActive: false)
+                chip(String(localized: "Category"), isActive: false)
                     .opacity(categoryPickerEnabled ? 1 : 0.4)
             }
             .buttonStyle(.plain)
@@ -67,7 +67,7 @@ struct FilterChipsView: View {
                 vm.filters.type = .all
                 vm.selectedCategory = nil
             } label: {
-                chip(vm.filters.type.rawValue, isActive: true)
+                chip(String(localized: String.LocalizationValue(vm.filters.type.rawValue)), isActive: true)
             }
             .buttonStyle(.plain)
         } else {
@@ -75,7 +75,7 @@ struct FilterChipsView: View {
                 Button("Income") { vm.filters.type = .income }
                 Button("Expense") { vm.filters.type = .expense }
             } label: {
-                chip("Type", isActive: false)
+                chip(String(localized: "Type"), isActive: false)
             }
             .buttonStyle(.plain)
         }
@@ -98,7 +98,7 @@ struct FilterChipsView: View {
                 Divider()
                 Button("Custom…") { showCustomDateSheet = true }
             } label: {
-                chip("Date", isActive: false)
+                chip(String(localized: "Date"), isActive: false)
             }
             .buttonStyle(.plain)
         }
@@ -116,7 +116,7 @@ struct FilterChipsView: View {
         case (.some(let min), .some(let max)): return "€\(min)–€\(max)"
         case (.some(let min), nil): return "≥€\(min)"
         case (nil, .some(let max)): return "≤€\(max)"
-        case (nil, nil): return "Amount"
+        case (nil, nil): return String(localized: "Amount")
         }
     }
 

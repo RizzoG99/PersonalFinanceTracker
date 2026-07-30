@@ -71,8 +71,8 @@ final class EditAddTransactionViewModel {
 
     var formattedDate: String {
         let calendar = Calendar.current
-        if calendar.isDateInToday(date) { return "Today" }
-        if calendar.isDateInYesterday(date) { return "Yesterday" }
+        if calendar.isDateInToday(date) { return String(localized: "Today") }
+        if calendar.isDateInYesterday(date) { return String(localized: "Yesterday") }
         return Self.mediumDateFormatter.string(from: date)
     }
 

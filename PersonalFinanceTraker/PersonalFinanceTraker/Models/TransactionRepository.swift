@@ -45,10 +45,10 @@ enum SearchDateRange: Equatable, Sendable {
 
     var label: String {
         switch self {
-        case .thisMonth: "This month"
-        case .last3Months: "Last 3 months"
-        case .thisYear: "This year"
-        case .custom: "Custom"
+        case .thisMonth: String(localized: "This month")
+        case .last3Months: String(localized: "Last 3 months")
+        case .thisYear: String(localized: "This year")
+        case .custom: String(localized: "Custom")
         }
     }
 }
