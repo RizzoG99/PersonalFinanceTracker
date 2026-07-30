@@ -8,17 +8,33 @@ import SwiftData
 
 struct BalanceCardView: View {
     @Environment(DashboardViewModel.self) private var viewModel
+    @Environment(AppSettings.self) private var appSettings
 
     var body: some View {
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Total Balance")
-                    .font(.subheadline)
-                    .foregroundStyle(.textMid)
+                HStack {
+                    Text("Total Balance")
+                        .font(.subheadline)
+                        .foregroundStyle(.textMid)
 
-                Text(viewModel.totalBalance.formattedEUR())
+                    Spacer()
+
+                    Button {
+                        appSettings.toggleHideAmounts()
+                    } label: {
+                        Image(systemName: appSettings.hideAmounts ? "eye.slash" : "eye")
+                            .foregroundStyle(.textMid)
+                    }
+                    .accessibilityLabel(appSettings.hideAmounts ? "Show amounts" : "Hide amounts")
+                }
+
+                // Fixed-width mask when hidden — a plain blur would still leak the
+                // balance's digit count (and thus its rough magnitude) via glyph width.
+                Text(appSettings.hideAmounts ? "••••••" : viewModel.totalBalance.formattedEUR())
                     .font(.largeTitle.bold())
                     .foregroundStyle(.textPrimary)
+                    .privacyBlur(radius: 8)
 
                 Divider().opacity(0.15)
 
@@ -57,5 +73,6 @@ struct BalanceCardView: View {
     let dashVM = DashboardViewModel(repo: repo)
     return BalanceCardView()
         .environment(dashVM)
+        .environment(AppSettings())
         .modelContainer(container)
 }

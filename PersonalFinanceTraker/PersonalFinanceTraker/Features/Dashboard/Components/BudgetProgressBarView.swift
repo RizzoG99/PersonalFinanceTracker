@@ -7,6 +7,9 @@ import SwiftData
 struct BudgetProgressBarView: View {
     let progress: BudgetProgress
     var onTap: (() -> Void)?
+    @Environment(AppSettings.self) private var appSettings: AppSettings?
+
+    private var hideAmounts: Bool { appSettings?.hideAmounts ?? false }
 
     private var barColor: Color {
         if progress.isOverBudget { return .negative }
@@ -27,6 +30,7 @@ struct BudgetProgressBarView: View {
                     Text("\(progress.spent.formatted(.currency(code: "EUR"))) / \(progress.budget.formatted(.currency(code: "EUR")))")
                         .font(.caption)
                         .foregroundStyle(progress.isOverBudget ? .negative : .textDim)
+                        .privacyBlur()
                 }
                 ProgressView(value: min(progress.percent, 1.0))
                     .tint(barColor)
@@ -36,7 +40,9 @@ struct BudgetProgressBarView: View {
         .onTapGesture { onTap?() }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
-            "\(progress.categoryName), \(progress.spent.formatted(.currency(code: "EUR"))) of \(progress.budget.formatted(.currency(code: "EUR")))\(progress.isOverBudget ? ", over budget" : ", near budget limit")"
+            hideAmounts
+                ? "\(progress.categoryName), amount hidden"
+                : "\(progress.categoryName), \(progress.spent.formatted(.currency(code: "EUR"))) of \(progress.budget.formatted(.currency(code: "EUR")))\(progress.isOverBudget ? ", over budget" : ", near budget limit")"
         )
         .accessibilityAddTraits(.isButton)
     }

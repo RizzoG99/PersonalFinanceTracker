@@ -13,14 +13,11 @@ struct UndoDeleteBanner: View {
     let onUndo: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "trash")
-                .foregroundStyle(.secondary)
-
-            Text("\(count) transaction\(count == 1 ? "" : "s") deleted")
-                .font(.subheadline)
-
-            Spacer()
+        ToastBanner(
+            icon: "trash",
+            message: "\(count) transaction\(count == 1 ? "" : "s") deleted"
+        ) {
+            Spacer(minLength: 0)
 
             ZStack {
                 Circle()
@@ -39,12 +36,5 @@ struct UndoDeleteBanner: View {
                 .tint(.accentColor)
                 .accessibilityLabel("Undo delete")
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background {
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.black.opacity(0.75))
-        }
-        .foregroundStyle(.white)
     }
 }

@@ -90,6 +90,7 @@ struct GoalDetailSheet: View {
                     Text(currentAmount.formattedEURCompact())
                         .font(.subheadline.bold())
                         .foregroundStyle(goalColor)
+                        .privacyBlur()
                 }
                 HStack {
                     Text("Target")
@@ -99,6 +100,7 @@ struct GoalDetailSheet: View {
                     Text(goal.targetAmount.formattedEURCompact())
                         .font(.subheadline.bold())
                         .foregroundStyle(.textPrimary)
+                        .privacyBlur()
                 }
                 if let deadline = goal.deadline {
                     Divider()

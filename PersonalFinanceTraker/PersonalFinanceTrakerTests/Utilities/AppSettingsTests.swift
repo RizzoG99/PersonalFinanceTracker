@@ -52,4 +52,13 @@ struct AppSettingsTests {
         #expect(settings.payCycleStartDay == 1)
         resetDefaults()
     }
+
+    @Test func hideAmountsDefaultsToFalseAndToggles() {
+        let settings = AppSettings()
+        #expect(settings.hideAmounts == false)
+        settings.hideAmounts.toggle()
+        #expect(settings.hideAmounts == true)
+        settings.hideAmounts.toggle()
+        #expect(settings.hideAmounts == false)
+    }
 }

@@ -119,6 +119,84 @@ extension View {
     }
 }
 
+// MARK: - Privacy Blur (shake-to-hide amounts)
+
+private struct PrivacyBlur: ViewModifier {
+    // Optional: previews/hosts that don't inject AppSettings just render unblurred,
+    // rather than crashing.
+    @Environment(AppSettings.self) private var settings: AppSettings?
+    let radius: CGFloat
+
+    func body(content: Content) -> some View {
+        let hidden = settings?.hideAmounts ?? false
+        Group {
+            if hidden {
+                // Mask the value from VoiceOver too — a visual blur alone still lets
+                // the screen reader speak the real amount aloud. Both label AND value
+                // need overriding: a view like a TextField carries its own
+                // accessibilityValue independent of the label, and that value would
+                // otherwise still announce the real amount. Only overridden while
+                // hidden, so the view's own accessibility label/value is untouched
+                // the rest of the time.
+                content
+                    .accessibilityLabel("Amount hidden")
+                    .accessibilityValue("")
+            } else {
+                content
+            }
+        }
+        .blur(radius: hidden ? radius : 0)
+        .opacity(hidden ? 0.85 : 1)
+        .animation(.easeInOut(duration: 0.25), value: hidden)
+    }
+}
+
+extension View {
+    /// Blurs an amount when privacy mode (`AppSettings.hideAmounts`) is on. Use the
+    /// default radius (~6) for small row/list amounts; pass ~8 for large hero totals.
+    func privacyBlur(radius: CGFloat = 6) -> some View {
+        modifier(PrivacyBlur(radius: radius))
+    }
+}
+
+// MARK: - Toast Banner
+
+/// Shared black-pill toast used for transient status/undo messages. Convention: place
+/// informational-only toasts (no `action`) near the top; actionable/destructive-adjacent
+/// ones (with an `action`) near the bottom, close to the thumb.
+///
+/// No `Spacer` between message and `action` here — that's the caller's job (see
+/// `UndoDeleteBanner`, which prepends one to push its content to the trailing edge). A
+/// shared unconditional `Spacer` would still expand to fill all available width even when
+/// `action` is `EmptyView`, stretching a plain icon+text toast into a full-width bar
+/// instead of a compact, content-hugging pill.
+///
+/// Does NOT combine its accessibility children by default — an `action` slot may contain
+/// an interactive control (e.g. an Undo button), and `.accessibilityElement(children: .combine)`
+/// would swallow it into one non-interactive element, making it untappable via VoiceOver.
+/// Callers with no interactive action (icon + text only) can safely add
+/// `.accessibilityElement(children: .combine)` themselves at the call site.
+struct ToastBanner<Action: View>: View {
+    let icon: String
+    let message: String
+    @ViewBuilder let action: () -> Action
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+            Text(message)
+                .font(.subheadline.weight(.semibold))
+            action()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background {
+            Capsule().fill(Color.black.opacity(0.75))
+        }
+        .foregroundStyle(.white)
+    }
+}
+
 // MARK: - Glass Card Component
 
 struct GlassCard<Content: View>: View {

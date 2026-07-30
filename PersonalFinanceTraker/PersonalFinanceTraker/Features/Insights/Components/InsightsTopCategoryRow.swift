@@ -23,6 +23,7 @@ struct InsightsTopCategoryRow: View {
                 Text(category.amount.formattedEUR())
                     .font(.headline)
                     .foregroundStyle(.negative)
+                    .privacyBlur()
             }
 
             GeometryReader { geo in
