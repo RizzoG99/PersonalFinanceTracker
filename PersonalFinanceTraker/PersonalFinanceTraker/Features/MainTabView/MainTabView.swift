@@ -92,6 +92,7 @@ struct MainTabView: View {
                     message: appSettings.hideAmounts ? "Amounts hidden" : "Amounts shown"
                 ) { EmptyView() }
                     .accessibilityElement(children: .combine)
+                    .padding(.horizontal, 16)
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }

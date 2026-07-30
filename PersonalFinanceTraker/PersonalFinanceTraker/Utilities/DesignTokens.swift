@@ -165,6 +165,12 @@ extension View {
 /// informational-only toasts (no `action`) near the top; actionable/destructive-adjacent
 /// ones (with an `action`) near the bottom, close to the thumb.
 ///
+/// No `Spacer` between message and `action` here — that's the caller's job (see
+/// `UndoDeleteBanner`, which prepends one to push its content to the trailing edge). A
+/// shared unconditional `Spacer` would still expand to fill all available width even when
+/// `action` is `EmptyView`, stretching a plain icon+text toast into a full-width bar
+/// instead of a compact, content-hugging pill.
+///
 /// Does NOT combine its accessibility children by default — an `action` slot may contain
 /// an interactive control (e.g. an Undo button), and `.accessibilityElement(children: .combine)`
 /// would swallow it into one non-interactive element, making it untappable via VoiceOver.
@@ -180,7 +186,6 @@ struct ToastBanner<Action: View>: View {
             Image(systemName: icon)
             Text(message)
                 .font(.subheadline.weight(.semibold))
-            Spacer(minLength: 0)
             action()
         }
         .padding(.horizontal, 16)

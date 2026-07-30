@@ -17,6 +17,8 @@ struct UndoDeleteBanner: View {
             icon: "trash",
             message: "\(count) transaction\(count == 1 ? "" : "s") deleted"
         ) {
+            Spacer(minLength: 0)
+
             ZStack {
                 Circle()
                     .stroke(Color.white.opacity(0.3), lineWidth: 2)
