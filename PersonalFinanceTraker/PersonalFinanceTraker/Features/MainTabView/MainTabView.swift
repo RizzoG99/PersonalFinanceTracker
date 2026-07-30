@@ -17,15 +17,19 @@ struct MainTabView: View {
     @State private var dashboardViewModel: DashboardViewModel
     @State private var compassViewModel: CompassViewModel
     @State private var profileViewModel = ProfileViewModel()
-    @State private var appSettings = AppSettings()
     @State private var dataChanged = DataChangedSignal()
     @State private var showPrivacyToast = false
     @State private var privacyToastTask: Task<Void, Never>?
     private let repo: TransactionActor
+    // Owned by AuthenticationWrapper (not MainTabView) so hideAmounts survives the
+    // background→lock→foreground cycle: MainTabView itself is torn down and recreated
+    // every time the PIN/biometric lock screen shows, which would otherwise reset it.
+    private let appSettings: AppSettings
 
-    init(modelContainer: ModelContainer) {
+    init(modelContainer: ModelContainer, appSettings: AppSettings) {
         let actor = TransactionActor(modelContainer: modelContainer)
         repo = actor
+        self.appSettings = appSettings
         _viewModel = State(wrappedValue: TransactionListViewModel(repo: actor))
         _dashboardViewModel = State(wrappedValue: DashboardViewModel(repo: actor))
         _compassViewModel = State(wrappedValue: CompassViewModel(repo: actor))
@@ -154,7 +158,7 @@ struct MainTabView: View {
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
         SampleData.populateModelContext(container.mainContext)
-        return MainTabView(modelContainer: container)
+        return MainTabView(modelContainer: container, appSettings: AppSettings())
             .modelContainer(container)
     } catch {
         return Text("Failed to create preview container: \(error.localizedDescription)")
