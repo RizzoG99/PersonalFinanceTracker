@@ -45,6 +45,7 @@ struct SummaryStatRow: View {
                     Text(decimalValue, format: .currency(code: currencyCode).precision(.fractionLength(0)))
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .privacyBlur()
                 } else if let stringValue = value as? String {
                     Text(stringValue)
                         .font(.subheadline)

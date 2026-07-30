@@ -30,6 +30,7 @@ struct StatCard: View {
                 Text(value)
                     .font(.headline.weight(.heavy))
                     .foregroundStyle(color)
+                    .privacyBlur()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

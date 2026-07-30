@@ -12,6 +12,10 @@ struct AuthenticationWrapper: View {
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
     @State private var showSplash = true
+    // Owned here (not by MainTabView) since AuthenticationWrapper is never torn down
+    // while the app is running — MainTabView is recreated on every lock/unlock cycle,
+    // which would otherwise reset hideAmounts whenever the app is merely backgrounded.
+    @State private var appSettings = AppSettings()
 
     private let pinService = PINService()
     let modelContainer: ModelContainer
@@ -27,7 +31,7 @@ struct AuthenticationWrapper: View {
                 )
                 .transition(.opacity)
             } else if authService.isUnlocked {
-                MainTabView(modelContainer: modelContainer)
+                MainTabView(modelContainer: modelContainer, appSettings: appSettings)
                     .transition(.opacity)
             } else {
                 PINEntryView(

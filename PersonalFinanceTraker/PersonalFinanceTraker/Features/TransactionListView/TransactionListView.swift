@@ -13,15 +13,14 @@ struct UndoDeleteBanner: View {
     let onUndo: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "trash")
-                .foregroundStyle(.secondary)
-
-            // ponytail: "transaction"/"transactions" plural handled by the catalog's plural variation, not a hand-rolled ternary
-            Text("\(count) transaction deleted")
-                .font(.subheadline)
-
-            Spacer()
+        ToastBanner(
+            icon: "trash",
+            // ponytail: "transaction"/"transactions" plural handled by the catalog's plural variation, not a
+            // hand-rolled ternary — must be String(localized:) here (not a plain interpolation) since ToastBanner's
+            // `message` is a plain String and Text(message) inside it won't trigger catalog/plural lookup on its own.
+            message: String(localized: "\(count) transaction deleted")
+        ) {
+            Spacer(minLength: 0)
 
             ZStack {
                 Circle()
@@ -40,12 +39,5 @@ struct UndoDeleteBanner: View {
                 .tint(.accentColor)
                 .accessibilityLabel("Undo delete")
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background {
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.black.opacity(0.75))
-        }
-        .foregroundStyle(.white)
     }
 }

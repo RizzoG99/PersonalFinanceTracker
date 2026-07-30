@@ -45,6 +45,7 @@ struct CategoryTrendRow: View {
                     Text(trend.category.amount.formattedEUR())
                         .font(.headline)
                         .foregroundStyle(.textPrimary)
+                        .privacyBlur()
                     trendBadge
                 }
             }

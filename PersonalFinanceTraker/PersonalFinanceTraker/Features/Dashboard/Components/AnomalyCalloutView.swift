@@ -18,6 +18,10 @@ struct AnomalyCalloutView: View {
                     .font(.subheadline)
                     .foregroundStyle(.textMid)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    // ponytail: message is one free-text string with the amount embedded
+                    // (built in DashboardViewModel); blurring the whole sentence is simpler
+                    // than restructuring it into separate amount/text parts for one banner.
+                    .privacyBlur()
             }
             // ponytail: combine icon+message into one VoiceOver stop with a "Warning" prefix,
             // scoped to just this pair so the dismiss button below stays independently actionable.

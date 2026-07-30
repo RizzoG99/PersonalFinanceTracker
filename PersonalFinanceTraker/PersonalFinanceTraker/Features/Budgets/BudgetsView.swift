@@ -35,6 +35,7 @@ struct BudgetsView: View {
                     Text(totalBudgeted.formatted(.currency(code: "EUR")))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.textPrimary)
+                        .privacyBlur()
                 }
             }
             .appFormSectionBackground()
