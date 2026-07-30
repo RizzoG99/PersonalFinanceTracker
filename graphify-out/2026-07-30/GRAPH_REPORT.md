@@ -1,16 +1,16 @@
 # Graph Report - PersonalFinanceTracker  (2026-07-30)
 
 ## Corpus Check
-- 283 files · ~1,428,706 words
+- 283 files · ~1,428,741 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2753 nodes · 3704 edges · 260 communities (230 shown, 30 thin omitted)
+- 2752 nodes · 3704 edges · 261 communities (230 shown, 31 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 96 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3ea28c30`
+- Built from commit: `030dac1d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -265,6 +265,7 @@
 - [[_COMMUNITY_Community 247|Community 247]]
 - [[_COMMUNITY_Community 248|Community 248]]
 - [[_COMMUNITY_Community 249|Community 249]]
+- [[_COMMUNITY_Community 250|Community 250]]
 - [[_COMMUNITY_Community 251|Community 251]]
 - [[_COMMUNITY_Community 253|Community 253]]
 - [[_COMMUNITY_Community 254|Community 254]]
@@ -273,7 +274,6 @@
 - [[_COMMUNITY_Community 257|Community 257]]
 - [[_COMMUNITY_Community 258|Community 258]]
 - [[_COMMUNITY_Community 259|Community 259]]
-- [[_COMMUNITY_Community 261|Community 261]]
 - [[_COMMUNITY_Community 262|Community 262]]
 
 ## God Nodes (most connected - your core abstractions)
@@ -289,16 +289,16 @@
 10. `XLSXWorkbook` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `compassPreview()` --calls--> `TransactionActor`  [INFERRED]
-  PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift → PersonalFinanceTraker/PersonalFinanceTraker/Features/MainTabView/MainTabView.swift
 - `MockTransactionRepository` --inherits--> `ITransactionRepository`  [EXTRACTED]
   PersonalFinanceTraker/PersonalFinanceTrakerTests/Mocks/MockTransactionRepository.swift → PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionRepository.swift
+- `compassPreview()` --calls--> `TransactionActor`  [INFERRED]
+  PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsView.swift → PersonalFinanceTraker/PersonalFinanceTraker/Features/MainTabView/MainTabView.swift
 - `App Icon (Default) - Briefcase with Euro Symbol` --semantically_similar_to--> `Euro Currency Briefcase SVG`  [INFERRED] [semantically similar]
   AppIcon/Icon-iOS-Default-1024x1024@1x.png → AppIcon/euro-currency-in-an-attache-case-svgrepo-com.svg
-- `GoalModel` --references--> `UUID`  [EXTRACTED]
-  PersonalFinanceTraker/PersonalFinanceTraker/Models/Snapshots.swift → PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift
-- `GoalModel` --references--> `Decimal`  [EXTRACTED]
-  PersonalFinanceTraker/PersonalFinanceTraker/Models/Snapshots.swift → PersonalFinanceTraker/PersonalFinanceTraker/Models/GoalModel.swift
+- `DashboardViewModel` --references--> `ITransactionRepository`  [EXTRACTED]
+  PersonalFinanceTraker/PersonalFinanceTraker/Features/Dashboard/DashboardViewModel.swift → PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionViewModel.swift
+- `CompassViewModel` --references--> `ITransactionRepository`  [EXTRACTED]
+  PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/InsightsViewModel.swift → PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionViewModel.swift
 
 ## Import Cycles
 - None detected.
@@ -311,7 +311,7 @@
 - **Financial Analytics Visual System** — appicon_v2_pie_chart_svg, appicon_v2_bar_chart_report_svg, appicon_v2_trend_up_svg, design_concept_financial_analytics_icons [INFERRED 0.80]
 - **Multi-theme Icon Variants (Light/Dark/Clear)** — appicon_v2_icon_ios_default_1024_pie_chart, appicon_v2_icon_ios_dark_1024_pie_chart, appicon_v2_icon_ios_cleardark_1024_pie_chart [EXTRACTED 1.00]
 
-## Communities (260 total, 30 thin omitted)
+## Communities (261 total, 31 thin omitted)
 
 ### Community 0 - "Analytics & Dashboard Views"
 Cohesion: 0.20
@@ -335,7 +335,7 @@ Nodes (14): File Structure, Global Constraints, Health Score V2 Implementation P
 
 ### Community 5 - "Compass Goals & Forecasting"
 Cohesion: 0.09
-Nodes (24): CompassViewModel, ITransactionRepository, Bool, CategoryTrend, CurrencyService, Decimal, FinancialHealthService, Foundation (+16 more)
+Nodes (23): CompassViewModel, Bool, CategoryTrend, CurrencyService, Decimal, FinancialHealthService, Foundation, GoalInput (+15 more)
 
 ### Community 6 - "Transaction Repository Layer"
 Cohesion: 0.11
@@ -367,7 +367,7 @@ Nodes (28): CustomLocalizedStringResourceConvertible, Error, MockError, forced, 
 
 ### Community 13 - "Transaction Form ViewModel"
 Cohesion: 0.14
-Nodes (13): EditAddTransactionViewModel, Bool, CategorySnapshot, Date, DateFormatter, Double, Foundation, GoalSnapshot (+5 more)
+Nodes (13): DateFormatter, EditAddTransactionViewModel, ITransactionRepository, Bool, CategorySnapshot, Date, Double, Foundation (+5 more)
 
 ### Community 14 - "Chart Data Aggregation"
 Cohesion: 0.15
@@ -667,7 +667,7 @@ Nodes (3): CategoryTrendsSection, CategoryTrend, SwiftUI
 
 ### Community 89 - "Profile Section Label"
 Cohesion: 0.23
-Nodes (11): Bool, CategorySnapshot, CurrencyService, Decimal, Double, Foundation, HealthScore, Int (+3 more)
+Nodes (11): CurrencyService, HealthScore, Bool, CategorySnapshot, Decimal, Double, Foundation, Int (+3 more)
 
 ### Community 90 - "Transaction Form View"
 Cohesion: 0.12
@@ -743,7 +743,7 @@ Nodes (17): Data Flow, Data Layer, Files to Create, Files to Modify, `FinancialH
 
 ### Community 109 - "Community 109"
 Cohesion: 0.10
-Nodes (20): GreetingHeaderView, ProfilePayCycleSection, RecentTransactionsSectionView, CategoryChip, CategoryChipsGrid, GoalChip, GoalChipsGrid, TransactionFormView (+12 more)
+Nodes (20): ColorTokenPicker, GreetingHeaderView, ProfilePayCycleSection, CategoryChip, CategoryChipsGrid, GoalChip, GoalChipsGrid, TransactionFormView (+12 more)
 
 ### Community 110 - "Community 110"
 Cohesion: 0.13
@@ -770,12 +770,12 @@ Cohesion: 0.12
 Nodes (15): `CompassViewModel.computeForecast()` (updated), `DailyForecastCache` (new SwiftData model), `DailyPoint` (new value type in `CompassDataModels.swift`), Data Layer, Empty / insufficient data, Forecast Section Redesign, `ForecastCard` (redesigned), Goal (+7 more)
 
 ### Community 116 - "Community 116"
-Cohesion: 0.50
-Nodes (3): ColorTokenPicker, String, SwiftUI
+Cohesion: 0.15
+Nodes (13): ITransactionRepository, SearchDateRange, custom, last3Months, thisMonth, thisYear, TransactionTypeFilter, all (+5 more)
 
 ### Community 117 - "Community 117"
 Cohesion: 0.33
-Nodes (5): Double, Int, SwiftUI, Void, UndoDeleteBanner
+Nodes (5): Double, Int, SwiftUI, UndoDeleteBanner, Void
 
 ### Community 118 - "Community 118"
 Cohesion: 0.20
@@ -894,8 +894,8 @@ Cohesion: 0.29
 Nodes (8): compassPreview(), CompassView, Binding, Bool, Charts, CompassViewModel, SwiftData, SwiftUI
 
 ### Community 158 - "Community 158"
-Cohesion: 0.22
-Nodes (5): Bool, Foundation, LocalAuthentication, Void, BiometricAuthService
+Cohesion: 0.20
+Nodes (6): ObservableObject, Bool, Foundation, LocalAuthentication, Void, BiometricAuthService
 
 ### Community 159 - "Community 159"
 Cohesion: 0.13
@@ -1018,16 +1018,16 @@ Cohesion: 0.12
 Nodes (15): 1. BudgetProgressBarView Component, 2. Dashboard Integration, Build Status, Build & Verification Results, Commit, Concerns, Created, Files Modified/Created (+7 more)
 
 ### Community 189 - "Community 189"
-Cohesion: 0.22
-Nodes (7): ObservableObject, Bool, Double, LocalAuthentication, String, SwiftUI, ProfileViewModel
+Cohesion: 0.25
+Nodes (6): LocalAuthentication, Bool, Double, String, SwiftUI, ProfileViewModel
 
 ### Community 192 - "Community 192"
 Cohesion: 0.21
 Nodes (8): Bool, Calendar, Date, Foundation, Int, UserNotifications, ReminderScheduler, ReminderService
 
 ### Community 194 - "Community 194"
-Cohesion: 0.19
-Nodes (8): SearchFilters, Decimal, Set, Date, Int, SearchTests, SearchDateRange, TransactionTypeFilter
+Cohesion: 0.18
+Nodes (9): SearchFilters, Bool, Date, Decimal, TransactionSnapshot, SearchTests, SearchDateRange, Set (+1 more)
 
 ### Community 198 - "Community 198"
 Cohesion: 0.17
@@ -1070,8 +1070,8 @@ Cohesion: 0.22
 Nodes (5): Date, Foundation, PersonalFinanceTraker, Testing, ReminderSchedulerTests
 
 ### Community 215 - "Community 215"
-Cohesion: 0.15
-Nodes (13): ITransactionRepository, SearchDateRange, custom, last3Months, thisMonth, thisYear, TransactionTypeFilter, all (+5 more)
+Cohesion: 0.25
+Nodes (8): GoalModel, Hasher, Bool, Color, Date, Decimal, String, UUID
 
 ### Community 216 - "Community 216"
 Cohesion: 0.15
@@ -1197,59 +1197,55 @@ Nodes (5): DashboardView, Bool, SwiftData, SwiftUI, TabItem
 Cohesion: 0.40
 Nodes (6): Bool, CSVFile, TransactionType, String, ColumnMapping, CSVColumnMapper
 
-### Community 253 - "Community 253"
-Cohesion: 0.25
-Nodes (8): GoalModel, Hasher, Bool, Color, Date, Decimal, String, UUID
-
-### Community 254 - "Community 254"
+### Community 250 - "Community 250"
 Cohesion: 0.18
 Nodes (10): GoalIcon, courses, emergency, gift, house, other, vacation, Foundation (+2 more)
 
-### Community 255 - "Community 255"
+### Community 253 - "Community 253"
 Cohesion: 0.24
 Nodes (6): Foundation, ModelContext, PersonalFinanceTraker, SwiftData, Testing, DataWipeServiceTests
 
-### Community 256 - "Community 256"
+### Community 254 - "Community 254"
 Cohesion: 0.38
 Nodes (5): CustomDateRangeSheet, FilterChipsView, Bool, String, SwiftUI
 
-### Community 257 - "Community 257"
+### Community 255 - "Community 255"
 Cohesion: 0.33
 Nodes (5): CoreXLSX, Equatable, Foundation, XLSXReadError, unreadable
 
+### Community 256 - "Community 256"
+Cohesion: 0.50
+Nodes (3): RecentTransactionsSectionView, SwiftData, SwiftUI
+
 ### Community 258 - "Community 258"
 Cohesion: 0.50
-Nodes (3): Bool, Date, TransactionSnapshot
+Nodes (3): Foundation, PersonalFinanceTraker, Testing
 
 ### Community 259 - "Community 259"
 Cohesion: 0.50
 Nodes (3): BalanceCardView, SwiftData, SwiftUI
-
-### Community 261 - "Community 261"
-Cohesion: 0.50
-Nodes (3): Foundation, PersonalFinanceTraker, Testing
 
 ### Community 262 - "Community 262"
 Cohesion: 0.18
 Nodes (12): Date, Decimal, Foundation, Int, TransactionInput, UUID, ImportStep, categoryMapping (+4 more)
 
 ## Knowledge Gaps
-- **1218 isolated node(s):** `AppIntents`, `Foundation`, `expense`, `income`, `LocalizedStringResource` (+1213 more)
+- **1218 isolated node(s):** `SwiftUI`, `EditAddTransactionViewModel`, `Foundation`, `String`, `TransactionType` (+1213 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **30 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **31 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `TransactionActor` connect `Community 154` to `Compass Goals & Forecasting`, `Community 167`, `Community 240`, `Authentication Wrapper`, `Community 246`, `Community 186`, `Community 251`, `Community 220`, `Community 157`, `Community 190`?**
-  _High betweenness centrality (0.083) - this node is a cross-community bridge._
-- **Why does `DashboardViewModel` connect `Community 103` to `Community 248`, `Compass Goals & Forecasting`, `Community 189`?**
+- **Why does `ITransactionRepository` connect `Transaction Form ViewModel` to `Profile State Management`, `Compass Goals & Forecasting`, `Transaction Repository Layer`, `Community 103`, `Community 74`, `Community 154`?**
+  _High betweenness centrality (0.094) - this node is a cross-community bridge._
+- **Why does `TransactionActor` connect `Community 154` to `Community 167`, `Transaction Form ViewModel`, `Community 240`, `Authentication Wrapper`, `Community 246`, `Community 186`, `Community 251`, `Community 220`, `Community 157`, `Community 190`?**
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+- **Why does `DashboardViewModel` connect `Community 103` to `Community 248`, `Transaction Form ViewModel`, `Community 158`?**
   _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **Why does `TransactionListViewModel` connect `Profile State Management` to `Compass Goals & Forecasting`, `Community 189`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **Are the 26 inferred relationships involving `MockTransactionRepository` (e.g. with `.loadPopulatesTransactions()` and `.loadSetsErrorOnRepositoryFailure()`) actually correct?**
   _`MockTransactionRepository` has 26 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `AppIntents`, `Foundation`, `expense` to the rest of the system?**
+- **What connects `SwiftUI`, `EditAddTransactionViewModel`, `Foundation` to the rest of the system?**
   _1218 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Profile State Management` be split into smaller, more focused modules?**
   _Cohesion score 0.08200290275761973 - nodes in this community are weakly interconnected._
