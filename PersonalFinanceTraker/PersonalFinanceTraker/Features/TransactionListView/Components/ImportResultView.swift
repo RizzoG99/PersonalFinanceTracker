@@ -149,7 +149,7 @@ struct ImportResultView: View {
     private func transactionRow(_ t: TransactionInput) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(t.category.removingLeadingEmoji)
+                Text(t.category.removingLeadingEmoji.localizedCategoryDisplay)
                     .font(.subheadline)
                 if !t.note.isEmpty {
                     Text(t.note)

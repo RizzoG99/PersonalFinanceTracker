@@ -122,7 +122,7 @@ struct ActivityView: View {
 private struct ConditionalSearchable: ViewModifier {
     let isActive: Bool
     @Binding var text: String
-    let prompt: String
+    let prompt: LocalizedStringKey
 
     func body(content: Content) -> some View {
         if isActive {

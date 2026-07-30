@@ -144,7 +144,7 @@ struct CSVCategoryMappingView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.blue)
                         } else if let cat = availableCategories.first(where: { $0.id.uuidString == sel }) {
-                            Text(cat.name)
+                            Text(cat.name.localizedCategoryDisplay)
                                 .font(.subheadline)
                                 .foregroundStyle(.primary)
                         }

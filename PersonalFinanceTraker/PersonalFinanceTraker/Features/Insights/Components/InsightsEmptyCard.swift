@@ -6,9 +6,9 @@ import SwiftUI
 /// existing call sites (HabitsSection, ForecastSection, CategoryTrendsSection) don't need edits.
 struct EmptyStateView: View {
     var icon: String? = nil
-    let message: String
-    var subtitle: String? = nil
-    var actionTitle: String? = nil
+    let message: LocalizedStringKey
+    var subtitle: LocalizedStringKey? = nil
+    var actionTitle: LocalizedStringKey? = nil
     var action: (() -> Void)? = nil
 
     var body: some View {

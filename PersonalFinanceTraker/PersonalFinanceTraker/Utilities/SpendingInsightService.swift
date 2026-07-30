@@ -22,9 +22,8 @@ struct SpendingInsightService {
 
         guard lastTotal > 0 else {
             return HeroInsight(
-                title: "Building your picture",
-                subtitle: "Keep logging to unlock insights",
-                emoji: "📊",
+                title: String(localized: "Building your picture"),
+                subtitle: String(localized: "Keep logging to unlock insights"),
                 trendDirection: .flat
             )
         }
@@ -35,23 +34,20 @@ struct SpendingInsightService {
 
         if change < -5 {
             return HeroInsight(
-                title: "Spending \(absChange)% less",
-                subtitle: "You're under last month's pace",
-                emoji: "🎉",
+                title: String(localized: "Spending \(absChange)% less"),
+                subtitle: String(localized: "You're under last month's pace"),
                 trendDirection: .down
             )
         } else if change > 10 {
             return HeroInsight(
-                title: "Spending \(absChange)% more",
-                subtitle: "Watch your pace this month",
-                emoji: "⚡",
+                title: String(localized: "Spending \(absChange)% more"),
+                subtitle: String(localized: "Watch your pace this month"),
                 trendDirection: .up
             )
         } else {
             return HeroInsight(
-                title: "On track this month",
-                subtitle: "Spending similar to last month",
-                emoji: "✨",
+                title: String(localized: "On track this month"),
+                subtitle: String(localized: "Spending similar to last month"),
                 trendDirection: .flat
             )
         }
@@ -111,15 +107,18 @@ struct SpendingInsightService {
             // Fixed denominators: 30-day window always has ~10 weekend days and ~20 weekday days
             let weekendAvg = weekendTotal / 10
             let weekdayAvg = weekdayTotal / 20
-            if weekendAvg > 0 && weekdayAvg > 0 {
+            // ponytail: floor on the higher average, not the delta, so a real "spends more on X" pattern
+            // still surfaces even when the gap is modest (weekdayHeavySpending's delta is only €7.5)
+            let dailySpendFloor: Decimal = 10
+            if weekendAvg > 0 && weekdayAvg > 0 && max(weekendAvg, weekdayAvg) >= dailySpendFloor {
                 // ponytail: truncating is standard Decimal→Double in this codebase (see heroInsight, categoryTrends)
                 let ratio = Double(truncating: (weekendAvg / weekdayAvg) as NSDecimalNumber)
                 if ratio >= 1.3 {
                     let ratioStr = String(format: "%.1f", ratio)
                     observations.append(HabitObservation(
                         sfSymbol: "calendar.badge.clock",
-                        title: "Weekend spending is \(ratioStr)× higher",
-                        detail: "\(weekendAvg.formattedEURCompact()) avg/day on weekends vs \(weekdayAvg.formattedEURCompact()) on weekdays"
+                        title: String(localized: "Weekend spending is \(ratioStr)× higher"),
+                        detail: String(localized: "\(weekendAvg.formattedEURCompact()) avg/day on weekends vs \(weekdayAvg.formattedEURCompact()) on weekdays")
                     ))
                 } else {
                     let inverseRatio = Double(truncating: (weekdayAvg / weekendAvg) as NSDecimalNumber)
@@ -127,8 +126,8 @@ struct SpendingInsightService {
                         let ratioStr = String(format: "%.1f", inverseRatio)
                         observations.append(HabitObservation(
                             sfSymbol: "briefcase",
-                            title: "Weekdays are your heaviest spending days",
-                            detail: "\(weekdayAvg.formattedEURCompact()) avg/day on weekdays vs \(weekendAvg.formattedEURCompact()) on weekends"
+                            title: String(localized: "Weekdays are your heaviest spending days"),
+                            detail: String(localized: "\(weekdayAvg.formattedEURCompact()) avg/day on weekdays vs \(weekendAvg.formattedEURCompact()) on weekends")
                         ))
                     }
                 }
@@ -158,12 +157,15 @@ struct SpendingInsightService {
 
             let info = CategoryInfo.info(for: catName)
             let parts = catName.split(separator: " ", maxSplits: 1)
-            let displayName = parts.count > 1 ? String(parts[1]) : catName
-            let detail = streak >= 4 ? "Every week for over a month" : "Every week for \(streak) weeks"
+            let displayName = parts.count > 1 ? String(parts[1]).localizedCategoryDisplay : catName.localizedCategoryDisplay
+            // ponytail: "week"/"weeks" plural handled by the catalog's plural variation, not a hand-rolled ternary — see Localizable.xcstrings
+            let detail = streak >= 4
+                ? String(localized: "Every week for over a month")
+                : String(localized: "Every week for \(streak) week")
 
             streakObservations.append((streak, HabitObservation(
                 sfSymbol: info.symbol,
-                title: "\(displayName) — \(streak)-week streak",
+                title: String(localized: "\(displayName) — \(streak)-week streak"),
                 detail: detail
             )))
         }
@@ -176,8 +178,9 @@ struct SpendingInsightService {
         if subCount >= 2 {
             observations.append(HabitObservation(
                 sfSymbol: "play.circle.fill",
-                title: "\(subCount) subscription charges this month",
-                detail: "Review recurring charges regularly"
+                // ponytail: "charge"/"charges" plural handled by the catalog's plural variation
+                title: String(localized: "\(subCount) subscription charge this month"),
+                detail: String(localized: "Review recurring charges regularly")
             ))
         }
 

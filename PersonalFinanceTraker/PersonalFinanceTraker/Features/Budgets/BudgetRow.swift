@@ -16,7 +16,7 @@ struct BudgetRow: View {
             Image(systemName: category.systemImage)
                 .foregroundStyle(category.categoryColor)
                 .frame(width: 24)
-            Text(category.name)
+            Text(category.name.localizedCategoryDisplay)
                 .foregroundStyle(.textPrimary)
             Spacer()
             if !rowFocused && hasBudget {

@@ -30,7 +30,7 @@ struct CategoryTrendRow: View {
                 categoryIcon
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(trend.category.category.removingLeadingEmoji)
+                    Text(trend.category.category.removingLeadingEmoji.localizedCategoryDisplay)
                         .font(.body)
                         .foregroundStyle(.textPrimary)
                         .lineLimit(1)

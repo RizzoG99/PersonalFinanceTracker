@@ -125,10 +125,10 @@ struct FinancialHealthService {
 
         let label: String
         switch total {
-        case 80...100: label = "Excellent financial habits"
-        case 60...79:  label = "Solid with room to grow"
-        case 40...59:  label = "Making progress"
-        default:       label = "Needs attention"
+        case 80...100: label = String(localized: "Excellent financial habits")
+        case 60...79:  label = String(localized: "Solid with room to grow")
+        case 40...59:  label = String(localized: "Making progress")
+        default:       label = String(localized: "Needs attention")
         }
 
         return HealthScore(score: total, label: label, components: components)
@@ -137,7 +137,7 @@ struct FinancialHealthService {
     // MARK: - Explanation helpers
 
     private func savingsExplanation(rate: Double) -> String {
-        "You saved \(Int(rate * 100))% of income over the last 6 months."
+        String(localized: "You saved \(Int(rate * 100))% of income over the last 6 months.")
     }
 
     private func savingsTip(rate: Double, income: Decimal) -> String {
@@ -147,39 +147,40 @@ struct FinancialHealthService {
         let needed = gap * (income / 6)
         let rounded = Int(truncating: needed as NSDecimalNumber)
         guard rounded >= 1 else {
-            return "Increase your savings rate from \(Int(rate * 100))% toward 20% to score higher."
+            return String(localized: "Increase your savings rate from \(Int(rate * 100))% toward 20% to score higher.")
         }
-        return "Save €\(rounded) more per month to reach the 20% target."
+        return String(localized: "Save \(Decimal(rounded).formattedEUR()) more per month to reach the 20% target.")
     }
 
     private func stabilityExplanation(cov: Double) -> String {
-        "Your monthly spending varies by \(Int(cov * 100))%."
+        String(localized: "Your monthly spending varies by \(Int(cov * 100))%.")
     }
 
     private func stabilityTip(cov: Double) -> String {
         let pct = Int(cov * 100)
-        return "Your spending varies \(pct)% month-to-month. Aim for under 10% for a top score."
+        return String(localized: "Your spending varies \(pct)% month-to-month. Aim for under 10% for a top score.")
     }
 
     private func adherenceExplanation(adhering: Int, total: Int) -> String {
-        guard total > 0 else { return "No budgets set — add them in Profile to track spending limits." }
-        return "\(adhering) of \(total) budgeted categories are within limit this month."
+        guard total > 0 else { return String(localized: "No budgets set — add them in Profile to track spending limits.") }
+        return String(localized: "\(adhering) of \(total) budgeted categories are within limit this month.")
     }
 
     private func adherenceTip(adhering: Int, total: Int) -> String {
-        guard total > 0 else { return "Set monthly budgets in Profile to unlock this score." }
+        guard total > 0 else { return String(localized: "Set monthly budgets in Profile to unlock this score.") }
         let over = total - adhering
-        return "Bring \(over) over-budget \(over == 1 ? "category" : "categories") within limit."
+        // ponytail: plural form ("category"/"categories") filled in via the catalog's plural variation, not a hand-rolled ternary — see Localizable.xcstrings
+        return String(localized: "Bring \(over) over-budget category within limit.")
     }
 
     private func subscriptionExplanation(ratio: Double) -> String {
         let pct = Int(ratio * 100)
-        guard pct > 0 else { return "No subscription spending detected in the last 6 months." }
-        return "Subscriptions are \(pct)% of expenses over the last 6 months."
+        guard pct > 0 else { return String(localized: "No subscription spending detected in the last 6 months.") }
+        return String(localized: "Subscriptions are \(pct)% of expenses over the last 6 months.")
     }
 
     private func subscriptionTip() -> String {
-        "Keep subscriptions under 15% of expenses to earn full points."
+        String(localized: "Keep subscriptions under 15% of expenses to earn full points.")
     }
 
     private func sumExpenses(_ items: [TransactionSnapshot]) -> Decimal {

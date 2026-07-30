@@ -144,7 +144,7 @@ final class DashboardViewModel {
         let key = "\(cycleStart.timeIntervalSince1970)_\(spike.period)"
         guard key != dismissedKey else { return nil }
         let amount = Double(truncating: spike.expenses as NSDecimalNumber)
-        let message = "Unusually high spending in \(spike.period): \(amount.formatted(.currency(code: "EUR")))"
+        let message = String(localized: "Unusually high spending in \(spike.period): \(amount.formatted(.currency(code: "EUR")))")
         return AnomalyCallout(message: message, dismissKey: key)
     }
 
@@ -157,11 +157,11 @@ final class DashboardViewModel {
 
     var financialMonthLabel: String {
         let startDay = AppSettings.storedStartDay
-        guard startDay != 1 else { return "This Month" }
+        guard startDay != 1 else { return String(localized: "This Month") }
         let (start, end) = PayCycleService.currentFinancialMonth(startDay: startDay)
         let startFormatted = start.formatted(.dateTime.month(.abbreviated).day())
         let endFormatted = end.formatted(.dateTime.month(.abbreviated).day())
-        return "This period · \(startFormatted) – \(endFormatted)"
+        return String(localized: "This period · \(startFormatted) – \(endFormatted)")
     }
 
     var hasNoTransactions: Bool {

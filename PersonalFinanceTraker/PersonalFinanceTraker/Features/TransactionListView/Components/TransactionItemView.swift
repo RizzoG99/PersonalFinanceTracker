@@ -28,11 +28,11 @@ struct TransactionItemView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(item.note.isEmpty ? item.category.removingLeadingEmoji : item.note)
+                Text(item.note.isEmpty ? item.category.removingLeadingEmoji.localizedCategoryDisplay : item.note)
                     .font(.body)
                     .foregroundStyle(.textPrimary)
                 if !item.note.isEmpty {
-                    Text(item.category.removingLeadingEmoji)
+                    Text(item.category.removingLeadingEmoji.localizedCategoryDisplay)
                         .font(.caption)
                         .foregroundStyle(.textDim)
                 }

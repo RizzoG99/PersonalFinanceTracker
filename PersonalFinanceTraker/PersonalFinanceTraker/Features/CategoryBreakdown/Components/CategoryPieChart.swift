@@ -123,7 +123,7 @@ private struct CategoryLegendItem: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 // Category name
-                Text(dataPoint.category.removingLeadingEmoji)
+                Text(dataPoint.category.removingLeadingEmoji.localizedCategoryDisplay)
                     .font(.caption)
                     .fontWeight(.medium)
                     .lineLimit(1)

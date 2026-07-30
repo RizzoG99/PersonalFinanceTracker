@@ -53,4 +53,13 @@ extension String {
 
         return emojiRanges.contains { $0.contains(scalar.value) }
     }
+
+    /// Localizes a category name for display, without touching the stored value.
+    /// Category strings (`TransactionModel.category`, `CategoryModel.name`) are used as
+    /// match keys for icon/color lookup (`CategoryInfo`) and CSV import — translating them
+    /// in place would break that matching. This only translates the ~36 built-in category
+    /// names (seeded in `Localizable.xcstrings`); custom/unmatched names pass through verbatim.
+    var localizedCategoryDisplay: String {
+        String(localized: String.LocalizationValue(self))
+    }
 }

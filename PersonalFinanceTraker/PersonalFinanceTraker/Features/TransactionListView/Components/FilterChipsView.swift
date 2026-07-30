@@ -39,7 +39,7 @@ struct FilterChipsView: View {
             Button {
                 vm.selectedCategory = nil
             } label: {
-                chip(selected.removingLeadingEmoji, isActive: true)
+                chip(selected.removingLeadingEmoji.localizedCategoryDisplay, isActive: true)
             }
             .buttonStyle(.plain)
         } else {
@@ -48,7 +48,7 @@ struct FilterChipsView: View {
                     Button {
                         vm.selectedCategory = category
                     } label: {
-                        Label(category.removingLeadingEmoji, systemImage: CategoryInfo.info(for: category).symbol)
+                        Label(category.removingLeadingEmoji.localizedCategoryDisplay, systemImage: CategoryInfo.info(for: category).symbol)
                     }
                 }
             } label: {

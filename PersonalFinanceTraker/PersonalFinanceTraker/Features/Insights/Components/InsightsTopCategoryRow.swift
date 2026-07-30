@@ -12,7 +12,7 @@ struct InsightsTopCategoryRow: View {
         VStack(spacing: 8) {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(category.category.removingLeadingEmoji)
+                    Text(category.category.removingLeadingEmoji.localizedCategoryDisplay)
                         .font(.body)
                         .foregroundStyle(.textPrimary)
                     Text(String(format: "%.1f%%", category.percentage))

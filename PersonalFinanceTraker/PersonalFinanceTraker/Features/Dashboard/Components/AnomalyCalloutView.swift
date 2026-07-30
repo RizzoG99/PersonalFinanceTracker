@@ -11,12 +11,19 @@ struct AnomalyCalloutView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
-            Text(message)
-                .font(.subheadline)
-                .foregroundStyle(.textMid)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.textMid)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            // ponytail: combine icon+message into one VoiceOver stop with a "Warning" prefix,
+            // scoped to just this pair so the dismiss button below stays independently actionable.
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text("Warning: \(message)"))
+
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 12, weight: .semibold))

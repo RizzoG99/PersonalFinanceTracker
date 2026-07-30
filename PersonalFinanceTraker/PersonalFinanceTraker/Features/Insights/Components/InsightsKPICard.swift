@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct InsightsKPICard: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let color: Color
     let icon: String

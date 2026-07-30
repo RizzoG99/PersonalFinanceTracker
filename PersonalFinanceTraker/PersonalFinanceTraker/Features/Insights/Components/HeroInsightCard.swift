@@ -69,6 +69,8 @@ struct HeroInsightCard: View {
                         .background(tintColor.opacity(0.15), in: Capsule())
                 }
             }
+            // ponytail: icon + pill are redundant with the title/subtitle text, combine into one VoiceOver stop
+            .accessibilityElement(children: .combine)
         }
     }
 }

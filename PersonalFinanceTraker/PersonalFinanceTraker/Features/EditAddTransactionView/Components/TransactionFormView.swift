@@ -111,7 +111,7 @@ struct CategoryChip: View {
                 .font(.system(size: 20))
                 .foregroundStyle(category.categoryColor)
 
-            Text(category.name)
+            Text(category.name.localizedCategoryDisplay)
                 .font(.caption2)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)

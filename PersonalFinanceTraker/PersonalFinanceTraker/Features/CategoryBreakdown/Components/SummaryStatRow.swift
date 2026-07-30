@@ -10,21 +10,21 @@ import SwiftUI
 
 /// A row showing summary statistics
 struct SummaryStatRow: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: Any
     let currencyCode: String?
     let isNumber: Bool
     let isText: Bool
-    
-    init(label: String, value: Decimal, currencyCode: String) {
+
+    init(label: LocalizedStringKey, value: Decimal, currencyCode: String) {
         self.label = label
         self.value = value
         self.currencyCode = currencyCode
         self.isNumber = false
         self.isText = false
     }
-    
-    init(label: String, value: String, isNumber: Bool = false, isText: Bool = false) {
+
+    init(label: LocalizedStringKey, value: String, isNumber: Bool = false, isText: Bool = false) {
         self.label = label
         self.value = value
         self.currencyCode = nil

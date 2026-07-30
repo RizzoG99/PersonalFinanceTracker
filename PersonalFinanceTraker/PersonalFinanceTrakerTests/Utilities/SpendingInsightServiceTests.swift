@@ -82,6 +82,16 @@ struct SpendingInsightServiceTests {
         #expect(obs.filter { $0.title.contains("streak") }.count <= 2)
     }
 
+    @Test("trivial amounts: no weekend/weekday observation despite ratio ≥ 1.3")
+    func trivialAmountsSkipWeekendWeekday() {
+        let service = makeService()
+        // weekend avg = €15/10 = €1.5/day, weekday avg = €10/20 = €0.5/day — ratio = 3× but both trivial
+        let weekend = (0..<5).map { makeExpense(amount: 3, on: dateOnWeekday(7, weeksAgo: $0 % 4)) }
+        let weekday = (0..<5).map { makeExpense(amount: 2, on: dateOnWeekday(2, weeksAgo: $0 % 4)) }
+        let obs = service.habitObservations(expenseTransactions: weekend + weekday)
+        #expect(!obs.contains { $0.sfSymbol == "calendar.badge.clock" || $0.sfSymbol == "briefcase" })
+    }
+
     @Test("weekday-heavy: emits briefcase observation")
     func weekdayHeavySpending() {
         let service = makeService()

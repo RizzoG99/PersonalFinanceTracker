@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TransactionSaveButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let isValid: Bool
     let action: () -> Void
 

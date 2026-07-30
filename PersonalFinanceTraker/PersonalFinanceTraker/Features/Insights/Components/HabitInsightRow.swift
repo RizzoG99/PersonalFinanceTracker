@@ -31,6 +31,8 @@ struct HabitInsightRow: View {
 
                 Spacer()
             }
+            // ponytail: icon is decorative, title/detail already carry the meaning — one VoiceOver stop
+            .accessibilityElement(children: .combine)
         }
     }
 }
