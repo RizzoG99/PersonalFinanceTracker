@@ -17,6 +17,7 @@ enum AppContainer {
             GoalModel.self,
             HealthScoreSnapshot.self,
             DailyForecastCache.self,
+            RecurrenceRule.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
