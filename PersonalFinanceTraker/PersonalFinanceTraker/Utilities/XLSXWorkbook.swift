@@ -138,6 +138,9 @@ struct XLSXWorkbook {
         if cell.type == .sharedString {
             return sharedStrings.flatMap { cell.stringValue($0) } ?? ""
         }
+        if cell.type == .inlineStr {
+            return cell.inlineString?.text ?? ""
+        }
         if let raw = cell.value, let number = Double(raw) {
             return Self.cleanNumberString(number)
         }
