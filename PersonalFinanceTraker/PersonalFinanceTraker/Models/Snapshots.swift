@@ -15,6 +15,7 @@ struct TransactionSnapshot: Identifiable, Sendable, Hashable {
     let category: String
     let currencyCode: String
     let goalId: UUID?
+    let recurrenceRuleId: UUID?
     let categoryId: PersistentIdentifier?
     let categorySystemImage: String?
     let categoryColorToken: String?
@@ -27,6 +28,7 @@ struct TransactionSnapshot: Identifiable, Sendable, Hashable {
         self.category = model.category
         self.currencyCode = model.currencyCode
         self.goalId = model.goalId
+        self.recurrenceRuleId = model.recurrenceRuleId
         self.categoryId = model.categoryModel?.persistentModelID
         self.categorySystemImage = model.categoryModel?.systemImage
         self.categoryColorToken = model.categoryModel?.colorToken
@@ -148,8 +150,9 @@ struct TransactionInput: Sendable {
     let currencyCode: String
     let goalId: UUID?
     let categoryPersistentId: PersistentIdentifier?
+    let recurrenceRuleId: UUID?
 
-    init(timestamp: Date, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil) {
+    init(timestamp: Date, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil, recurrenceRuleId: UUID? = nil) {
         self.timestamp = timestamp
         self.amount = amount
         self.note = note
@@ -157,6 +160,7 @@ struct TransactionInput: Sendable {
         self.currencyCode = currencyCode
         self.goalId = goalId
         self.categoryPersistentId = categoryPersistentId
+        self.recurrenceRuleId = recurrenceRuleId
     }
 }
 
@@ -175,4 +179,62 @@ struct GoalInput: Sendable {
     var deadline: Date?
     var colorToken: String
     var iconName: String
+}
+
+struct RecurrenceRuleSnapshot: Identifiable, Sendable, Hashable {
+    let id: UUID
+    let persistentId: PersistentIdentifier
+    let frequency: RecurrenceFrequency
+    let interval: Int
+    let startDate: Date
+    let endDate: Date?
+    let lastMaterializedDate: Date?
+    let amount: Decimal
+    let note: String
+    let category: String
+    let currencyCode: String
+    let goalId: UUID?
+    let categoryId: PersistentIdentifier?
+
+    init(_ model: RecurrenceRule) {
+        self.id = model.id
+        self.persistentId = model.persistentModelID
+        self.frequency = model.recurrenceFrequency
+        self.interval = model.interval
+        self.startDate = model.startDate
+        self.endDate = model.endDate
+        self.lastMaterializedDate = model.lastMaterializedDate
+        self.amount = model.amount
+        self.note = model.note
+        self.category = model.category
+        self.currencyCode = model.currencyCode
+        self.goalId = model.goalId
+        self.categoryId = model.categoryModel?.persistentModelID
+    }
+}
+
+struct RecurrenceRuleInput: Sendable {
+    let id: UUID
+    let frequency: RecurrenceFrequency
+    let interval: Int
+    let startDate: Date
+    let amount: Decimal
+    let note: String
+    let category: String
+    let currencyCode: String
+    let goalId: UUID?
+    let categoryPersistentId: PersistentIdentifier?
+
+    init(id: UUID = UUID(), frequency: RecurrenceFrequency, interval: Int, startDate: Date, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil) {
+        self.id = id
+        self.frequency = frequency
+        self.interval = interval
+        self.startDate = startDate
+        self.amount = amount
+        self.note = note
+        self.category = category
+        self.currencyCode = currencyCode
+        self.goalId = goalId
+        self.categoryPersistentId = categoryPersistentId
+    }
 }
