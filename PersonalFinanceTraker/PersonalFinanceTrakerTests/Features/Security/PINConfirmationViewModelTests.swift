@@ -56,7 +56,10 @@ struct PINConfirmationViewModelTests {
         #expect(!viewModel.errorMessage.isEmpty)
         #expect(viewModel.isShaking)
 
-        try await Task.sleep(for: .seconds(0.3))
+        // ponytail: reset fires ~0.6s after last digit (0.15s verify delay +
+        // 0.45s reset delay in the view model); wait past that with margin
+        // instead of matching it exactly.
+        try await Task.sleep(for: .seconds(0.5))
 
         #expect(viewModel.pinInput.isEmpty)
         #expect(viewModel.eyesOpen)
