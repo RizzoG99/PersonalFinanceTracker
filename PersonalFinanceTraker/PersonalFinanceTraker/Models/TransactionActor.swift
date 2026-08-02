@@ -23,7 +23,8 @@ actor TransactionActor: ITransactionRepository {
             note: input.note,
             category: input.category,
             currencyCode: input.currencyCode,
-            goalId: input.goalId
+            goalId: input.goalId,
+            recurrenceRuleId: input.recurrenceRuleId
         )
         if let pid = input.categoryPersistentId,
            let cat = modelContext.model(for: pid) as? CategoryModel {
@@ -42,7 +43,8 @@ actor TransactionActor: ITransactionRepository {
                 note: input.note,
                 category: input.category,
                 currencyCode: input.currencyCode,
-                goalId: input.goalId
+                goalId: input.goalId,
+                recurrenceRuleId: input.recurrenceRuleId
             )
             if let pid = input.categoryPersistentId,
                let cat = modelContext.model(for: pid) as? CategoryModel {
@@ -76,6 +78,111 @@ actor TransactionActor: ITransactionRepository {
         try modelContext.save()
     }
 
+    // MARK: Recurrence rules
+
+    func addRecurrenceRule(_ input: RecurrenceRuleInput) async throws {
+        let rule = RecurrenceRule(
+            id: input.id,
+            frequency: input.frequency,
+            interval: input.interval,
+            startDate: input.startDate,
+            amount: input.amount,
+            note: input.note,
+            category: input.category,
+            currencyCode: input.currencyCode,
+            goalId: input.goalId
+        )
+        if let pid = input.categoryPersistentId,
+           let cat = modelContext.model(for: pid) as? CategoryModel {
+            rule.categoryModel = cat
+        }
+        modelContext.insert(rule)
+        try modelContext.save()
+    }
+
+    func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
+        let today = Calendar.current.startOfDay(for: .now)
+        let all = try modelContext.fetch(FetchDescriptor<RecurrenceRule>())
+        return all.filter { $0.isActive(asOf: today) }.map(RecurrenceRuleSnapshot.init)
+    }
+
+    func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot? {
+        var desc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == id })
+        desc.fetchLimit = 1
+        return try modelContext.fetch(desc).first.map(RecurrenceRuleSnapshot.init)
+    }
+
+    func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws {
+        var desc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == id })
+        desc.fetchLimit = 1
+        guard let rule = try modelContext.fetch(desc).first else { return }
+        rule.amount = input.amount
+        rule.note = input.note
+        rule.category = input.category
+        rule.currencyCode = input.currencyCode
+        rule.goalId = input.goalId
+        if let pid = input.categoryPersistentId,
+           let cat = modelContext.model(for: pid) as? CategoryModel {
+            rule.categoryModel = cat
+        } else {
+            rule.categoryModel = nil
+        }
+        try modelContext.save()
+    }
+
+    func closeRecurrenceRule(id: UUID, endDate: Date) async throws {
+        var desc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == id })
+        desc.fetchLimit = 1
+        guard let rule = try modelContext.fetch(desc).first else { return }
+        rule.endDate = endDate
+        try modelContext.save()
+    }
+
+    /// Deletes already-materialized rows for this rule at/after `cutoffDate` (not "future"
+    /// rows in the un-materialized sense — every row in the table is materialized). Used to
+    /// wipe out rows created under an old template so the next materialize pass regenerates
+    /// them under the new one; see the re-entrancy note on RecurrenceMaterializationService.
+    func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws {
+        let rows = try modelContext.fetch(FetchDescriptor<TransactionModel>(
+            predicate: #Predicate { $0.recurrenceRuleId == recurrenceRuleId && $0.timestamp >= cutoffDate }
+        ))
+        rows.forEach { modelContext.delete($0) }
+
+        var ruleDesc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == recurrenceRuleId })
+        ruleDesc.fetchLimit = 1
+        if let rule = try modelContext.fetch(ruleDesc).first {
+            // A conservative lower bound (not the exact prior occurrence) is enough: the
+            // calculator only needs `since < nextDueOccurrence` to regenerate it correctly.
+            rule.lastMaterializedDate = Calendar.current.date(byAdding: .day, value: -1, to: cutoffDate)
+        }
+        try modelContext.save()
+    }
+
+    func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws {
+        guard !inputs.isEmpty else { return }
+        for input in inputs {
+            let model = TransactionModel(
+                timestamp: input.timestamp,
+                amount: input.amount,
+                note: input.note,
+                category: input.category,
+                currencyCode: input.currencyCode,
+                goalId: input.goalId,
+                recurrenceRuleId: ruleId
+            )
+            if let pid = input.categoryPersistentId,
+               let cat = modelContext.model(for: pid) as? CategoryModel {
+                model.categoryModel = cat
+            }
+            modelContext.insert(model)
+        }
+        var ruleDesc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == ruleId })
+        ruleDesc.fetchLimit = 1
+        if let rule = try modelContext.fetch(ruleDesc).first {
+            rule.lastMaterializedDate = newCursor
+        }
+        try modelContext.save()
+    }
 
     // MARK: Categories
 

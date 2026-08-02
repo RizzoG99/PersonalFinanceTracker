@@ -86,6 +86,37 @@ final class MockTransactionRepository: ITransactionRepository {
         if shouldThrow { throw MockError.forced }
     }
 
+    // MARK: Recurrence rules
+    func addRecurrenceRule(_ input: RecurrenceRuleInput) async throws {
+        if shouldThrow { throw MockError.forced }
+    }
+
+    func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
+        if shouldThrow { throw MockError.forced }
+        return []
+    }
+
+    func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot? {
+        if shouldThrow { throw MockError.forced }
+        return nil
+    }
+
+    func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws {
+        if shouldThrow { throw MockError.forced }
+    }
+
+    func closeRecurrenceRule(id: UUID, endDate: Date) async throws {
+        if shouldThrow { throw MockError.forced }
+    }
+
+    func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws {
+        if shouldThrow { throw MockError.forced }
+    }
+
+    func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws {
+        if shouldThrow { throw MockError.forced }
+    }
+
     // MARK: Health snapshots
     func saveSnapshot(_ data: HealthScoreSnapshotData) async throws {
         saveSnapshotCalledCount += 1

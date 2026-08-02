@@ -72,6 +72,15 @@ protocol ITransactionRepository {
     func updateGoal(id: UUID, with input: GoalInput) async throws
     func deleteGoal(id: UUID) async throws
 
+    // Recurrence rules
+    func addRecurrenceRule(_ input: RecurrenceRuleInput) async throws
+    func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot]
+    func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot?
+    func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws
+    func closeRecurrenceRule(id: UUID, endDate: Date) async throws
+    func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws
+    func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws
+
     // Health snapshots
     func saveSnapshot(_ data: HealthScoreSnapshotData) async throws
     func fetchSnapshots(limit: Int) async throws -> [HealthScoreSnapshotData]
