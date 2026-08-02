@@ -21,6 +21,7 @@ struct MainTabView: View {
     @State private var showPrivacyToast = false
     @State private var privacyToastTask: Task<Void, Never>?
     private let repo: TransactionActor
+    private let materializationService = RecurrenceMaterializationService()
     // Owned by AuthenticationWrapper (not MainTabView) so hideAmounts survives the
     // background→lock→foreground cycle: MainTabView itself is torn down and recreated
     // every time the PIN/biometric lock screen shows, which would otherwise reset it.
@@ -121,6 +122,10 @@ struct MainTabView: View {
                 // Data may have changed outside the UI (App Intent quick-add)
                 dashboardViewModel.reload()
                 viewModel.reload()
+                Task {
+                    try? await materializationService.materialize(using: repo)
+                    dataChanged.bump()
+                }
             }
             if phase == .active || phase == .background {
                 // ponytail: in-memory check may lag a just-saved transaction by one
@@ -135,6 +140,8 @@ struct MainTabView: View {
             viewModel.onDataChanged = { dataChanged.bump() }
             compassViewModel.onDataChanged = { dataChanged.bump() }
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
+            try? await materializationService.materialize(using: repo)
+            dataChanged.bump()
         }
         .appBackground()
         .preferredColorScheme(.dark)
