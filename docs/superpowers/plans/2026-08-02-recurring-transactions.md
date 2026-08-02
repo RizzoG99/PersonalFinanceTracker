@@ -56,7 +56,7 @@
 - Test: `PersonalFinanceTraker/PersonalFinanceTrakerTests/Models/RecurrenceOccurrenceCalculatorTests.swift`
 
 **Interfaces:**
-- Produces: `enum RecurrenceFrequency: String, CaseIterable, Sendable { case weekly, monthly, yearly }` with `var label: String` and `func unitLabel(for interval: Int) -> String`.
+- Produces: `enum RecurrenceFrequency: String, CaseIterable, Sendable { case weekly, monthly, yearly }` with `var label: String`, `func unitLabel(for interval: Int) -> String`, and `var maxInterval: Int` (UI Stepper bound, per frequency).
 - Produces: `enum RecurrenceOccurrenceCalculator { static func occurrenceDates(frequency: RecurrenceFrequency, interval: Int, startDate: Date, ruleEndDate: Date?, since: Date?, through: Date, calendar: Calendar = .current) -> [Date] }`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -126,6 +126,20 @@ struct RecurrenceOccurrenceCalculatorTests {
             calendar: calendar
         )
         #expect(dates == [date(2026, 3, 2), date(2026, 3, 16), date(2026, 3, 30)])
+    }
+
+    @Test func monthlyEveryThreeMonthsWithClamping() {
+        // interval > 2, combined with month-end clamping, to cover UI intervals beyond weekly/2.
+        let dates = RecurrenceOccurrenceCalculator.occurrenceDates(
+            frequency: .monthly,
+            interval: 3,
+            startDate: date(2026, 1, 31),
+            ruleEndDate: nil,
+            since: nil,
+            through: date(2026, 10, 31),
+            calendar: calendar
+        )
+        #expect(dates == [date(2026, 1, 31), date(2026, 4, 30), date(2026, 7, 31), date(2026, 10, 31)])
     }
 
     @Test func sinceCursorExcludesAlreadyMaterializedOccurrence() {
@@ -203,6 +217,16 @@ enum RecurrenceFrequency: String, CaseIterable, Sendable {
         case .weekly: interval == 1 ? String(localized: "week") : String(localized: "weeks")
         case .monthly: interval == 1 ? String(localized: "month") : String(localized: "months")
         case .yearly: interval == 1 ? String(localized: "year") : String(localized: "years")
+        }
+    }
+
+    /// Upper bound for the interval Stepper — keeps "every N <unit>" in a sane range per
+    /// frequency (e.g. not "every 52 years"). The calculator itself has no such limit.
+    var maxInterval: Int {
+        switch self {
+        case .weekly: 52
+        case .monthly: 24
+        case .yearly: 10
         }
     }
 }
@@ -288,7 +312,7 @@ enum RecurrenceOccurrenceCalculator {
 ```
 mcp__xcode__RunSomeTests(tabIdentifier: "windowtab1", testIdentifiers: ["PersonalFinanceTrakerTests/RecurrenceOccurrenceCalculatorTests"])
 ```
-Expected: PASS (7/7).
+Expected: PASS (8/8).
 
 - [ ] **Step 6: Commit**
 
@@ -693,7 +717,7 @@ git commit -m "feat: add recurrenceRuleId back-link and recurrence rule snapshot
   - `func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot?`
   - `func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws`
   - `func closeRecurrenceRule(id: UUID, endDate: Date) async throws`
-  - `func deleteFutureUnmaterializedOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws`
+  - `func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws`
   - `func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws`
 
 - [ ] **Step 1: Write the failing tests**
@@ -788,7 +812,7 @@ struct TransactionActorRecurrenceTests {
         #expect(rule?.startDate == input.startDate) // unchanged — v1 edit UI never changes cadence
     }
 
-    @Test func deleteFutureUnmaterializedOccurrencesRemovesRowsAndResetsCursor() async throws {
+    @Test func deleteOccurrencesRemovesRowsAndResetsCursor() async throws {
         let actor = makeActor()
         let input = ruleInput(startDate: date(2026, 1, 1))
         try await actor.addRecurrenceRule(input)
@@ -801,7 +825,7 @@ struct TransactionActorRecurrenceTests {
             newCursor: date(2026, 2, 1)
         )
 
-        try await actor.deleteFutureUnmaterializedOccurrences(recurrenceRuleId: input.id, from: date(2026, 2, 1))
+        try await actor.deleteOccurrences(recurrenceRuleId: input.id, from: date(2026, 2, 1))
 
         let all = try await actor.fetchAll()
         #expect(all.count == 1) // January row survives, February row (>= cutoff) is removed
@@ -831,7 +855,7 @@ In `PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionRepository.swi
     func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot?
     func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws
     func closeRecurrenceRule(id: UUID, endDate: Date) async throws
-    func deleteFutureUnmaterializedOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws
+    func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws
 ```
 
@@ -963,7 +987,11 @@ Add to `TransactionActor`, e.g. after the `update` method:
         try modelContext.save()
     }
 
-    func deleteFutureUnmaterializedOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws {
+    /// Deletes already-materialized rows for this rule at/after `cutoffDate` (not "future"
+    /// rows in the un-materialized sense — every row in the table is materialized). Used to
+    /// wipe out rows created under an old template so the next materialize pass regenerates
+    /// them under the new one; see the re-entrancy note on RecurrenceMaterializationService.
+    func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws {
         let rows = try modelContext.fetch(FetchDescriptor<TransactionModel>(
             predicate: #Predicate { $0.recurrenceRuleId == recurrenceRuleId && $0.timestamp >= cutoffDate }
         ))
@@ -1043,7 +1071,7 @@ In `PersonalFinanceTraker/PersonalFinanceTrakerTests/Mocks/MockTransactionReposi
     var addRecurrenceRuleCalls: [RecurrenceRuleInput] = []
     var updateRecurrenceRuleCalls: [(id: UUID, input: RecurrenceRuleInput)] = []
     var closeRecurrenceRuleCalls: [(id: UUID, endDate: Date)] = []
-    var deleteFutureUnmaterializedOccurrencesCalls: [(recurrenceRuleId: UUID, cutoffDate: Date)] = []
+    var deleteOccurrencesCalls: [(recurrenceRuleId: UUID, cutoffDate: Date)] = []
     var materializeOccurrencesCalls: [(ruleId: UUID, inputs: [TransactionInput], newCursor: Date)] = []
     var fetchActiveRecurrenceRulesCallCount = 0
     var fetchActiveRecurrenceRulesDelayNanoseconds: UInt64 = 0
@@ -1082,9 +1110,9 @@ And the methods, e.g. after the Goals section:
         closeRecurrenceRuleCalls.append((id, endDate))
     }
 
-    func deleteFutureUnmaterializedOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws {
+    func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws {
         if shouldThrow { throw MockError.forced }
-        deleteFutureUnmaterializedOccurrencesCalls.append((recurrenceRuleId, cutoffDate))
+        deleteOccurrencesCalls.append((recurrenceRuleId, cutoffDate))
     }
 
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws {
@@ -1250,8 +1278,11 @@ actor RecurrenceMaterializationService {
     private var inFlight: Task<Void, Error>?
 
     /// Safe to call from multiple launch/foreground hooks in close succession: if a pass is
-    /// already running, this call awaits it instead of starting a second overlapping pass
-    /// that could read the same lastMaterializedDate cursor and double-insert.
+    /// already running, this call awaits it instead of starting a second *overlapping* pass
+    /// that could read the same lastMaterializedDate cursor and double-insert. This guard is
+    /// only about overlap — it does NOT collapse into a once-per-session no-op. Two calls that
+    /// don't overlap (e.g. launch, then a foreground resume minutes later) each run a full,
+    /// necessary pass so catch-up keeps working; don't "optimize" this into a run-once guard.
     func materialize(using repo: any ITransactionRepository, today: Date = .now, calendar: Calendar = .current) async throws {
         if let inFlight {
             return try await inFlight.value
@@ -1565,10 +1596,13 @@ In `PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/
                                     Text(freq.label).tag(freq)
                                 }
                             }
+                            .onChange(of: viewModel.recurrenceFrequency) { _, newFrequency in
+                                viewModel.recurrenceInterval = min(viewModel.recurrenceInterval, newFrequency.maxInterval)
+                            }
                             Stepper(
                                 "Every \(viewModel.recurrenceInterval) \(viewModel.recurrenceFrequency.unitLabel(for: viewModel.recurrenceInterval))",
                                 value: $viewModel.recurrenceInterval,
-                                in: 1...52
+                                in: 1...viewModel.recurrenceFrequency.maxInterval
                             )
                         }
                     }
@@ -1719,7 +1753,7 @@ git commit -m "feat: preserve recurrence cadence when building a this-and-future
 - Modify: `PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift`
 
 **Interfaces:**
-- Consumes: `TransactionSnapshot.recurrenceRuleId` (Task 3), `ITransactionRepository.updateRecurrenceRule/closeRecurrenceRule/deleteFutureUnmaterializedOccurrences/fetchRecurrenceRule` (Task 4), `EditAddTransactionViewModel.buildRecurrenceRuleInput(preserving:)` (Task 10).
+- Consumes: `TransactionSnapshot.recurrenceRuleId` (Task 3), `ITransactionRepository.updateRecurrenceRule/closeRecurrenceRule/deleteOccurrences/fetchRecurrenceRule` (Task 4), `EditAddTransactionViewModel.buildRecurrenceRuleInput(preserving:)` (Task 10), `RecurrenceMaterializationService.materialize(using:)` (Task 6) — needed so a "this and future" save regenerates the just-edited row immediately instead of leaving it missing until next launch/foreground.
 
 No new automated test — this is SwiftUI orchestration whose branches are each individually covered by Task 4's actor tests and Task 10's view-model test. Verify with a build, then a manual Simulator walkthrough (this is the first point where the full feature is wired end-to-end).
 
@@ -1745,6 +1779,7 @@ struct EditAddTransactionView: View {
     @Environment(DataChangedSignal.self) private var dataChanged
     @State private var viewModel: EditAddTransactionViewModel
     @State private var pendingRecurrenceAction: PendingRecurrenceAction?
+    private let materializationService = RecurrenceMaterializationService()
 ```
 
 In `body`, add the dialog alongside the existing `.toolbar`/`.onAppear`:
@@ -1824,9 +1859,12 @@ Replace `saveTransaction()` and `deleteTransaction()`:
                 if let rule = try? await viewModel.repo.fetchRecurrenceRule(id: ruleId),
                    let ruleInput = viewModel.buildRecurrenceRuleInput(preserving: rule) {
                     try? await viewModel.repo.updateRecurrenceRule(id: ruleId, with: ruleInput)
-                    try? await viewModel.repo.deleteFutureUnmaterializedOccurrences(recurrenceRuleId: ruleId, from: existing.timestamp)
-                    // The edited row itself is removed by the line above (its timestamp >= cutoff)
-                    // and regenerated under the new template on the next launch/foreground materialize pass.
+                    try? await viewModel.repo.deleteOccurrences(recurrenceRuleId: ruleId, from: existing.timestamp)
+                    // deleteOccurrences just removed the row being edited (its timestamp >= cutoff) along
+                    // with any later ones. Re-materialize immediately — dismissing this sheet is neither a
+                    // launch nor a foreground transition, so without this call the edited transaction would
+                    // stay missing from Activity until the user backgrounds/relaunches the app.
+                    try? await materializationService.materialize(using: viewModel.repo)
                 }
 
             case (.delete, .thisOnly):
@@ -1835,7 +1873,7 @@ Replace `saveTransaction()` and `deleteTransaction()`:
             case (.delete, .thisAndFuture):
                 let dayBefore = Calendar.current.date(byAdding: .day, value: -1, to: existing.timestamp) ?? existing.timestamp
                 try? await viewModel.repo.closeRecurrenceRule(id: ruleId, endDate: dayBefore)
-                try? await viewModel.repo.deleteFutureUnmaterializedOccurrences(recurrenceRuleId: ruleId, from: existing.timestamp)
+                try? await viewModel.repo.deleteOccurrences(recurrenceRuleId: ruleId, from: existing.timestamp)
             }
             dataChanged.bump()
             dismiss()
