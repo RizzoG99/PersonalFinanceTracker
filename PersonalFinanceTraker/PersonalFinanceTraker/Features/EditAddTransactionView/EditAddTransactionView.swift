@@ -45,11 +45,14 @@ struct EditAddTransactionView: View {
     }
 
     private func saveTransaction() {
-        guard let input = viewModel.buildInput() else { return }
         Task {
             if let existing = viewModel.editingItem {
-                try? await viewModel.repo.update(id: existing.id, with: input)
-            } else {
+                if let input = viewModel.buildInput() {
+                    try? await viewModel.repo.update(id: existing.id, with: input)
+                }
+            } else if viewModel.isRecurring {
+                try? await viewModel.saveRecurringTransaction()
+            } else if let input = viewModel.buildInput() {
                 try? await viewModel.repo.add(input)
             }
             dataChanged.bump()
