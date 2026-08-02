@@ -64,15 +64,16 @@ Add `var recurrenceRuleId: UUID?` — back-link tagging a materialized row to th
 Add:
 - `addRecurrenceRule(_ input: RecurrenceRuleInput) async throws`
 - `fetchRecurrenceRules() async throws -> [RecurrenceRuleSnapshot]`
-- `closeRecurrenceRule(id:endDate:) async throws` — used by both "this and future" edits and "delete series"
-- `updateRecurrenceRule(id:with:) async throws` — "this and future" edit path
-- `deleteFutureUnmaterializedOccurrences(ruleId:from:) async throws`
+- `closeRecurrenceRule(id:endDate:) async throws` — delete-series path: stops future materialization, never touches history
+- `updateRecurrenceRule(id:with:) async throws` — "this and future" edit path: mutates the existing rule's template in place (same `id`, no split into a second rule — nothing in v1 needs to browse past rule versions, so reusing one row is simpler and has the same user-visible effect)
+- `deleteFutureUnmaterializedOccurrences(ruleId:from:) async throws` — used by both the "this and future" edit (old future rows no longer match the new template) and delete-series
+- `materializeOccurrences(ruleId:inputs:newCursor:) async throws` — atomic insert-and-advance-cursor used by `RecurrenceMaterializationService`; see re-entrancy note above for why the cursor write can't be a separate call
 
 (No `fetchOccurrences` — nothing in this design reads occurrences by rule; edits/deletes work off `recurrenceRuleId` on the transaction itself. Add it later if something needs it.)
 
 ### Add/Edit Transaction sheet + `EditAddTransactionViewModel` (modify)
 - Repeat toggle + frequency/interval picker.
-- Editing or deleting a transaction with a non-nil `recurrenceRuleId` prompts with exactly two options: **"This transaction"** / **"This and future."** (Past materialized rows always keep the old template even when the rule is edited going forward, so there is no third "all occurrences" option that would be honest about what it does.) "This and future" on delete closes the rule at the edit date; "this and future" on edit mutates the rule in place, deletes future un-materialized rows, and lets the next materialization pass regenerate them under the new template.
+- Editing or deleting a transaction with a non-nil `recurrenceRuleId` prompts with exactly two options: **"This transaction"** / **"This and future."** (Past materialized rows always keep the old template even when the rule is edited going forward, so there is no third "all occurrences" option that would be honest about what it does.) "This and future" on delete calls `closeRecurrenceRule` (stops the rule going forward; history untouched). "This and future" on edit calls `updateRecurrenceRule` (mutates the same rule's template in place) followed by `deleteFutureUnmaterializedOccurrences`, so the next materialization pass regenerates future rows under the new template — past rows are never rewritten.
 
 ### App launch / foreground hook (`Features/MainTabView/MainTabView.swift`) (modify)
 No new hook — call `RecurrenceMaterializationService.materialize` from the existing `.task {}` block (app launch, alongside `viewModel.load()`) and from the existing `.onChange(of: scenePhase)` `.active` branch (foreground resume, alongside the existing `dashboardViewModel.reload()` / `viewModel.reload()` calls). The re-entrancy guard above is what makes calling it from both sites safe.
