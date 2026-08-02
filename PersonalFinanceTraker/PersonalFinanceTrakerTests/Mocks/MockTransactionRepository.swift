@@ -13,6 +13,7 @@ final class MockTransactionRepository: ITransactionRepository {
     var stubbedGoals: [GoalSnapshot] = []
     var stubbedSnapshots: [HealthScoreSnapshotData] = []
     var stubbedForecastCache: DailyForecastCacheData? = nil
+    var stubbedRecurrenceRules: [RecurrenceRuleSnapshot] = []
 
     // MARK: Spies
     var fetchAllCalled = false
@@ -21,6 +22,13 @@ final class MockTransactionRepository: ITransactionRepository {
     var deleteCalledCount = 0
     var updateCalledCount = 0
     var saveSnapshotCalledCount = 0
+    var addRecurrenceRuleCalls: [RecurrenceRuleInput] = []
+    var updateRecurrenceRuleCalls: [(id: UUID, input: RecurrenceRuleInput)] = []
+    var closeRecurrenceRuleCalls: [(id: UUID, endDate: Date)] = []
+    var deleteOccurrencesCalls: [(recurrenceRuleId: UUID, cutoffDate: Date)] = []
+    var materializeOccurrencesCalls: [(ruleId: UUID, inputs: [TransactionInput], newCursor: Date)] = []
+    var fetchActiveRecurrenceRulesCallCount = 0
+    var fetchActiveRecurrenceRulesDelayNanoseconds: UInt64 = 0
 
     // MARK: Error injection
     var shouldThrow = false
@@ -89,32 +97,41 @@ final class MockTransactionRepository: ITransactionRepository {
     // MARK: Recurrence rules
     func addRecurrenceRule(_ input: RecurrenceRuleInput) async throws {
         if shouldThrow { throw MockError.forced }
+        addRecurrenceRuleCalls.append(input)
     }
 
     func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
+        fetchActiveRecurrenceRulesCallCount += 1
+        if fetchActiveRecurrenceRulesDelayNanoseconds > 0 {
+            try? await Task.sleep(nanoseconds: fetchActiveRecurrenceRulesDelayNanoseconds)
+        }
         if shouldThrow { throw MockError.forced }
-        return []
+        return stubbedRecurrenceRules
     }
 
     func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot? {
         if shouldThrow { throw MockError.forced }
-        return nil
+        return stubbedRecurrenceRules.first { $0.id == id }
     }
 
     func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws {
         if shouldThrow { throw MockError.forced }
+        updateRecurrenceRuleCalls.append((id, input))
     }
 
     func closeRecurrenceRule(id: UUID, endDate: Date) async throws {
         if shouldThrow { throw MockError.forced }
+        closeRecurrenceRuleCalls.append((id, endDate))
     }
 
     func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws {
         if shouldThrow { throw MockError.forced }
+        deleteOccurrencesCalls.append((recurrenceRuleId, cutoffDate))
     }
 
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws {
         if shouldThrow { throw MockError.forced }
+        materializeOccurrencesCalls.append((ruleId, inputs, newCursor))
     }
 
     // MARK: Health snapshots
