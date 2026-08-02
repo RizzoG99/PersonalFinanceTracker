@@ -425,3 +425,24 @@ struct EditAddTransactionViewModelTests {
         #expect(call.inputs[0].timestamp == mock.addRecurrenceRuleCalls[0].startDate)
     }
 }
+
+extension EditAddTransactionViewModelTests {
+    @Test @MainActor func buildRecurrenceRuleInputPreservingKeepsCadenceAndUpdatesTemplate() async throws {
+        let originalStart = Date(timeIntervalSince1970: 1_735_689_600) // 2025-01-01
+        let existingRule = RecurrenceRuleSnapshot.test(
+            frequency: .yearly, interval: 2, startDate: originalStart, amount: -1200, category: "Housing"
+        )
+        let vm = makeVM()
+        vm.transactionName = "Rent (increased)"
+        vm.amount = 1500
+        vm.selectedCategory = expenseCat()
+
+        let result = try #require(vm.buildRecurrenceRuleInput(preserving: existingRule))
+        #expect(result.id == existingRule.id)
+        #expect(result.frequency == .yearly)
+        #expect(result.interval == 2)
+        #expect(result.startDate == originalStart)
+        #expect(result.amount == -1500)
+        #expect(result.note == "Rent (increased)")
+    }
+}

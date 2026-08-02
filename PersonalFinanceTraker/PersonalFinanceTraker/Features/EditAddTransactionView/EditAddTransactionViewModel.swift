@@ -125,6 +125,25 @@ final class EditAddTransactionViewModel {
         )
     }
 
+    /// Used for "this and future" edits: keeps the rule's cadence (frequency/interval/startDate)
+    /// untouched — v1's edit form never shows those fields, and changing startDate would shift
+    /// every future occurrence date — and applies only the template fields visible in the form.
+    func buildRecurrenceRuleInput(preserving rule: RecurrenceRuleSnapshot) -> RecurrenceRuleInput? {
+        guard let input = buildInput() else { return nil }
+        return RecurrenceRuleInput(
+            id: rule.id,
+            frequency: rule.frequency,
+            interval: rule.interval,
+            startDate: rule.startDate,
+            amount: input.amount,
+            note: input.note,
+            category: input.category,
+            currencyCode: input.currencyCode,
+            goalId: input.goalId,
+            categoryPersistentId: input.categoryPersistentId
+        )
+    }
+
     /// Creates the rule and immediately materializes its first occurrence, so the new
     /// transaction is visible right away instead of waiting for the next launch/foreground pass.
     func saveRecurringTransaction() async throws {
