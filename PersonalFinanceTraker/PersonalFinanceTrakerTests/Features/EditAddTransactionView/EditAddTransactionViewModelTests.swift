@@ -367,4 +367,61 @@ struct EditAddTransactionViewModelTests {
         let vm = makeVM()
         #expect(vm.availableCategories.isEmpty)
     }
+
+    // MARK: - Recurrence (create-time)
+
+    @Test @MainActor func buildRecurrenceRuleInputIsNilWhenNotRecurring() async throws {
+        let vm = makeVM()
+        vm.transactionName = "Rent"
+        vm.amount = 1200
+        vm.selectedCategory = expenseCat()
+        vm.isRecurring = false
+        #expect(vm.buildRecurrenceRuleInput() == nil)
+    }
+
+    @Test @MainActor func buildRecurrenceRuleInputIsNilForTransfers() async throws {
+        let vm = makeVM()
+        vm.transactionName = "To savings"
+        vm.amount = 200
+        vm.transactionType = .transfer
+        vm.selectedGoal = .test(name: "Vacation", targetAmount: 1000)
+        vm.isRecurring = true
+        #expect(vm.buildRecurrenceRuleInput() == nil)
+    }
+
+    @Test @MainActor func buildRecurrenceRuleInputMatchesFormWhenRecurring() async throws {
+        let vm = makeVM()
+        vm.transactionName = "Rent"
+        vm.amount = 1200
+        vm.transactionType = .expense
+        vm.selectedCategory = expenseCat()
+        vm.isRecurring = true
+        vm.recurrenceFrequency = .monthly
+        vm.recurrenceInterval = 1
+
+        let ruleInput = try #require(vm.buildRecurrenceRuleInput())
+        #expect(ruleInput.frequency == .monthly)
+        #expect(ruleInput.interval == 1)
+        #expect(ruleInput.amount == -1200)
+        #expect(ruleInput.category == "Food")
+    }
+
+    @Test @MainActor func saveRecurringTransactionCreatesRuleAndMaterializesFirstOccurrence() async throws {
+        let mock = MockTransactionRepository()
+        let vm = EditAddTransactionViewModel(repo: mock)
+        vm.transactionName = "Rent"
+        vm.amount = 1200
+        vm.selectedCategory = expenseCat()
+        vm.isRecurring = true
+        vm.recurrenceFrequency = .monthly
+
+        try await vm.saveRecurringTransaction()
+
+        #expect(mock.addRecurrenceRuleCalls.count == 1)
+        #expect(mock.materializeOccurrencesCalls.count == 1)
+        let call = mock.materializeOccurrencesCalls[0]
+        #expect(call.ruleId == mock.addRecurrenceRuleCalls[0].id)
+        #expect(call.inputs.count == 1)
+        #expect(call.inputs[0].timestamp == mock.addRecurrenceRuleCalls[0].startDate)
+    }
 }
