@@ -7,19 +7,6 @@ struct RestoreServiceTests {
         Calendar.current.date(from: DateComponents(year: year, month: month, day: day))!
     }
 
-    private func makeService(with payload: BackupPayload) -> BackupService {
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let storage = TestBackupStorage(url: dir)
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
-        _ = try? service.writeBackup(
-            transactions: [.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")],
-            recurrenceRules: [],
-            now: date(2026, 1, 1)
-        )
-        return service
-    }
-
     @Test func restoreLatestThrowsWhenNoBackupExists() async {
         let repo = MockTransactionRepository()
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

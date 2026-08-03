@@ -20,9 +20,9 @@ struct ProfileView: View {
     @State private var showingPINConfirmation = false
     @State private var showingDeleteSuccess = false
     @State private var deleteErrorMessage: String?
+    @State private var backupErrorMessage: String?
     @State private var route: ProfileRoute?
     @State private var showingRestoreConfirmation = false
-    @State private var isRestoring = false
     private let pinService = PINService()
     private let backupService = BackupService()
 
@@ -37,8 +37,16 @@ struct ProfileView: View {
     private func runManualBackup() async {
         let transactions = (try? await transactionViewModel.repo.fetchAll()) ?? []
         let rules = (try? await transactionViewModel.repo.fetchActiveRecurrenceRules()) ?? []
-        guard (try? backupService.writeBackup(transactions: transactions, recurrenceRules: rules)) != nil else { return }
-        appSettings.lastBackupDate = .now
+        do {
+            try backupService.writeBackup(transactions: transactions, recurrenceRules: rules)
+            appSettings.lastBackupDate = .now
+        } catch BackupService.BackupError.emptyStore {
+            backupErrorMessage = "No transactions to back up yet."
+        } catch BackupService.BackupError.iCloudUnavailable {
+            backupErrorMessage = "iCloud Drive is not available. Enable it in Settings to back up your data."
+        } catch {
+            backupErrorMessage = "Backup failed: \(error.localizedDescription)"
+        }
     }
 
     var body: some View {
@@ -220,6 +228,17 @@ struct ProfileView: View {
             } message: {
                 Text(deleteErrorMessage ?? "")
             }
+            .alert(
+                "Backup Failed",
+                isPresented: Binding(
+                    get: { backupErrorMessage != nil },
+                    set: { if !$0 { backupErrorMessage = nil } }
+                )
+            ) {
+                Button("OK") { backupErrorMessage = nil }
+            } message: {
+                Text(backupErrorMessage ?? "")
+            }
             .confirmationDialog(
                 "This replaces all current data with your last backup. This cannot be undone.",
                 isPresented: $showingRestoreConfirmation,
@@ -227,9 +246,7 @@ struct ProfileView: View {
             ) {
                 Button("Restore", role: .destructive) {
                     Task {
-                        isRestoring = true
                         try? await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
-                        isRestoring = false
                     }
                 }
                 Button("Cancel", role: .cancel) {}
