@@ -18,6 +18,7 @@ struct AuthenticationWrapper: View {
     @State private var appSettings = AppSettings()
 
     private let pinService = PINService()
+    private let backupService = BackupService()
     let modelContainer: ModelContainer
 
     var body: some View {
@@ -71,6 +72,14 @@ struct AuthenticationWrapper: View {
             } else if newPhase == .active && isPINSetup && !authService.isUnlocked {
                 if authService.isBiometricFeatureEnabled {
                     authService.authenticate { _ in }
+                }
+            }
+            if newPhase == .active {
+                let repo = TransactionActor.make(modelContainer)
+                let settings = appSettings
+                let service = backupService
+                Task {
+                    await BackupScheduler.runIfNeeded(repo: repo, settings: settings, backupService: service)
                 }
             }
         }
