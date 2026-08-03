@@ -2,7 +2,7 @@
 
 ## Problem
 
-The app has an empty entitlements file (no App Groups, Keychain sharing, or CloudKit container), which blocks every platform-extension feature. This is the gating step for the roadmap's widget item and the upcoming iCloud sync item. This design scopes the entitlements bootstrap together with the first thing it unblocks: a home-screen widget showing "safe to spend until payday" — the app's flagship differentiator (pay-cycle-native, unlike competitors' calendar-month budgeting).
+The app has an empty entitlements file (no App Groups, Keychain sharing, or CloudKit container), which blocks every platform-extension feature. This is the gating step for the roadmap's widget item and (separately, later) the iCloud sync item. This design scopes the entitlements bootstrap together with the first thing it unblocks: a home-screen widget showing "safe to spend until payday" — the app's flagship differentiator (pay-cycle-native, unlike competitors' calendar-month budgeting). CloudKit entitlements are explicitly out of scope here — they get added when sync is designed, not preemptively.
 
 ## Approach
 
@@ -13,23 +13,24 @@ This was chosen over having the widget query SwiftData directly via a shared sto
 ## Key decisions
 
 - Widget headline number: **safe-to-spend until payday**, not plain balance — the differentiator, not the simplest option.
-- Entitlements bootstrap scope: **App Group + CloudKit container now**, even though CloudKit sync isn't built yet — avoids a second round of Xcode target/signing changes when sync is scoped next. The CloudKit container sits unused until that feature lands.
+- Entitlements bootstrap scope: **App Group only**, not CloudKit. Adding a CloudKit container to an already-App-Group-enabled target later is a small, well-trodden edit — not a rebootstrap — so provisioning it now would mean signing infrastructure for a feature (sync) that isn't designed yet, with no real savings later. YAGNI; add it when sync is actually scoped.
 - Data sharing: **snapshot-write pattern (Approach B)**, not direct shared-SwiftData-store access (Approach A). The widget process never touches business-logic services.
-- Refresh strategy: **event-driven reload + periodic timeline backstop**. The app calls `WidgetCenter.reloadTimelines` after any transaction mutation; the snapshot itself contains several days forward (not just "today") so the periodic timeline still shows the right number on day rollover even without a fresh app-triggered write.
+- Refresh strategy: **event-driven reload + periodic timeline backstop**. The snapshot carries **N = 7 days forward** (today + one full pay-cycle-friendly window), so the periodic timeline still shows the right number on day rollover even without a fresh app-triggered write. If the app hasn't launched in more than 7 days, the provider runs off the end of the cached array — this is treated as the same failure class as a missing snapshot: fall through to the neutral empty state, never display the last known (now-stale) number.
 - Snapshot struct lives in a small shared source file added to both targets' compile membership — not a full shared framework, to avoid extra build-system overhead for one struct.
-- Missing/undecodable snapshot (first install, schema mismatch after update) → widget shows a neutral empty state, never a stale or wrong number.
+- Missing, undecodable, or **exhausted (past the last cached day)** snapshot → widget shows a neutral empty state, never a stale or wrong number.
+- Snapshot writer trigger: **single choke point in `TransactionActor`**, not scattered call sites. `TransactionActor` already has `saveForecastCache`/`fetchForecastCache` as the place forecast data is persisted — the snapshot write and `WidgetCenter.reloadTimelines` call hang off that same method, so any code path that updates the forecast cache automatically keeps the widget in sync. No per-call-site "remember to call write()" convention to maintain.
 
 ## Architecture notes
 
 Where this fits in the existing codebase:
 
 - **New:** `SafeToSpendWidget/` — new WidgetKit extension target (Xcode target creation, not just files — needs to happen in Xcode or via project file edit).
-- **New:** `Utilities/SafeToSpendSnapshotWriter.swift` (app target) — builds `SafeToSpendSnapshot` from `PayCycleService` + `SpendingForecastService` + recurring commitments (once that feature lands), writes JSON to the App Group container, triggers `WidgetCenter.shared.reloadTimelines`.
-- **New:** `SafeToSpendSnapshot` struct (shared file, both targets) — `Sendable`, `Codable`, today's value + N days forward.
-- **New:** `SafeToSpendWidget/Provider.swift` — `TimelineProvider` reading the shared JSON and mapping to timeline entries.
+- **New:** `Utilities/SafeToSpendSnapshotWriter.swift` (app target) — builds `SafeToSpendSnapshot` from `PayCycleService` + `SpendingForecastService` + recurring commitments (once that feature lands), writes JSON to the App Group container.
+- **New:** `SafeToSpendSnapshot` struct (shared file, both targets) — `Sendable`, `Codable`, today's value + 7 days forward.
+- **New:** `SafeToSpendWidget/Provider.swift` — `TimelineProvider` reading the shared JSON; if the array is exhausted for the requested date, returns the neutral empty-state entry instead of the last cached value.
 - **New:** `SafeToSpendWidget/SafeToSpendWidgetView.swift` — renders the number + pay-cycle-remaining context line.
-- **Modify:** `PersonalFinanceTraker.entitlements` — add App Group capability + CloudKit container entry.
-- **Modify:** repository layer / view models that mutate transactions — call `SafeToSpendSnapshotWriter.write()` after mutations that affect the forecast.
+- **Modify:** `PersonalFinanceTraker.entitlements` — add App Group capability only.
+- **Modify:** `TransactionActor.saveForecastCache` — after persisting the forecast cache, also call `SafeToSpendSnapshotWriter.write()` and `WidgetCenter.shared.reloadTimelines`. This is the single choke point; no other call sites need to remember to trigger the widget refresh.
 - **No SwiftData schema change** — this feature adds no new persisted models; the snapshot is a transient JSON file in the App Group container, not a SwiftData entity.
 
 ## Where to start
