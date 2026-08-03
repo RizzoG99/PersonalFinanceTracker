@@ -179,7 +179,7 @@ private struct ConditionalSearchable: ViewModifier {
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self])
-    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
     let vm = TransactionListViewModel(repo: TransactionActor.make(container))

@@ -161,7 +161,7 @@ struct MainTabView: View {
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self, GoalModel.self])
-    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
         SampleData.populateModelContext(container.mainContext)

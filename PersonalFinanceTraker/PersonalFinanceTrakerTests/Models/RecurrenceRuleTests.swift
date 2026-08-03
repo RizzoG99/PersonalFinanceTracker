@@ -38,7 +38,7 @@ struct RecurrenceRuleTests {
 
 struct TransactionSnapshotRecurrenceTests {
     @Test func snapshotCarriesRecurrenceRuleIdFromModel() {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: TransactionModel.self, configurations: config)
         let ctx = ModelContext(container)
         let ruleId = UUID()

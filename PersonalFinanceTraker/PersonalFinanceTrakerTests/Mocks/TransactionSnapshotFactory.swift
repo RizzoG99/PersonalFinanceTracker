@@ -14,7 +14,7 @@ import SwiftData
 private enum SnapshotTestSupport {
     static let container: ModelContainer = {
         let schema = Schema([TransactionModel.self, CategoryModel.self, GoalModel.self, RecurrenceRule.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try! ModelContainer(for: schema, configurations: [config])
     }()
 }

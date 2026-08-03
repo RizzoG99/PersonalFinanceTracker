@@ -6,7 +6,7 @@ import SwiftData
 struct TransactionActorRecurrenceTests {
     private func makeActor() -> TransactionActor {
         let schema = Schema([TransactionModel.self, CategoryModel.self, RecurrenceRule.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: schema, configurations: [config])
         return TransactionActor(modelContainer: container)
     }

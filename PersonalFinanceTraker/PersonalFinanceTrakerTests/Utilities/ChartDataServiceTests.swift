@@ -7,7 +7,7 @@ import SwiftData
 struct ChartDataServiceTests {
 
     private func makeExpense(on date: Date, amount: Decimal = -50) -> TransactionSnapshot {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: TransactionModel.self, configurations: config)
         let ctx = ModelContext(container)
         let model = TransactionModel(timestamp: date, amount: amount, note: "", category: "Food", currencyCode: "EUR")
