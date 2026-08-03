@@ -60,6 +60,7 @@ protocol ITransactionRepository {
     func addBatch(_ inputs: [TransactionInput]) async throws
     func delete(id: PersistentIdentifier) async throws
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws
+    func deleteAllTransactions() async throws
 
     // Categories
     func fetchCategories() async throws -> [CategorySnapshot]
@@ -80,6 +81,7 @@ protocol ITransactionRepository {
     func closeRecurrenceRule(id: UUID, endDate: Date) async throws
     func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws
+    func deleteAllRecurrenceRules() async throws
 
     // Health snapshots
     func saveSnapshot(_ data: HealthScoreSnapshotData) async throws

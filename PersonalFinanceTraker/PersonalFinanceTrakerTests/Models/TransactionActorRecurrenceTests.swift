@@ -107,4 +107,48 @@ struct TransactionActorRecurrenceTests {
         let rule = try await actor.fetchRecurrenceRule(id: input.id)
         #expect(rule!.lastMaterializedDate! < date(2026, 2, 1))
     }
+
+    @Test func addRecurrenceRulePreservesEndDateAndMaterializationCursor() async throws {
+        let actor = makeActor()
+        let input = RecurrenceRuleInput(
+            frequency: .monthly,
+            interval: 1,
+            startDate: date(2026, 1, 1),
+            endDate: date(2026, 6, 1),
+            lastMaterializedDate: date(2026, 3, 1),
+            amount: -1200,
+            note: "Rent",
+            category: "Housing",
+            currencyCode: "EUR"
+        )
+        try await actor.addRecurrenceRule(input)
+
+        let fetched = try await actor.fetchRecurrenceRule(id: input.id)
+        #expect(fetched?.endDate == date(2026, 6, 1))
+        #expect(fetched?.lastMaterializedDate == date(2026, 3, 1))
+    }
+
+    @Test func deleteAllTransactionsRemovesEverything() async throws {
+        let actor = makeActor()
+        try await actor.addBatch([
+            TransactionInput(timestamp: date(2026, 1, 1), amount: -10, note: "A", category: "Food", currencyCode: "EUR"),
+            TransactionInput(timestamp: date(2026, 1, 2), amount: -20, note: "B", category: "Food", currencyCode: "EUR")
+        ])
+        #expect(try await actor.fetchAll().count == 2)
+
+        try await actor.deleteAllTransactions()
+
+        #expect(try await actor.fetchAll().isEmpty)
+    }
+
+    @Test func deleteAllRecurrenceRulesRemovesEverything() async throws {
+        let actor = makeActor()
+        try await actor.addRecurrenceRule(ruleInput(startDate: date(2026, 1, 1)))
+        try await actor.addRecurrenceRule(ruleInput(startDate: date(2026, 2, 1)))
+        #expect(try await actor.fetchActiveRecurrenceRules().count == 2)
+
+        try await actor.deleteAllRecurrenceRules()
+
+        #expect(try await actor.fetchActiveRecurrenceRules().isEmpty)
+    }
 }

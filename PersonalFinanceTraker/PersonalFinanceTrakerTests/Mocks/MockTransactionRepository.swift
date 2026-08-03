@@ -22,6 +22,8 @@ final class MockTransactionRepository: ITransactionRepository {
     var deleteCalledCount = 0
     var updateCalledCount = 0
     var saveSnapshotCalledCount = 0
+    var deleteAllTransactionsCalledCount = 0
+    var deleteAllRecurrenceRulesCalledCount = 0
     var addRecurrenceRuleCalls: [RecurrenceRuleInput] = []
     var updateRecurrenceRuleCalls: [(id: UUID, input: RecurrenceRuleInput)] = []
     var closeRecurrenceRuleCalls: [(id: UUID, endDate: Date)] = []
@@ -55,6 +57,12 @@ final class MockTransactionRepository: ITransactionRepository {
         deleteCalledCount += 1
         if shouldThrow { throw MockError.forced }
         stubbedTransactions.removeAll { $0.id == id }
+    }
+
+    func deleteAllTransactions() async throws {
+        deleteAllTransactionsCalledCount += 1
+        if shouldThrow { throw MockError.forced }
+        stubbedTransactions.removeAll()
     }
 
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws {
@@ -132,6 +140,12 @@ final class MockTransactionRepository: ITransactionRepository {
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws {
         if shouldThrow { throw MockError.forced }
         materializeOccurrencesCalls.append((ruleId, inputs, newCursor))
+    }
+
+    func deleteAllRecurrenceRules() async throws {
+        deleteAllRecurrenceRulesCalledCount += 1
+        if shouldThrow { throw MockError.forced }
+        stubbedRecurrenceRules.removeAll()
     }
 
     // MARK: Health snapshots

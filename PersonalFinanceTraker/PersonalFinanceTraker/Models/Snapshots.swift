@@ -218,6 +218,8 @@ struct RecurrenceRuleInput: Sendable {
     let frequency: RecurrenceFrequency
     let interval: Int
     let startDate: Date
+    let endDate: Date?
+    let lastMaterializedDate: Date?
     let amount: Decimal
     let note: String
     let category: String
@@ -225,11 +227,13 @@ struct RecurrenceRuleInput: Sendable {
     let goalId: UUID?
     let categoryPersistentId: PersistentIdentifier?
 
-    init(id: UUID = UUID(), frequency: RecurrenceFrequency, interval: Int, startDate: Date, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil) {
+    init(id: UUID = UUID(), frequency: RecurrenceFrequency, interval: Int, startDate: Date, endDate: Date? = nil, lastMaterializedDate: Date? = nil, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil) {
         self.id = id
         self.frequency = frequency
         self.interval = interval
         self.startDate = startDate
+        self.endDate = endDate
+        self.lastMaterializedDate = lastMaterializedDate
         self.amount = amount
         self.note = note
         self.category = category

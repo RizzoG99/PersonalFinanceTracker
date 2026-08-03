@@ -61,6 +61,14 @@ actor TransactionActor: ITransactionRepository {
         try modelContext.save()
     }
 
+    func deleteAllTransactions() async throws {
+        let all = try modelContext.fetch(FetchDescriptor<TransactionModel>())
+        for model in all {
+            modelContext.delete(model)
+        }
+        try modelContext.save()
+    }
+
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws {
         guard let model = modelContext.model(for: id) as? TransactionModel else { return }
         model.timestamp = input.timestamp
@@ -86,6 +94,8 @@ actor TransactionActor: ITransactionRepository {
             frequency: input.frequency,
             interval: input.interval,
             startDate: input.startDate,
+            endDate: input.endDate,
+            lastMaterializedDate: input.lastMaterializedDate,
             amount: input.amount,
             note: input.note,
             category: input.category,
@@ -180,6 +190,14 @@ actor TransactionActor: ITransactionRepository {
         ruleDesc.fetchLimit = 1
         if let rule = try modelContext.fetch(ruleDesc).first {
             rule.lastMaterializedDate = newCursor
+        }
+        try modelContext.save()
+    }
+
+    func deleteAllRecurrenceRules() async throws {
+        let all = try modelContext.fetch(FetchDescriptor<RecurrenceRule>())
+        for model in all {
+            modelContext.delete(model)
         }
         try modelContext.save()
     }
