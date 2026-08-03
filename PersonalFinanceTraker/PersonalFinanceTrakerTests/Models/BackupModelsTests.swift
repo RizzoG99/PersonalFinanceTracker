@@ -12,8 +12,8 @@ struct BackupModelsTests {
         let snapshot = TransactionSnapshot.test(
             timestamp: date(2026, 1, 5),
             amount: -42.50,
-            category: "Food",
             note: "Lunch",
+            category: "Food",
             currencyCode: "EUR",
             recurrenceRuleId: ruleId
         )
