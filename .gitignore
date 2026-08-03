@@ -67,3 +67,4 @@ fastlane/test_output
 graphify-out/**/cost.json
 graphify-out/cache/
 .claude/worktrees/
+.worktrees/
