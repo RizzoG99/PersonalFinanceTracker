@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 @Observable @MainActor
-final class AppSettings {
+final class AppSettings: BackupSchedulingSettings {
     /// Privacy blur toggle (shake-to-hide). Intentionally not persisted — always starts
     /// revealed on launch; this is a quick temporary hide, not a saved preference.
     var hideAmounts = false
@@ -25,9 +25,16 @@ final class AppSettings {
         }
     }
 
+    var lastBackupDate: Date? {
+        didSet {
+            UserDefaults.standard.set(lastBackupDate, forKey: "lastBackupDate")
+        }
+    }
+
     init() {
         let v = UserDefaults.standard.integer(forKey: "payCycleStartDay")
         payCycleStartDay = v == 0 ? 1 : v
+        lastBackupDate = UserDefaults.standard.object(forKey: "lastBackupDate") as? Date
     }
 
     static var storedStartDay: Int {
