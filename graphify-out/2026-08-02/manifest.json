@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift": {
-    "mtime": 1785749130.3661783,
-    "ast_hash": "ead0a6f815c06683f46567a90c40cddf",
+    "mtime": 1785679333.1971047,
+    "ast_hash": "7e6a7baffb9c05a3c5a2ed5af125409a",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionViewModel.swift": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/MainTabView/MainTabView.swift": {
-    "mtime": 1785686132.6745627,
-    "ast_hash": "95babf7f07e75ee06b8b37fde3942ecc",
+    "mtime": 1785678314.751878,
+    "ast_hash": "0f87def6f1d58ed906363619bf098710",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileAvatarView.swift": {
@@ -425,8 +425,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/ActivityView.swift": {
-    "mtime": 1785749125.0145817,
-    "ast_hash": "1f6c29cae581426580f01027ca070668",
+    "mtime": 1785668263.4413178,
+    "ast_hash": "f4b9b5a2667dca4f60f14373ec11c16b",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ActivitySearchBar.swift": {
@@ -450,8 +450,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionItemView.swift": {
-    "mtime": 1785749148.6972442,
-    "ast_hash": "a807b1afb8a4077a7353206d73dd0f82",
+    "mtime": 1785668263.4470494,
+    "ast_hash": "032315a32dbef3d14cb24add17bfb1c5",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/TransactionSectionHeader.swift": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/TransactionListViewModel.swift": {
-    "mtime": 1785697883.6031044,
-    "ast_hash": "50cfcd973b8070191ad05d2a62f646cc",
+    "mtime": 1785668263.4478815,
+    "ast_hash": "36956dfb571cc235eab0a0c26f02c795",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Models/CategoryModel.swift": {
@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/TransactionListView/TransactionListViewModelTests.swift": {
-    "mtime": 1785698111.4812863,
-    "ast_hash": "52030280cabe03b354b0ec6477cdcfbf",
+    "mtime": 1785668263.463223,
+    "ast_hash": "a4d9ae92b28d3893ea919fdf94609a88",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Mocks/MockTransactionRepository.swift": {
@@ -1200,8 +1200,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Mocks/TransactionSnapshotFactory.swift": {
-    "mtime": 1785698094.5297353,
-    "ast_hash": "7c5afb6e331f33f63ae70a63b20c2ff5",
+    "mtime": 1785671609.6495621,
+    "ast_hash": "3eb58e75be93aa68f709d7da945ca073",
     "semantic_hash": ""
   },
   ".serena/project.yml": {
@@ -1494,6 +1494,16 @@
     "ast_hash": "4550b582e2c1a1d1a048b501ed94f5f0",
     "semantic_hash": ""
   },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/progress.md": {
+    "mtime": 1785679515.5138674,
+    "ast_hash": "bda933d56d5377b58409486c2bad98b2",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-1-brief.md": {
+    "mtime": 1785668927.8228433,
+    "ast_hash": "d28d21728be636b731cc4af44023becf",
+    "semantic_hash": ""
+  },
   "docs/superpowers/plans/2026-08-02-recurring-transactions.md": {
     "mtime": 1785668696.491053,
     "ast_hash": "5c8d632c19a9876643875973c16b5ef1",
@@ -1519,9 +1529,39 @@
     "ast_hash": "c039db7595a12a3fc49450ab4d7020e7",
     "semantic_hash": ""
   },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-1-report.md": {
+    "mtime": 1785669326.7417204,
+    "ast_hash": "cecea85b0a3bc3891ed64f410a8872f6",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-2-brief.md": {
+    "mtime": 1785669494.1464856,
+    "ast_hash": "4b6d94a73920749bbac7cb6407d37f60",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-2-report.md": {
+    "mtime": 1785669668.5204635,
+    "ast_hash": "ba1b8059b37b22def3a1c781ac935e78",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-3-brief.md": {
+    "mtime": 1785669775.1816635,
+    "ast_hash": "c66126dcd39c5b6c0ef859b6d44d1066",
+    "semantic_hash": ""
+  },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Models/TransactionActorRecurrenceTests.swift": {
     "mtime": 1785670682.7857678,
     "ast_hash": "5357a6419679ee923e6cc4cbd3888a62",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-3-report.md": {
+    "mtime": 1785670101.213664,
+    "ast_hash": "60e7cf39091e75974dfc407f4c2a4cf2",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-4-brief.md": {
+    "mtime": 1785670230.5347729,
+    "ast_hash": "75116a328884f5bd3c4b0fd1fde4a097",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/RecurrenceMaterializationService.swift": {
@@ -1534,9 +1574,64 @@
     "ast_hash": "66853c21526612c2746ff5fd7215a720",
     "semantic_hash": ""
   },
-  "docs/ux-audit-2026-08-03.md": {
-    "mtime": 1785748995.6026363,
-    "ast_hash": "16021bf418a35e9b77a0ab481fb06e40",
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-4-report.md": {
+    "mtime": 1785670845.8358614,
+    "ast_hash": "e8e644550369d7368d5694410388c1ea",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-5-brief.md": {
+    "mtime": 1785671130.9403267,
+    "ast_hash": "1d1621fc88b77c647a2f70169454eab2",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-5-report.md": {
+    "mtime": 1785671341.9047666,
+    "ast_hash": "1f35b3fb22dbe8a2c912bcc8e616e1b1",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-6-brief.md": {
+    "mtime": 1785677828.2175756,
+    "ast_hash": "c1d3a37e7190de6d005166dafedcb635",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-6-report.md": {
+    "mtime": 1785678117.811977,
+    "ast_hash": "b115b5d9954d34e8b8c2f2f63c3d67e6",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-7-brief.md": {
+    "mtime": 1785678264.3305812,
+    "ast_hash": "aea1d3e54eb6ca600d66116228eb152f",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-7-report.md": {
+    "mtime": 1785678364.581693,
+    "ast_hash": "bed84dc94fdc5971c7a2c0cf0713750f",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-8-brief.md": {
+    "mtime": 1785678461.645789,
+    "ast_hash": "7059f3c701a9551842be05b94eeec4d9",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-10-brief.md": {
+    "mtime": 1785679533.045243,
+    "ast_hash": "0e05d5287c56a69fae40052707977e22",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-8-report.md": {
+    "mtime": 1785678829.1078906,
+    "ast_hash": "d45f44f47151b659777416a8f516e527",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-9-brief.md": {
+    "mtime": 1785678950.0904226,
+    "ast_hash": "763e938037da9ebc0b0c9c1f94e4ceae",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-02-recurring-transactions/task-9-report.md": {
+    "mtime": 1785679399.2348545,
+    "ast_hash": "d6f9527d50ac2da18013704f4620675f",
     "semantic_hash": ""
   }
 }
