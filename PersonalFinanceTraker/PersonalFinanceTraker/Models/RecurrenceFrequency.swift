@@ -1,6 +1,6 @@
 import Foundation
 
-enum RecurrenceFrequency: String, CaseIterable, Sendable {
+enum RecurrenceFrequency: String, CaseIterable, Sendable, Codable {
     case weekly
     case monthly
     case yearly
