@@ -23,10 +23,11 @@ struct EditAddTransactionView: View {
     @Environment(DataChangedSignal.self) private var dataChanged
     @State private var viewModel: EditAddTransactionViewModel
     @State private var pendingRecurrenceAction: PendingRecurrenceAction?
-    private let materializationService = RecurrenceMaterializationService()
+    private let materializationService: RecurrenceMaterializationService
 
-    init(_ snapshot: TransactionSnapshot? = nil, repo: any ITransactionRepository) {
+    init(_ snapshot: TransactionSnapshot? = nil, repo: any ITransactionRepository, materializationService: RecurrenceMaterializationService) {
         _viewModel = State(wrappedValue: EditAddTransactionViewModel(editingItem: snapshot, repo: repo))
+        self.materializationService = materializationService
     }
 
     var body: some View {
@@ -48,23 +49,23 @@ struct EditAddTransactionView: View {
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                    .confirmationDialog(
+                        "This is part of a recurring series",
+                        isPresented: Binding(
+                            get: { pendingRecurrenceAction != nil },
+                            set: { if !$0 { pendingRecurrenceAction = nil } }
+                        ),
+                        titleVisibility: .visible
+                    ) {
+                        Button("This transaction", role: .destructive) { applyPendingAction(scope: .thisOnly) }
+                        Button("This and future", role: .destructive) { applyPendingAction(scope: .thisAndFuture) }
+                        Button("Cancel", role: .cancel) { pendingRecurrenceAction = nil }
+                    }
                 }
             }
         }
         .onAppear {
             viewModel.setTransactionViewModel()
-        }
-        .confirmationDialog(
-            "This is part of a recurring series",
-            isPresented: Binding(
-                get: { pendingRecurrenceAction != nil },
-                set: { if !$0 { pendingRecurrenceAction = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
-            Button("This transaction") { applyPendingAction(scope: .thisOnly) }
-            Button("This and future", role: .destructive) { applyPendingAction(scope: .thisAndFuture) }
-            Button("Cancel", role: .cancel) { pendingRecurrenceAction = nil }
         }
     }
 

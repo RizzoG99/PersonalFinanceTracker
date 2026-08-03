@@ -73,9 +73,53 @@ struct ActivityView: View {
                             .buttonStyle(.plain)
                             .listRowBackground(Color.clear)
                             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                        }
-                        .onDelete { offsets in
-                            viewModel.deleteItemsFromSection(dayItems: dayItems, offsets: offsets)
+                            // Recurring rows must not use role: .destructive here — iOS plays the
+                            // swipe-to-delete row-collapse animation the instant a destructive-role
+                            // swipe action is tapped, regardless of whether the closure actually
+                            // deletes anything. For a recurring item we need to ask "this transaction"
+                            // vs. "this and future" first, so the row must stay put until the user
+                            // chooses; a plain button (red-tinted, no destructive role) avoids the
+                            // automatic collapse.
+                            //
+                            // The confirmationDialog itself must live on this row's main Button, not
+                            // on the swipeActions button — SwiftUI bridges swipeActions content to
+                            // UIContextualAction under the hood, and presentation modifiers attached
+                            // there silently fail to present.
+                            .confirmationDialog(
+                                "This is part of a recurring series",
+                                isPresented: Binding(
+                                    get: { viewModel.pendingRecurrenceDeletion?.id == item.id },
+                                    set: { if !$0 { viewModel.pendingRecurrenceDeletion = nil } }
+                                ),
+                                titleVisibility: .visible
+                            ) {
+                                Button("This transaction", role: .destructive) {
+                                    viewModel.applyRecurrenceDeletionScope(.thisOnly)
+                                }
+                                Button("This and future", role: .destructive) {
+                                    viewModel.applyRecurrenceDeletionScope(.thisAndFuture)
+                                }
+                                Button("Cancel", role: .cancel) {
+                                    viewModel.pendingRecurrenceDeletion = nil
+                                }
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: item.recurrenceRuleId == nil) {
+                                if item.recurrenceRuleId != nil {
+                                    Button {
+                                        viewModel.pendingRecurrenceDeletion = item
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                    .tint(.red)
+                                } else {
+                                    Button(role: .destructive) {
+                                        viewModel.delete(item)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                    .tint(.red)
+                                }
+                            }
                         }
                     } header: {
                         Text(dateString)

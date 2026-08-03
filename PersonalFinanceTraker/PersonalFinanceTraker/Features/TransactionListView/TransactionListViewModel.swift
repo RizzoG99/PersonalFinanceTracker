@@ -8,6 +8,11 @@
 import Foundation
 import SwiftData
 
+enum RecurrenceDeleteScope {
+    case thisOnly
+    case thisAndFuture
+}
+
 @Observable @MainActor
 final class TransactionListViewModel {
     var transactions: [TransactionSnapshot] = []
@@ -75,6 +80,9 @@ final class TransactionListViewModel {
 
     private(set) var pendingDeletion: [TransactionSnapshot] = []
     private var pendingDeletionTask: Task<Void, Never>?
+    /// Set instead of scheduling deletion when a single swiped-to-delete item belongs to a
+    /// recurring series — the view prompts for "this transaction" vs. "this and future" scope.
+    var pendingRecurrenceDeletion: TransactionSnapshot? = nil
     /// Exposed so tests can await debounced filtering instead of racing the 250ms delay
     @ObservationIgnored private(set) var searchDebounceTask: Task<Void, Never>?
     var showUndoBanner: Bool = false
@@ -180,7 +188,7 @@ final class TransactionListViewModel {
     }
 
     func delete(_ item: TransactionSnapshot) {
-        scheduleDeletion([item])
+        scheduleDeletionOrPromptRecurrence([item])
     }
 
     func deleteItemsFromSection(dayItems: [TransactionSnapshot], offsets: IndexSet) {
@@ -189,7 +197,38 @@ final class TransactionListViewModel {
             return transactions.first { $0.id == dayItems[i].id }
         }
         guard !items.isEmpty else { return }
+        scheduleDeletionOrPromptRecurrence(items)
+    }
+
+    /// Swiping a single recurring occurrence needs the same "this transaction" vs.
+    /// "this and future" choice the edit sheet offers, rather than silently deleting just
+    /// that one row and leaving the series running. Multi-item deletion has no UI entry point
+    /// today (no multi-select mode), so that path only ever needs the plain delete below.
+    private func scheduleDeletionOrPromptRecurrence(_ items: [TransactionSnapshot]) {
+        if items.count == 1, items[0].recurrenceRuleId != nil {
+            pendingRecurrenceDeletion = items[0]
+            return
+        }
         scheduleDeletion(items)
+    }
+
+    func applyRecurrenceDeletionScope(_ scope: RecurrenceDeleteScope) {
+        guard let item = pendingRecurrenceDeletion else { return }
+        pendingRecurrenceDeletion = nil
+        Task {
+            switch scope {
+            case .thisOnly:
+                try? await repo.delete(id: item.id)
+            case .thisAndFuture:
+                if let ruleId = item.recurrenceRuleId {
+                    let dayBefore = Calendar.current.date(byAdding: .day, value: -1, to: item.timestamp) ?? item.timestamp
+                    try? await repo.closeRecurrenceRule(id: ruleId, endDate: dayBefore)
+                    try? await repo.deleteOccurrences(recurrenceRuleId: ruleId, from: item.timestamp)
+                }
+            }
+            onDataChanged?()
+            reload()
+        }
     }
 
     private func scheduleDeletion(_ items: [TransactionSnapshot]) {

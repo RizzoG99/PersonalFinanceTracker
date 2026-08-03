@@ -28,9 +28,16 @@ struct TransactionItemView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(item.note.isEmpty ? item.category.removingLeadingEmoji.localizedCategoryDisplay : item.note)
-                    .font(.body)
-                    .foregroundStyle(.textPrimary)
+                HStack(spacing: 4) {
+                    Text(item.note.isEmpty ? item.category.removingLeadingEmoji.localizedCategoryDisplay : item.note)
+                        .font(.body)
+                        .foregroundStyle(.textPrimary)
+                    if item.recurrenceRuleId != nil {
+                        Image(systemName: "repeat")
+                            .font(.caption2)
+                            .foregroundStyle(.textDim)
+                    }
+                }
                 if !item.note.isEmpty {
                     Text(item.category.removingLeadingEmoji.localizedCategoryDisplay)
                         .font(.caption)

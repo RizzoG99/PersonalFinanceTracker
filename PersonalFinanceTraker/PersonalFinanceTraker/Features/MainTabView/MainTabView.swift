@@ -63,7 +63,7 @@ struct MainTabView: View {
             .environment(dataChanged)
             .sheet(isPresented: $showingAddItemView) {
                 NavigationStack {
-                    EditAddTransactionView(repo: repo)
+                    EditAddTransactionView(repo: repo, materializationService: materializationService)
                         .environment(dataChanged)
                 }
                 .presentationDetents([.large])
@@ -71,7 +71,7 @@ struct MainTabView: View {
             }
             .sheet(item: $viewModel.transactionToEdit) { item in
                 NavigationStack {
-                    EditAddTransactionView(item, repo: repo)
+                    EditAddTransactionView(item, repo: repo, materializationService: materializationService)
                         .environment(dataChanged)
                 }
                 .presentationDetents([.large])

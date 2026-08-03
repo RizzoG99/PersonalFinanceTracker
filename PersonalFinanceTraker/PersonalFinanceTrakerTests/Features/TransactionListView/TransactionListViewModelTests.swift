@@ -166,6 +166,76 @@ struct TransactionListViewModelTests {
         #expect(mockRepo.deleteCalledCount == 0)
     }
 
+    // MARK: - Swiping a recurring occurrence
+
+    @Test @MainActor func deletingSingleRecurringItemPromptsInsteadOfScheduling() async throws {
+        let mockRepo = MockTransactionRepository()
+        let ruleId = UUID()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "Rent", category: "Housing", recurrenceRuleId: ruleId)
+        mockRepo.stubbedTransactions = [t1]
+        let vm = await loadedVM(mockRepo)
+
+        vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
+
+        #expect(vm.pendingRecurrenceDeletion?.id == t1.id)
+        #expect(vm.pendingDeletion.isEmpty)
+        #expect(vm.showUndoBanner == false)
+        #expect(vm.transactions.count == 1) // not optimistically removed — awaiting scope choice
+        #expect(mockRepo.deleteCalledCount == 0)
+    }
+
+    @Test @MainActor func applyRecurrenceDeletionScopeThisOnlyDeletesJustThatRow() async throws {
+        let mockRepo = MockTransactionRepository()
+        let ruleId = UUID()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "Rent", category: "Housing", recurrenceRuleId: ruleId)
+        mockRepo.stubbedTransactions = [t1]
+        let vm = await loadedVM(mockRepo)
+
+        vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
+        vm.applyRecurrenceDeletionScope(.thisOnly)
+        try await Task.sleep(for: .milliseconds(50))
+
+        #expect(mockRepo.deleteCalledCount == 1)
+        #expect(mockRepo.closeRecurrenceRuleCalls.isEmpty)
+        #expect(mockRepo.deleteOccurrencesCalls.isEmpty)
+        #expect(vm.pendingRecurrenceDeletion == nil)
+    }
+
+    @Test @MainActor func applyRecurrenceDeletionScopeThisAndFutureClosesRuleAndDeletesOccurrences() async throws {
+        let mockRepo = MockTransactionRepository()
+        let ruleId = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_700_000_000)
+        let t1 = TransactionSnapshot.test(timestamp: timestamp, amount: -10, note: "Rent", category: "Housing", recurrenceRuleId: ruleId)
+        mockRepo.stubbedTransactions = [t1]
+        let vm = await loadedVM(mockRepo)
+
+        vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
+        vm.applyRecurrenceDeletionScope(.thisAndFuture)
+        try await Task.sleep(for: .milliseconds(50))
+
+        #expect(mockRepo.deleteCalledCount == 0) // series closed, not the single-row delete path
+        #expect(mockRepo.closeRecurrenceRuleCalls.count == 1)
+        #expect(mockRepo.closeRecurrenceRuleCalls.first?.id == ruleId)
+        let expectedDayBefore = Calendar.current.date(byAdding: .day, value: -1, to: timestamp)
+        #expect(mockRepo.closeRecurrenceRuleCalls.first?.endDate == expectedDayBefore)
+        #expect(mockRepo.deleteOccurrencesCalls.count == 1)
+        #expect(mockRepo.deleteOccurrencesCalls.first?.recurrenceRuleId == ruleId)
+        #expect(vm.pendingRecurrenceDeletion == nil)
+    }
+
+    @Test @MainActor func deletingNonRecurringItemStillUsesUndoBanner() async throws {
+        let mockRepo = MockTransactionRepository()
+        let t1 = TransactionSnapshot.test(amount: -10, note: "Coffee", category: "Food")
+        mockRepo.stubbedTransactions = [t1]
+        let vm = await loadedVM(mockRepo)
+
+        vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
+
+        #expect(vm.pendingRecurrenceDeletion == nil)
+        #expect(vm.showUndoBanner == true)
+        #expect(vm.pendingDeletion.count == 1)
+    }
+
     // MARK: - Totals match the list
 
     @Test @MainActor func totalsIncludeAllListedTransactionsRegardlessOfAge() async throws {
