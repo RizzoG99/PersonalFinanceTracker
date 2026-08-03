@@ -14,13 +14,32 @@ struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
     @Environment(DataChangedSignal.self) private var dataChanged
+    @Environment(AppSettings.self) private var appSettings
     @State private var showingFileImporter = false
     @State private var showingDeleteConfirmation = false
     @State private var showingPINConfirmation = false
     @State private var showingDeleteSuccess = false
     @State private var deleteErrorMessage: String?
     @State private var route: ProfileRoute?
+    @State private var showingRestoreConfirmation = false
+    @State private var isRestoring = false
     private let pinService = PINService()
+    private let backupService = BackupService()
+
+    private var backupStatusText: String {
+        guard let lastBackupDate = appSettings.lastBackupDate else {
+            return "Not backed up — enable iCloud Drive to protect against app deletion"
+        }
+        let formatter = RelativeDateTimeFormatter()
+        return "Last backup: \(formatter.localizedString(for: lastBackupDate, relativeTo: .now))"
+    }
+
+    private func runManualBackup() async {
+        let transactions = (try? await transactionViewModel.repo.fetchAll()) ?? []
+        let rules = (try? await transactionViewModel.repo.fetchActiveRecurrenceRules()) ?? []
+        guard (try? backupService.writeBackup(transactions: transactions, recurrenceRules: rules)) != nil else { return }
+        appSettings.lastBackupDate = .now
+    }
 
     var body: some View {
         NavigationStack {
@@ -84,6 +103,23 @@ struct ProfileView: View {
                         } label: {
                             Label("Export Data", systemImage: "square.and.arrow.up")
                         }
+
+                        HStack {
+                            Label(backupStatusText, systemImage: appSettings.lastBackupDate != nil ? "checkmark.icloud" : "exclamationmark.icloud")
+                                .foregroundStyle(appSettings.lastBackupDate != nil ? .textDim : .negative)
+                            Spacer()
+                            Button("Backup Now") {
+                                Task { await runManualBackup() }
+                            }
+                            .font(.caption)
+                        }
+
+                        Button {
+                            showingRestoreConfirmation = true
+                        } label: {
+                            Label("Restore from Backup", systemImage: "arrow.clockwise.icloud")
+                        }
+                        .disabled(backupService.newestBackup() == nil)
 
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
@@ -183,6 +219,20 @@ struct ProfileView: View {
                 Button("OK") { deleteErrorMessage = nil }
             } message: {
                 Text(deleteErrorMessage ?? "")
+            }
+            .confirmationDialog(
+                "This replaces all current data with your last backup. This cannot be undone.",
+                isPresented: $showingRestoreConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Restore", role: .destructive) {
+                    Task {
+                        isRestoring = true
+                        try? await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
+                        isRestoring = false
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
             }
         }
     }
