@@ -1,126 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Not backed up" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Backup non eseguito"
-          }
-        }
-      }
-    },
-    "Enable iCloud Drive to protect your data if the app is deleted." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abilita iCloud Drive per proteggere i tuoi dati in caso di cancellazione dell'app."
-          }
-        }
-      }
-    },
-    "Last backup: %@" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ultimo backup: %@"
-          }
-        }
-      }
-    },
-    "Back Up Now" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esegui backup ora"
-          }
-        }
-      }
-    },
-    "Restore from Backup" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ripristina da backup"
-          }
-        }
-      }
-    },
-    "Restore" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ripristina"
-          }
-        }
-      }
-    },
-    "Backup Failed" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Backup non riuscito"
-          }
-        }
-      }
-    },
-    "No transactions to back up yet." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna transazione da salvare."
-          }
-        }
-      }
-    },
-    "iCloud Drive is not available. Enable it in Settings to back up your data." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloud Drive non è disponibile. Abilitalo nelle Impostazioni per eseguire il backup dei tuoi dati."
-          }
-        }
-      }
-    },
-    "Backup failed: %@" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Backup non riuscito: %@"
-          }
-        }
-      }
-    },
-    "Restore Failed" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ripristino non riuscito"
-          }
-        }
-      }
-    },
-    "This replaces all current data with your last backup. This cannot be undone." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questo sostituirà tutti i dati attuali con l'ultimo backup. L'operazione non può essere annullata."
-          }
-        }
-      }
-    },
     "" : {
 
     },
@@ -1116,6 +996,37 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Media"
+          }
+        }
+      }
+    },
+    "Back Up Now" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esegui backup ora"
+          }
+        }
+      }
+    },
+    "Backup Failed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup non riuscito"
+          }
+        }
+      }
+    },
+    "Backup failed: %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup non riuscito: %@"
           }
         }
       }
@@ -2244,6 +2155,16 @@
         }
       }
     },
+    "Enable iCloud Drive to protect your data if the app is deleted." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita iCloud Drive per proteggere i tuoi dati in caso di cancellazione dell'app."
+          }
+        }
+      }
+    },
     "Enter your name" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2942,6 +2863,17 @@
         }
       }
     },
+    "iCloud Drive is not available. Enable it in Settings to back up your data." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud Drive non è disponibile. Abilitalo nelle Impostazioni per eseguire il backup dei tuoi dati."
+          }
+        }
+      }
+    },
     "Icon" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3189,6 +3121,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ultime 4 cifre"
+          }
+        }
+      }
+    },
+    "Last backup: %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ultimo backup: %@"
           }
         }
       }
@@ -3756,6 +3699,17 @@
         }
       }
     },
+    "No transactions to back up yet." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna transazione da salvare."
+          }
+        }
+      }
+    },
     "No transactions yet" : {
       "localizations" : {
         "it" : {
@@ -3779,6 +3733,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ancora nessuna transazione in questo periodo"
+          }
+        }
+      }
+    },
+    "Not backed up" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup non eseguito"
           }
         }
       }
@@ -4299,6 +4264,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ristoranti"
+          }
+        }
+      }
+    },
+    "Restore" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina"
+          }
+        }
+      }
+    },
+    "Restore Failed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino non riuscito"
+          }
+        }
+      }
+    },
+    "Restore from Backup" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina da backup"
           }
         }
       }
@@ -4953,6 +4948,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questo periodo · %@ – %@"
+          }
+        }
+      }
+    },
+    "This replaces all current data with your last backup. This cannot be undone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo sostituirà tutti i dati attuali con l'ultimo backup. L'operazione non può essere annullata."
           }
         }
       }
