@@ -13,8 +13,8 @@ import SwiftData
 
 private enum SnapshotTestSupport {
     static let container: ModelContainer = {
-        let schema = Schema([TransactionModel.self, CategoryModel.self, GoalModel.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let schema = Schema([TransactionModel.self, CategoryModel.self, GoalModel.self, RecurrenceRule.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         return try! ModelContainer(for: schema, configurations: [config])
     }()
 }
@@ -26,7 +26,8 @@ extension TransactionSnapshot {
         note: String = "",
         category: String,
         currencyCode: String = "EUR",
-        goalId: UUID? = nil
+        goalId: UUID? = nil,
+        recurrenceRuleId: UUID? = nil
     ) -> TransactionSnapshot {
         let context = ModelContext(SnapshotTestSupport.container)
         let model = TransactionModel(
@@ -35,7 +36,8 @@ extension TransactionSnapshot {
             note: note,
             category: category,
             currencyCode: currencyCode,
-            goalId: goalId
+            goalId: goalId,
+            recurrenceRuleId: recurrenceRuleId
         )
         context.insert(model)
         return TransactionSnapshot(model)
@@ -73,5 +75,30 @@ extension GoalSnapshot {
         let model = GoalModel(name: name, targetAmount: targetAmount, deadline: deadline)
         context.insert(model)
         return GoalSnapshot(model)
+    }
+}
+
+extension RecurrenceRuleSnapshot {
+    static func test(
+        id: UUID = UUID(),
+        frequency: RecurrenceFrequency = .monthly,
+        interval: Int = 1,
+        startDate: Date,
+        endDate: Date? = nil,
+        lastMaterializedDate: Date? = nil,
+        amount: Decimal,
+        note: String = "",
+        category: String,
+        currencyCode: String = "EUR",
+        goalId: UUID? = nil
+    ) -> RecurrenceRuleSnapshot {
+        let context = ModelContext(SnapshotTestSupport.container)
+        let model = RecurrenceRule(
+            id: id, frequency: frequency, interval: interval, startDate: startDate,
+            endDate: endDate, lastMaterializedDate: lastMaterializedDate,
+            amount: amount, note: note, category: category, currencyCode: currencyCode, goalId: goalId
+        )
+        context.insert(model)
+        return RecurrenceRuleSnapshot(model)
     }
 }

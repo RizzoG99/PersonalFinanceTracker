@@ -7,7 +7,7 @@ import SwiftData
 struct CategoryBreakdownViewModelTests {
 
     private func makeSnapshot(amount: Decimal, category: String) -> TransactionSnapshot {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: TransactionModel.self, configurations: config)
         let ctx = ModelContext(container)
         let model = TransactionModel(timestamp: Date(), amount: amount, note: "", category: category)

@@ -21,6 +21,7 @@ struct MainTabView: View {
     @State private var showPrivacyToast = false
     @State private var privacyToastTask: Task<Void, Never>?
     private let repo: TransactionActor
+    private let materializationService = RecurrenceMaterializationService()
     // Owned by AuthenticationWrapper (not MainTabView) so hideAmounts survives the
     // background→lock→foreground cycle: MainTabView itself is torn down and recreated
     // every time the PIN/biometric lock screen shows, which would otherwise reset it.
@@ -62,7 +63,7 @@ struct MainTabView: View {
             .environment(dataChanged)
             .sheet(isPresented: $showingAddItemView) {
                 NavigationStack {
-                    EditAddTransactionView(repo: repo)
+                    EditAddTransactionView(repo: repo, materializationService: materializationService)
                         .environment(dataChanged)
                 }
                 .presentationDetents([.large])
@@ -70,7 +71,7 @@ struct MainTabView: View {
             }
             .sheet(item: $viewModel.transactionToEdit) { item in
                 NavigationStack {
-                    EditAddTransactionView(item, repo: repo)
+                    EditAddTransactionView(item, repo: repo, materializationService: materializationService)
                         .environment(dataChanged)
                 }
                 .presentationDetents([.large])
@@ -121,6 +122,10 @@ struct MainTabView: View {
                 // Data may have changed outside the UI (App Intent quick-add)
                 dashboardViewModel.reload()
                 viewModel.reload()
+                Task {
+                    try? await materializationService.materialize(using: repo)
+                    dataChanged.bump()
+                }
             }
             if phase == .active || phase == .background {
                 // ponytail: in-memory check may lag a just-saved transaction by one
@@ -135,6 +140,8 @@ struct MainTabView: View {
             viewModel.onDataChanged = { dataChanged.bump() }
             compassViewModel.onDataChanged = { dataChanged.bump() }
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
+            try? await materializationService.materialize(using: repo)
+            dataChanged.bump()
         }
         .appBackground()
         .preferredColorScheme(.dark)
@@ -154,7 +161,7 @@ struct MainTabView: View {
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self, GoalModel.self])
-    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
         SampleData.populateModelContext(container.mainContext)

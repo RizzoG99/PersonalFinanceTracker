@@ -6,7 +6,7 @@ import SwiftData
 struct StatisticalAverageServiceTests {
 
     private func snapshot(_ amount: Decimal, monthsAgo: Int, category: String) -> TransactionSnapshot {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: TransactionModel.self, configurations: config)
         let ctx = ModelContext(container)
         let date = Calendar.current.date(byAdding: .month, value: -monthsAgo, to: .now) ?? .now

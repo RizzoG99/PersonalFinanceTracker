@@ -96,7 +96,7 @@ struct CompassView: View {
 // Hoisted out of #Preview: the macro expansion trips a type-checker crash on TransactionActor construction
 @MainActor private func compassPreview() -> some View {
     let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self, GoalModel.self])
-    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
     let repo: any ITransactionRepository = TransactionActor(modelContainer: container)

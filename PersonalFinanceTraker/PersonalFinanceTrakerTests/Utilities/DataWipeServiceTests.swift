@@ -15,7 +15,7 @@ struct DataWipeServiceTests {
             HealthScoreSnapshot.self,
             DailyForecastCache.self,
         ])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: schema, configurations: config)
         let context = ModelContext(container)
 

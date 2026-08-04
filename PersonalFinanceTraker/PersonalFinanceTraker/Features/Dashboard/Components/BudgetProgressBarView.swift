@@ -61,7 +61,7 @@ struct BudgetProgressBarView: View {
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self])
-    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     let container = try! ModelContainer(for: schema, configurations: [config])
     let category = CategoryModel(name: "Groceries", systemImage: "cart.fill", type: .expense, colorToken: "categoryGreen", monthlyBudget: 300)
     container.mainContext.insert(category)

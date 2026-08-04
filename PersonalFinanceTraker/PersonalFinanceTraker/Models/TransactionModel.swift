@@ -17,6 +17,7 @@ public final class TransactionModel {
     var idCategory: String?
     var currencyCode: String = "EUR"
     var goalId: UUID?
+    var recurrenceRuleId: UUID?
 
     @Relationship(deleteRule: .nullify)
     var categoryModel: CategoryModel?
@@ -28,7 +29,8 @@ public final class TransactionModel {
          idCategory: String? = nil,
          categoryModel: CategoryModel? = nil,
          currencyCode: String = "EUR",
-         goalId: UUID? = nil) {
+         goalId: UUID? = nil,
+         recurrenceRuleId: UUID? = nil) {
         self.timestamp = timestamp
         self.amount = amount
         self.note = note
@@ -37,5 +39,6 @@ public final class TransactionModel {
         self.categoryModel = categoryModel
         self.currencyCode = currencyCode
         self.goalId = goalId
+        self.recurrenceRuleId = recurrenceRuleId
     }
 }

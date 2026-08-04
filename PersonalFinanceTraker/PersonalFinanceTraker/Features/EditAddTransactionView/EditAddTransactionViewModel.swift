@@ -22,6 +22,9 @@ final class EditAddTransactionViewModel {
     var showingCategoryPicker: Bool = false
     var showingErrorAlert: Bool = false
     var errorMessage: String = ""
+    var isRecurring: Bool = false
+    var recurrenceFrequency: RecurrenceFrequency = .monthly
+    var recurrenceInterval: Int = 1
 
     let editingItem: TransactionSnapshot?
     let repo: any ITransactionRepository
@@ -104,6 +107,61 @@ final class EditAddTransactionViewModel {
         )
     }
 
+    /// nil when not recurring, editing an existing transaction, or the type is Transfer
+    /// (goal-linked recurrence is deferred — see docs/superpowers/specs/2026-08-02-recurring-transactions-design.md).
+    func buildRecurrenceRuleInput() -> RecurrenceRuleInput? {
+        guard isRecurring, editingItem == nil, transactionType != .transfer,
+              let input = buildInput() else { return nil }
+        return RecurrenceRuleInput(
+            frequency: recurrenceFrequency,
+            interval: recurrenceInterval,
+            startDate: input.timestamp,
+            amount: input.amount,
+            note: input.note,
+            category: input.category,
+            currencyCode: input.currencyCode,
+            goalId: input.goalId,
+            categoryPersistentId: input.categoryPersistentId
+        )
+    }
+
+    /// Used for "this and future" edits: keeps the rule's cadence (frequency/interval/startDate)
+    /// untouched — v1's edit form never shows those fields, and changing startDate would shift
+    /// every future occurrence date — and applies only the template fields visible in the form.
+    func buildRecurrenceRuleInput(preserving rule: RecurrenceRuleSnapshot) -> RecurrenceRuleInput? {
+        guard let input = buildInput() else { return nil }
+        return RecurrenceRuleInput(
+            id: rule.id,
+            frequency: rule.frequency,
+            interval: rule.interval,
+            startDate: rule.startDate,
+            amount: input.amount,
+            note: input.note,
+            category: input.category,
+            currencyCode: input.currencyCode,
+            goalId: input.goalId,
+            categoryPersistentId: input.categoryPersistentId
+        )
+    }
+
+    /// Creates the rule and immediately materializes its first occurrence, so the new
+    /// transaction is visible right away instead of waiting for the next launch/foreground pass.
+    func saveRecurringTransaction() async throws {
+        guard let ruleInput = buildRecurrenceRuleInput() else { return }
+        try await repo.addRecurrenceRule(ruleInput)
+        let firstOccurrence = TransactionInput(
+            timestamp: ruleInput.startDate,
+            amount: ruleInput.amount,
+            note: ruleInput.note,
+            category: ruleInput.category,
+            currencyCode: ruleInput.currencyCode,
+            goalId: ruleInput.goalId,
+            categoryPersistentId: ruleInput.categoryPersistentId,
+            recurrenceRuleId: ruleInput.id
+        )
+        try await repo.materializeOccurrences(ruleId: ruleInput.id, inputs: [firstOccurrence], newCursor: ruleInput.startDate)
+    }
+
     func saveTransaction() {
         guard let input = buildInput() else { return }
         Task {
@@ -136,6 +194,9 @@ final class EditAddTransactionViewModel {
         date = Date()
         selectedCategory = nil
         selectedGoal = nil
+        isRecurring = false
+        recurrenceFrequency = .monthly
+        recurrenceInterval = 1
     }
 
 }

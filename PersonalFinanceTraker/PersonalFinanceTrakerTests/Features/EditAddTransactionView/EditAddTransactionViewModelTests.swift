@@ -367,4 +367,82 @@ struct EditAddTransactionViewModelTests {
         let vm = makeVM()
         #expect(vm.availableCategories.isEmpty)
     }
+
+    // MARK: - Recurrence (create-time)
+
+    @Test @MainActor func buildRecurrenceRuleInputIsNilWhenNotRecurring() async throws {
+        let vm = makeVM()
+        vm.transactionName = "Rent"
+        vm.amount = 1200
+        vm.selectedCategory = expenseCat()
+        vm.isRecurring = false
+        #expect(vm.buildRecurrenceRuleInput() == nil)
+    }
+
+    @Test @MainActor func buildRecurrenceRuleInputIsNilForTransfers() async throws {
+        let vm = makeVM()
+        vm.transactionName = "To savings"
+        vm.amount = 200
+        vm.transactionType = .transfer
+        vm.selectedGoal = .test(name: "Vacation", targetAmount: 1000)
+        vm.isRecurring = true
+        #expect(vm.buildRecurrenceRuleInput() == nil)
+    }
+
+    @Test @MainActor func buildRecurrenceRuleInputMatchesFormWhenRecurring() async throws {
+        let vm = makeVM()
+        vm.transactionName = "Rent"
+        vm.amount = 1200
+        vm.transactionType = .expense
+        vm.selectedCategory = expenseCat()
+        vm.isRecurring = true
+        vm.recurrenceFrequency = .monthly
+        vm.recurrenceInterval = 1
+
+        let ruleInput = try #require(vm.buildRecurrenceRuleInput())
+        #expect(ruleInput.frequency == .monthly)
+        #expect(ruleInput.interval == 1)
+        #expect(ruleInput.amount == -1200)
+        #expect(ruleInput.category == "Food")
+    }
+
+    @Test @MainActor func saveRecurringTransactionCreatesRuleAndMaterializesFirstOccurrence() async throws {
+        let mock = MockTransactionRepository()
+        let vm = EditAddTransactionViewModel(repo: mock)
+        vm.transactionName = "Rent"
+        vm.amount = 1200
+        vm.selectedCategory = expenseCat()
+        vm.isRecurring = true
+        vm.recurrenceFrequency = .monthly
+
+        try await vm.saveRecurringTransaction()
+
+        #expect(mock.addRecurrenceRuleCalls.count == 1)
+        #expect(mock.materializeOccurrencesCalls.count == 1)
+        let call = mock.materializeOccurrencesCalls[0]
+        #expect(call.ruleId == mock.addRecurrenceRuleCalls[0].id)
+        #expect(call.inputs.count == 1)
+        #expect(call.inputs[0].timestamp == mock.addRecurrenceRuleCalls[0].startDate)
+    }
+}
+
+extension EditAddTransactionViewModelTests {
+    @Test @MainActor func buildRecurrenceRuleInputPreservingKeepsCadenceAndUpdatesTemplate() async throws {
+        let originalStart = Date(timeIntervalSince1970: 1_735_689_600) // 2025-01-01
+        let existingRule = RecurrenceRuleSnapshot.test(
+            frequency: .yearly, interval: 2, startDate: originalStart, amount: -1200, category: "Housing"
+        )
+        let vm = makeVM()
+        vm.transactionName = "Rent (increased)"
+        vm.amount = 1500
+        vm.selectedCategory = expenseCat()
+
+        let result = try #require(vm.buildRecurrenceRuleInput(preserving: existingRule))
+        #expect(result.id == existingRule.id)
+        #expect(result.frequency == .yearly)
+        #expect(result.interval == 2)
+        #expect(result.startDate == originalStart)
+        #expect(result.amount == -1500)
+        #expect(result.note == "Rent (increased)")
+    }
 }

@@ -24,9 +24,10 @@ struct TransactionFormView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .onChange(of: viewModel.transactionType) { _, _ in
+                    .onChange(of: viewModel.transactionType) { _, newType in
                         viewModel.selectedCategory = nil
                         viewModel.selectedGoal = nil
+                        if newType == .transfer { viewModel.isRecurring = false }
                     }
                 }
                 .appFormSectionBackground()
@@ -46,6 +47,28 @@ struct TransactionFormView: View {
                     .tint(.accentIndigo)
                 }
                 .appFormSectionBackground()
+
+                if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
+                    Section {
+                        Toggle("Repeat", isOn: $viewModel.isRecurring)
+                        if viewModel.isRecurring {
+                            Picker("Frequency", selection: $viewModel.recurrenceFrequency) {
+                                ForEach(RecurrenceFrequency.allCases, id: \.self) { freq in
+                                    Text(freq.label).tag(freq)
+                                }
+                            }
+                            .onChange(of: viewModel.recurrenceFrequency) { _, newFrequency in
+                                viewModel.recurrenceInterval = min(viewModel.recurrenceInterval, newFrequency.maxInterval)
+                            }
+                            Stepper(
+                                "Every \(viewModel.recurrenceInterval) \(viewModel.recurrenceFrequency.unitLabel(for: viewModel.recurrenceInterval))",
+                                value: $viewModel.recurrenceInterval,
+                                in: 1...viewModel.recurrenceFrequency.maxInterval
+                            )
+                        }
+                    }
+                    .appFormSectionBackground()
+                }
 
                 if viewModel.transactionType == .transfer {
                     Section {

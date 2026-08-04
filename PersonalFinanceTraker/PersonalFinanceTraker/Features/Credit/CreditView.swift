@@ -51,7 +51,7 @@ struct CreditView: View {
 
 #Preview {
     let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self])
-    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     do {
         let container = try ModelContainer(for: schema, configurations: [config])
         return AnyView(

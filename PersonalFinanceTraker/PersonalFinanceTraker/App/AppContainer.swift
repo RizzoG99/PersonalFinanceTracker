@@ -17,10 +17,12 @@ enum AppContainer {
             GoalModel.self,
             HealthScoreSnapshot.self,
             DailyForecastCache.self,
+            RecurrenceRule.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: false
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .none
         )
 
         do {
