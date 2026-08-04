@@ -17,11 +17,11 @@ enum BackupScheduler {
             return
         }
         guard let transactions = try? await repo.fetchAll() else { return }
-        let rules = (try? await repo.fetchActiveRecurrenceRules()) ?? []
+        let rules = (try? await repo.fetchAllRecurrenceRules()) ?? []
 
         do {
             try backupService.writeBackup(transactions: transactions, recurrenceRules: rules, now: now)
-            settings.lastBackupDate = now
+            await MainActor.run { settings.lastBackupDate = now }
         } catch {
             // BackupError.emptyStore (fresh reinstall, nothing to back up yet) or .iCloudUnavailable —
             // skip silently and leave lastBackupDate untouched so the next foreground check retries.

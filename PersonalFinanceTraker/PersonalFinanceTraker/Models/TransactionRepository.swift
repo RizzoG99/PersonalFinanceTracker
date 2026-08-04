@@ -76,6 +76,7 @@ protocol ITransactionRepository {
     // Recurrence rules
     func addRecurrenceRule(_ input: RecurrenceRuleInput) async throws
     func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot]
+    func fetchAllRecurrenceRules() async throws -> [RecurrenceRuleSnapshot]
     func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot?
     func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws
     func closeRecurrenceRule(id: UUID, endDate: Date) async throws

@@ -31,6 +31,7 @@ final class MockTransactionRepository: ITransactionRepository {
     var materializeOccurrencesCalls: [(ruleId: UUID, inputs: [TransactionInput], newCursor: Date)] = []
     var fetchActiveRecurrenceRulesCallCount = 0
     var fetchActiveRecurrenceRulesDelayNanoseconds: UInt64 = 0
+    var fetchAllRecurrenceRulesCallCount = 0
 
     // MARK: Error injection
     var shouldThrow = false
@@ -120,6 +121,12 @@ final class MockTransactionRepository: ITransactionRepository {
     func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot? {
         if shouldThrow { throw MockError.forced }
         return stubbedRecurrenceRules.first { $0.id == id }
+    }
+
+    func fetchAllRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
+        fetchAllRecurrenceRulesCallCount += 1
+        if shouldThrow { throw MockError.forced }
+        return stubbedRecurrenceRules
     }
 
     func updateRecurrenceRule(id: UUID, with input: RecurrenceRuleInput) async throws {

@@ -21,6 +21,7 @@ struct ProfileView: View {
     @State private var showingDeleteSuccess = false
     @State private var deleteErrorMessage: String?
     @State private var backupErrorMessage: String?
+    @State private var restoreErrorMessage: String?
     @State private var route: ProfileRoute?
     @State private var showingRestoreConfirmation = false
     private let pinService = PINService()
@@ -36,7 +37,7 @@ struct ProfileView: View {
 
     private func runManualBackup() async {
         let transactions = (try? await transactionViewModel.repo.fetchAll()) ?? []
-        let rules = (try? await transactionViewModel.repo.fetchActiveRecurrenceRules()) ?? []
+        let rules = (try? await transactionViewModel.repo.fetchAllRecurrenceRules()) ?? []
         do {
             try backupService.writeBackup(transactions: transactions, recurrenceRules: rules)
             appSettings.lastBackupDate = .now
@@ -239,6 +240,17 @@ struct ProfileView: View {
             } message: {
                 Text(backupErrorMessage ?? "")
             }
+            .alert(
+                "Restore Failed",
+                isPresented: Binding(
+                    get: { restoreErrorMessage != nil },
+                    set: { if !$0 { restoreErrorMessage = nil } }
+                )
+            ) {
+                Button("OK") { restoreErrorMessage = nil }
+            } message: {
+                Text(restoreErrorMessage ?? "")
+            }
             .confirmationDialog(
                 "This replaces all current data with your last backup. This cannot be undone.",
                 isPresented: $showingRestoreConfirmation,
@@ -246,7 +258,12 @@ struct ProfileView: View {
             ) {
                 Button("Restore", role: .destructive) {
                     Task {
-                        try? await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
+                        do {
+                            try await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
+                            dataChanged.bump()
+                        } catch {
+                            restoreErrorMessage = error.localizedDescription
+                        }
                     }
                 }
                 Button("Cancel", role: .cancel) {}

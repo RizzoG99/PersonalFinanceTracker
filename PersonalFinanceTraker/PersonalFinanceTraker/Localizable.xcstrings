@@ -2207,6 +2207,16 @@
         }
       }
     },
+    "Every %lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Every %1$lld %2$@"
+          }
+        }
+      }
+    },
     "Every week for %lld week" : {
       "localizations" : {
         "en" : {
@@ -2477,6 +2487,9 @@
           }
         }
       }
+    },
+    "Frequency" : {
+
     },
     "From" : {
       "extractionState" : "manual",
@@ -3297,6 +3310,9 @@
         }
       }
     },
+    "month" : {
+
+    },
     "Month-end projection" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3314,6 +3330,9 @@
         }
       }
     },
+    "Monthly" : {
+
+    },
     "MONTHLY BUDGET · EXPENSE CATEGORIES" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3330,6 +3349,9 @@
           }
         }
       }
+    },
+    "months" : {
+
     },
     "Music" : {
       "extractionState" : "manual",
@@ -4124,6 +4146,9 @@
         }
       }
     },
+    "Repeat" : {
+
+    },
     "Required" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4769,6 +4794,12 @@
         }
       }
     },
+    "This and future" : {
+
+    },
+    "This is part of a recurring series" : {
+
+    },
     "This month" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4805,6 +4836,9 @@
           }
         }
       }
+    },
+    "This transaction" : {
+
     },
     "This will permanently erase every transaction, category, credit card, and goal. This cannot be undone." : {
       "extractionState" : "manual",
@@ -5214,6 +5248,9 @@
         }
       }
     },
+    "week" : {
+
+    },
     "Weekdays are your heaviest spending days" : {
       "localizations" : {
         "it" : {
@@ -5233,6 +5270,12 @@
           }
         }
       }
+    },
+    "Weekly" : {
+
+    },
+    "weeks" : {
+
     },
     "What you're saving toward" : {
       "extractionState" : "manual",
@@ -5262,6 +5305,15 @@
           }
         }
       }
+    },
+    "year" : {
+
+    },
+    "Yearly" : {
+
+    },
+    "years" : {
+
     },
     "Yesterday" : {
       "localizations" : {

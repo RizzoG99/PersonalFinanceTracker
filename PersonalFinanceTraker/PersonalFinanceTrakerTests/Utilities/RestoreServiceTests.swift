@@ -40,4 +40,23 @@ struct RestoreServiceTests {
         #expect(repo.addRecurrenceRuleCalls[0].id == ruleId)
         #expect(repo.addCalledCount == 1)
     }
+
+    @Test func restoreLatestRethrowsWhenRepositoryFails() async throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let service = BackupService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
+
+        _ = try service.writeBackup(
+            transactions: [.test(timestamp: date(2026, 1, 5), amount: -42, note: "Lunch", category: "Food")],
+            recurrenceRules: [],
+            now: date(2026, 1, 6)
+        )
+
+        let repo = MockTransactionRepository()
+        repo.shouldThrow = true
+
+        await #expect(throws: MockTransactionRepository.MockError.forced) {
+            try await RestoreService.restoreLatest(repo: repo, backupService: service)
+        }
+    }
 }

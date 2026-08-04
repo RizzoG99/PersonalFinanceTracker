@@ -116,6 +116,11 @@ actor TransactionActor: ITransactionRepository {
         return all.filter { $0.isActive(asOf: today) }.map(RecurrenceRuleSnapshot.init)
     }
 
+    func fetchAllRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
+        let all = try modelContext.fetch(FetchDescriptor<RecurrenceRule>())
+        return all.map(RecurrenceRuleSnapshot.init)
+    }
+
     func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot? {
         var desc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == id })
         desc.fetchLimit = 1
