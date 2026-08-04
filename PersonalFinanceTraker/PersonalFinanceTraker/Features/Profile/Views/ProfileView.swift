@@ -27,9 +27,9 @@ struct ProfileView: View {
     private let pinService = PINService()
     private let backupService = BackupService()
 
-    private var backupStatusText: String {
+    private var backupStatusTitle: String {
         guard let lastBackupDate = appSettings.lastBackupDate else {
-            return "Not backed up — enable iCloud Drive to protect against app deletion"
+            return "Not backed up"
         }
         let formatter = RelativeDateTimeFormatter()
         return "Last backup: \(formatter.localizedString(for: lastBackupDate, relativeTo: .now))"
@@ -113,15 +113,23 @@ struct ProfileView: View {
                             Label("Export Data", systemImage: "square.and.arrow.up")
                         }
 
-                        HStack {
-                            Label(backupStatusText, systemImage: appSettings.lastBackupDate != nil ? "checkmark.icloud" : "exclamationmark.icloud")
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label(backupStatusTitle, systemImage: appSettings.lastBackupDate != nil ? "checkmark.icloud" : "exclamationmark.icloud")
                                 .foregroundStyle(appSettings.lastBackupDate != nil ? .textDim : .negative)
-                            Spacer()
-                            Button("Backup Now") {
+
+                            if appSettings.lastBackupDate == nil {
+                                Text("Enable iCloud Drive to protect your data if the app is deleted.")
+                                    .font(.caption)
+                                    .foregroundStyle(.textDim)
+                            }
+
+                            Button("Back Up Now") {
                                 Task { await runManualBackup() }
                             }
-                            .font(.caption)
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
+                        .padding(.vertical, 4)
 
                         Button {
                             showingRestoreConfirmation = true
