@@ -65,6 +65,7 @@ struct MainTabView: View {
                 NavigationStack {
                     EditAddTransactionView(repo: repo, materializationService: materializationService)
                         .environment(dataChanged)
+                        .environment(appSettings)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
@@ -73,6 +74,7 @@ struct MainTabView: View {
                 NavigationStack {
                     EditAddTransactionView(item, repo: repo, materializationService: materializationService)
                         .environment(dataChanged)
+                        .environment(appSettings)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }

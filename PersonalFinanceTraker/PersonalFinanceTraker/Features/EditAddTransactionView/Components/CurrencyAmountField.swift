@@ -8,10 +8,15 @@
 import SwiftUI
 
 struct CurrencyAmountField: View {
+    // Optional so previews/hosts without AppSettings render unblurred instead of crashing.
+    @Environment(AppSettings.self) private var settings: AppSettings?
     @Binding var amount: Double
     @Binding var currencyCode: String
     @FocusState private var isFocused: Bool
     @State private var displayText: String = ""
+
+    // Privacy mode blurs the amount, but only until the user taps in to edit it.
+    private var isAmountHidden: Bool { (settings?.hideAmounts ?? false) && !isFocused }
 
     let label: String
     let placeholder: String
@@ -112,6 +117,9 @@ struct CurrencyAmountField: View {
                         }
                     }
             }
+            .blur(radius: isAmountHidden ? 16 : 0)
+            .accessibilityValue(isAmountHidden ? String(localized: "Amount hidden") : displayText)
+            .animation(.easeInOut(duration: 0.25), value: isAmountHidden)
         }
     }
     

@@ -598,19 +598,19 @@
         }
       }
     },
-    "Absolute value range" : {
+    "Amount range" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Absolute value range"
+            "value" : "Amount range"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Intervallo di valore assoluto"
+            "value" : "Intervallo importo"
           }
         }
       }

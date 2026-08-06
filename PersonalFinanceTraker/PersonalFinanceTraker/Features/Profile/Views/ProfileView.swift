@@ -137,6 +137,23 @@ struct ProfileView: View {
                             Label("Restore from Backup", systemImage: "arrow.clockwise.icloud")
                         }
                         .disabled(backupService.newestBackup() == nil)
+                        .confirmationDialog(
+                            "This replaces all current data with your last backup. This cannot be undone.",
+                            isPresented: $showingRestoreConfirmation,
+                            titleVisibility: .visible
+                        ) {
+                            Button("Restore", role: .destructive) {
+                                Task {
+                                    do {
+                                        try await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
+                                        dataChanged.bump()
+                                    } catch {
+                                        restoreErrorMessage = error.localizedDescription
+                                    }
+                                }
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        }
 
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
@@ -258,23 +275,6 @@ struct ProfileView: View {
                 Button("OK") { restoreErrorMessage = nil }
             } message: {
                 Text(restoreErrorMessage ?? "")
-            }
-            .confirmationDialog(
-                "This replaces all current data with your last backup. This cannot be undone.",
-                isPresented: $showingRestoreConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Restore", role: .destructive) {
-                    Task {
-                        do {
-                            try await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
-                            dataChanged.bump()
-                        } catch {
-                            restoreErrorMessage = error.localizedDescription
-                        }
-                    }
-                }
-                Button("Cancel", role: .cancel) {}
             }
         }
     }

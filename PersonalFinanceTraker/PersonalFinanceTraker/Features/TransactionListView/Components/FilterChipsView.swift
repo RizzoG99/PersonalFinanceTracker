@@ -22,6 +22,7 @@ struct FilterChipsView: View {
         }
         .sheet(isPresented: $showAmountSheet) {
             AmountFilterSheet().environment(vm)
+                .presentationDetents([.height(300)])
         }
         .sheet(isPresented: $showCustomDateSheet) {
             CustomDateRangeSheet().environment(vm)

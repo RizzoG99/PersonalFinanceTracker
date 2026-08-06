@@ -10,6 +10,7 @@ struct AmountFilterSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var minText = ""
     @State private var maxText = ""
+    @FocusState private var fieldFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -21,6 +22,7 @@ struct AmountFilterSheet: View {
                         TextField("Any", text: $minText)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
+                            .focused($fieldFocused)
                     }
                     HStack {
                         Text("Max (€)")
@@ -28,11 +30,14 @@ struct AmountFilterSheet: View {
                         TextField("Any", text: $maxText)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
+                            .focused($fieldFocused)
                     }
                 } header: {
-                    Text("Absolute value range")
+                    Text("Amount range")
                 }
+                .appFormSectionBackground()
             }
+            .appFormBackground()
             .navigationTitle("Amount")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -47,12 +52,18 @@ struct AmountFilterSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                // decimalPad has no return key — give users a way to dismiss it.
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { fieldFocused = false }
+                }
             }
             .onAppear {
                 if let min = vm.filters.amountMin { minText = "\(min)" }
                 if let max = vm.filters.amountMax { maxText = "\(max)" }
             }
         }
+        .appBackground()
     }
 
     private var parsedMin: Decimal? {
