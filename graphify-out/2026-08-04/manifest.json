@@ -1653,5 +1653,15 @@
     "mtime": 1785750488.1987352,
     "ast_hash": "d751e61b487167f040238c3b272c0265",
     "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-03-auto-backup.md": {
+    "mtime": 1785751191.8742714,
+    "ast_hash": "efbbebeea2a1aa6456445cd50668f946",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md": {
+    "mtime": 1785751347.3112335,
+    "ast_hash": "ff1590473b7038e8704bd35aa113ec90",
+    "semantic_hash": ""
   }
 }
