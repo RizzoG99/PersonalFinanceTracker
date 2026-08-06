@@ -19,8 +19,16 @@ Profile, exactly as today. No backfill, no new persisted "extras complete" flag.
 ## Flow
 
 `PINSetupViewModel.SetupStep` gains two cases, appended after the existing `success`
-checkmark, reachable only when `isChangeMode == false` (i.e. never during the
-Profile → Change PIN flow, which still stops at `success` exactly as today):
+checkmark, reachable only from the true first-run path.
+
+**Gating note:** `isChangeMode == false` is not sufficient on its own — `PINEntryView`'s
+"Forgot PIN?" reset flow also constructs `PINSetupViewModel(pinService:, isChangeMode:
+false)`, and that's an existing user resetting their PIN, not a new install. A new
+`showsOnboardingExtras: Bool = false` init parameter distinguishes the two. Only
+`AuthenticationWrapper`'s initial (`!isPINSetup`) call site passes
+`showsOnboardingExtras: true`; the other three call sites (Change PIN in `ProfileView`,
+forgot-PIN reset in `PINEntryView`, the `PINSetupView` preview) leave it at the default
+`false` and behave exactly as today — stopping at `success`.
 
 ```
 verifyCurrentPin → enterPin → confirmPin → success → biometricPrompt → nameEntry
@@ -76,12 +84,15 @@ instance is created.
 
 `validateAndSave()` (called after PIN confirmation) currently finalizes onboarding
 directly: after the success-checkmark bounce animation, it sets `pin_setup_complete`
-and posts `.pinSetupComplete` for `!isChangeMode`. This must change: that bounce
-animation now transitions to `.biometricPrompt` instead of finalizing. Finalization
+and posts `.pinSetupComplete` for `!isChangeMode`. This must change: when
+`showsOnboardingExtras == true`, that bounce animation transitions to
+`.biometricPrompt` instead of finalizing, and finalization
 (`UserDefaults.standard.set(true, forKey: "pin_setup_complete")` +
 `NotificationCenter.default.post(name: .pinSetupComplete, ...)`) moves to the end of
-`nameEntry`'s continue/skip handler. `isChangeMode` behavior is untouched — it still
-finalizes at `success` via `isComplete = true`.
+`nameEntry`'s continue/skip handler. Both `isChangeMode == true` (Change PIN) and
+`showsOnboardingExtras == false` with `isChangeMode == false` (forgot-PIN reset) are
+untouched — they still finalize exactly as today (`isComplete = true` for change mode,
+immediate finalization for forgot-PIN reset).
 
 `AuthenticationWrapper` itself needs no changes — it already reacts to
 `.pinSetupComplete` the same way regardless of which step triggers it.
@@ -106,7 +117,8 @@ acceptable.
 Extend `PINSetupViewModel` test coverage (new test file, following the existing
 `PINConfirmationViewModelTests` pattern):
 
-- Full flow (`isChangeMode == false`) reaches `nameEntry` and completes normally.
+- Full flow (`isChangeMode == false, showsOnboardingExtras == true`) reaches
+  `nameEntry` and completes normally.
 - `biometricPrompt` auto-skips to `nameEntry` when `isBiometricsAvailable == false`.
 - Biometric "Skip" link advances without setting `isLockEnabled`.
 - Biometric success sets `isLockEnabled = true` before advancing.
@@ -114,5 +126,8 @@ Extend `PINSetupViewModel` test coverage (new test file, following the existing
   not saved.
 - Change-PIN flow (`isChangeMode == true`) still stops at `success` and never reaches
   `biometricPrompt`/`nameEntry`.
+- Forgot-PIN reset flow (`isChangeMode == false, showsOnboardingExtras == false`)
+  still finalizes immediately at `success` and never reaches `biometricPrompt`/
+  `nameEntry`.
 - `authenticateToEnable` success sets `isLockEnabled = true` and does not affect the
   unlock-flow `authenticate()` method's existing guard behavior.
