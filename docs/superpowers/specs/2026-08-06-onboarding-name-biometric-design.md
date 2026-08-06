@@ -35,28 +35,65 @@ Both new steps reuse `PINSetupView`'s existing shell (mascot, dark background);
   enrolled). If not, auto-skip straight to `nameEntry` — no screen shown.
 - Title/button wording follows the same Face ID vs. Touch ID pattern already used by
   `ProfileViewModel.biometricLabel`.
-- Primary button ("Enable Face ID" / "Enable Touch ID") calls
-  `authService.authenticate()` — a live biometric challenge, not just flipping the
-  setting on trust.
+- Primary button ("Enable Face ID" / "Enable Touch ID") triggers a **live** biometric
+  challenge.
   - Success: sets `isLockEnabled = true`, auto-advances to `nameEntry`.
-  - Failure: shows an inline error ("Couldn't verify — you can enable this later in
-    Profile"). Does not set `isLockEnabled`. A "Skip" link remains available.
+  - Failure: shows an inline error (reusing the existing `errorMessage` /
+    `triggerShake` pattern already used for wrong-PIN entry), e.g. "Couldn't verify —
+    you can enable this later in Profile." Does not set `isLockEnabled`. Both the
+    "Enable" button (retry) and "Skip" link stay available; either clears the error.
 - "Skip" link: advances to `nameEntry` without changing `isLockEnabled`.
+
+**Implementation note — existing bug this depends on:** `BiometricAuthService.authenticate()`
+has a guard that short-circuits to `completion(true)` without showing any biometric UI
+whenever `isLockEnabled == false` (see `BiometricAuthService.swift:39-43`). During
+onboarding `isLockEnabled` is always false at this point, so calling `authenticate()`
+as-is would silently "succeed" with no Face ID prompt ever shown — the opposite of
+what this step needs. Add a new method, e.g. `authenticateToEnable(completion:)`, that
+always runs the `LAContext` challenge regardless of `isLockEnabled` (the existing
+`authenticate()` stays unchanged, since unlock-flow callers still need the guard).
+Use `authenticateToEnable` here; `authenticate()` is not touched.
+
+**DI note:** `PINSetupViewModel` currently takes only `pinService`. It needs a
+`BiometricAuthService` too. `AuthenticationWrapper` already owns one instance
+(`authService`) — pass it into `PINSetupViewModel.init` alongside `pinService`. No new
+instance is created.
 
 ### `nameEntry`
 
+- New `fullName: String = ""` property on `PINSetupViewModel` (onboarding always
+  starts from empty — no need to preload from `UserDefaults`).
 - Title: "What should we call you?"
 - `TextField` bound to `fullName`.
 - "Continue" button, always enabled (empty input behaves as skip).
-- On continue: trims whitespace, saves to `UserDefaults` key `user_full_name` — the
-  same key `ProfileViewModel` already reads on init, so no new storage path.
+- On continue: trims whitespace. Whitespace-only input is treated the same as empty
+  (i.e. skip — don't write it). Non-empty trimmed input saves to `UserDefaults` key
+  `user_full_name` — the same key `ProfileViewModel` already reads on init, so no new
+  storage path.
+- This step is also where the flow finalizes (see Completion below).
 
 ## Completion
 
-Unchanged from today: after `nameEntry`, the flow sets
-`UserDefaults.standard.set(true, forKey: "pin_setup_complete")` and posts
-`.pinSetupComplete`, which `AuthenticationWrapper` already listens for to flip
-`isPINSetup` and unlock. No changes to `AuthenticationWrapper` are needed.
+`validateAndSave()` (called after PIN confirmation) currently finalizes onboarding
+directly: after the success-checkmark bounce animation, it sets `pin_setup_complete`
+and posts `.pinSetupComplete` for `!isChangeMode`. This must change: that bounce
+animation now transitions to `.biometricPrompt` instead of finalizing. Finalization
+(`UserDefaults.standard.set(true, forKey: "pin_setup_complete")` +
+`NotificationCenter.default.post(name: .pinSetupComplete, ...)`) moves to the end of
+`nameEntry`'s continue/skip handler. `isChangeMode` behavior is untouched — it still
+finalizes at `success` via `isComplete = true`.
+
+`AuthenticationWrapper` itself needs no changes — it already reacts to
+`.pinSetupComplete` the same way regardless of which step triggers it.
+
+## View changes
+
+`PINSetupView` currently renders `PINDotsView` unconditionally and only branches on
+`.success` for alternate content. It needs a real per-step content switch:
+`PINDotsView` shown only for `.verifyCurrentPin` / `.enterPin` / `.confirmPin`;
+`.success` keeps its checkmark; `.biometricPrompt` and `.nameEntry` get their own
+content views (extract as separate `View`s/computed properties, following the existing
+`successContent` pattern) reusing the shared mascot/dark-background shell.
 
 ## Error handling
 
@@ -73,6 +110,9 @@ Extend `PINSetupViewModel` test coverage (new test file, following the existing
 - `biometricPrompt` auto-skips to `nameEntry` when `isBiometricsAvailable == false`.
 - Biometric "Skip" link advances without setting `isLockEnabled`.
 - Biometric success sets `isLockEnabled = true` before advancing.
-- Name is trimmed before being saved to `user_full_name`.
+- Name is trimmed before being saved to `user_full_name`; whitespace-only input is
+  not saved.
 - Change-PIN flow (`isChangeMode == true`) still stops at `success` and never reaches
   `biometricPrompt`/`nameEntry`.
+- `authenticateToEnable` success sets `isLockEnabled = true` and does not affect the
+  unlock-flow `authenticate()` method's existing guard behavior.
