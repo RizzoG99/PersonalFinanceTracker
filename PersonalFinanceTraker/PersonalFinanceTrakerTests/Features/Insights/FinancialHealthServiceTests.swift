@@ -30,7 +30,9 @@ struct FinancialHealthServiceTests {
             budgetedCategories: [],
             ignoreSubscriptions: false
         )
-        let savings = result.components.first { $0.name == "Savings rate" }!
+        // Savings is always the first component (see FinancialHealthService.compute);
+        // match by position rather than localized name so the test is locale-independent.
+        let savings = result.components[0]
         #expect(savings.tip == nil)
     }
 
@@ -45,7 +47,9 @@ struct FinancialHealthServiceTests {
             budgetedCategories: [],
             ignoreSubscriptions: false
         )
-        let savings = result.components.first { $0.name == "Savings rate" }!
+        // Savings is always the first component (see FinancialHealthService.compute);
+        // match by position rather than localized name so the test is locale-independent.
+        let savings = result.components[0]
         #expect(savings.tip != nil)
     }
 
