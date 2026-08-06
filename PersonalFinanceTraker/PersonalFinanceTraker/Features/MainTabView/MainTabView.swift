@@ -36,6 +36,12 @@ struct MainTabView: View {
         _compassViewModel = State(wrappedValue: CompassViewModel(repo: actor))
     }
 
+    private func consumePendingAdd() {
+        if PendingTransactionIntent.shared.consume(isEditSheetOpen: viewModel.transactionToEdit != nil) {
+            showingAddItemView = true
+        }
+    }
+
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
@@ -144,6 +150,7 @@ struct MainTabView: View {
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
             try? await materializationService.materialize(using: repo)
             dataChanged.bump()
+            consumePendingAdd()
         }
         .appBackground()
         .preferredColorScheme(.dark)
@@ -157,6 +164,9 @@ struct MainTabView: View {
                 try? await Task.sleep(for: .seconds(1.5))
                 if !Task.isCancelled { showPrivacyToast = false }
             }
+        }
+        .onChange(of: PendingTransactionIntent.shared.shouldPresentAdd) { _, pending in
+            if pending { consumePendingAdd() }
         }
     }
 }
