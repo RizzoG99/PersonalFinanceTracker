@@ -25,9 +25,16 @@ struct PINSetupViewModelTests {
 
     /// Drives digit entry for a full enter+confirm PIN cycle. Callers still need to
     /// wait out validateAndSave's own bounce-animation delay afterward.
+    ///
+    /// Polls for the `.confirmPin` transition instead of a fixed sleep: the first
+    /// batch's advance is itself async (0.15s internal delay in the view model), and
+    /// a fixed margin that's fine on a quiet machine can be too tight under load,
+    /// silently dropping the second batch while still in `.enterPin` state.
     private func enterAndConfirmPIN(_ pin: String, on viewModel: PINSetupViewModel) async throws {
         for digit in pin { viewModel.appendDigit(String(digit)) }
-        try await Task.sleep(for: .seconds(0.25))
+        for _ in 0..<40 where viewModel.currentStep != .confirmPin {
+            try await Task.sleep(for: .milliseconds(50))
+        }
         for digit in pin { viewModel.appendDigit(String(digit)) }
     }
 
@@ -48,7 +55,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.3))
+        try await Task.sleep(for: .seconds(3.0))
 
         #expect(viewModel.currentStep == .biometricPrompt)
 
@@ -78,7 +85,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.3))
+        try await Task.sleep(for: .seconds(3.0))
 
         #expect(viewModel.currentStep == .nameEntry)
     }
@@ -185,7 +192,7 @@ struct PINSetupViewModelTests {
         for digit in "0000" { viewModel.appendDigit(String(digit)) }
         try await Task.sleep(for: .seconds(0.25))
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.3))
+        try await Task.sleep(for: .seconds(3.0))
 
         #expect(viewModel.currentStep == .success)
         #expect(viewModel.isComplete)
@@ -208,7 +215,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.3))
+        try await Task.sleep(for: .seconds(3.0))
 
         #expect(viewModel.currentStep == .success)
         #expect(UserDefaults.standard.bool(forKey: "pin_setup_complete"))

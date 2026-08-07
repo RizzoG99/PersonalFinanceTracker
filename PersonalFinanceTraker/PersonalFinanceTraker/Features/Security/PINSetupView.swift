@@ -44,6 +44,8 @@ struct PINSetupView: View {
                 Button("Go back") { viewModel.goBackToEnterPin() }
                     .font(.subheadline)
                     .foregroundStyle(.textDim)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                     .padding(.bottom, 32)
             }
         }
@@ -115,7 +117,7 @@ struct PINSetupView: View {
             Button {
                 viewModel.enableBiometric()
             } label: {
-                Text("Enable \(viewModel.biometricLabel)")
+                Text("Set Up \(viewModel.biometricLabel)")
                     .font(.headline)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -126,6 +128,8 @@ struct PINSetupView: View {
             Button("Skip") { viewModel.skipBiometric() }
                 .font(.subheadline)
                 .foregroundStyle(.textDim)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
         }
         .transition(.opacity)
     }
@@ -139,6 +143,9 @@ struct PINSetupView: View {
                 .multilineTextAlignment(.center)
                 .submitLabel(.done)
                 .onSubmit { viewModel.finishNameEntry() }
+                .padding(.vertical, 14)
+                .padding(.horizontal, 16)
+                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
 
             Button {
                 viewModel.finishNameEntry()

@@ -38,8 +38,7 @@ public class BiometricAuthService: ObservableObject, BiometricAuthenticating {
     public func checkBiometrics() {
         let ctx = LAContext()
         var error: NSError?
-        _ = ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
-        isBiometricsAvailable = ctx.biometryType != .none
+        isBiometricsAvailable = ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
         switch ctx.biometryType {
         case .faceID:  biometricLabel = "Face ID"
         case .touchID: biometricLabel = "Touch ID"
