@@ -165,7 +165,7 @@ final class PINSetupViewModel {
                 self.authService.isLockEnabled = true
                 withAnimation { self.currentStep = .nameEntry }
             } else {
-                self.errorMessage = "Couldn't verify — you can enable this later in Profile."
+                self.errorMessage = "Couldn't verify — you can set this up later in Profile."
             }
         }
     }
