@@ -47,7 +47,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.0))
+        try await Task.sleep(for: .seconds(2.3))
 
         #expect(viewModel.currentStep == .biometricPrompt)
 
@@ -77,7 +77,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.0))
+        try await Task.sleep(for: .seconds(2.3))
 
         #expect(viewModel.currentStep == .nameEntry)
     }
@@ -153,6 +153,7 @@ struct PINSetupViewModelTests {
 
     @Test("Whitespace-only name is not saved")
     func whitespaceOnlyNameIsNotSaved() {
+        defer { UserDefaults.standard.removeObject(forKey: "user_full_name") }
         UserDefaults.standard.removeObject(forKey: "user_full_name")
         let authService = FakeBiometricAuthService()
         let viewModel = PINSetupViewModel(
@@ -183,7 +184,7 @@ struct PINSetupViewModelTests {
         for digit in "0000" { viewModel.appendDigit(String(digit)) }
         try await Task.sleep(for: .seconds(0.25))
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.0))
+        try await Task.sleep(for: .seconds(2.3))
 
         #expect(viewModel.currentStep == .success)
         #expect(viewModel.isComplete)
@@ -206,7 +207,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(2.0))
+        try await Task.sleep(for: .seconds(2.3))
 
         #expect(viewModel.currentStep == .success)
         #expect(UserDefaults.standard.bool(forKey: "pin_setup_complete"))

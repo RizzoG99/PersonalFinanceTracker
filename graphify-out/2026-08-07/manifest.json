@@ -420,8 +420,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINSetupViewModel.swift": {
-    "mtime": 1786088587.2816932,
-    "ast_hash": "d1495d5a256a244ee14a38068b15a978",
+    "mtime": 1786088257.5022683,
+    "ast_hash": "b84bd111b3fd04f10fc5a2b0efa2444b",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/ActivityView.swift": {
@@ -1635,28 +1635,13 @@
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-06-onboarding-name-biometric/progress.md": {
-    "mtime": 1786088468.5019476,
-    "ast_hash": "69e40279478e385d75c9e870b51e7ae1",
+    "mtime": 1786088271.2249532,
+    "ast_hash": "d9c66050938267601f335e89d64a428d",
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-06-onboarding-name-biometric/task-1-brief.md": {
     "mtime": 1786088292.219334,
     "ast_hash": "cd9e873e00dec4aca53e38c7ed97b57a",
-    "semantic_hash": ""
-  },
-  "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/Security/PINSetupViewModelTests.swift": {
-    "mtime": 1786088548.7169776,
-    "ast_hash": "65f90ffb9ef71427765f1e76a98bcde4",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-06-onboarding-name-biometric/task-1-report.md": {
-    "mtime": 1786088394.5732937,
-    "ast_hash": "fba0bbb08700b4d4347b2fbc69321b8e",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-06-onboarding-name-biometric/task-2-brief.md": {
-    "mtime": 1786088475.697194,
-    "ast_hash": "ccead024c90590e318cf0048f2ef3b3f",
     "semantic_hash": ""
   }
 }
