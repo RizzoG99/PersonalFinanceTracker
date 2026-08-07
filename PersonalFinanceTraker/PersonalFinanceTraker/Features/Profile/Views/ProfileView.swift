@@ -25,6 +25,7 @@ struct ProfileView: View {
     @State private var route: ProfileRoute?
     @State private var showingRestoreConfirmation = false
     private let pinService = PINService()
+    private let authService = BiometricAuthService()
     private let backupService = BackupService()
 
     private var backupStatusTitle: String {
@@ -180,7 +181,7 @@ struct ProfileView: View {
                     case .budgets: BudgetsView()
                     case .changePIN:
                         PINSetupView(
-                            viewModel: PINSetupViewModel(pinService: pinService, isChangeMode: true)
+                            viewModel: PINSetupViewModel(pinService: pinService, authService: authService, isChangeMode: true)
                         )
                     }
                 }

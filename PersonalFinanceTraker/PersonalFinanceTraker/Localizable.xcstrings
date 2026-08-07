@@ -598,23 +598,6 @@
         }
       }
     },
-    "Amount range" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Amount range"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Intervallo importo"
-          }
-        }
-      }
-    },
     "Activity" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -847,6 +830,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importo nascosto"
+          }
+        }
+      }
+    },
+    "Amount range" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount range"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervallo importo"
           }
         }
       }
@@ -2154,6 +2154,9 @@
           }
         }
       }
+    },
+    "Enable %@" : {
+
     },
     "Enable iCloud Drive to protect your data if the app is deleted." : {
       "localizations" : {
@@ -4660,6 +4663,9 @@
         }
       }
     },
+    "Skip" : {
+
+    },
     "Solid with room to grow" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5530,6 +5536,9 @@
           }
         }
       }
+    },
+    "Your name" : {
+
     },
     "Your Name" : {
       "localizations" : {

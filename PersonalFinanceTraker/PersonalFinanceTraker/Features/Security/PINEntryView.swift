@@ -69,7 +69,11 @@ struct PINEntryView: View {
         }
         .onChange(of: viewModel.showForgotPINSheet) { _, isPresented in
             if isPresented {
-                setupViewModel = PINSetupViewModel(pinService: PINService(), isChangeMode: false)
+                setupViewModel = PINSetupViewModel(
+                    pinService: PINService(),
+                    authService: viewModel.authService,
+                    isChangeMode: false
+                )
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .pinSetupComplete)) { _ in

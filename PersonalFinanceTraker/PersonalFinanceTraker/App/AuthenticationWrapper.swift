@@ -28,7 +28,11 @@ struct AuthenticationWrapper: View {
 
             if !isPINSetup {
                 PINSetupView(
-                    viewModel: PINSetupViewModel(pinService: pinService)
+                    viewModel: PINSetupViewModel(
+                        pinService: pinService,
+                        authService: authService,
+                        showsOnboardingExtras: true
+                    )
                 )
                 .transition(.opacity)
             } else if authService.isUnlocked {
