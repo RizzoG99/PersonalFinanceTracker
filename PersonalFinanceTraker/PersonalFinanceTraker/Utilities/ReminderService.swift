@@ -32,7 +32,9 @@ struct ReminderScheduler {
 @MainActor
 final class ReminderService {
     static let shared = ReminderService()
-    static let idPrefix = "daily-log-reminder-"
+    // nonisolated: an immutable constant read from the notification delegate
+    // (a nonisolated context) as well as on the main actor.
+    nonisolated static let idPrefix = "daily-log-reminder-"
     private let center = UNUserNotificationCenter.current()
 
     func requestPermission() async -> Bool {
