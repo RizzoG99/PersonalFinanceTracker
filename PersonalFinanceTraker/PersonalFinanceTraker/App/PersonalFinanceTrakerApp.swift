@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UserNotifications
 
 @main
 struct PersonalFinanceTrakerApp: App {
@@ -19,6 +20,7 @@ struct PersonalFinanceTrakerApp: App {
             red: 0.012, green: 0.027, blue: 0.071, alpha: 1
         )
         seedMemberSinceDateIfNeeded()
+        UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
     }
 
     // MARK: - Properties
