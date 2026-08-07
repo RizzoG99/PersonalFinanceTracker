@@ -19,6 +19,7 @@ private final class FakeBiometricAuthService: BiometricAuthenticating {
 }
 
 @MainActor
+@Suite(.serialized)
 struct PINSetupViewModelTests {
     private let pinService = PINService()
 
