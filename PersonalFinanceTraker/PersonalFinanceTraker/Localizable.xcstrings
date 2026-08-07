@@ -1638,6 +1638,23 @@
         }
       }
     },
+    "Couldn't verify — you can set this up later in Profile." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't verify — you can set this up later in Profile."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica non riuscita — puoi configurarlo più tardi nel Profilo."
+          }
+        }
+      }
+    },
     "Create \"%@\"" : {
       "localizations" : {
         "it" : {
@@ -2154,9 +2171,6 @@
           }
         }
       }
-    },
-    "Enable %@" : {
-
     },
     "Enable iCloud Drive to protect your data if the app is deleted." : {
       "localizations" : {
@@ -4571,6 +4585,23 @@
         }
       }
     },
+    "Set Up %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Up %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configura %@"
+          }
+        }
+      }
+    },
     "Set your first goal" : {
       "localizations" : {
         "it" : {
@@ -4664,7 +4695,21 @@
       }
     },
     "Skip" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salta"
+          }
+        }
+      }
     },
     "Solid with room to grow" : {
       "extractionState" : "manual",
@@ -5285,6 +5330,23 @@
         }
       }
     },
+    "Unlock with %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock with %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sblocca con %@"
+          }
+        }
+      }
+    },
     "Unusually high spending in %@: %@" : {
       "localizations" : {
         "it" : {
@@ -5407,6 +5469,23 @@
     },
     "weeks" : {
 
+    },
+    "What should we call you?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What should we call you?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come vuoi essere chiamato?"
+          }
+        }
+      }
     },
     "What you're saving toward" : {
       "extractionState" : "manual",
@@ -5538,7 +5617,21 @@
       }
     },
     "Your name" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your name"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tuo nome"
+          }
+        }
+      }
     },
     "Your Name" : {
       "localizations" : {

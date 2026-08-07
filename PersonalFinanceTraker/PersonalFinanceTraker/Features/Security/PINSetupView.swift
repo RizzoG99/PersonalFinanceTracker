@@ -22,7 +22,7 @@ struct PINSetupView: View {
                     .multilineTextAlignment(.center)
 
                 if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage)
+                    Text(LocalizedStringKey(viewModel.errorMessage))
                         .font(.subheadline)
                         .foregroundStyle(.negative)
                         .transition(.opacity)
@@ -86,7 +86,7 @@ struct PINSetupView: View {
         }
     }
 
-    private var stepTitle: String {
+    private var stepTitle: LocalizedStringKey {
         switch viewModel.currentStep {
         case .verifyCurrentPin: return "Enter current PIN"
         case .enterPin:         return "Enter new PIN"
