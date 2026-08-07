@@ -2,11 +2,12 @@ import SwiftUI
 
 @Observable @MainActor
 final class PINSetupViewModel {
-    enum SetupStep { case verifyCurrentPin, enterPin, confirmPin, success }
+    enum SetupStep { case verifyCurrentPin, enterPin, confirmPin, success, biometricPrompt, nameEntry }
 
     var currentStep: SetupStep = .enterPin
     var pinInput: String = ""
     var confirmInput: String = ""
+    var fullName: String = ""
     var errorMessage: String = ""
     var isShaking: Bool = false
     var isBouncing: Bool = false
@@ -14,12 +15,23 @@ final class PINSetupViewModel {
     var isComplete: Bool = false
 
     let isChangeMode: Bool
+    let showsOnboardingExtras: Bool
     private let pinService: PINService
+    private let authService: BiometricAuthenticating
     private var firstPin: String = ""
 
-    init(pinService: PINService, isChangeMode: Bool = false) {
+    var biometricLabel: String { authService.biometricLabel }
+
+    init(
+        pinService: PINService,
+        authService: BiometricAuthenticating,
+        isChangeMode: Bool = false,
+        showsOnboardingExtras: Bool = false
+    ) {
         self.pinService = pinService
+        self.authService = authService
         self.isChangeMode = isChangeMode
+        self.showsOnboardingExtras = showsOnboardingExtras
         currentStep = isChangeMode ? .verifyCurrentPin : .enterPin
     }
 
@@ -46,7 +58,7 @@ final class PINSetupViewModel {
             if confirmInput.count == 4 {
                 Task { try? await Task.sleep(for: .seconds(0.15)); self.validateAndSave() }
             }
-        case .success:
+        case .success, .biometricPrompt, .nameEntry:
             break
         }
     }
@@ -59,7 +71,7 @@ final class PINSetupViewModel {
         case .confirmPin:
             if !confirmInput.isEmpty { confirmInput.removeLast() }
             eyesOpen = confirmInput.isEmpty
-        case .success:
+        case .success, .biometricPrompt, .nameEntry:
             break
         }
     }
@@ -128,13 +140,52 @@ final class PINSetupViewModel {
                 self.isBouncing = true
             }
             try? await Task.sleep(for: .seconds(1.3))
-            if isChangeMode {
+            if self.isChangeMode {
                 self.isComplete = true
+            } else if self.showsOnboardingExtras {
+                self.advanceToBiometricPrompt()
             } else {
-                UserDefaults.standard.set(true, forKey: "pin_setup_complete")
-                NotificationCenter.default.post(name: .pinSetupComplete, object: nil)
+                self.finishOnboarding()
             }
         }
+    }
+
+    private func advanceToBiometricPrompt() {
+        guard authService.isBiometricsAvailable else {
+            currentStep = .nameEntry
+            return
+        }
+        withAnimation { currentStep = .biometricPrompt }
+    }
+
+    func enableBiometric() {
+        errorMessage = ""
+        authService.authenticateToEnable { success in
+            if success {
+                self.authService.isLockEnabled = true
+                withAnimation { self.currentStep = .nameEntry }
+            } else {
+                self.errorMessage = "Couldn't verify — you can enable this later in Profile."
+            }
+        }
+    }
+
+    func skipBiometric() {
+        errorMessage = ""
+        withAnimation { currentStep = .nameEntry }
+    }
+
+    func finishNameEntry() {
+        let trimmed = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            UserDefaults.standard.set(trimmed, forKey: "user_full_name")
+        }
+        finishOnboarding()
+    }
+
+    private func finishOnboarding() {
+        UserDefaults.standard.set(true, forKey: "pin_setup_complete")
+        NotificationCenter.default.post(name: .pinSetupComplete, object: nil)
     }
 
     private func triggerShake() {
