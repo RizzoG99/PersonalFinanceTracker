@@ -8,16 +8,26 @@
 import Foundation
 import LocalAuthentication
 
+/// Seam for testing biometric-dependent view models without real LocalAuthentication
+/// hardware — see `FakeBiometricAuthService` in PINSetupViewModelTests.
+public protocol BiometricAuthenticating: AnyObject {
+    var isBiometricsAvailable: Bool { get }
+    var biometricLabel: String { get }
+    var isLockEnabled: Bool { get set }
+    func authenticateToEnable(completion: @escaping (Bool) -> Void)
+}
+
 /// Service for handling biometric authentication (FaceID / TouchID)
-public class BiometricAuthService: ObservableObject {
-    
+public class BiometricAuthService: ObservableObject, BiometricAuthenticating {
+
     @Published public var isUnlocked = false
     @Published public var isBiometricsAvailable = false
-    
+    @Published public private(set) var biometricLabel = "Biometrics"
+
     public var isBiometricFeatureEnabled: Bool {
         return UserDefaults.standard.bool(forKey: "biometric_lock_enabled")
     }
-    
+
     private let kBiometricLockEnabled = "biometric_lock_enabled"
 
     public init() {
@@ -30,8 +40,13 @@ public class BiometricAuthService: ObservableObject {
         var error: NSError?
         _ = ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
         isBiometricsAvailable = ctx.biometryType != .none
+        switch ctx.biometryType {
+        case .faceID:  biometricLabel = "Face ID"
+        case .touchID: biometricLabel = "Touch ID"
+        default:       biometricLabel = "Biometrics"
+        }
     }
-    
+
     /// Attempts to authenticate the user using biometrics
     public func authenticate(completion: @escaping (Bool) -> Void) {
         let reason = "Unlock your financial data"
@@ -61,13 +76,33 @@ public class BiometricAuthService: ObservableObject {
             }
         }
     }
-    
+
+    /// Runs a live biometric challenge to confirm biometrics actually work before
+    /// enabling the setting (used during onboarding). Unlike `authenticate()`, this
+    /// always challenges — it never short-circuits based on `isLockEnabled`, and it
+    /// never mutates `isUnlocked` or `isLockEnabled` itself (the caller decides what
+    /// to do with the result).
+    public func authenticateToEnable(completion: @escaping (Bool) -> Void) {
+        let authContext = LAContext()
+        var error: NSError?
+        guard authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            completion(false)
+            return
+        }
+
+        authContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Enable biometric unlock") { success, _ in
+            DispatchQueue.main.async {
+                completion(success)
+            }
+        }
+    }
+
     /// User setting to enable/disable the lock
     public var isLockEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: kBiometricLockEnabled) }
         set { UserDefaults.standard.set(newValue, forKey: kBiometricLockEnabled) }
     }
-    
+
     /// Unlock the app (called after successful PIN entry)
     public func unlock() {
         isUnlocked = true
