@@ -19,6 +19,7 @@ struct PINSetupView: View {
                 Text(stepTitle)
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.textPrimary)
+                    .multilineTextAlignment(.center)
 
                 if !viewModel.errorMessage.isEmpty {
                     Text(viewModel.errorMessage)
@@ -30,18 +31,12 @@ struct PINSetupView: View {
             }
             .padding(.bottom, 32)
 
-            PINDotsView(filledCount: currentFilledCount)
-                .padding(.bottom, 48)
-
-            if viewModel.currentStep == .success {
-                successContent
-            } else {
-                PINPadView(
-                    onDigit: { viewModel.appendDigit($0) },
-                    onDelete: { viewModel.deleteDigit() }
-                )
-                .transition(.opacity)
+            if showsPINDots {
+                PINDotsView(filledCount: currentFilledCount)
+                    .padding(.bottom, 48)
             }
+
+            stepContent
 
             Spacer()
 
@@ -64,12 +59,39 @@ struct PINSetupView: View {
         }
     }
 
+    @ViewBuilder
+    private var stepContent: some View {
+        switch viewModel.currentStep {
+        case .success:
+            successContent
+        case .biometricPrompt:
+            biometricPromptContent
+        case .nameEntry:
+            nameEntryContent
+        case .verifyCurrentPin, .enterPin, .confirmPin:
+            PINPadView(
+                onDigit: { viewModel.appendDigit($0) },
+                onDelete: { viewModel.deleteDigit() }
+            )
+            .transition(.opacity)
+        }
+    }
+
+    private var showsPINDots: Bool {
+        switch viewModel.currentStep {
+        case .verifyCurrentPin, .enterPin, .confirmPin, .success: return true
+        case .biometricPrompt, .nameEntry: return false
+        }
+    }
+
     private var stepTitle: String {
         switch viewModel.currentStep {
         case .verifyCurrentPin: return "Enter current PIN"
         case .enterPin:         return "Enter new PIN"
         case .confirmPin:       return "Confirm new PIN"
         case .success:          return "PIN successfully set"
+        case .biometricPrompt:  return "Unlock with \(viewModel.biometricLabel)"
+        case .nameEntry:        return "What should we call you?"
         }
     }
 
@@ -77,7 +99,7 @@ struct PINSetupView: View {
         switch viewModel.currentStep {
         case .verifyCurrentPin, .enterPin: return viewModel.pinInput.count
         case .confirmPin:                  return viewModel.confirmInput.count
-        case .success:                     return 4
+        case .success, .biometricPrompt, .nameEntry: return 4
         }
     }
 
@@ -87,8 +109,52 @@ struct PINSetupView: View {
             .foregroundStyle(.accentIndigo)
             .transition(.scale.combined(with: .opacity))
     }
+
+    private var biometricPromptContent: some View {
+        VStack(spacing: 16) {
+            Button {
+                viewModel.enableBiometric()
+            } label: {
+                Text("Enable \(viewModel.biometricLabel)")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.accentIndigo, in: RoundedRectangle(cornerRadius: 14))
+            }
+
+            Button("Skip") { viewModel.skipBiometric() }
+                .font(.subheadline)
+                .foregroundStyle(.textDim)
+        }
+        .transition(.opacity)
+    }
+
+    private var nameEntryContent: some View {
+        VStack(spacing: 16) {
+            TextField("Your name", text: $viewModel.fullName)
+                .textFieldStyle(.plain)
+                .font(.title3)
+                .foregroundStyle(.textPrimary)
+                .multilineTextAlignment(.center)
+                .submitLabel(.done)
+                .onSubmit { viewModel.finishNameEntry() }
+
+            Button {
+                viewModel.finishNameEntry()
+            } label: {
+                Text("Continue")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.accentIndigo, in: RoundedRectangle(cornerRadius: 14))
+            }
+        }
+        .transition(.opacity)
+    }
 }
 
 #Preview {
-    PINSetupView(viewModel: PINSetupViewModel(pinService: PINService()))
+    PINSetupView(viewModel: PINSetupViewModel(pinService: PINService(), authService: BiometricAuthService()))
 }
