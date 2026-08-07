@@ -1604,6 +1604,23 @@
         }
       }
     },
+    "Confirm new PIN" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm new PIN"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma nuovo PIN"
+          }
+        }
+      }
+    },
     "Confirm your PIN" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2178,6 +2195,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abilita iCloud Drive per proteggere i tuoi dati in caso di cancellazione dell'app."
+          }
+        }
+      }
+    },
+    "Enter current PIN" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter current PIN"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci il PIN attuale"
+          }
+        }
+      }
+    },
+    "Enter new PIN" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter new PIN"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci nuovo PIN"
           }
         }
       }
@@ -4030,6 +4081,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bolletta telefonica"
+          }
+        }
+      }
+    },
+    "PIN successfully set" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PIN successfully set"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PIN impostato con successo"
           }
         }
       }

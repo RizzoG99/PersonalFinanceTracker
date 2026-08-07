@@ -20,7 +20,7 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift": {
-    "mtime": 1785333192.4175255,
+    "mtime": 1786048745.8713396,
     "ast_hash": "9f39d803e93240a420aa5c2482b63508",
     "semantic_hash": ""
   },
@@ -220,8 +220,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift": {
-    "mtime": 1784062109.6449745,
-    "ast_hash": "bb99c3d1aa1e18d27df636108a876d62",
+    "mtime": 1786045312.4679224,
+    "ast_hash": "5f7c7f6b6211fe11ed09707a09c7c878",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/MainTabView/MainTabView.swift": {
-    "mtime": 1785857056.4572563,
-    "ast_hash": "cce7be33a26fcb2647b4fcdfac9e9a45",
+    "mtime": 1786048745.8721995,
+    "ast_hash": "93c1f4b001ecdf626cb2cce72438e75a",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileAvatarView.swift": {
@@ -380,8 +380,8 @@
     "semantic_hash": "47de28b31d9703781d5afff522881669"
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift": {
-    "mtime": 1785857056.4578993,
-    "ast_hash": "a8f525d18d84807ddcdd1ffc93710f3d",
+    "mtime": 1785867813.5716984,
+    "ast_hash": "84870187638536f62e66a27cb00b1f6f",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/MonkeyAnimationView.swift": {
@@ -1215,13 +1215,13 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/AmountFilterSheet.swift": {
-    "mtime": 1785365347.1435406,
-    "ast_hash": "cba103f77de4cf3a29ef90b6159f2aa3",
+    "mtime": 1786045090.6847076,
+    "ast_hash": "07fa88a58f36398f15c8d48e3773d8e2",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/FilterChipsView.swift": {
-    "mtime": 1785398616.8409305,
-    "ast_hash": "4b4fcf9453fffe61c979cc5672e52ed0",
+    "mtime": 1786045095.885493,
+    "ast_hash": "d29847e709328e2d4b7957d996d24928",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/SearchTests.swift": {
@@ -1717,6 +1717,56 @@
   ".claude/skills/ux-audit/SKILL.md": {
     "mtime": 1785857061.5108163,
     "ast_hash": "d29155b02239079b79c3308fdfb62c85",
+    "semantic_hash": ""
+  },
+  "docs/features/2026-08-06-transaction-flow-ideas.md": {
+    "mtime": 1786045165.519469,
+    "ast_hash": "0cfa391d9d665d78e3445880e9d35e9f",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-06-notification-tap-add-sheet.md": {
+    "mtime": 1786046665.2490346,
+    "ast_hash": "fdb1809ad771d68a0c57fd4e59a6c715",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-06-notification-tap-add-sheet-design.md": {
+    "mtime": 1786046504.398123,
+    "ast_hash": "672464f45a0bd3119955016d4628d056",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-06-notification-tap-add-sheet/progress.md": {
+    "mtime": 1786047691.9748664,
+    "ast_hash": "691ba049d52bb2d35888e6a155122ba5",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-06-notification-tap-add-sheet/task-1-brief.md": {
+    "mtime": 1786046887.628188,
+    "ast_hash": "f34d8c609f949bea22eb3138831e843c",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-06-notification-tap-add-sheet/task-1-report.md": {
+    "mtime": 1786047043.708835,
+    "ast_hash": "2879d5aafc36c1facaeb2883daa5f69d",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-06-notification-tap-add-sheet/task-2-brief.md": {
+    "mtime": 1786047122.4103825,
+    "ast_hash": "635d27947f015674917a7a93c39cf0e7",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-06-notification-tap-add-sheet/task-2-report.md": {
+    "mtime": 1786047218.0262094,
+    "ast_hash": "8c3e1118e20819962de711ad4658dd7f",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-06-notification-tap-add-sheet/task-3-brief.md": {
+    "mtime": 1786047300.1175573,
+    "ast_hash": "69b8cf5d282c38d5c757830e46df2a1b",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-08-06-notification-tap-add-sheet/task-3-report.md": {
+    "mtime": 1786047425.2196503,
+    "ast_hash": "4ca2ae47583d7184028e6ac4d7f1c469",
     "semantic_hash": ""
   }
 }
