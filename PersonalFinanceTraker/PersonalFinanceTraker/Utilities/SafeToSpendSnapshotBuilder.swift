@@ -40,7 +40,7 @@ enum SafeToSpendSnapshotBuilder {
                     interval: rule.interval,
                     startDate: rule.startDate,
                     ruleEndDate: rule.endDate,
-                    since: today,
+                    since: now,
                     through: dayDate,
                     calendar: calendar
                 )

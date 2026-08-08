@@ -80,6 +80,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		D3935669F3903AD6CD21E6E2 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		F8949591302750C600031D5F /* SafeToSpendWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -104,11 +109,6 @@
 		F8A524A12E67A8CA0000E48D /* PersonalFinanceTrakerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PersonalFinanceTrakerUITests;
-			sourceTree = "<group>";
-		};
-		D3935669F3903AD6CD21E6E2 /* Shared */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -199,8 +199,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				F8949591302750C600031D5F /* SafeToSpendWidget */,
 				D3935669F3903AD6CD21E6E2 /* Shared */,
+				F8949591302750C600031D5F /* SafeToSpendWidget */,
 			);
 			name = SafeToSpendWidgetExtension;
 			packageProductDependencies = (
@@ -224,8 +224,8 @@
 				F894959C302750C700031D5F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				F8A524852E67A8C90000E48D /* PersonalFinanceTraker */,
 				D3935669F3903AD6CD21E6E2 /* Shared */,
+				F8A524852E67A8C90000E48D /* PersonalFinanceTraker */,
 			);
 			name = PersonalFinanceTraker;
 			packageProductDependencies = (
