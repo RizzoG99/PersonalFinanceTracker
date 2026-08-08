@@ -3,6 +3,7 @@
 
 import Foundation
 import SwiftData
+import WidgetKit
 
 @ModelActor
 actor TransactionActor: ITransactionRepository {
@@ -32,6 +33,7 @@ actor TransactionActor: ITransactionRepository {
         }
         modelContext.insert(model)
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func addBatch(_ inputs: [TransactionInput]) async throws {
@@ -53,12 +55,14 @@ actor TransactionActor: ITransactionRepository {
             modelContext.insert(model)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func delete(id: PersistentIdentifier) async throws {
         guard let model = modelContext.model(for: id) as? TransactionModel else { return }
         modelContext.delete(model)
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func deleteAllTransactions() async throws {
@@ -67,6 +71,7 @@ actor TransactionActor: ITransactionRepository {
             modelContext.delete(model)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws {
@@ -84,6 +89,7 @@ actor TransactionActor: ITransactionRepository {
             model.categoryModel = nil
         }
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     // MARK: Recurrence rules
@@ -108,6 +114,7 @@ actor TransactionActor: ITransactionRepository {
         }
         modelContext.insert(rule)
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
@@ -143,6 +150,7 @@ actor TransactionActor: ITransactionRepository {
             rule.categoryModel = nil
         }
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func closeRecurrenceRule(id: UUID, endDate: Date) async throws {
@@ -171,6 +179,7 @@ actor TransactionActor: ITransactionRepository {
             rule.lastMaterializedDate = Calendar.current.date(byAdding: .day, value: -1, to: cutoffDate)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws {
@@ -197,6 +206,7 @@ actor TransactionActor: ITransactionRepository {
             rule.lastMaterializedDate = newCursor
         }
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     func deleteAllRecurrenceRules() async throws {
@@ -205,6 +215,7 @@ actor TransactionActor: ITransactionRepository {
             modelContext.delete(model)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidget()
     }
 
     // MARK: Categories
@@ -312,6 +323,27 @@ actor TransactionActor: ITransactionRepository {
         )
         modelContext.insert(model)
         try modelContext.save()
+    }
+
+    // MARK: Safe-to-spend widget refresh
+
+    /// Single place that recomputes and republishes the safe-to-spend snapshot. Called from
+    /// every mutation method that can change future spending (see call sites below) — NOT from
+    /// saveForecastCache, whose only caller (InsightsViewModel.computeForecast) fires on Insights
+    /// recompute, not on a logged transaction, which would leave the widget stale right when
+    /// freshness matters most.
+    private func refreshSafeToSpendWidget() async {
+        guard let transactions = try? await fetchAll(),
+              let rules = try? await fetchActiveRecurrenceRules() else { return }
+        let payCycleStartDay = await AppSettings.storedStartDay
+        let snapshot = SafeToSpendSnapshotBuilder.build(
+            transactions: transactions,
+            activeRules: rules,
+            payCycleStartDay: payCycleStartDay,
+            currencyService: CurrencyService()
+        )
+        try? snapshot.write()
+        WidgetCenter.shared.reloadTimelines(ofKind: SafeToSpendWidgetKind.name)
     }
 }
 
