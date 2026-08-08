@@ -65,7 +65,9 @@ struct DashboardViewModelTests {
     @Test func financialMonthLabelIsThisMonthWhenStartDayIsOne() async {
         UserDefaults.standard.removeObject(forKey: "payCycleStartDay")
         let vm = DashboardViewModel(repo: MockTransactionRepository())
-        #expect(vm.financialMonthLabel == "This Month")
+        // Compared against the same localized lookup the view model uses rather than a
+        // hardcoded English literal, so this doesn't depend on the test device's language.
+        #expect(vm.financialMonthLabel == String(localized: "This Month"))
     }
 
     @Test func calculatesAllMetricsInSingleLoad() async {
