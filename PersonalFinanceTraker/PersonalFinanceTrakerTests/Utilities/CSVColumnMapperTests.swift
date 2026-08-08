@@ -166,8 +166,11 @@ struct CSVColumnMapperTests {
         #expect(result.count == 2)
         #expect(result[0].data != nil)
         #expect(result[1].error != nil)
-        // Error should reference line 3 (header is line 1, first data row is line 2, second data row is line 3)
-        #expect(result[1].error?.contains("Row 3") == true)
+        // Error should reference line 3 (header is line 1, first data row is line 2, second data row is line 3).
+        // Compared against the same localized lookup CSVColumnMapper uses rather than a
+        // hardcoded English literal, so this doesn't depend on the test device's language.
+        let expectedError = String(localized: "Row \(3): invalid date '\("invalid-date")' — expected \(m.dateFormat)")
+        #expect(result[1].error == expectedError)
     }
 
     // MARK: Sign Convention

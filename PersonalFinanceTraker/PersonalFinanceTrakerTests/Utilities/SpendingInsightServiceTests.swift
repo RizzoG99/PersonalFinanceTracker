@@ -37,9 +37,12 @@ struct SpendingInsightServiceTests {
         // One transaction per week for 4 consecutive weeks in same category
         let txns = (0..<4).map { makeExpense(amount: 20, category: "🛒 Groceries", on: dateInWeek(weeksAgo: $0)) }
         let obs = service.habitObservations(expenseTransactions: txns)
-        let streak = obs.first { $0.title.contains("Groceries") && $0.title.contains("streak") }
+        // Compared against the same localized lookups SpendingInsightService uses rather than
+        // hardcoded English literals, so this doesn't depend on the test device's language.
+        let expectedTitle = String(localized: "\("Groceries".localizedCategoryDisplay) — \(4)-week streak")
+        let streak = obs.first { $0.title == expectedTitle }
         #expect(streak != nil)
-        #expect(streak?.detail == "Every week for over a month")
+        #expect(streak?.detail == String(localized: "Every week for over a month"))
     }
 
     @Test("weekend-heavy: emits calendar.badge.clock observation")

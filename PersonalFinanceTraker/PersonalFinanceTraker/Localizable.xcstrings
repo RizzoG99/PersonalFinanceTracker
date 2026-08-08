@@ -121,6 +121,12 @@
     },
     "%@ — %lld-week streak" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ — %lld-week streak"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2368,6 +2374,12 @@
     },
     "Every week for over a month" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every week for over a month"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4395,6 +4407,12 @@
     },
     "Row %lld: invalid amount ''" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Row %lld: invalid amount ''"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4405,6 +4423,12 @@
     },
     "Row %lld: invalid amount '%@'" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Row %lld: invalid amount '%@'"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4415,6 +4439,12 @@
     },
     "Row %lld: invalid date '%@' — expected %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Row %lld: invalid date '%@' — expected %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5053,6 +5083,12 @@
     },
     "This Month" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Month"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5184,6 +5220,12 @@
     },
     "Today" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5595,6 +5637,12 @@
     },
     "Yesterday" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",

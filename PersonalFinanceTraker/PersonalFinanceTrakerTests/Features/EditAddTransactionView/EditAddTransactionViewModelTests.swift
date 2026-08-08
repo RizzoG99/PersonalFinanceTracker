@@ -124,13 +124,16 @@ struct EditAddTransactionViewModelTests {
     @Test @MainActor func formattedDateIsToday() async throws {
         let vm = makeVM()
         vm.date = Date()
-        #expect(vm.formattedDate == "Today")
+        // Compared against the same localized lookup the view model uses, not a hardcoded
+        // English literal, so this doesn't depend on the test device's language (see
+        // git history for the locale investigation this replaced).
+        #expect(vm.formattedDate == String(localized: "Today"))
     }
 
     @Test @MainActor func formattedDateIsYesterday() async throws {
         let vm = makeVM()
         vm.date = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
-        #expect(vm.formattedDate == "Yesterday")
+        #expect(vm.formattedDate == String(localized: "Yesterday"))
     }
 
     @Test @MainActor func formattedDateIsNeitherTodayNorYesterdayForOlderDate() async throws {
