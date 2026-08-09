@@ -10,7 +10,7 @@ struct SafeToSpendWidgetView: View {
     let entry: SafeToSpendEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 4) {
                 Image(systemName: "banknote.fill")
                     .font(.caption2)
@@ -20,22 +20,27 @@ struct SafeToSpendWidgetView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
-            if let amount = entry.amount {
-                Text(compactAmount(amount, currencyCode: entry.currencyCode))
-                    .font(.title2.bold())
-                    .foregroundStyle(amount < 0 ? .red : .primary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-                    .privacySensitive()
-                Text(entry.payCycleEnd, style: .date)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            } else {
-                Text("Log a transaction")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
+            VStack(alignment: .leading, spacing: 4) {
+                if let amount = entry.amount {
+                    Text(compactAmount(amount, currencyCode: entry.currencyCode))
+                        .font(.title.bold())
+                        .foregroundStyle(amount < 0 ? .red : .primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .privacySensitive()
+                    Text("until \(entry.payCycleEnd.formatted(.dateTime.day().month(.abbreviated)))")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("– €")
+                        .font(.title.bold())
+                        .foregroundStyle(.secondary)
+                    Text("Add a transaction")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
             }
             Spacer(minLength: 0)
         }
