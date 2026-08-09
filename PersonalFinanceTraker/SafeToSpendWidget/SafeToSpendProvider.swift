@@ -8,7 +8,7 @@ import Foundation
 
 struct SafeToSpendProvider: TimelineProvider {
     func placeholder(in context: Context) -> SafeToSpendEntry {
-        SafeToSpendEntry(date: .now, amount: 120, currencyCode: "EUR")
+        SafeToSpendEntry(date: .now, amount: 120, currencyCode: "EUR", payCycleEnd: Calendar.current.date(byAdding: .day, value: 7, to: .now) ?? .now)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SafeToSpendEntry) -> Void) {
@@ -32,6 +32,6 @@ struct SafeToSpendProvider: TimelineProvider {
     private func makeEntry(for date: Date) -> SafeToSpendEntry {
         let snapshot = SafeToSpendSnapshot.load()
         let amount = SafeToSpendSnapshot.amount(for: date, from: snapshot)
-        return SafeToSpendEntry(date: date, amount: amount, currencyCode: snapshot?.currencyCode ?? "EUR")
+        return SafeToSpendEntry(date: date, amount: amount, currencyCode: snapshot?.currencyCode ?? "EUR", payCycleEnd: snapshot?.payCycleEnd ?? date)
     }
 }

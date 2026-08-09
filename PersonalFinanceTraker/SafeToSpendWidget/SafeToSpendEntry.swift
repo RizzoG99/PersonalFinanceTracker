@@ -9,4 +9,5 @@ struct SafeToSpendEntry: TimelineEntry {
     let date: Date
     let amount: Decimal?
     let currencyCode: String
+    let payCycleEnd: Date
 }
