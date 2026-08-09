@@ -25,6 +25,10 @@ final class EditAddTransactionViewModel {
     var isRecurring: Bool = false
     var recurrenceFrequency: RecurrenceFrequency = .monthly
     var recurrenceInterval: Int = 1
+    /// When on, saving reopens a blank form in place instead of dismissing, so the
+    /// user can log several in a row. Session-only, Add-mode only. Deliberately NOT
+    /// touched by resetForm() — it must survive across the sequential saves.
+    var addAnother: Bool = false
 
     let editingItem: TransactionSnapshot?
     let repo: any ITransactionRepository

@@ -339,6 +339,31 @@ struct EditAddTransactionViewModelTests {
         #expect(vm.date >= beforeReset && vm.date <= afterReset)
     }
 
+    @Test @MainActor func addAnotherDefaultsToFalse() async throws {
+        let vm = makeVM()
+        #expect(vm.addAnother == false)
+    }
+
+    @Test @MainActor func resetFormPreservesAddAnother() async throws {
+        let vm = makeVM()
+        vm.addAnother = true
+        vm.transactionName = "Coffee"
+        vm.amount = 3
+        vm.resetForm()
+        #expect(vm.addAnother == true)      // control flag survives across saves
+        #expect(vm.transactionName == "")   // form fields still cleared
+        #expect(vm.amount == 0)
+    }
+
+    @Test @MainActor func isFormValidIsFalseAfterReset() async throws {
+        let vm = makeVM()
+        vm.transactionName = "Coffee"
+        vm.amount = 3
+        vm.selectedCategory = expenseCat()
+        vm.resetForm()
+        #expect(vm.isFormValid == false)    // blank form can't be re-saved
+    }
+
     // MARK: default initialization
 
     @Test @MainActor func initDefaultCreatesNilEditingItem() async throws {
