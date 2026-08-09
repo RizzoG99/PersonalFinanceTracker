@@ -129,4 +129,18 @@ struct SafeToSpendSnapshotBuilderTests {
         // If the bug existed, day-1 would show -200 (netSoFar + committed from same occurrence)
         #expect(snapshot.days[1].amount == -100, "Day 1 should not double-count today's occurrence")
     }
+
+    @Test func payCycleEndMatchesTheCurrentFinancialMonthsEnd() {
+        let now = Date.now
+        let snapshot = SafeToSpendSnapshotBuilder.build(
+            transactions: [],
+            activeRules: [],
+            payCycleStartDay: 1,
+            currencyService: currencyService,
+            now: now,
+            calendar: calendar
+        )
+        let expectedEnd = PayCycleService.currentFinancialMonth(startDay: 1, calendar: calendar).end
+        #expect(calendar.isDate(snapshot.payCycleEnd, inSameDayAs: expectedEnd))
+    }
 }

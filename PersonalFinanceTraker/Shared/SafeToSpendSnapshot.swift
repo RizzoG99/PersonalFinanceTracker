@@ -16,6 +16,7 @@ struct SafeToSpendDayValue: Codable, Sendable, Equatable {
 struct SafeToSpendSnapshot: Codable, Sendable, Equatable {
     let generatedAt: Date
     let currencyCode: String
+    let payCycleEnd: Date
     let days: [SafeToSpendDayValue]
 
     private static let fileName = "safe_to_spend_snapshot.json"

@@ -19,6 +19,7 @@ struct SafeToSpendSnapshotTests {
         let snapshot = SafeToSpendSnapshot(
             generatedAt: today,
             currencyCode: "EUR",
+            payCycleEnd: today,
             days: [
                 SafeToSpendDayValue(date: today, amount: 120),
                 SafeToSpendDayValue(date: day(1), amount: 100)
@@ -36,6 +37,7 @@ struct SafeToSpendSnapshotTests {
         let snapshot = SafeToSpendSnapshot(
             generatedAt: today,
             currencyCode: "EUR",
+            payCycleEnd: today,
             days: [SafeToSpendDayValue(date: today, amount: 120)]
         )
         // Requesting day 6, but the snapshot only has day 0 cached — exhausted.
@@ -47,6 +49,7 @@ struct SafeToSpendSnapshotTests {
         let snapshot = SafeToSpendSnapshot(
             generatedAt: today,
             currencyCode: "EUR",
+            payCycleEnd: today,
             days: (0..<7).map { SafeToSpendDayValue(date: day($0), amount: Decimal(100 - $0 * 5)) }
         )
         let data = try JSONEncoder().encode(snapshot)

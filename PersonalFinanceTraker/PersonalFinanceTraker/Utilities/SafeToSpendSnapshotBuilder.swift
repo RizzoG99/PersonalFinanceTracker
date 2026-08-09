@@ -50,6 +50,6 @@ enum SafeToSpendSnapshotBuilder {
             return SafeToSpendDayValue(date: dayDate, amount: netSoFar + committed)
         }
 
-        return SafeToSpendSnapshot(generatedAt: now, currencyCode: currencyService.baseCurrency, days: days)
+        return SafeToSpendSnapshot(generatedAt: now, currencyCode: currencyService.baseCurrency, payCycleEnd: cycleEnd, days: days)
     }
 }
