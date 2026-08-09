@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TransactionFormView: View {
     @Bindable var viewModel: EditAddTransactionViewModel
+    var focusTrigger: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -12,7 +13,8 @@ struct TransactionFormView: View {
                         placeholder: "0",
                         amount: $viewModel.amount,
                         currencyCode: $viewModel.currencyCode,
-                        shouldAutoFocus: viewModel.editingItem == nil
+                        shouldAutoFocus: viewModel.editingItem == nil,
+                        focusTrigger: focusTrigger
                     )
                 }
                 .appFormSectionBackground()

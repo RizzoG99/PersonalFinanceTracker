@@ -23,6 +23,10 @@ struct EditAddTransactionView: View {
     @Environment(DataChangedSignal.self) private var dataChanged
     @State private var viewModel: EditAddTransactionViewModel
     @State private var pendingRecurrenceAction: PendingRecurrenceAction?
+    @State private var refocusToken = 0
+    @State private var savedCount = 0
+    @State private var showSavedToast = false
+    @State private var toastTask: Task<Void, Never>?
     private let materializationService: RecurrenceMaterializationService
 
     init(_ snapshot: TransactionSnapshot? = nil, repo: any ITransactionRepository, materializationService: RecurrenceMaterializationService) {
@@ -32,13 +36,25 @@ struct EditAddTransactionView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            TransactionFormView(viewModel: viewModel)
+            TransactionFormView(viewModel: viewModel, focusTrigger: refocusToken)
             TransactionSaveButton(
                 title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
                 isValid: viewModel.isFormValid,
                 action: saveTransaction
             )
         }
+        .sensoryFeedback(.success, trigger: savedCount)
+        .overlay(alignment: .top) {
+            if showSavedToast {
+                ToastBanner(icon: "checkmark.circle.fill", message: String(localized: "Transaction saved")) {
+                    EmptyView()
+                }
+                .accessibilityElement(children: .combine)
+                .padding(.top, 8)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: showSavedToast)
         .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -72,13 +88,30 @@ struct EditAddTransactionView: View {
     private func saveTransaction() {
         guard let existing = viewModel.editingItem else {
             Task {
-                if viewModel.isRecurring {
-                    try? await viewModel.saveRecurringTransaction()
-                } else if let input = viewModel.buildInput() {
-                    try? await viewModel.repo.add(input)
+                do {
+                    if viewModel.isRecurring {
+                        try await viewModel.saveRecurringTransaction()
+                    } else {
+                        // Guard nil (don't `else if`): a nil input must not fall through
+                        // to the success path and show a false "saved". isFormValid gates
+                        // the button, so this is defensive but explicit.
+                        guard let input = viewModel.buildInput() else { return }
+                        try await viewModel.repo.add(input)
+                    }
+                    dataChanged.bump()
+                    if viewModel.addAnother {
+                        viewModel.resetForm()
+                        savedCount += 1     // fires .sensoryFeedback(.success)
+                        refocusToken += 1   // clears + re-focuses Amount (Task 2)
+                        flashSavedToast()
+                    } else {
+                        dismiss()
+                    }
+                } catch {
+                    // Keep the filled form; surface the existing error alert. No toast/haptic.
+                    viewModel.errorMessage = error.localizedDescription
+                    viewModel.showingErrorAlert = true
                 }
-                dataChanged.bump()
-                dismiss()
             }
             return
         }
@@ -142,6 +175,15 @@ struct EditAddTransactionView: View {
             }
             dataChanged.bump()
             dismiss()
+        }
+    }
+
+    private func flashSavedToast() {
+        toastTask?.cancel()
+        showSavedToast = true
+        toastTask = Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            if !Task.isCancelled { showSavedToast = false }
         }
     }
 }

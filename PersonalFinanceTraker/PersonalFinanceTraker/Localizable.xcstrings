@@ -6139,6 +6139,22 @@
         }
       }
     },
+    "Transaction saved" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction saved"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transazione salvata"
+          }
+        }
+      }
+    },
     "Transfer" : {
       "extractionState" : "stale",
       "localizations" : {
