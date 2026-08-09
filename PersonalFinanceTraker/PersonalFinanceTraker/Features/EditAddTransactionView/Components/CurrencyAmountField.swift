@@ -110,12 +110,13 @@ struct CurrencyAmountField: View {
                         }
                     }
                     .onChange(of: focusTrigger) { _, _ in
-                        // Force a focus cycle: the false -> true transition re-runs
-                        // onChange(of: isFocused), which (amount == 0 after resetForm)
-                        // sets displayText = "" and re-raises the keypad. A bare
-                        // `isFocused = true` would be a no-op here — the field is already
-                        // focused — leaving the stale number on screen. No `if !isFocused`
-                        // guard: the token only bumps on save, never mid-edit.
+                        // Clear the stale display up front: resetForm() set amount = 0 while
+                        // the field was focused, so onChange(of: amount) bailed on its
+                        // !isFocused guard and displayText still shows the old number. Without
+                        // this, the false -> true focus cycle below runs parseAndFormatAmount()
+                        // on that stale text and restores the old amount. Clearing first makes
+                        // that parse see empty text and keep amount at 0.
+                        displayText = ""
                         isFocused = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             isFocused = true
