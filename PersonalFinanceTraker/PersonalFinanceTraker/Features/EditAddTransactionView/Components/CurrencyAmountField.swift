@@ -21,6 +21,7 @@ struct CurrencyAmountField: View {
     let label: String
     let placeholder: String
     let shouldAutoFocus: Bool
+    let focusTrigger: Int
 
     // Currency formatter for display
     private var currencyFormatter: NumberFormatter {
@@ -38,13 +39,15 @@ struct CurrencyAmountField: View {
         placeholder: String = "0",
         amount: Binding<Double>,
         currencyCode: Binding<String>,
-        shouldAutoFocus: Bool = false
+        shouldAutoFocus: Bool = false,
+        focusTrigger: Int = 0
     ) {
         self.label = label
         self.placeholder = placeholder
         self._amount = amount
         self._currencyCode = currencyCode
         self.shouldAutoFocus = shouldAutoFocus
+        self.focusTrigger = focusTrigger
     }
     
     private var currencySymbol: String {
@@ -104,6 +107,18 @@ struct CurrencyAmountField: View {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 isFocused = true
                             }
+                        }
+                    }
+                    .onChange(of: focusTrigger) { _, _ in
+                        // Force a focus cycle: the false -> true transition re-runs
+                        // onChange(of: isFocused), which (amount == 0 after resetForm)
+                        // sets displayText = "" and re-raises the keypad. A bare
+                        // `isFocused = true` would be a no-op here — the field is already
+                        // focused — leaving the stale number on screen. No `if !isFocused`
+                        // guard: the token only bumps on save, never mid-edit.
+                        isFocused = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isFocused = true
                         }
                     }
                     .onChange(of: amount) { _, _ in
