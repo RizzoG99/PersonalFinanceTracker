@@ -97,104 +97,14 @@
   },
   "nodes": [
     {
-      "label": "2026-08-03-widget-entitlements-plan.md",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan",
-      "community": 181,
-      "norm_label": "2026-08-03-widget-entitlements-plan.md"
-    },
-    {
-      "label": "Entitlements Bootstrap + Safe-to-Spend Widget Implementation Plan",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_entitlements_bootstrap_safe_to_spend_widget_implementation_plan",
-      "community": 181,
-      "norm_label": "entitlements bootstrap + safe-to-spend widget implementation plan"
-    },
-    {
-      "label": "Global Constraints",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L11",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
-      "community": 181,
-      "norm_label": "global constraints"
-    },
-    {
-      "label": "Task 1: Add App Group entitlement + create the WidgetKit extension target (manual Xcode step)",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L29",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_task_1_add_app_group_entitlement_create_the_widgetkit_extension_target_manual_xcode_step",
-      "community": 181,
-      "norm_label": "task 1: add app group entitlement + create the widgetkit extension target (manual xcode step)"
-    },
-    {
-      "label": "Task 2: Shared `AppGroup` identifier + `SafeToSpendSnapshot` model with pure lookup",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L88",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_task_2_shared_appgroup_identifier_safetospendsnapshot_model_with_pure_lookup",
-      "community": 181,
-      "norm_label": "task 2: shared `appgroup` identifier + `safetospendsnapshot` model with pure lookup"
-    },
-    {
-      "label": "Task 3: `SafeToSpendSnapshotBuilder` \u2014 pure computation from transactions + recurring rules",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L277",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_task_3_safetospendsnapshotbuilder_pure_computation_from_transactions_recurring_rules",
-      "community": 181,
-      "norm_label": "task 3: `safetospendsnapshotbuilder` \u2014 pure computation from transactions + recurring rules"
-    },
-    {
-      "label": "Task 4: Wire the snapshot refresh into `TransactionActor`'s mutation choke points",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L456",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_task_4_wire_the_snapshot_refresh_into_transactionactor_s_mutation_choke_points",
-      "community": 181,
-      "norm_label": "task 4: wire the snapshot refresh into `transactionactor`'s mutation choke points"
-    },
-    {
-      "label": "Task 5: Widget extension \u2014 entry, provider, view, and widget/bundle registration",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L678",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_task_5_widget_extension_entry_provider_view_and_widget_bundle_registration",
-      "community": 181,
-      "norm_label": "task 5: widget extension \u2014 entry, provider, view, and widget/bundle registration"
-    },
-    {
-      "label": "Task 6: Manual smoke test \u2014 verify the widget end-to-end in the simulator",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L837",
-      "_origin": "ast",
-      "id": "plans_2026_08_03_widget_entitlements_plan_task_6_manual_smoke_test_verify_the_widget_end_to_end_in_the_simulator",
-      "community": 181,
-      "norm_label": "task 6: manual smoke test \u2014 verify the widget end-to-end in the simulator"
-    },
-    {
       "label": "SafeToSpendEntry.swift",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendEntry.swift",
       "source_location": "L1",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendentry",
       "community": 269,
-      "norm_label": "safetospendentry.swift",
-      "id": "safetospendwidget_safetospendentry"
+      "norm_label": "safetospendentry.swift"
     },
     {
       "label": "WidgetKit",
@@ -202,9 +112,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendEntry.swift",
       "source_location": "L6",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_widgetkit",
       "community": 269,
-      "norm_label": "widgetkit",
-      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_widgetkit"
+      "norm_label": "widgetkit"
     },
     {
       "label": "SafeToSpendEntry",
@@ -212,9 +122,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendEntry.swift",
       "source_location": "L8",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendentry_safetospendentry",
       "community": 269,
-      "norm_label": "safetospendentry",
-      "id": "safetospendwidget_safetospendentry_safetospendentry"
+      "norm_label": "safetospendentry"
     },
     {
       "label": "TimelineEntry",
@@ -222,9 +132,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "timelineentry",
       "community": 269,
-      "norm_label": "timelineentry",
-      "id": "timelineentry"
+      "norm_label": "timelineentry"
     },
     {
       "label": "Date",
@@ -232,9 +142,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendEntry.swift",
       "source_location": "L9",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_date",
       "community": 269,
-      "norm_label": "date",
-      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_date"
+      "norm_label": "date"
     },
     {
       "label": "Decimal",
@@ -242,9 +152,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendEntry.swift",
       "source_location": "L10",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_decimal",
       "community": 269,
-      "norm_label": "decimal",
-      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_decimal"
+      "norm_label": "decimal"
     },
     {
       "label": "String",
@@ -252,9 +162,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendEntry.swift",
       "source_location": "L11",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_string",
       "community": 269,
-      "norm_label": "string",
-      "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_string"
+      "norm_label": "string"
     },
     {
       "label": "SafeToSpendProvider.swift",
@@ -262,9 +172,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L1",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendprovider",
       "community": 159,
-      "norm_label": "safetospendprovider.swift",
-      "id": "safetospendwidget_safetospendprovider"
+      "norm_label": "safetospendprovider.swift"
     },
     {
       "label": "WidgetKit",
@@ -272,9 +182,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L6",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendprovider_swift_widgetkit",
       "community": 159,
-      "norm_label": "widgetkit",
-      "id": "personalfinancetraker_safetospendwidget_safetospendprovider_swift_widgetkit"
+      "norm_label": "widgetkit"
     },
     {
       "label": "Foundation",
@@ -282,9 +192,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L7",
       "_origin": "ast",
+      "id": "foundation",
       "community": 159,
-      "norm_label": "foundation",
-      "id": "foundation"
+      "norm_label": "foundation"
     },
     {
       "label": "SafeToSpendProvider",
@@ -292,9 +202,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L9",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendprovider_safetospendprovider",
       "community": 159,
-      "norm_label": "safetospendprovider",
-      "id": "safetospendwidget_safetospendprovider_safetospendprovider"
+      "norm_label": "safetospendprovider"
     },
     {
       "label": "TimelineProvider",
@@ -302,9 +212,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "timelineprovider",
       "community": 159,
-      "norm_label": "timelineprovider",
-      "id": "timelineprovider"
+      "norm_label": "timelineprovider"
     },
     {
       "label": ".placeholder()",
@@ -312,9 +222,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L10",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendprovider_safetospendprovider_placeholder",
       "community": 159,
-      "norm_label": ".placeholder()",
-      "id": "safetospendwidget_safetospendprovider_safetospendprovider_placeholder"
+      "norm_label": ".placeholder()"
     },
     {
       "label": "Context",
@@ -322,9 +232,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L10",
       "_origin": "ast",
+      "id": "context",
       "community": 159,
-      "norm_label": "context",
-      "id": "context"
+      "norm_label": "context"
     },
     {
       "label": "SafeToSpendEntry",
@@ -332,9 +242,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L10",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendprovider_swift_safetospendentry",
       "community": 159,
-      "norm_label": "safetospendentry",
-      "id": "personalfinancetraker_safetospendwidget_safetospendprovider_swift_safetospendentry"
+      "norm_label": "safetospendentry"
     },
     {
       "label": ".getSnapshot()",
@@ -342,9 +252,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L14",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendprovider_safetospendprovider_getsnapshot",
       "community": 159,
-      "norm_label": ".getsnapshot()",
-      "id": "safetospendwidget_safetospendprovider_safetospendprovider_getsnapshot"
+      "norm_label": ".getsnapshot()"
     },
     {
       "label": "Void",
@@ -352,9 +262,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L14",
       "_origin": "ast",
+      "id": "void",
       "community": 159,
-      "norm_label": "void",
-      "id": "void"
+      "norm_label": "void"
     },
     {
       "label": ".getTimeline()",
@@ -362,9 +272,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L18",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendprovider_safetospendprovider_gettimeline",
       "community": 159,
-      "norm_label": ".gettimeline()",
-      "id": "safetospendwidget_safetospendprovider_safetospendprovider_gettimeline"
+      "norm_label": ".gettimeline()"
     },
     {
       "label": "Timeline",
@@ -372,9 +282,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L18",
       "_origin": "ast",
+      "id": "timeline",
       "community": 159,
-      "norm_label": "timeline",
-      "id": "timeline"
+      "norm_label": "timeline"
     },
     {
       "label": ".makeEntry()",
@@ -382,9 +292,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L32",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendprovider_safetospendprovider_makeentry",
       "community": 159,
-      "norm_label": ".makeentry()",
-      "id": "safetospendwidget_safetospendprovider_safetospendprovider_makeentry"
+      "norm_label": ".makeentry()"
     },
     {
       "label": "Date",
@@ -392,9 +302,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L32",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendprovider_swift_date",
       "community": 159,
-      "norm_label": "date",
-      "id": "personalfinancetraker_safetospendwidget_safetospendprovider_swift_date"
+      "norm_label": "date"
     },
     {
       "label": "SafeToSpendWidgetView.swift",
@@ -402,9 +312,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L1",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendwidgetview",
       "community": 278,
-      "norm_label": "safetospendwidgetview.swift",
-      "id": "safetospendwidget_safetospendwidgetview"
+      "norm_label": "safetospendwidgetview.swift"
     },
     {
       "label": "SwiftUI",
@@ -412,9 +322,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L6",
       "_origin": "ast",
+      "id": "swiftui",
       "community": 278,
-      "norm_label": "swiftui",
-      "id": "swiftui"
+      "norm_label": "swiftui"
     },
     {
       "label": "WidgetKit",
@@ -422,9 +332,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L7",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_widgetkit",
       "community": 278,
-      "norm_label": "widgetkit",
-      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_widgetkit"
+      "norm_label": "widgetkit"
     },
     {
       "label": "SafeToSpendWidgetView",
@@ -432,9 +342,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L9",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendwidgetview_safetospendwidgetview",
       "community": 278,
-      "norm_label": "safetospendwidgetview",
-      "id": "safetospendwidget_safetospendwidgetview_safetospendwidgetview"
+      "norm_label": "safetospendwidgetview"
     },
     {
       "label": "View",
@@ -442,9 +352,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "view",
       "community": 109,
-      "norm_label": "view",
-      "id": "view"
+      "norm_label": "view"
     },
     {
       "label": "SafeToSpendEntry",
@@ -452,9 +362,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L10",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_safetospendentry",
       "community": 278,
-      "norm_label": "safetospendentry",
-      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_safetospendentry"
+      "norm_label": "safetospendentry"
     },
     {
       "label": ".compactAmount()",
@@ -462,9 +372,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L52",
       "_origin": "ast",
+      "id": "safetospendwidget_safetospendwidgetview_safetospendwidgetview_compactamount",
       "community": 278,
-      "norm_label": ".compactamount()",
-      "id": "safetospendwidget_safetospendwidgetview_safetospendwidgetview_compactamount"
+      "norm_label": ".compactamount()"
     },
     {
       "label": "Decimal",
@@ -472,9 +382,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L52",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_decimal",
       "community": 278,
-      "norm_label": "decimal",
-      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_decimal"
+      "norm_label": "decimal"
     },
     {
       "label": "String",
@@ -482,9 +392,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L52",
       "_origin": "ast",
+      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_string",
       "community": 278,
-      "norm_label": "string",
-      "id": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_string"
+      "norm_label": "string"
     },
     {
       "label": "SafeToSpendSnapshotBuilder.swift",
@@ -29907,6 +29817,96 @@
       "id": "plans_2026_08_03_auto_backup_self_review_notes"
     },
     {
+      "label": "2026-08-03-widget-entitlements-plan.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "2026-08-03-widget-entitlements-plan.md",
+      "id": "plans_2026_08_03_widget_entitlements_plan"
+    },
+    {
+      "label": "Entitlements Bootstrap + Safe-to-Spend Widget Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "entitlements bootstrap + safe-to-spend widget implementation plan",
+      "id": "plans_2026_08_03_widget_entitlements_plan_entitlements_bootstrap_safe_to_spend_widget_implementation_plan"
+    },
+    {
+      "label": "Global Constraints",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "global constraints",
+      "id": "plans_2026_08_03_widget_entitlements_plan_global_constraints"
+    },
+    {
+      "label": "Task 1: Add App Group entitlement + create the WidgetKit extension target (manual Xcode step)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L28",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "task 1: add app group entitlement + create the widgetkit extension target (manual xcode step)",
+      "id": "plans_2026_08_03_widget_entitlements_plan_task_1_add_app_group_entitlement_create_the_widgetkit_extension_target_manual_xcode_step"
+    },
+    {
+      "label": "Task 2: Shared `AppGroup` identifier + `SafeToSpendSnapshot` model with pure lookup",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L87",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "task 2: shared `appgroup` identifier + `safetospendsnapshot` model with pure lookup",
+      "id": "plans_2026_08_03_widget_entitlements_plan_task_2_shared_appgroup_identifier_safetospendsnapshot_model_with_pure_lookup"
+    },
+    {
+      "label": "Task 3: `SafeToSpendSnapshotBuilder` \u2014 pure computation from transactions + recurring rules",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L276",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "task 3: `safetospendsnapshotbuilder` \u2014 pure computation from transactions + recurring rules",
+      "id": "plans_2026_08_03_widget_entitlements_plan_task_3_safetospendsnapshotbuilder_pure_computation_from_transactions_recurring_rules"
+    },
+    {
+      "label": "Task 4: Wire the snapshot refresh into `TransactionActor`'s mutation choke points",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L455",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "task 4: wire the snapshot refresh into `transactionactor`'s mutation choke points",
+      "id": "plans_2026_08_03_widget_entitlements_plan_task_4_wire_the_snapshot_refresh_into_transactionactor_s_mutation_choke_points"
+    },
+    {
+      "label": "Task 5: Widget extension \u2014 entry, provider, view, and widget/bundle registration",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L677",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "task 5: widget extension \u2014 entry, provider, view, and widget/bundle registration",
+      "id": "plans_2026_08_03_widget_entitlements_plan_task_5_widget_extension_entry_provider_view_and_widget_bundle_registration"
+    },
+    {
+      "label": "Task 6: Manual smoke test \u2014 verify the widget end-to-end in the simulator",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L836",
+      "_origin": "ast",
+      "community": 181,
+      "norm_label": "task 6: manual smoke test \u2014 verify the widget end-to-end in the simulator",
+      "id": "plans_2026_08_03_widget_entitlements_plan_task_6_manual_smoke_test_verify_the_widget_end_to_end_in_the_simulator"
+    },
+    {
       "label": "2026-08-06-onboarding-name-biometric.md",
       "file_type": "document",
       "source_file": "docs/superpowers/plans/2026-08-06-onboarding-name-biometric.md",
@@ -32266,86 +32266,6 @@
   ],
   "links": [
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan",
-      "target": "plans_2026_08_03_widget_entitlements_plan_entitlements_bootstrap_safe_to_spend_widget_implementation_plan"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan_entitlements_bootstrap_safe_to_spend_widget_implementation_plan",
-      "target": "plans_2026_08_03_widget_entitlements_plan_global_constraints"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
-      "target": "plans_2026_08_03_widget_entitlements_plan_task_1_add_app_group_entitlement_create_the_widgetkit_extension_target_manual_xcode_step"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L87",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
-      "target": "plans_2026_08_03_widget_entitlements_plan_task_2_shared_appgroup_identifier_safetospendsnapshot_model_with_pure_lookup"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L276",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
-      "target": "plans_2026_08_03_widget_entitlements_plan_task_3_safetospendsnapshotbuilder_pure_computation_from_transactions_recurring_rules"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L455",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
-      "target": "plans_2026_08_03_widget_entitlements_plan_task_4_wire_the_snapshot_refresh_into_transactionactor_s_mutation_choke_points"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L677",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
-      "target": "plans_2026_08_03_widget_entitlements_plan_task_5_widget_extension_entry_provider_view_and_widget_bundle_registration"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
-      "source_location": "L836",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
-      "target": "plans_2026_08_03_widget_entitlements_plan_task_6_manual_smoke_test_verify_the_widget_end_to_end_in_the_simulator"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -32416,9 +32336,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift",
       "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "safetospendwidget_safetospendprovider",
-      "target": "foundation"
+      "target": "foundation",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -32662,9 +32582,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L6",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "safetospendwidget_safetospendwidgetview",
-      "target": "swiftui"
+      "target": "swiftui",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -32683,9 +32603,9 @@
       "source_file": "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift",
       "source_location": "L52",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "safetospendwidget_safetospendwidgetview_safetospendwidgetview",
-      "target": "safetospendwidget_safetospendwidgetview_safetospendwidgetview_compactamount"
+      "target": "safetospendwidget_safetospendwidgetview_safetospendwidgetview_compactamount",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -33937,9 +33857,9 @@
       "source_location": "L52",
       "weight": 1.0,
       "context": "parameter_type",
-      "confidence_score": 1.0,
       "source": "safetospendwidget_safetospendwidgetview_safetospendwidgetview_compactamount",
-      "target": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_decimal"
+      "target": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_decimal",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -33948,9 +33868,9 @@
       "source_location": "L52",
       "weight": 1.0,
       "context": "return_type",
-      "confidence_score": 1.0,
       "source": "safetospendwidget_safetospendwidgetview_safetospendwidgetview_compactamount",
-      "target": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_string"
+      "target": "personalfinancetraker_safetospendwidget_safetospendwidgetview_swift_string",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -77617,6 +77537,86 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan",
+      "target": "plans_2026_08_03_widget_entitlements_plan_entitlements_bootstrap_safe_to_spend_widget_implementation_plan"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan_entitlements_bootstrap_safe_to_spend_widget_implementation_plan",
+      "target": "plans_2026_08_03_widget_entitlements_plan_global_constraints"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
+      "target": "plans_2026_08_03_widget_entitlements_plan_task_1_add_app_group_entitlement_create_the_widgetkit_extension_target_manual_xcode_step"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L87",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
+      "target": "plans_2026_08_03_widget_entitlements_plan_task_2_shared_appgroup_identifier_safetospendsnapshot_model_with_pure_lookup"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L276",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
+      "target": "plans_2026_08_03_widget_entitlements_plan_task_3_safetospendsnapshotbuilder_pure_computation_from_transactions_recurring_rules"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L455",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
+      "target": "plans_2026_08_03_widget_entitlements_plan_task_4_wire_the_snapshot_refresh_into_transactionactor_s_mutation_choke_points"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L677",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
+      "target": "plans_2026_08_03_widget_entitlements_plan_task_5_widget_extension_entry_provider_view_and_widget_bundle_registration"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md",
+      "source_location": "L836",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_08_03_widget_entitlements_plan_global_constraints",
+      "target": "plans_2026_08_03_widget_entitlements_plan_task_6_manual_smoke_test_verify_the_widget_end_to_end_in_the_simulator"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "docs/superpowers/plans/2026-08-06-onboarding-name-biometric.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -79867,5 +79867,5 @@
       "source_file": "AppIcon/v2/Icon Exports/"
     }
   ],
-  "built_at_commit": "235939b4e65e2b86f040af6f7098d365cbde2229"
+  "built_at_commit": "d1717e41a8056278493ccebfc2f7a1fbf3826805"
 }

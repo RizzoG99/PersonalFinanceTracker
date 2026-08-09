@@ -545,8 +545,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/CurrencyService.swift": {
-    "mtime": 1786218006.0484183,
-    "ast_hash": "2bd7f8289a44b4ed6813490c997b9348",
+    "mtime": 1786189637.88023,
+    "ast_hash": "79af334735aaa8f21958ce5a1b30ac16",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/DateFormattingService.swift": {
@@ -1190,8 +1190,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionActor.swift": {
-    "mtime": 1786217389.8371217,
-    "ast_hash": "cfcf301c97bb36d0a84b226da7faa8de",
+    "mtime": 1786189637.873548,
+    "ast_hash": "fc444f5ea2c0e4328b060edcab8709dd",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Models/DataChangedSignal.swift": {
@@ -1550,8 +1550,8 @@
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md": {
-    "mtime": 1786275967.2028668,
-    "ast_hash": "eed73be9102238836e76c6314d075ac5",
+    "mtime": 1786189637.9099088,
+    "ast_hash": "ff1590473b7038e8704bd35aa113ec90",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Models/BackupModels.swift": {
@@ -1660,13 +1660,23 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidget.swift": {
-    "mtime": 1786217738.803276,
-    "ast_hash": "a23c8c27348be93617a8b8d33ea3490a",
+    "mtime": 1786190150.0202801,
+    "ast_hash": "fd40c247a28c483b96729a4cd58197cc",
+    "semantic_hash": ""
+  },
+  "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetBundle.swift": {
+    "mtime": 1786190150.0141091,
+    "ast_hash": "c231e0608622d70b41c2905d5356e325",
+    "semantic_hash": ""
+  },
+  "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetControl.swift": {
+    "mtime": 1786190150.0172875,
+    "ast_hash": "9ff19eb40c9b912677fa96a5c1903c73",
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-03-widget-entitlements-plan/progress.md": {
-    "mtime": 1786275698.63015,
-    "ast_hash": "0bf57ebee0e8078218796d0e53223ed0",
+    "mtime": 1786191935.7534306,
+    "ast_hash": "fb1bfddc1e1f131ffc42f85566102e0b",
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-2-brief.md": {
@@ -1675,8 +1685,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Models/SafeToSpendSnapshotTests.swift": {
-    "mtime": 1786275006.7029252,
-    "ast_hash": "42cfd24fc2d40013bdf31229829a1d68",
+    "mtime": 1786190655.2511823,
+    "ast_hash": "7d558e51b87122f66281ba750216bc1d",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/Shared/AppGroup.swift": {
@@ -1685,18 +1695,18 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/Shared/SafeToSpendSnapshot.swift": {
-    "mtime": 1786275038.067522,
-    "ast_hash": "06ae692c9d7818cecf32d621dd754b87",
+    "mtime": 1786190707.891618,
+    "ast_hash": "2d3a92fc63aadb61b568eb60827dbdae",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SafeToSpendSnapshotBuilder.swift": {
-    "mtime": 1786275043.1410441,
-    "ast_hash": "223bd3a1bde69d9ce8808c78eb0aaf4b",
+    "mtime": 1786192021.9476252,
+    "ast_hash": "223e526eed4cceb282489e00a95a71f3",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SafeToSpendSnapshotBuilderTests.swift": {
-    "mtime": 1786275114.859011,
-    "ast_hash": "28d40462e0aa38dd0999afd2e16208bf",
+    "mtime": 1786192035.66271,
+    "ast_hash": "5e6e2e804bd512522b064deaa822763f",
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-2-report.md": {
@@ -1710,58 +1720,8 @@
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-3-report.md": {
-    "mtime": 1786192242.6141183,
-    "ast_hash": "73bf3d8062b05280de9b26fa592cb193",
-    "semantic_hash": ""
-  },
-  "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendEntry.swift": {
-    "mtime": 1786275156.8651252,
-    "ast_hash": "23d47637426b45d2e76793b439de5c3c",
-    "semantic_hash": ""
-  },
-  "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendProvider.swift": {
-    "mtime": 1786275166.0335205,
-    "ast_hash": "cd974caaa4b18f65ba1fbe8f2079d05e",
-    "semantic_hash": ""
-  },
-  "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift": {
-    "mtime": 1786275175.7198157,
-    "ast_hash": "c9bd16b76d1bd862d97f0b86be668bde",
-    "semantic_hash": ""
-  },
-  "PersonalFinanceTraker/Shared/DecimalFormatting.swift": {
-    "mtime": 1786217998.1128066,
-    "ast_hash": "44f62d7944144f40768cede96ba6c3c6",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-4-brief.md": {
-    "mtime": 1786192525.96764,
-    "ast_hash": "bc6c583f0dcd85fb66eb2bae6c0b5360",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-4-report.md": {
-    "mtime": 1786192863.8919866,
-    "ast_hash": "adf0cf99b6f263273377cbdca94402f7",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-5-brief.md": {
-    "mtime": 1786217669.6292953,
-    "ast_hash": "981be53104c47d6a587c856dc71ffb46",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-5-report.md": {
-    "mtime": 1786218085.176785,
-    "ast_hash": "8480f200dce4fb34cfa64596a79a55ca",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-7-brief.md": {
-    "mtime": 1786274776.6020503,
-    "ast_hash": "50a7f9fe08ae91c572e23520d356a194",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-7-report.md": {
-    "mtime": 1786275432.139688,
-    "ast_hash": "3125d527a36f85bcfb0abf4b1aa413b7",
+    "mtime": 1786192116.5385318,
+    "ast_hash": "80d8e6ebd56cb7b637d1b95c556e5a10",
     "semantic_hash": ""
   }
 }

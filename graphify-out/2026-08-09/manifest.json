@@ -1550,8 +1550,8 @@
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-08-03-widget-entitlements-plan.md": {
-    "mtime": 1786275967.2028668,
-    "ast_hash": "eed73be9102238836e76c6314d075ac5",
+    "mtime": 1786189637.9099088,
+    "ast_hash": "ff1590473b7038e8704bd35aa113ec90",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Models/BackupModels.swift": {
@@ -1665,8 +1665,8 @@
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-03-widget-entitlements-plan/progress.md": {
-    "mtime": 1786275698.63015,
-    "ast_hash": "0bf57ebee0e8078218796d0e53223ed0",
+    "mtime": 1786274704.4816146,
+    "ast_hash": "f91ab7ff152812b792786efd22ef32f0",
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-2-brief.md": {
@@ -1757,11 +1757,6 @@
   ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-7-brief.md": {
     "mtime": 1786274776.6020503,
     "ast_hash": "50a7f9fe08ae91c572e23520d356a194",
-    "semantic_hash": ""
-  },
-  ".superpowers/sdd/2026-08-03-widget-entitlements-plan/task-7-report.md": {
-    "mtime": 1786275432.139688,
-    "ast_hash": "3125d527a36f85bcfb0abf4b1aa413b7",
     "semantic_hash": ""
   }
 }

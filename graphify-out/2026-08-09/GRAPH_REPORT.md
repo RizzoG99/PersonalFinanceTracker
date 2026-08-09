@@ -1,7 +1,7 @@
 # Graph Report - safe-to-spend-widget  (2026-08-09)
 
 ## Corpus Check
-- 321 files · ~1,241,306 words
+- 320 files · ~1,240,377 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `235939b4`
+- Built from commit: `d1717e41`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1371,7 +1371,7 @@ Cohesion: 0.40
 Nodes (4): Error, Foundation, SafeToSpendSnapshotError, noContainer
 
 ## Knowledge Gaps
-- **1362 isolated node(s):** `Task 1: Add App Group entitlement + create the WidgetKit extension target (manual Xcode step)`, `Task 2: Shared `AppGroup` identifier + `SafeToSpendSnapshot` model with pure lookup`, `Task 3: `SafeToSpendSnapshotBuilder` — pure computation from transactions + recurring rules`, `Task 4: Wire the snapshot refresh into `TransactionActor`'s mutation choke points`, `Task 5: Widget extension — entry, provider, view, and widget/bundle registration` (+1357 more)
+- **1362 isolated node(s):** `WidgetKit`, `Date`, `Decimal`, `String`, `WidgetKit` (+1357 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -1379,14 +1379,14 @@ Nodes (4): Error, Foundation, SafeToSpendSnapshotError, noContainer
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `String` connect `Community 248` to `Community 96`, `Community 103`, `Credit Card Feature`, `Category Settings View`, `Credit Score Card`, `Community 107`, `Community 236`, `Community 173`, `Community 264`, `Community 145`, `Currency Formatting Service`, `Community 116`, `Category Breakdown ViewModel`, `Community 152`, `Community 153`, `Community 250`, `Community 220`, `Community 255`?**
-  _High betweenness centrality (0.203) - this node is a cross-community bridge._
-- **Why does `ProfileView` connect `Community 152` to `Community 248`, `PIN Dots View`, `Community 109`?**
-  _High betweenness centrality (0.065) - this node is a cross-community bridge._
+  _High betweenness centrality (0.213) - this node is a cross-community bridge._
 - **Why does `DashboardViewModel` connect `Community 103` to `Community 264`, `Community 248`?**
+  _High betweenness centrality (0.065) - this node is a cross-community bridge._
+- **Why does `CompassViewModel` connect `Compass Goals & Forecasting` to `Community 264`?**
   _High betweenness centrality (0.064) - this node is a cross-community bridge._
 - **Are the 26 inferred relationships involving `MockTransactionRepository` (e.g. with `.loadPopulatesTransactions()` and `.loadSetsErrorOnRepositoryFailure()`) actually correct?**
   _`MockTransactionRepository` has 26 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `Task 1: Add App Group entitlement + create the WidgetKit extension target (manual Xcode step)`, `Task 2: Shared `AppGroup` identifier + `SafeToSpendSnapshot` model with pure lookup`, `Task 3: `SafeToSpendSnapshotBuilder` — pure computation from transactions + recurring rules` to the rest of the system?**
+- **What connects `WidgetKit`, `Date`, `Decimal` to the rest of the system?**
   _1362 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Profile State Management` be split into smaller, more focused modules?**
   _Cohesion score 0.07422559906487435 - nodes in this community are weakly interconnected._
