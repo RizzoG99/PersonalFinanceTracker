@@ -917,6 +917,22 @@
         }
       }
     },
+    "Add another" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add another"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi un altro"
+          }
+        }
+      }
+    },
     "Add transactions to unlock your Health Score" : {
       "localizations" : {
         "en" : {
@@ -3597,6 +3613,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continua a registrare per sbloccare le analisi"
+          }
+        }
+      }
+    },
+    "Keep this sheet open after saving to log several in a row." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep this sheet open after saving to log several in a row."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantieni questo foglio aperto dopo il salvataggio per registrare più transazioni in fila."
           }
         }
       }

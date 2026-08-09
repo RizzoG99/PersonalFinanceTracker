@@ -70,6 +70,15 @@ struct TransactionFormView: View {
                     .appFormSectionBackground()
                 }
 
+                if viewModel.editingItem == nil {
+                    Section {
+                        Toggle(String(localized: "Add another"), isOn: $viewModel.addAnother)
+                    } footer: {
+                        Text("Keep this sheet open after saving to log several in a row.")
+                    }
+                    .appFormSectionBackground()
+                }
+
                 if viewModel.transactionType == .transfer {
                     Section {
                         GoalChipsGrid(
