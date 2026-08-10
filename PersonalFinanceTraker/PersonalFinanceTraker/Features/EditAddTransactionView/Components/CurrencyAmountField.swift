@@ -21,6 +21,7 @@ struct CurrencyAmountField: View {
     let label: String
     let placeholder: String
     let shouldAutoFocus: Bool
+    let focusTrigger: Int
 
     // Currency formatter for display
     private var currencyFormatter: NumberFormatter {
@@ -38,13 +39,15 @@ struct CurrencyAmountField: View {
         placeholder: String = "0",
         amount: Binding<Double>,
         currencyCode: Binding<String>,
-        shouldAutoFocus: Bool = false
+        shouldAutoFocus: Bool = false,
+        focusTrigger: Int = 0
     ) {
         self.label = label
         self.placeholder = placeholder
         self._amount = amount
         self._currencyCode = currencyCode
         self.shouldAutoFocus = shouldAutoFocus
+        self.focusTrigger = focusTrigger
     }
     
     private var currencySymbol: String {
@@ -104,6 +107,19 @@ struct CurrencyAmountField: View {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 isFocused = true
                             }
+                        }
+                    }
+                    .onChange(of: focusTrigger) { _, _ in
+                        // Clear the stale display up front: resetForm() set amount = 0 while
+                        // the field was focused, so onChange(of: amount) bailed on its
+                        // !isFocused guard and displayText still shows the old number. Without
+                        // this, the false -> true focus cycle below runs parseAndFormatAmount()
+                        // on that stale text and restores the old amount. Clearing first makes
+                        // that parse see empty text and keep amount at 0.
+                        displayText = ""
+                        isFocused = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isFocused = true
                         }
                     }
                     .onChange(of: amount) { _, _ in

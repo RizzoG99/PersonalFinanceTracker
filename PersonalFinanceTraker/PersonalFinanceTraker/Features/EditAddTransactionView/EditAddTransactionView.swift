@@ -23,6 +23,10 @@ struct EditAddTransactionView: View {
     @Environment(DataChangedSignal.self) private var dataChanged
     @State private var viewModel: EditAddTransactionViewModel
     @State private var pendingRecurrenceAction: PendingRecurrenceAction?
+    @State private var refocusToken = 0
+    @State private var savedCount = 0
+    @State private var showSavedToast = false
+    @State private var toastTask: Task<Void, Never>?
     private let materializationService: RecurrenceMaterializationService
 
     init(_ snapshot: TransactionSnapshot? = nil, repo: any ITransactionRepository, materializationService: RecurrenceMaterializationService) {
@@ -32,16 +36,53 @@ struct EditAddTransactionView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            TransactionFormView(viewModel: viewModel)
-            TransactionSaveButton(
-                title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
-                isValid: viewModel.isFormValid,
-                action: saveTransaction
-            )
+            TransactionFormView(viewModel: viewModel, focusTrigger: refocusToken)
+            VStack(spacing: 12) {
+                // Pinned above the button (Add mode only): the mode and the action it changes share
+                // one persistent, thumb-reachable zone, instead of the toggle being buried in the scroll.
+                if viewModel.editingItem == nil {
+                    Toggle(String(localized: "Add another"), isOn: $viewModel.addAnother)
+                        .tint(.accentIndigo)
+                        .padding(.horizontal)
+                }
+                TransactionSaveButton(
+                    title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
+                    isValid: viewModel.isFormValid,
+                    action: saveTransaction
+                )
+            }
         }
+        .sensoryFeedback(.success, trigger: savedCount)
+        .overlay(alignment: .top) {
+            if showSavedToast {
+                ToastBanner(icon: "checkmark.circle.fill", message: String(localized: "Transaction saved")) {
+                    EmptyView()
+                }
+                .accessibilityElement(children: .combine)
+                .padding(.top, 8)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: showSavedToast)
         .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
+            // inline form space. Add mode only, and not for transfers (recurring transfers are
+            // deferred — matches the type-change guard that also clears isRecurring).
+            if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.isRecurring.toggle()
+                    } label: {
+                        Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat")
+                    }
+                    // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
+                    // read as "active" while recurrence is actually off.
+                    .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
+                    .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
+                }
+            }
             if viewModel.editingItem != nil {
                 ToolbarItem(placement: .destructiveAction) {
                     Button(role: .destructive) {
@@ -72,13 +113,30 @@ struct EditAddTransactionView: View {
     private func saveTransaction() {
         guard let existing = viewModel.editingItem else {
             Task {
-                if viewModel.isRecurring {
-                    try? await viewModel.saveRecurringTransaction()
-                } else if let input = viewModel.buildInput() {
-                    try? await viewModel.repo.add(input)
+                do {
+                    if viewModel.isRecurring {
+                        try await viewModel.saveRecurringTransaction()
+                    } else {
+                        // Guard nil (don't `else if`): a nil input must not fall through
+                        // to the success path and show a false "saved". isFormValid gates
+                        // the button, so this is defensive but explicit.
+                        guard let input = viewModel.buildInput() else { return }
+                        try await viewModel.repo.add(input)
+                    }
+                    dataChanged.bump()
+                    if viewModel.addAnother {
+                        viewModel.resetForm()
+                        savedCount += 1     // fires .sensoryFeedback(.success)
+                        refocusToken += 1   // clears + re-focuses Amount (Task 2)
+                        flashSavedToast()
+                    } else {
+                        dismiss()
+                    }
+                } catch {
+                    // Keep the filled form; surface the existing error alert. No toast/haptic.
+                    viewModel.errorMessage = error.localizedDescription
+                    viewModel.showingErrorAlert = true
                 }
-                dataChanged.bump()
-                dismiss()
             }
             return
         }
@@ -142,6 +200,15 @@ struct EditAddTransactionView: View {
             }
             dataChanged.bump()
             dismiss()
+        }
+    }
+
+    private func flashSavedToast() {
+        toastTask?.cancel()
+        showSavedToast = true
+        toastTask = Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            if !Task.isCancelled { showSavedToast = false }
         }
     }
 }
