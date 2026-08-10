@@ -80,7 +80,7 @@ struct EditAddTransactionView: View {
                     // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
                     // read as "active" while recurrence is actually off.
                     .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
-                    .accessibilityValue(viewModel.isRecurring ? "On" : "Off")
+                    .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
                 }
             }
             if viewModel.editingItem != nil {

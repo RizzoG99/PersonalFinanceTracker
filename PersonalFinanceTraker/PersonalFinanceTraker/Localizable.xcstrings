@@ -1,6 +1,38 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "On" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attivo"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disattivato"
+          }
+        }
+      }
+    },
     "Name (optional)" : {
       "localizations" : {
         "en" : {
@@ -4476,9 +4508,6 @@
         }
       }
     },
-    "Off" : {
-
-    },
     "OK" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4495,9 +4524,6 @@
           }
         }
       }
-    },
-    "On" : {
-
     },
     "On track this month" : {
       "localizations" : {
