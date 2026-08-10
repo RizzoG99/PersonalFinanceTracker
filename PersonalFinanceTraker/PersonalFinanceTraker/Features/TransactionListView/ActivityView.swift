@@ -15,6 +15,10 @@ struct ActivityView: View {
         _showingAddItemView = showingAddItemView
     }
 
+    @State private var showCategorySheet = false
+    @State private var showAmountSheet = false
+    @State private var showNoteSheet = false
+
     var body: some View {
         @Bindable var viewModel = viewModel
         return NavigationStack {
@@ -66,11 +70,29 @@ struct ActivityView: View {
                     Section {
                         ForEach(dayItems) { item in
                             Button {
-                                viewModel.transactionToEdit = item
+                                if viewModel.isSelecting {
+                                    viewModel.toggleSelection(item.id)
+                                } else {
+                                    viewModel.transactionToEdit = item
+                                }
                             } label: {
-                                TransactionItemView(item: item)
+                                HStack(spacing: 12) {
+                                    if viewModel.isSelecting {
+                                        Image(systemName: viewModel.selectedIDs.contains(item.id) ? "checkmark.circle.fill" : "circle")
+                                            .font(.title3)
+                                            .foregroundStyle(viewModel.selectedIDs.contains(item.id) ? Color.accentIndigo : Color.textMid)
+                                            .accessibilityHidden(true)
+                                    }
+                                    TransactionItemView(item: item)
+                                }
                             }
                             .buttonStyle(.plain)
+                            .onLongPressGesture {
+                                if !viewModel.isSelecting {
+                                    viewModel.isSelecting = true
+                                    viewModel.toggleSelection(item.id)
+                                }
+                            }
                             .listRowBackground(Color.clear)
                             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             // Recurring rows must not use role: .destructive here — iOS plays the
@@ -87,10 +109,7 @@ struct ActivityView: View {
                             // there silently fail to present.
                             .confirmationDialog(
                                 "This is part of a recurring series",
-                                isPresented: Binding(
-                                    get: { viewModel.pendingRecurrenceDeletion?.id == item.id },
-                                    set: { if !$0 { viewModel.pendingRecurrenceDeletion = nil } }
-                                ),
+                                isPresented: isRecurringDeletionPresented(for: item),
                                 titleVisibility: .visible
                             ) {
                                 Button("This transaction", role: .destructive) {
@@ -104,20 +123,22 @@ struct ActivityView: View {
                                 }
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: item.recurrenceRuleId == nil) {
-                                if item.recurrenceRuleId != nil {
-                                    Button {
-                                        viewModel.pendingRecurrenceDeletion = item
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
+                                if !viewModel.isSelecting {
+                                    if item.recurrenceRuleId != nil {
+                                        Button {
+                                            viewModel.pendingRecurrenceDeletion = item
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                        .tint(.red)
+                                    } else {
+                                        Button(role: .destructive) {
+                                            viewModel.delete(item)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                        .tint(.red)
                                     }
-                                    .tint(.red)
-                                } else {
-                                    Button(role: .destructive) {
-                                        viewModel.delete(item)
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                    .tint(.red)
                                 }
                             }
                         }
@@ -145,6 +166,33 @@ struct ActivityView: View {
                 prompt: "Search transactions..."
             ))
             .appToolbar(showingAddItemView: $showingAddItemView)
+            .toolbar {
+                if viewModel.isSelecting {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(String(localized: "Cancel")) { viewModel.exitSelection() }
+                    }
+                    ToolbarItem(placement: .principal) {
+                        Text("\(viewModel.selectedIDs.count) selected").font(.headline)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(viewModel.allVisibleSelected ? String(localized: "Deselect All") : String(localized: "Select All")) {
+                            if viewModel.allVisibleSelected { viewModel.deselectAll() } else { viewModel.selectAllVisible() }
+                        }
+                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                selectionActionBar
+            }
+            .sheet(isPresented: $showCategorySheet) {
+                categorySheet
+            }
+            .sheet(isPresented: $showAmountSheet) {
+                amountSheet
+            }
+            .sheet(isPresented: $showNoteSheet) {
+                descriptionSheet
+            }
             .overlay {
                 if groupedFiltered.isEmpty && (!viewModel.searchText.isEmpty || viewModel.filters.isActive) {
                     ContentUnavailableView.search(text: viewModel.searchText)
@@ -152,6 +200,72 @@ struct ActivityView: View {
             }
             .onAppear { viewModel.load() }
         }
+    }
+
+    private func bulkButton(_ label: LocalizedStringKey, _ icon: String, role: ButtonRole? = nil, action: @escaping () -> Void) -> some View {
+        Button(role: role, action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.body)
+                Text(label)
+                    .font(.caption2)
+            }
+            .frame(maxWidth: .infinity)
+            .foregroundStyle(.white)
+        }
+    }
+
+    private func isRecurringDeletionPresented(for item: TransactionSnapshot) -> Binding<Bool> {
+        Binding(
+            get: { viewModel.pendingRecurrenceDeletion?.id == item.id },
+            set: { if !$0 { viewModel.pendingRecurrenceDeletion = nil } }
+        )
+    }
+
+    private var selectionActionBar: some View {
+        Group {
+            if viewModel.isSelecting {
+                HStack {
+                    bulkButton("Delete", "trash", role: .destructive) { viewModel.bulkDelete() }
+                    bulkButton("Category", "tag") { showCategorySheet = true }
+                    bulkButton("Amount", "eurosign.circle") { showAmountSheet = true }
+                    bulkButton("Description", "text.alignleft") { showNoteSheet = true }
+                }
+                .disabled(viewModel.selectedIDs.isEmpty)
+                .padding()
+                .background(.ultraThinMaterial)
+            }
+        }
+    }
+
+    private var categorySheet: some View {
+        CategoryBulkEditSheet(
+            count: viewModel.selectedIDs.count,
+            onSelect: { category in
+                viewModel.bulkSetCategory(category)
+                showCategorySheet = false
+            }
+        )
+    }
+
+    private var amountSheet: some View {
+        AmountBulkEditSheet(
+            count: viewModel.selectedIDs.count,
+            onConfirm: { amount in
+                viewModel.bulkSetAmount(Decimal(amount))
+                showAmountSheet = false
+            }
+        )
+    }
+
+    private var descriptionSheet: some View {
+        DescriptionBulkEditSheet(
+            count: viewModel.selectedIDs.count,
+            onConfirm: { description in
+                viewModel.bulkSetNote(description)
+                showNoteSheet = false
+            }
+        )
     }
 
     private var groupedFiltered: [(String, [TransactionSnapshot])] {
@@ -173,6 +287,105 @@ private struct ConditionalSearchable: ViewModifier {
             content.searchable(text: $text, prompt: prompt)
         } else {
             content
+        }
+    }
+}
+
+private struct CategoryBulkEditSheet: View {
+    @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
+    let count: Int
+    let onSelect: (CategorySnapshot) -> Void
+    @State private var categories: [CategorySnapshot] = []
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(categories) { category in
+                    Button(action: { onSelect(category) }) {
+                        Text(category.name)
+                            .foregroundStyle(.textPrimary)
+                    }
+                }
+            }
+            .navigationTitle(Text("Set category for \(count) transactions"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+            .onAppear {
+                Task {
+                    do {
+                        categories = try await viewModel.repo.fetchCategories()
+                    } catch {
+                        // Handle error silently for now
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct AmountBulkEditSheet: View {
+    let count: Int
+    let onConfirm: (Double) -> Void
+    @State private var amount: Double = 0.0
+    @State private var currencyCode: String = "EUR"
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    CurrencyAmountField(amount: $amount, currencyCode: $currencyCode)
+                }
+            }
+            .navigationTitle(Text("Set \(count) transactions to"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("OK") {
+                        onConfirm(amount)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct DescriptionBulkEditSheet: View {
+    let count: Int
+    let onConfirm: (String) -> Void
+    @State private var description: String = ""
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Description", text: $description, axis: .vertical)
+                        .lineLimit(3...)
+                }
+            }
+            .navigationTitle(Text("Set description for \(count) transactions"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("OK") {
+                        onConfirm(description)
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
