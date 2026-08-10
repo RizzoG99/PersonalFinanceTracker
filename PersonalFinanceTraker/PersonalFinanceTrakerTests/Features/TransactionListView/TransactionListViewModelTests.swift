@@ -23,6 +23,17 @@ struct TransactionListViewModelTests {
             .test(amount: 1000, note: "Salary", category: "Income"),
             .test(amount: -15, note: "Snack", category: "Food"),
         ]
+        repo.stubbedCategories = [
+            .test(name: "Food"),
+            .test(name: "Beverages"),
+            .test(name: "Income"),
+        ]
+        let ruleId = UUID()
+        repo.stubbedRecurrenceRules = [
+            .test(id: ruleId, startDate: .now, amount: -100, category: "Housing")
+        ]
+        // Add a recurring transaction
+        repo.stubbedTransactions.append(.test(amount: -100, note: "Recurring", category: "Housing", recurrenceRuleId: ruleId))
         return await loadedVM(repo)
     }
 
@@ -435,5 +446,89 @@ struct TransactionListViewModelTests {
         #expect(!after.contains { $0.id == item.id })   // delete was committed, not leaked
         #expect(vm.pendingDeletion.isEmpty)
         #expect(vm.showUndoBanner)                        // edit's banner now showing
+    }
+
+    // MARK: - Bulk mutations
+
+    @Test @MainActor func bulkDeleteRemovesSelected() async {
+        let vm = await makeLoadedVM()
+        let targets = Array(vm.filteredItems.prefix(2))
+        targets.forEach { vm.toggleSelection($0.id) }
+        let before = vm.transactions.count
+        vm.bulkDelete()
+        #expect(!vm.isSelecting)
+        await vm.commitPending()
+        #expect(vm.transactions.count == before - 2)
+    }
+
+    @Test @MainActor func bulkSetCategoryRewritesOnlySelected() async {
+        let vm = await makeLoadedVM()
+        let cat = try! await vm.repo.fetchCategories().first!
+        let target = vm.filteredItems[0]
+        let other = vm.filteredItems[1]
+        let otherCatBefore = other.category
+        vm.toggleSelection(target.id)
+        vm.bulkSetCategory(cat)
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == target.id }!.category == cat.name)
+        #expect(after.first { $0.id == other.id }!.category == otherCatBefore)   // untouched
+        #expect(vm.showUndoBanner)
+    }
+
+    @Test @MainActor func bulkSetAmountPreservesSign() async {
+        let vm = await makeLoadedVM()
+        let expense = vm.filteredItems.first { $0.amount < 0 }!
+        let income = vm.filteredItems.first { $0.amount > 0 }!
+        vm.toggleSelection(expense.id); vm.toggleSelection(income.id)
+        vm.bulkSetAmount(25)
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == expense.id }!.amount == -25)   // stays negative
+        #expect(after.first { $0.id == income.id }!.amount == 25)     // stays positive
+    }
+
+    @Test @MainActor func bulkSetNoteOverwritesSelected() async {
+        let vm = await makeLoadedVM()
+        let target = vm.filteredItems[0]
+        vm.toggleSelection(target.id)
+        vm.bulkSetNote("reconciled")
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == target.id }!.note == "reconciled")
+    }
+
+    @Test @MainActor func bulkEditUndoRestoresPriorValues() async {
+        let vm = await makeLoadedVM()
+        let target = vm.filteredItems[0]
+        let priorNote = target.note
+        vm.toggleSelection(target.id)
+        vm.bulkSetNote("changed")
+        await vm.bulkEditTask?.value
+        vm.undoPending()
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == target.id }!.note == priorNote)
+    }
+
+    @Test @MainActor func bulkDeleteRecurringDoesNotCloseRule() async {
+        let vm = await makeLoadedVM()
+        guard let recurring = vm.filteredItems.first(where: { $0.recurrenceRuleId != nil }) else { return }
+        let ruleId = recurring.recurrenceRuleId!
+        vm.toggleSelection(recurring.id)
+        vm.bulkDelete()
+        await vm.commitPending()
+        // The rule must still exist (bulk delete is this-only).
+        let rules = try! await vm.repo.fetchAllRecurrenceRules()
+        #expect(rules.contains { $0.id == ruleId })
+    }
+
+    @Test @MainActor func bulkOpsNoopOnEmptySelection() async {
+        let vm = await makeLoadedVM()
+        let before = vm.transactions.count
+        vm.bulkDelete()
+        vm.bulkSetNote("x")
+        #expect(vm.transactions.count == before)
+        #expect(!vm.showUndoBanner)
     }
 }

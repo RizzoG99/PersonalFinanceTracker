@@ -588,6 +588,87 @@ final class TransactionListViewModel {
         currentImportSignature = nil
     }
 
+    // MARK: - Bulk actions
+
+    /// Reconstruct a lossless input from a snapshot, optionally overriding amount or note.
+    /// Always preserves category linkage; category changes build their input directly (below).
+    private func input(from s: TransactionSnapshot,
+                       amount: Decimal? = nil,
+                       note: String? = nil) -> TransactionInput {
+        TransactionInput(
+            timestamp: s.timestamp,
+            amount: amount ?? s.amount,
+            note: note ?? s.note,
+            category: s.category,
+            currencyCode: s.currencyCode,
+            goalId: s.goalId,
+            categoryPersistentId: s.categoryId,
+            recurrenceRuleId: s.recurrenceRuleId
+        )
+    }
+
+    func bulkDelete() {
+        let targets = selectedSnapshots
+        guard !targets.isEmpty else { return }
+        exitSelection()
+        scheduleDeletion(targets)   // plain delete, no recurrence prompt (matches existing multi-delete path)
+    }
+
+    func bulkSetCategory(_ category: CategorySnapshot) {
+        applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
+            // Build directly — this is the one edit that changes category name + persistentId together.
+            TransactionInput(
+                timestamp: s.timestamp,
+                amount: s.amount,
+                note: s.note,
+                category: category.name,
+                currencyCode: s.currencyCode,
+                goalId: s.goalId,
+                categoryPersistentId: category.persistentId,
+                recurrenceRuleId: s.recurrenceRuleId
+            )
+        }
+    }
+
+    func bulkSetAmount(_ magnitude: Decimal) {
+        applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
+            // Preserve sign: expenses stay negative, income positive.
+            let signed = s.amount < 0 ? -abs(magnitude) : abs(magnitude)
+            return self.input(from: s, amount: signed)
+        }
+    }
+
+    func bulkSetNote(_ note: String) {
+        applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
+            self.input(from: s, note: note)
+        }
+    }
+
+    /// Shared edit driver: capture prior inputs, apply new inputs, arm the undo banner with a revert.
+    /// Order matters: write edits → `await armUndo` (which finalizes any prior pending mutation) →
+    /// reload. Reloading only after the flush avoids a transient reappear-then-vanish flicker of a
+    /// prior delete's rows.
+    private func applyBulkEdit(message: (Int) -> String,
+                               newInput: @escaping (TransactionSnapshot) -> TransactionInput) {
+        let targets = selectedSnapshots
+        guard !targets.isEmpty else { return }
+        let count = targets.count
+        let prior: [(PersistentIdentifier, TransactionInput)] = targets.map { ($0.id, input(from: $0)) }
+        let text = message(count)
+        exitSelection()
+        bulkEditTask = Task {
+            // ponytail: loop update; add updateBatch only if it measurably lags
+            for t in targets {
+                try? await repo.update(id: t.id, with: newInput(t))
+            }
+            await armUndo(message: text) {
+                for (id, input) in prior { try? await self.repo.update(id: id, with: input) }
+            }
+            onDataChanged?()
+            reload()
+        }
+    }
+
     /// Offloads per-row work (date parsing, Decimal conversion) to a background thread.
     /// CategorySnapshot re-resolution happens back on the MainActor after the task completes.
     func applyMapping() async {
@@ -775,5 +856,4 @@ final class TransactionListViewModel {
             }
         }
     }
-
 }

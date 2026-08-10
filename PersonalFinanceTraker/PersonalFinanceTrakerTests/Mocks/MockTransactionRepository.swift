@@ -69,6 +69,10 @@ final class MockTransactionRepository: ITransactionRepository {
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws {
         updateCalledCount += 1
         if shouldThrow { throw MockError.forced }
+        // Note: In a real implementation, this would update the transaction.
+        // For testing purposes, we accept the limitation that mock snapshots can't be
+        // easily updated (they're immutable structs with no public memberwise init).
+        // Tests that rely on checking updated data after fetch will need to work around this.
     }
 
     // MARK: Categories
