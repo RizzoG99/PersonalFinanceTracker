@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 @Observable @MainActor
 final class EditAddTransactionViewModel {
@@ -17,6 +18,9 @@ final class EditAddTransactionViewModel {
     var selectedCategory: CategorySnapshot?
     var availableCategories: [CategorySnapshot] = []
     var availableGoals: [GoalSnapshot] = []
+    /// Transaction count per category, used to surface the most-used categories first in the compact
+    /// picker. Empty until setTransactionViewModel() tallies it. [[category-usage-ordering]]
+    var categoryUsage: [PersistentIdentifier: Int] = [:]
     var selectedGoal: GoalSnapshot?
     var showingDatePicker: Bool = false
     var showingCategoryPicker: Bool = false
@@ -46,6 +50,14 @@ final class EditAddTransactionViewModel {
             availableCategories = (try? await repo.fetchCategories()) ?? []
             availableGoals = (try? await repo.fetchGoals()) ?? []
 
+            // Tally category usage so the compact picker can show the most-used first. One fetch on
+            // open; fine for a personal dataset. ponytail: if this ever gets slow on huge histories,
+            // move the count into the repository as a grouped query.
+            let txns = (try? await repo.fetchAll()) ?? []
+            var usage: [PersistentIdentifier: Int] = [:]
+            for tx in txns { if let id = tx.categoryId { usage[id, default: 0] += 1 } }
+            categoryUsage = usage
+
             // Set selectedCategory from editingItem.categoryId if editing
             if let catId = editingItem?.categoryId {
                 selectedCategory = availableCategories.first { $0.persistentId == catId }
@@ -62,8 +74,20 @@ final class EditAddTransactionViewModel {
         }
     }
 
+    /// Transaction types offered in the picker. Transfer needs a goal to move money into, so it is
+    /// hidden when there are no goals — unless the form is already on Transfer (editing an existing
+    /// transfer, or goals still loading), so we never hide the currently-selected type.
+    var availableTypes: [TransactionType] {
+        if availableGoals.isEmpty && transactionType != .transfer {
+            return TransactionType.allCases.filter { $0 != .transfer }
+        }
+        return TransactionType.allCases
+    }
+
+    /// Name is optional: a blank name renders the localized category as the title in the list
+    /// (TransactionItemView), so validity is amount + a non-future date + a category (or a goal for
+    /// transfers).
     var isFormValid: Bool {
-        !transactionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         amount > 0 &&
         date <= Date.now &&
         (transactionType == .transfer ? selectedGoal != nil : selectedCategory != nil)
@@ -83,8 +107,17 @@ final class EditAddTransactionViewModel {
         return Self.mediumDateFormatter.string(from: date)
     }
 
+    /// Categories for the current type, most-used first (alphabetical tiebreak) so the common picks
+    /// sit at the front of the compact horizontal picker.
     var filteredCategories: [CategorySnapshot] {
-        availableCategories.filter { $0.transactionType == transactionType }
+        availableCategories
+            .filter { $0.transactionType == transactionType }
+            .sorted { lhs, rhs in
+                let l = categoryUsage[lhs.persistentId] ?? 0
+                let r = categoryUsage[rhs.persistentId] ?? 0
+                if l != r { return l > r }
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            }
     }
 
     func buildInput() -> TransactionInput? {

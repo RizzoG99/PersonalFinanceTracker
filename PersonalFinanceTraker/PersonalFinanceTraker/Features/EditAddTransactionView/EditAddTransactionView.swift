@@ -37,11 +37,20 @@ struct EditAddTransactionView: View {
     var body: some View {
         VStack(spacing: 24) {
             TransactionFormView(viewModel: viewModel, focusTrigger: refocusToken)
-            TransactionSaveButton(
-                title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
-                isValid: viewModel.isFormValid,
-                action: saveTransaction
-            )
+            VStack(spacing: 12) {
+                // Pinned above the button (Add mode only): the mode and the action it changes share
+                // one persistent, thumb-reachable zone, instead of the toggle being buried in the scroll.
+                if viewModel.editingItem == nil {
+                    Toggle(String(localized: "Add another"), isOn: $viewModel.addAnother)
+                        .tint(.accentIndigo)
+                        .padding(.horizontal)
+                }
+                TransactionSaveButton(
+                    title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
+                    isValid: viewModel.isFormValid,
+                    action: saveTransaction
+                )
+            }
         }
         .sensoryFeedback(.success, trigger: savedCount)
         .overlay(alignment: .top) {
@@ -58,6 +67,22 @@ struct EditAddTransactionView: View {
         .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
+            // inline form space. Add mode only, and not for transfers (recurring transfers are
+            // deferred — matches the type-change guard that also clears isRecurring).
+            if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.isRecurring.toggle()
+                    } label: {
+                        Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat")
+                    }
+                    // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
+                    // read as "active" while recurrence is actually off.
+                    .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
+                    .accessibilityValue(viewModel.isRecurring ? "On" : "Off")
+                }
+            }
             if viewModel.editingItem != nil {
                 ToolbarItem(placement: .destructiveAction) {
                     Button(role: .destructive) {

@@ -20,20 +20,22 @@ struct EditAddTransactionViewModelTests {
 
     // MARK: isFormValid
 
-    @Test @MainActor func invalidWhenNameIsEmpty() async throws {
+    // Name is optional: a blank/whitespace name is valid as long as amount + category are set
+    // (the list falls back to the localized category name for display).
+    @Test @MainActor func validWhenNameIsEmpty() async throws {
         let vm = makeVM()
         vm.transactionName = ""
         vm.amount = 50
         vm.selectedCategory = expenseCat()
-        #expect(vm.isFormValid == false)
+        #expect(vm.isFormValid == true)
     }
 
-    @Test @MainActor func invalidWhenNameIsWhitespaceOnly() async throws {
+    @Test @MainActor func validWhenNameIsWhitespaceOnly() async throws {
         let vm = makeVM()
         vm.transactionName = "   "
         vm.amount = 50
         vm.selectedCategory = expenseCat()
-        #expect(vm.isFormValid == false)
+        #expect(vm.isFormValid == true)
     }
 
     @Test @MainActor func invalidWhenAmountIsZero() async throws {
@@ -117,6 +119,30 @@ struct EditAddTransactionViewModelTests {
         vm.selectedGoal = .test(name: "Savings", targetAmount: 10000)
         vm.date = Date()
         #expect(vm.isFormValid == true)
+    }
+
+    // MARK: availableTypes (Transfer hidden without goals)
+
+    @Test @MainActor func availableTypesHidesTransferWhenNoGoals() async throws {
+        let vm = makeVM()
+        vm.availableGoals = []
+        #expect(!vm.availableTypes.contains(.transfer))
+        #expect(vm.availableTypes.contains(.income))
+        #expect(vm.availableTypes.contains(.expense))
+    }
+
+    @Test @MainActor func availableTypesIncludesTransferWhenGoalsExist() async throws {
+        let vm = makeVM()
+        vm.availableGoals = [.test(name: "Savings", targetAmount: 1000)]
+        #expect(vm.availableTypes.contains(.transfer))
+    }
+
+    @Test @MainActor func availableTypesKeepsTransferWhenAlreadySelected() async throws {
+        let vm = makeVM()
+        vm.availableGoals = []
+        vm.transactionType = .transfer
+        // Never hide the currently-selected type (e.g. editing an existing transfer).
+        #expect(vm.availableTypes.contains(.transfer))
     }
 
     // MARK: formattedDate
