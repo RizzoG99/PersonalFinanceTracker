@@ -180,9 +180,12 @@ only if the loop measurably lags on large selections.
   `selectedIDs` via the `filteredItems` intersection; count updates live.
 - **Undo after edit:** `pendingRevert` re-`update`s each captured prior
   `TransactionInput`; list reloads to reflect the restore.
-- **Rapid successive bulk actions:** each new action cancels the prior
-  pending task/banner (same guard the delete flow already uses), so banners
-  don't stack.
+- **Rapid successive bulk actions:** arming a new mutation first **finalizes**
+  any in-flight one, so nothing leaks. Arming an edit while a delete is
+  pending commits that delete before arming (its rows were removed from view
+  but not yet persisted — abandoning it would make them reappear on reload).
+  Delete→delete intentionally batches into one banner; edit→delete is safe
+  because the delete path resets the revert flag. Banners never stack.
 - **Recurring occurrence in a bulk delete:** deleted this-only; its
   recurrence rule is untouched.
 - **Sign flip guard:** `bulkSetAmount` preserves each row's existing sign, so
