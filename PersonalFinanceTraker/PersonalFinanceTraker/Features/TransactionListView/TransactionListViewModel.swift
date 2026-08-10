@@ -21,6 +21,7 @@ final class TransactionListViewModel {
         didSet {
             updateGroupedItems()
             recomputeDerivedFilterState()
+            intersectSelectionWithVisible()
         }
     }
     var groupedItems: [(String, [TransactionSnapshot])] = []
@@ -87,6 +88,42 @@ final class TransactionListViewModel {
     @ObservationIgnored private(set) var searchDebounceTask: Task<Void, Never>?
     var showUndoBanner: Bool = false
     var deleteProgress: Double = 0.0
+
+    // MARK: - Multi-select
+    var isSelecting = false
+    var selectedIDs: Set<PersistentIdentifier> = []
+
+    var selectedSnapshots: [TransactionSnapshot] {
+        transactions.filter { selectedIDs.contains($0.id) }
+    }
+
+    /// True when every currently visible row is selected (drives the Select All / Deselect All label).
+    var allVisibleSelected: Bool {
+        !filteredItems.isEmpty && filteredItems.allSatisfy { selectedIDs.contains($0.id) }
+    }
+
+    func toggleSelection(_ id: PersistentIdentifier) {
+        if selectedIDs.contains(id) { selectedIDs.remove(id) } else { selectedIDs.insert(id) }
+    }
+
+    func selectAllVisible() {
+        selectedIDs = Set(filteredItems.map(\.id))
+    }
+
+    func deselectAll() {
+        selectedIDs.removeAll()
+    }
+
+    func exitSelection() {
+        isSelecting = false
+        selectedIDs.removeAll()
+    }
+
+    private func intersectSelectionWithVisible() {
+        guard !selectedIDs.isEmpty else { return }
+        let visible = Set(filteredItems.map(\.id))
+        selectedIDs.formIntersection(visible)
+    }
 
     let repo: any ITransactionRepository
     /// Set by the owning view; notifies the app that persisted data changed

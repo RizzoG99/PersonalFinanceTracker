@@ -13,6 +13,19 @@ struct TransactionListViewModelTests {
         return vm
     }
 
+    @MainActor
+    private func makeLoadedVM() async -> TransactionListViewModel {
+        let repo = MockTransactionRepository()
+        repo.stubbedTransactions = [
+            .test(amount: -50, note: "Coffee", category: "Food"),
+            .test(amount: -30, note: "Tea", category: "Beverages"),
+            .test(amount: -20, note: "Lunch", category: "Food"),
+            .test(amount: 1000, note: "Salary", category: "Income"),
+            .test(amount: -15, note: "Snack", category: "Food"),
+        ]
+        return await loadedVM(repo)
+    }
+
     @Test @MainActor func testClearSearch() async throws {
         let mockRepo = MockTransactionRepository()
         let viewModel = TransactionListViewModel(repo: mockRepo)
@@ -334,5 +347,43 @@ struct TransactionListViewModelTests {
 
         #expect(vm.categoryResolutionSelections["🍕 Food"] == food.id.uuidString)
         #expect(vm.categoryResolutionSelections["Ghost"] == nil)
+    }
+
+    // MARK: - Multi-select
+
+    @Test @MainActor func toggleSelectionAddsAndRemoves() async {
+        let vm = await makeLoadedVM()
+        let id = vm.filteredItems[0].id
+        vm.toggleSelection(id)
+        #expect(vm.selectedIDs.contains(id))
+        vm.toggleSelection(id)
+        #expect(!vm.selectedIDs.contains(id))
+    }
+
+    @Test @MainActor func selectAllVisibleSelectsOnlyFiltered() async {
+        let vm = await makeLoadedVM()
+        vm.searchText = "coffee"
+        try? await vm.searchDebounceTask?.value
+        vm.selectAllVisible()
+        #expect(vm.selectedIDs == Set(vm.filteredItems.map(\.id)))
+        #expect(vm.selectedIDs.count < vm.transactions.count)
+    }
+
+    @Test @MainActor func filteringOutSelectedRowDropsIt() async {
+        let vm = await makeLoadedVM()
+        let id = vm.filteredItems.first { $0.note.localizedCaseInsensitiveContains("coffee") == false }!.id
+        vm.toggleSelection(id)
+        vm.searchText = "coffee"
+        try? await vm.searchDebounceTask?.value
+        #expect(!vm.selectedIDs.contains(id))
+    }
+
+    @Test @MainActor func exitSelectionClearsState() async {
+        let vm = await makeLoadedVM()
+        vm.isSelecting = true
+        vm.toggleSelection(vm.filteredItems[0].id)
+        vm.exitSelection()
+        #expect(!vm.isSelecting)
+        #expect(vm.selectedIDs.isEmpty)
     }
 }
