@@ -172,7 +172,7 @@ struct ActivityView: View {
                         Button(String(localized: "Cancel")) { viewModel.exitSelection() }
                     }
                     ToolbarItem(placement: .principal) {
-                        Text("\(viewModel.selectedIDs.count) selected").font(.headline)
+                        Text(String(localized: "\(viewModel.selectedIDs.count) selected")).font(.headline)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(viewModel.allVisibleSelected ? String(localized: "Deselect All") : String(localized: "Select All")) {
@@ -308,11 +308,11 @@ private struct CategoryBulkEditSheet: View {
                     }
                 }
             }
-            .navigationTitle(Text("Set category for \(count) transactions"))
+            .navigationTitle(Text(String(localized: "Set category for \(count) transactions")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
             }
             .onAppear {
@@ -342,11 +342,11 @@ private struct AmountBulkEditSheet: View {
                     CurrencyAmountField(amount: $amount, currencyCode: $currencyCode)
                 }
             }
-            .navigationTitle(Text("Set \(count) transactions to"))
+            .navigationTitle(Text(String(localized: "Set \(count) transactions to")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("OK") {
@@ -373,11 +373,11 @@ private struct DescriptionBulkEditSheet: View {
                         .lineLimit(3...)
                 }
             }
-            .navigationTitle(Text("Set description for \(count) transactions"))
+            .navigationTitle(Text(String(localized: "Set description for \(count) transactions")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("OK") {
