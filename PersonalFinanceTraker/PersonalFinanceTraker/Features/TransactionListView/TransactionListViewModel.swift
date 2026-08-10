@@ -88,6 +88,12 @@ final class TransactionListViewModel {
     @ObservationIgnored private(set) var searchDebounceTask: Task<Void, Never>?
     var showUndoBanner: Bool = false
     var deleteProgress: Double = 0.0
+    var pendingUndoMessage: String = ""
+    /// Non-nil marks the pending mutation as an *edit* (already persisted): timeout is a no-op,
+    /// undo runs this closure. Nil marks a *delete*: timeout runs the repo.delete loop.
+    @ObservationIgnored private var pendingRevert: (() async -> Void)?
+    /// Handle to the in-flight bulk-edit apply / undo-revert Task so tests await instead of sleeping.
+    @ObservationIgnored private(set) var bulkEditTask: Task<Void, Never>?
 
     // MARK: - Multi-select
     var isSelecting = false
@@ -269,24 +275,22 @@ final class TransactionListViewModel {
     }
 
     private func scheduleDeletion(_ items: [TransactionSnapshot]) {
+        // NOTE: deliberately does NOT flush a prior pending mutation.
+        //  - delete→delete: appending to pendingDeletion is intentional batching (swipe two
+        //    rows quickly → one combined banner); flushing would split it into two banners.
+        //  - edit→delete: setting `pendingRevert = nil` below makes commitPending() take the
+        //    delete branch, and the prior edit was already persisted — no leak, nothing to flush.
+        // Only delete→edit leaks, and that is finalized in armUndo (the edit arm), not here.
         pendingDeletionTask?.cancel()
         pendingDeletion.append(contentsOf: items)
         let ids = Set(items.map(\.id))
         transactions.removeAll { ids.contains($0.id) }
         Task { await doFilterItemBySearchText() }
+        pendingRevert = nil                                  // delete case
+        pendingUndoMessage = String(localized: "\(pendingDeletion.count) transaction deleted")
         deleteProgress = 0.0
         showUndoBanner = true
-        pendingDeletionTask = Task {
-            let start = Date.now
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(100))
-                guard !Task.isCancelled else { return }
-                deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
-                if deleteProgress >= 1.0 { break }
-            }
-            guard !Task.isCancelled else { return }
-            await commitPendingDeletion()
-        }
+        pendingDeletionTask = startUndoTimer()
     }
 
     func commitPendingDeletion() async {
@@ -318,6 +322,66 @@ final class TransactionListViewModel {
         showUndoBanner = false
         deleteProgress = 0.0
         reload()
+    }
+
+    /// Arm the 5s undo banner for an already-applied edit. `revert` restores prior state on undo.
+    /// `async` because it must FINALIZE any in-flight mutation before arming a new one —
+    /// otherwise a pending delete (rows removed from `transactions`, not yet committed) would be
+    /// abandoned when `pendingRevert` is set and `commitPending()` takes the edit branch.
+    func armUndo(message: String, revert: @escaping () async -> Void) async {
+        if showUndoBanner { await commitPending() }   // commit a prior delete / clear a prior edit
+        pendingDeletionTask?.cancel()
+        pendingUndoMessage = message
+        pendingRevert = revert
+        deleteProgress = 0.0
+        showUndoBanner = true
+        pendingDeletionTask = startUndoTimer()
+    }
+
+    /// Shared 5s progress timer, extracted from scheduleDeletion.
+    private func startUndoTimer() -> Task<Void, Never> {
+        Task {
+            let start = Date.now
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(100))
+                guard !Task.isCancelled else { return }
+                deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
+                if deleteProgress >= 1.0 { break }
+            }
+            guard !Task.isCancelled else { return }
+            await commitPending()
+        }
+    }
+
+    /// Timeout finalizer. Branches on mutation kind (Gap 2): an edit's commit must NOT
+    /// run the delete loop.
+    func commitPending() async {
+        if pendingRevert != nil {
+            // Edit: write already persisted; just clear the banner.
+            pendingRevert = nil
+            pendingUndoMessage = ""
+            showUndoBanner = false
+            deleteProgress = 0.0
+            pendingDeletionTask?.cancel()
+            pendingDeletionTask = nil
+        } else {
+            await commitPendingDeletion()   // existing delete loop, unchanged
+        }
+    }
+
+    /// Undo for either mutation kind.
+    func undoPending() {
+        pendingDeletionTask?.cancel()
+        pendingDeletionTask = nil
+        if let revert = pendingRevert {
+            pendingRevert = nil
+            pendingUndoMessage = ""
+            showUndoBanner = false
+            deleteProgress = 0.0
+            bulkEditTask = Task { await revert(); onDataChanged?(); reload() }   // exposed so tests await, not sleep
+        } else {
+            undoDelete()   // existing delete-undo (reload restores uncommitted rows)
+        }
     }
 
     func clearSearch() {

@@ -386,4 +386,54 @@ struct TransactionListViewModelTests {
         #expect(!vm.isSelecting)
         #expect(vm.selectedIDs.isEmpty)
     }
+
+    // MARK: - Generalized undo (edits and deletes)
+
+    @Test @MainActor func armUndoForEditDoesNotDeleteOnTimeout() async {
+        let vm = await makeLoadedVM()
+        let before = vm.transactions.count
+        var reverted = false
+        await vm.armUndo(message: "2 transactions updated") { reverted = true }
+        #expect(vm.showUndoBanner)
+        #expect(vm.pendingDeletion.isEmpty)          // edit path never populates pendingDeletion
+        await vm.commitPending()                       // simulate timeout firing
+        #expect(vm.transactions.count == before)      // Gap 2: nothing deleted
+        #expect(!reverted)                             // commit is a no-op; revert only runs on undo
+        #expect(!vm.showUndoBanner)
+    }
+
+    @Test @MainActor func undoForEditRunsRevert() async {
+        let vm = await makeLoadedVM()
+        var reverted = false
+        await vm.armUndo(message: "x") { reverted = true }
+        vm.undoPending()
+        await vm.bulkEditTask?.value   // undo's revert Task, exposed via the shared handle
+        #expect(reverted)
+        #expect(!vm.showUndoBanner)
+    }
+
+    @Test @MainActor func singleDeleteStillCommits() async {   // regression
+        let vm = await makeLoadedVM()
+        let item = vm.filteredItems.first { $0.recurrenceRuleId == nil }!
+        let before = vm.transactions.count
+        vm.delete(item)
+        await vm.commitPending()
+        #expect(vm.transactions.count == before - 1)
+        #expect(vm.pendingDeletion.isEmpty)
+    }
+
+    // Cross-kind flush: arming an edit while a delete is pending must FINALIZE the delete
+    // (commit it), not abandon it. Without the flush the removed rows would reappear on
+    // the next reload — the blocking leak this guards against.
+    @Test @MainActor func armingEditFlushesPendingDelete() async {
+        let vm = await makeLoadedVM()
+        let item = vm.filteredItems.first { $0.recurrenceRuleId == nil }!
+        vm.delete(item)                       // arm a delete: row removed, pendingDeletion=[item]
+        #expect(vm.pendingDeletion.count == 1)
+        await vm.armUndo(message: "edited") { }   // arming an edit flushes the pending delete
+        let after = try! await vm.repo.fetchAll()
+        #expect(!after.contains { $0.id == item.id })   // delete was committed, not leaked
+        #expect(vm.pendingDeletion.isEmpty)
+        #expect(vm.showUndoBanner)                        // edit's banner now showing
+    }
 }
