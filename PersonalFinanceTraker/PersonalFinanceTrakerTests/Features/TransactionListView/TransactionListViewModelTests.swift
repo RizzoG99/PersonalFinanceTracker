@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import SwiftData
 @testable import PersonalFinanceTraker
 
 @Suite(.serialized)
@@ -35,6 +36,45 @@ struct TransactionListViewModelTests {
         // Add a recurring transaction
         repo.stubbedTransactions.append(.test(amount: -100, note: "Recurring", category: "Housing", recurrenceRuleId: ruleId))
         return await loadedVM(repo)
+    }
+
+    @MainActor
+    private func makeRealRepoVM() async -> (vm: TransactionListViewModel, foodCat: CategorySnapshot, newCat: CategorySnapshot, expenseId: PersistentIdentifier, incomeId: PersistentIdentifier) {
+        // Create in-memory container with all schemas
+        let schema = Schema([TransactionModel.self, CategoryModel.self, GoalModel.self, RecurrenceRule.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        let container = try! ModelContainer(for: schema, configurations: [config])
+        let actor = TransactionActor(modelContainer: container)
+
+        // Create categories
+        let foodCatInput = CategoryInput(name: "Food", systemImage: "fork.knife", type: "expense", colorToken: "categoryRed", monthlyBudget: nil, currencyCode: "EUR")
+        try! await actor.addCategory(foodCatInput)
+        let newCatInput = CategoryInput(name: "NewCategory", systemImage: "tag", type: "expense", colorToken: "categoryBlue", monthlyBudget: nil, currencyCode: "EUR")
+        try! await actor.addCategory(newCatInput)
+
+        // Fetch categories to get snapshots
+        let categories = try! await actor.fetchCategories()
+        let foodCat = categories.first { $0.name == "Food" }!
+        let newCat = categories.first { $0.name == "NewCategory" }!
+
+        // Insert transactions: one expense, one income
+        let ctx = ModelContext(container)
+        let expenseModel = TransactionModel(timestamp: Date(), amount: -50, note: "Coffee", category: "Food")
+        let incomeModel = TransactionModel(timestamp: Date(), amount: 1000, note: "Salary", category: "Income")
+        ctx.insert(expenseModel)
+        ctx.insert(incomeModel)
+        try! ctx.save()
+
+        // Get transaction IDs for later assertion
+        let expenseId = expenseModel.persistentModelID
+        let incomeId = incomeModel.persistentModelID
+
+        // Create VM with real actor as repo
+        let vm = TransactionListViewModel(repo: actor)
+        vm.load()
+        await vm.loadTask?.value
+
+        return (vm, foodCat, newCat, expenseId, incomeId)
     }
 
     @Test @MainActor func testClearSearch() async throws {
@@ -462,24 +502,24 @@ struct TransactionListViewModelTests {
     }
 
     @Test @MainActor func bulkSetCategoryRewritesOnlySelected() async {
-        let vm = await makeLoadedVM()
-        let cat = try! await vm.repo.fetchCategories().first!
-        let target = vm.filteredItems[0]
-        let other = vm.filteredItems[1]
+        let (vm, foodCat, newCat, expenseId, _) = await makeRealRepoVM()
+        // Select first (expense) transaction
+        let target = vm.filteredItems.first { $0.id == expenseId }!
+        let other = vm.filteredItems.first { $0.id != expenseId }!
         let otherCatBefore = other.category
         vm.toggleSelection(target.id)
-        vm.bulkSetCategory(cat)
+        vm.bulkSetCategory(newCat)
         await vm.bulkEditTask?.value
         let after = try! await vm.repo.fetchAll()
-        #expect(after.first { $0.id == target.id }!.category == cat.name)
+        #expect(after.first { $0.id == target.id }!.category == newCat.name)
         #expect(after.first { $0.id == other.id }!.category == otherCatBefore)   // untouched
         #expect(vm.showUndoBanner)
     }
 
     @Test @MainActor func bulkSetAmountPreservesSign() async {
-        let vm = await makeLoadedVM()
-        let expense = vm.filteredItems.first { $0.amount < 0 }!
-        let income = vm.filteredItems.first { $0.amount > 0 }!
+        let (vm, _, _, expenseId, incomeId) = await makeRealRepoVM()
+        let expense = vm.filteredItems.first { $0.id == expenseId }!
+        let income = vm.filteredItems.first { $0.id == incomeId }!
         vm.toggleSelection(expense.id); vm.toggleSelection(income.id)
         vm.bulkSetAmount(25)
         await vm.bulkEditTask?.value
@@ -489,8 +529,8 @@ struct TransactionListViewModelTests {
     }
 
     @Test @MainActor func bulkSetNoteOverwritesSelected() async {
-        let vm = await makeLoadedVM()
-        let target = vm.filteredItems[0]
+        let (vm, _, _, expenseId, _) = await makeRealRepoVM()
+        let target = vm.filteredItems.first { $0.id == expenseId }!
         vm.toggleSelection(target.id)
         vm.bulkSetNote("reconciled")
         await vm.bulkEditTask?.value
@@ -499,8 +539,8 @@ struct TransactionListViewModelTests {
     }
 
     @Test @MainActor func bulkEditUndoRestoresPriorValues() async {
-        let vm = await makeLoadedVM()
-        let target = vm.filteredItems[0]
+        let (vm, _, _, expenseId, _) = await makeRealRepoVM()
+        let target = vm.filteredItems.first { $0.id == expenseId }!
         let priorNote = target.note
         vm.toggleSelection(target.id)
         vm.bulkSetNote("changed")
