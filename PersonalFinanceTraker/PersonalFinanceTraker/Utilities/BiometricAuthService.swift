@@ -29,6 +29,9 @@ public class BiometricAuthService: ObservableObject, BiometricAuthenticating {
     }
 
     private let kBiometricLockEnabled = "biometric_lock_enabled"
+    // ponytail: plain Bool guard, not an actor — authenticate() is only ever called
+    // from the main thread (SwiftUI onAppear/onChange callbacks).
+    private var isAuthenticating = false
 
     public init() {
         checkBiometrics()
@@ -56,6 +59,11 @@ public class BiometricAuthService: ObservableObject, BiometricAuthenticating {
             return
         }
 
+        // Cold launch fires this from both onAppear's splash timer and the scenePhase
+        // transition to .active; without this guard the second call opens a second,
+        // overlapping Face ID prompt while the first is still awaiting the user.
+        guard !isAuthenticating else { return }
+
         // Create a fresh context for each evaluation (LAContext is single-use).
         let authContext = LAContext()
         var error: NSError?
@@ -68,8 +76,10 @@ public class BiometricAuthService: ObservableObject, BiometricAuthenticating {
             return
         }
 
+        isAuthenticating = true
         authContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
             DispatchQueue.main.async {
+                self.isAuthenticating = false
                 self.isUnlocked = success
                 completion(success)
             }
