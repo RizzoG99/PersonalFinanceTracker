@@ -14,6 +14,12 @@ enum AppContainer {
     /// Minimal in-app recovery: display a message, offer app restart/reinstall options.
     static var containerCreationError: Error?
 
+    /// Check if a container creation error occurred and return a user-facing message.
+    static var containerErrorMessage: String? {
+        guard let error = containerCreationError else { return nil }
+        return "Unable to access your data. Please restart the app or reinstall if the issue persists."
+    }
+
     static let shared: ModelContainer = {
         let schema = Schema([
             TransactionModel.self,
@@ -101,10 +107,12 @@ enum AppContainer {
         }
 
         let fileManager = FileManager.default
+        // SQLite sidecars use -wal and -shm suffixes appended directly to the store path,
+        // not additional extensions. Protect main file + both sidecars.
         let files = [
-            url.appendingPathExtension("sqlite"),
-            url.appendingPathExtension("sqlite-wal"),
-            url.appendingPathExtension("sqlite-shm"),
+            url,
+            URL(fileURLWithPath: url.path + "-wal"),
+            URL(fileURLWithPath: url.path + "-shm"),
         ]
 
         for file in files {
