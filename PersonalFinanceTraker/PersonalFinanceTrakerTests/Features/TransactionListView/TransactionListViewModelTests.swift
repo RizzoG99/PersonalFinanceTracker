@@ -516,6 +516,31 @@ struct TransactionListViewModelTests {
         #expect(vm.showUndoBanner)
     }
 
+    @Test @MainActor func bulkSetCategoryFlipsTypeToMatchCategory() async {
+        let (vm, foodCat, _, expenseId, incomeId) = await makeRealRepoVM()
+        // Add an income-typed category alongside the expense-typed ones.
+        try! await vm.repo.addCategory(CategoryInput(name: "Salary", systemImage: "banknote", type: TransactionType.income.rawValue, colorToken: "categoryGreen", monthlyBudget: nil, currencyCode: "EUR"))
+        let salaryCat = (try! await vm.repo.fetchCategories()).first { $0.name == "Salary" }!
+
+        // Income category applied to the -50 expense → flips to +50 income.
+        vm.toggleSelection(expenseId)
+        vm.bulkSetCategory(salaryCat)
+        await vm.bulkEditTask?.value
+        await vm.loadTask?.value
+        var after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == expenseId }!.amount == 50)
+        #expect(after.first { $0.id == expenseId }!.category == "Salary")
+
+        // Expense category applied to the +1000 income → flips to -1000 expense.
+        vm.exitSelection()
+        vm.toggleSelection(incomeId)
+        vm.bulkSetCategory(foodCat)
+        await vm.bulkEditTask?.value
+        after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == incomeId }!.amount == -1000)
+        #expect(after.first { $0.id == incomeId }!.category == "Food")
+    }
+
     @Test @MainActor func bulkSetAmountPreservesSign() async {
         let (vm, _, _, expenseId, incomeId) = await makeRealRepoVM()
         let expense = vm.filteredItems.first { $0.id == expenseId }!

@@ -615,15 +615,20 @@ final class TransactionListViewModel {
     }
 
     func bulkSetCategory(_ category: CategorySnapshot) {
+        // A category is typed, and the app never mixes a category with a mismatched sign.
+        // So applying a category flips each row's type to match: income category → positive
+        // amount, expense category → negative. A categorized row is not a transfer, so its
+        // goalId is cleared. (Undo restores the captured prior inputs, sign and goalId included.)
+        let isIncome = category.transactionType == .income
         applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
-            // Build directly — this is the one edit that changes category name + persistentId together.
-            TransactionInput(
+            let magnitude = abs(s.amount)
+            return TransactionInput(
                 timestamp: s.timestamp,
-                amount: s.amount,
+                amount: isIncome ? magnitude : -magnitude,
                 note: s.note,
                 category: category.name,
                 currencyCode: s.currencyCode,
-                goalId: s.goalId,
+                goalId: nil,
                 categoryPersistentId: category.persistentId,
                 recurrenceRuleId: s.recurrenceRuleId
             )
