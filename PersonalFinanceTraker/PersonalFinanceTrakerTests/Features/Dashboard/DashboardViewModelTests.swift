@@ -143,22 +143,28 @@ struct DashboardViewModelTests {
         #expect(vm.monthlyExpenses == 0)
     }
 
+    /// Three quiet baseline weeks (-200 each) plus one clear outlier week (-1000),
+    /// all inside the current financial month — a real week-over-week spike.
+    private func spikeTransactions() -> [TransactionSnapshot] {
+        let (monthStart, _) = PayCycleService.currentFinancialMonth(startDay: 1)
+        let calendar = Calendar.current
+        return [0, 8, 15, 22].enumerated().map { index, dayOffset in
+            let date = calendar.date(byAdding: .day, value: dayOffset, to: monthStart)!
+            let amount: Decimal = index == 3 ? -1000 : -200
+            return TransactionSnapshot.test(timestamp: date, amount: amount, category: "Shopping")
+        }
+    }
+
     @Test func anomalyCalloutDetectsSpike() {
-        // One large expense today, otherwise-quiet pay cycle → spike week flagged
-        let transactions = [
-            TransactionSnapshot.test(timestamp: .now, amount: -1000, category: "Shopping")
-        ]
         let callout = DashboardViewModel.computeAnomalyCallout(
-            transactions, payCycleStartDay: 1, dismissedKey: nil
+            spikeTransactions(), payCycleStartDay: 1, dismissedKey: nil
         )
         #expect(callout != nil)
         #expect(callout?.message.contains("€") == true)
     }
 
     @Test func anomalyCalloutRespectsDismissal() {
-        let transactions = [
-            TransactionSnapshot.test(timestamp: .now, amount: -1000, category: "Shopping")
-        ]
+        let transactions = spikeTransactions()
         let first = DashboardViewModel.computeAnomalyCallout(
             transactions, payCycleStartDay: 1, dismissedKey: nil
         )
@@ -171,6 +177,18 @@ struct DashboardViewModelTests {
     @Test func anomalyCalloutNilWithoutSpike() {
         let callout = DashboardViewModel.computeAnomalyCallout(
             [], payCycleStartDay: 1, dismissedKey: nil
+        )
+        #expect(callout == nil)
+    }
+
+    @Test func anomalyCalloutNilForFirstEverTransaction() {
+        // Clean install, user logs their very first transaction — no baseline to compare
+        // against, so this must never be flagged as "unusually high".
+        let transactions = [
+            TransactionSnapshot.test(timestamp: .now, amount: -1000, category: "Shopping")
+        ]
+        let callout = DashboardViewModel.computeAnomalyCallout(
+            transactions, payCycleStartDay: 1, dismissedKey: nil
         )
         #expect(callout == nil)
     }

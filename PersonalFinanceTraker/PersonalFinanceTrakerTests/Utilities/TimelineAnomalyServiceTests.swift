@@ -30,6 +30,18 @@ struct TimelineAnomalyServiceTests {
         #expect(result.dropLast().allSatisfy { !$0.isSpike })
     }
 
+    @Test func fewerThanThreeNonZeroWeeksNeverSpike() {
+        // Only 2 nonzero weeks — not enough baseline, even though 1000 alone
+        // would clear mean + 1.5σ against these values.
+        let input = [
+            point("Jan", expenses: 0),
+            point("Feb", expenses: 200),
+            point("Mar", expenses: 1000),
+        ]
+        let result = TimelineAnomalyService().annotateWithSpikes(input)
+        #expect(result.allSatisfy { !$0.isSpike })
+    }
+
     @Test func zeroExpensesAreNeverSpikes() {
         let input = [
             point("Jan", expenses: 0),
