@@ -251,8 +251,10 @@ struct ActivityView: View {
                 .disabled(viewModel.selectedIDs.isEmpty)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 8)
-                // Floating glass bar, matching the app's GlassCard aesthetic.
-                .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                // Floating glass bar, matching the app's GlassCard aesthetic. A subtle dark
+                // tint keeps scrolled list content reading as *behind* the bar rather than
+                // bleeding through it.
+                .glassEffect(.regular.tint(Color.bg0.opacity(0.55)), in: .rect(cornerRadius: 24))
                 .padding(.horizontal, 12)
                 .padding(.bottom, 4)
             }
