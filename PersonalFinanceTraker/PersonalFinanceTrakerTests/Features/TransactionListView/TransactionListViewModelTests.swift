@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import SwiftData
 @testable import PersonalFinanceTraker
 
 @Suite(.serialized)
@@ -11,6 +12,69 @@ struct TransactionListViewModelTests {
         vm.load()
         await vm.loadTask?.value
         return vm
+    }
+
+    @MainActor
+    private func makeLoadedVM() async -> TransactionListViewModel {
+        let repo = MockTransactionRepository()
+        repo.stubbedTransactions = [
+            .test(amount: -50, note: "Coffee", category: "Food"),
+            .test(amount: -30, note: "Tea", category: "Beverages"),
+            .test(amount: -20, note: "Lunch", category: "Food"),
+            .test(amount: 1000, note: "Salary", category: "Income"),
+            .test(amount: -15, note: "Snack", category: "Food"),
+        ]
+        repo.stubbedCategories = [
+            .test(name: "Food"),
+            .test(name: "Beverages"),
+            .test(name: "Income"),
+        ]
+        let ruleId = UUID()
+        repo.stubbedRecurrenceRules = [
+            .test(id: ruleId, startDate: .now, amount: -100, category: "Housing")
+        ]
+        // Add a recurring transaction
+        repo.stubbedTransactions.append(.test(amount: -100, note: "Recurring", category: "Housing", recurrenceRuleId: ruleId))
+        return await loadedVM(repo)
+    }
+
+    @MainActor
+    private func makeRealRepoVM() async -> (vm: TransactionListViewModel, foodCat: CategorySnapshot, newCat: CategorySnapshot, expenseId: PersistentIdentifier, incomeId: PersistentIdentifier) {
+        // Create in-memory container with all schemas
+        let schema = Schema([TransactionModel.self, CategoryModel.self, GoalModel.self, RecurrenceRule.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        let container = try! ModelContainer(for: schema, configurations: [config])
+        let actor = TransactionActor(modelContainer: container)
+
+        // Create categories
+        let foodCatInput = CategoryInput(name: "Food", systemImage: "fork.knife", type: "expense", colorToken: "categoryRed", monthlyBudget: nil, currencyCode: "EUR")
+        try! await actor.addCategory(foodCatInput)
+        let newCatInput = CategoryInput(name: "NewCategory", systemImage: "tag", type: "expense", colorToken: "categoryBlue", monthlyBudget: nil, currencyCode: "EUR")
+        try! await actor.addCategory(newCatInput)
+
+        // Fetch categories to get snapshots
+        let categories = try! await actor.fetchCategories()
+        let foodCat = categories.first { $0.name == "Food" }!
+        let newCat = categories.first { $0.name == "NewCategory" }!
+
+        // Insert transactions: one expense, one income
+        let ctx = ModelContext(container)
+        let expenseModel = TransactionModel(timestamp: Date(), amount: -50, note: "Coffee", category: "Food")
+        let incomeModel = TransactionModel(timestamp: Date(), amount: 1000, note: "Salary", category: "Income")
+        ctx.insert(expenseModel)
+        ctx.insert(incomeModel)
+        try! ctx.save()
+
+        // Get transaction IDs for later assertion
+        let expenseId = expenseModel.persistentModelID
+        let incomeId = incomeModel.persistentModelID
+
+        // Create VM with real actor as repo
+        let vm = TransactionListViewModel(repo: actor)
+        vm.load()
+        await vm.loadTask?.value
+
+        return (vm, foodCat, newCat, expenseId, incomeId)
     }
 
     @Test @MainActor func testClearSearch() async throws {
@@ -334,5 +398,216 @@ struct TransactionListViewModelTests {
 
         #expect(vm.categoryResolutionSelections["🍕 Food"] == food.id.uuidString)
         #expect(vm.categoryResolutionSelections["Ghost"] == nil)
+    }
+
+    // MARK: - Multi-select
+
+    @Test @MainActor func toggleSelectionAddsAndRemoves() async {
+        let vm = await makeLoadedVM()
+        let id = vm.filteredItems[0].id
+        vm.toggleSelection(id)
+        #expect(vm.selectedIDs.contains(id))
+        vm.toggleSelection(id)
+        #expect(!vm.selectedIDs.contains(id))
+    }
+
+    @Test @MainActor func selectAllVisibleSelectsOnlyFiltered() async {
+        let vm = await makeLoadedVM()
+        vm.searchText = "coffee"
+        try? await vm.searchDebounceTask?.value
+        vm.selectAllVisible()
+        #expect(vm.selectedIDs == Set(vm.filteredItems.map(\.id)))
+        #expect(vm.selectedIDs.count < vm.transactions.count)
+    }
+
+    @Test @MainActor func filteringOutSelectedRowDropsIt() async {
+        let vm = await makeLoadedVM()
+        let id = vm.filteredItems.first { $0.note.localizedCaseInsensitiveContains("coffee") == false }!.id
+        vm.toggleSelection(id)
+        vm.searchText = "coffee"
+        try? await vm.searchDebounceTask?.value
+        #expect(!vm.selectedIDs.contains(id))
+    }
+
+    @Test @MainActor func exitSelectionClearsState() async {
+        let vm = await makeLoadedVM()
+        vm.isSelecting = true
+        vm.toggleSelection(vm.filteredItems[0].id)
+        vm.exitSelection()
+        #expect(!vm.isSelecting)
+        #expect(vm.selectedIDs.isEmpty)
+    }
+
+    // MARK: - Generalized undo (edits and deletes)
+
+    @Test @MainActor func armUndoForEditDoesNotDeleteOnTimeout() async {
+        let vm = await makeLoadedVM()
+        let before = vm.transactions.count
+        var reverted = false
+        await vm.armUndo(message: "2 transactions updated") { reverted = true }
+        #expect(vm.showUndoBanner)
+        #expect(vm.pendingDeletion.isEmpty)          // edit path never populates pendingDeletion
+        await vm.commitPending()                       // simulate timeout firing
+        #expect(vm.transactions.count == before)      // Gap 2: nothing deleted
+        #expect(!reverted)                             // commit is a no-op; revert only runs on undo
+        #expect(!vm.showUndoBanner)
+    }
+
+    @Test @MainActor func undoForEditRunsRevert() async {
+        let vm = await makeLoadedVM()
+        var reverted = false
+        await vm.armUndo(message: "x") { reverted = true }
+        vm.undoPending()
+        await vm.bulkEditTask?.value   // undo's revert Task, exposed via the shared handle
+        #expect(reverted)
+        #expect(!vm.showUndoBanner)
+    }
+
+    @Test @MainActor func singleDeleteStillCommits() async {   // regression
+        let vm = await makeLoadedVM()
+        let item = vm.filteredItems.first { $0.recurrenceRuleId == nil }!
+        let before = vm.transactions.count
+        vm.delete(item)
+        await vm.commitPending()
+        #expect(vm.transactions.count == before - 1)
+        #expect(vm.pendingDeletion.isEmpty)
+    }
+
+    // Cross-kind flush: arming an edit while a delete is pending must FINALIZE the delete
+    // (commit it), not abandon it. Without the flush the removed rows would reappear on
+    // the next reload — the blocking leak this guards against.
+    @Test @MainActor func armingEditFlushesPendingDelete() async {
+        let vm = await makeLoadedVM()
+        let item = vm.filteredItems.first { $0.recurrenceRuleId == nil }!
+        vm.delete(item)                       // arm a delete: row removed, pendingDeletion=[item]
+        #expect(vm.pendingDeletion.count == 1)
+        await vm.armUndo(message: "edited") { }   // arming an edit flushes the pending delete
+        let after = try! await vm.repo.fetchAll()
+        #expect(!after.contains { $0.id == item.id })   // delete was committed, not leaked
+        #expect(vm.pendingDeletion.isEmpty)
+        #expect(vm.showUndoBanner)                        // edit's banner now showing
+    }
+
+    // MARK: - Bulk mutations
+
+    @Test @MainActor func bulkDeleteRemovesSelected() async {
+        let vm = await makeLoadedVM()
+        let targets = Array(vm.filteredItems.prefix(2))
+        targets.forEach { vm.toggleSelection($0.id) }
+        let before = vm.transactions.count
+        vm.bulkDelete()
+        #expect(!vm.isSelecting)
+        await vm.commitPending()
+        #expect(vm.transactions.count == before - 2)
+    }
+
+    @Test @MainActor func bulkSetCategoryRewritesOnlySelected() async {
+        let (vm, foodCat, newCat, expenseId, _) = await makeRealRepoVM()
+        // Select first (expense) transaction
+        let target = vm.filteredItems.first { $0.id == expenseId }!
+        let other = vm.filteredItems.first { $0.id != expenseId }!
+        let otherCatBefore = other.category
+        vm.toggleSelection(target.id)
+        vm.bulkSetCategory(newCat)
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == target.id }!.category == newCat.name)
+        #expect(after.first { $0.id == other.id }!.category == otherCatBefore)   // untouched
+        #expect(vm.showUndoBanner)
+    }
+
+    @Test @MainActor func bulkSetCategoryFlipsTypeToMatchCategory() async {
+        let (vm, foodCat, _, expenseId, incomeId) = await makeRealRepoVM()
+        // Add an income-typed category alongside the expense-typed ones.
+        try! await vm.repo.addCategory(CategoryInput(name: "Salary", systemImage: "banknote", type: TransactionType.income.rawValue, colorToken: "categoryGreen", monthlyBudget: nil, currencyCode: "EUR"))
+        let salaryCat = (try! await vm.repo.fetchCategories()).first { $0.name == "Salary" }!
+
+        // Income category applied to the -50 expense → flips to +50 income.
+        vm.toggleSelection(expenseId)
+        vm.bulkSetCategory(salaryCat)
+        await vm.bulkEditTask?.value
+        await vm.loadTask?.value
+        var after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == expenseId }!.amount == 50)
+        #expect(after.first { $0.id == expenseId }!.category == "Salary")
+
+        // Expense category applied to the +1000 income → flips to -1000 expense.
+        vm.exitSelection()
+        vm.toggleSelection(incomeId)
+        vm.bulkSetCategory(foodCat)
+        await vm.bulkEditTask?.value
+        after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == incomeId }!.amount == -1000)
+        #expect(after.first { $0.id == incomeId }!.category == "Food")
+    }
+
+    @Test @MainActor func bulkSetAmountPreservesSign() async {
+        let (vm, _, _, expenseId, incomeId) = await makeRealRepoVM()
+        let expense = vm.filteredItems.first { $0.id == expenseId }!
+        let income = vm.filteredItems.first { $0.id == incomeId }!
+        vm.toggleSelection(expense.id); vm.toggleSelection(income.id)
+        vm.bulkSetAmount(25)
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == expense.id }!.amount == -25)   // stays negative
+        #expect(after.first { $0.id == income.id }!.amount == 25)     // stays positive
+    }
+
+    @Test @MainActor func bulkSetNoteOverwritesSelected() async {
+        let (vm, _, _, expenseId, _) = await makeRealRepoVM()
+        let target = vm.filteredItems.first { $0.id == expenseId }!
+        vm.toggleSelection(target.id)
+        vm.bulkSetNote("reconciled")
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == target.id }!.note == "reconciled")
+    }
+
+    @Test @MainActor func bulkSetNoteAppliesToEmptyNoteRows() async {
+        let (vm, _, _, _, _) = await makeRealRepoVM()
+        // Add a transaction with an EMPTY note.
+        try! await vm.repo.add(TransactionInput(timestamp: Date(), amount: -10, note: "", category: "Food", currencyCode: "EUR"))
+        vm.reload()
+        await vm.loadTask?.value
+        let emptyRow = vm.filteredItems.first { $0.note.isEmpty }!
+        vm.toggleSelection(emptyRow.id)
+        vm.bulkSetNote("groceries")
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == emptyRow.id }!.note == "groceries")
+    }
+
+    @Test @MainActor func bulkEditUndoRestoresPriorValues() async {
+        let (vm, _, _, expenseId, _) = await makeRealRepoVM()
+        let target = vm.filteredItems.first { $0.id == expenseId }!
+        let priorNote = target.note
+        vm.toggleSelection(target.id)
+        vm.bulkSetNote("changed")
+        await vm.bulkEditTask?.value
+        vm.undoPending()
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == target.id }!.note == priorNote)
+    }
+
+    @Test @MainActor func bulkDeleteRecurringDoesNotCloseRule() async {
+        let vm = await makeLoadedVM()
+        guard let recurring = vm.filteredItems.first(where: { $0.recurrenceRuleId != nil }) else { return }
+        let ruleId = recurring.recurrenceRuleId!
+        vm.toggleSelection(recurring.id)
+        vm.bulkDelete()
+        await vm.commitPending()
+        // The rule must still exist (bulk delete is this-only).
+        let rules = try! await vm.repo.fetchAllRecurrenceRules()
+        #expect(rules.contains { $0.id == ruleId })
+    }
+
+    @Test @MainActor func bulkOpsNoopOnEmptySelection() async {
+        let vm = await makeLoadedVM()
+        let before = vm.transactions.count
+        vm.bulkDelete()
+        vm.bulkSetNote("x")
+        #expect(vm.transactions.count == before)
+        #expect(!vm.showUndoBanner)
     }
 }

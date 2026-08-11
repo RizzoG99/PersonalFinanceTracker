@@ -89,9 +89,9 @@ struct MainTabView: View {
         .overlay(alignment: .bottom) {
             if viewModel.showUndoBanner {
                 UndoDeleteBanner(
-                    count: viewModel.pendingDeletion.count,
+                    message: viewModel.pendingUndoMessage,
                     progress: viewModel.deleteProgress,
-                    onUndo: viewModel.undoDelete
+                    onUndo: viewModel.undoPending
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 90)

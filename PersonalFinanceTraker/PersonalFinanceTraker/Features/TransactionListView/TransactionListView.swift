@@ -8,17 +8,14 @@
 import SwiftUI
 
 struct UndoDeleteBanner: View {
-    let count: Int
+    let message: String
     let progress: Double
     let onUndo: () -> Void
 
     var body: some View {
         ToastBanner(
             icon: "trash",
-            // ponytail: "transaction"/"transactions" plural handled by the catalog's plural variation, not a
-            // hand-rolled ternary — must be String(localized:) here (not a plain interpolation) since ToastBanner's
-            // `message` is a plain String and Text(message) inside it won't trigger catalog/plural lookup on its own.
-            message: String(localized: "\(count) transaction deleted")
+            message: message
         ) {
             Spacer(minLength: 0)
 

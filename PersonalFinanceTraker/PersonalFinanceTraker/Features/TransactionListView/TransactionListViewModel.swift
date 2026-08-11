@@ -21,6 +21,7 @@ final class TransactionListViewModel {
         didSet {
             updateGroupedItems()
             recomputeDerivedFilterState()
+            intersectSelectionWithVisible()
         }
     }
     var groupedItems: [(String, [TransactionSnapshot])] = []
@@ -87,6 +88,48 @@ final class TransactionListViewModel {
     @ObservationIgnored private(set) var searchDebounceTask: Task<Void, Never>?
     var showUndoBanner: Bool = false
     var deleteProgress: Double = 0.0
+    var pendingUndoMessage: String = ""
+    /// Non-nil marks the pending mutation as an *edit* (already persisted): timeout is a no-op,
+    /// undo runs this closure. Nil marks a *delete*: timeout runs the repo.delete loop.
+    @ObservationIgnored private var pendingRevert: (() async -> Void)?
+    /// Handle to the in-flight bulk-edit apply / undo-revert Task so tests await instead of sleeping.
+    @ObservationIgnored private(set) var bulkEditTask: Task<Void, Never>?
+
+    // MARK: - Multi-select
+    var isSelecting = false
+    var selectedIDs: Set<PersistentIdentifier> = []
+
+    var selectedSnapshots: [TransactionSnapshot] {
+        transactions.filter { selectedIDs.contains($0.id) }
+    }
+
+    /// True when every currently visible row is selected (drives the Select All / Deselect All label).
+    var allVisibleSelected: Bool {
+        !filteredItems.isEmpty && filteredItems.allSatisfy { selectedIDs.contains($0.id) }
+    }
+
+    func toggleSelection(_ id: PersistentIdentifier) {
+        if selectedIDs.contains(id) { selectedIDs.remove(id) } else { selectedIDs.insert(id) }
+    }
+
+    func selectAllVisible() {
+        selectedIDs = Set(filteredItems.map(\.id))
+    }
+
+    func deselectAll() {
+        selectedIDs.removeAll()
+    }
+
+    func exitSelection() {
+        isSelecting = false
+        selectedIDs.removeAll()
+    }
+
+    private func intersectSelectionWithVisible() {
+        guard !selectedIDs.isEmpty else { return }
+        let visible = Set(filteredItems.map(\.id))
+        selectedIDs.formIntersection(visible)
+    }
 
     let repo: any ITransactionRepository
     /// Set by the owning view; notifies the app that persisted data changed
@@ -232,24 +275,22 @@ final class TransactionListViewModel {
     }
 
     private func scheduleDeletion(_ items: [TransactionSnapshot]) {
+        // NOTE: deliberately does NOT flush a prior pending mutation.
+        //  - delete→delete: appending to pendingDeletion is intentional batching (swipe two
+        //    rows quickly → one combined banner); flushing would split it into two banners.
+        //  - edit→delete: setting `pendingRevert = nil` below makes commitPending() take the
+        //    delete branch, and the prior edit was already persisted — no leak, nothing to flush.
+        // Only delete→edit leaks, and that is finalized in armUndo (the edit arm), not here.
         pendingDeletionTask?.cancel()
         pendingDeletion.append(contentsOf: items)
         let ids = Set(items.map(\.id))
         transactions.removeAll { ids.contains($0.id) }
         Task { await doFilterItemBySearchText() }
+        pendingRevert = nil                                  // delete case
+        pendingUndoMessage = String(localized: "\(pendingDeletion.count) transaction deleted")
         deleteProgress = 0.0
         showUndoBanner = true
-        pendingDeletionTask = Task {
-            let start = Date.now
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(100))
-                guard !Task.isCancelled else { return }
-                deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
-                if deleteProgress >= 1.0 { break }
-            }
-            guard !Task.isCancelled else { return }
-            await commitPendingDeletion()
-        }
+        pendingDeletionTask = startUndoTimer()
     }
 
     func commitPendingDeletion() async {
@@ -281,6 +322,66 @@ final class TransactionListViewModel {
         showUndoBanner = false
         deleteProgress = 0.0
         reload()
+    }
+
+    /// Arm the 5s undo banner for an already-applied edit. `revert` restores prior state on undo.
+    /// `async` because it must FINALIZE any in-flight mutation before arming a new one —
+    /// otherwise a pending delete (rows removed from `transactions`, not yet committed) would be
+    /// abandoned when `pendingRevert` is set and `commitPending()` takes the edit branch.
+    func armUndo(message: String, revert: @escaping () async -> Void) async {
+        if showUndoBanner { await commitPending() }   // commit a prior delete / clear a prior edit
+        pendingDeletionTask?.cancel()
+        pendingUndoMessage = message
+        pendingRevert = revert
+        deleteProgress = 0.0
+        showUndoBanner = true
+        pendingDeletionTask = startUndoTimer()
+    }
+
+    /// Shared 5s progress timer, extracted from scheduleDeletion.
+    private func startUndoTimer() -> Task<Void, Never> {
+        Task {
+            let start = Date.now
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(100))
+                guard !Task.isCancelled else { return }
+                deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
+                if deleteProgress >= 1.0 { break }
+            }
+            guard !Task.isCancelled else { return }
+            await commitPending()
+        }
+    }
+
+    /// Timeout finalizer. Branches on mutation kind (Gap 2): an edit's commit must NOT
+    /// run the delete loop.
+    func commitPending() async {
+        if pendingRevert != nil {
+            // Edit: write already persisted; just clear the banner.
+            pendingRevert = nil
+            pendingUndoMessage = ""
+            showUndoBanner = false
+            deleteProgress = 0.0
+            pendingDeletionTask?.cancel()
+            pendingDeletionTask = nil
+        } else {
+            await commitPendingDeletion()   // existing delete loop, unchanged
+        }
+    }
+
+    /// Undo for either mutation kind.
+    func undoPending() {
+        pendingDeletionTask?.cancel()
+        pendingDeletionTask = nil
+        if let revert = pendingRevert {
+            pendingRevert = nil
+            pendingUndoMessage = ""
+            showUndoBanner = false
+            deleteProgress = 0.0
+            bulkEditTask = Task { await revert(); onDataChanged?(); reload() }   // exposed so tests await, not sleep
+        } else {
+            undoDelete()   // existing delete-undo (reload restores uncommitted rows)
+        }
     }
 
     func clearSearch() {
@@ -487,6 +588,92 @@ final class TransactionListViewModel {
         currentImportSignature = nil
     }
 
+    // MARK: - Bulk actions
+
+    /// Reconstruct a lossless input from a snapshot, optionally overriding amount or note.
+    /// Always preserves category linkage; category changes build their input directly (below).
+    private func input(from s: TransactionSnapshot,
+                       amount: Decimal? = nil,
+                       note: String? = nil) -> TransactionInput {
+        TransactionInput(
+            timestamp: s.timestamp,
+            amount: amount ?? s.amount,
+            note: note ?? s.note,
+            category: s.category,
+            currencyCode: s.currencyCode,
+            goalId: s.goalId,
+            categoryPersistentId: s.categoryId,
+            recurrenceRuleId: s.recurrenceRuleId
+        )
+    }
+
+    func bulkDelete() {
+        let targets = selectedSnapshots
+        guard !targets.isEmpty else { return }
+        exitSelection()
+        scheduleDeletion(targets)   // plain delete, no recurrence prompt (matches existing multi-delete path)
+    }
+
+    func bulkSetCategory(_ category: CategorySnapshot) {
+        // A category is typed, and the app never mixes a category with a mismatched sign.
+        // So applying a category flips each row's type to match: income category → positive
+        // amount, expense category → negative. A categorized row is not a transfer, so its
+        // goalId is cleared. (Undo restores the captured prior inputs, sign and goalId included.)
+        let isIncome = category.transactionType == .income
+        applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
+            let magnitude = abs(s.amount)
+            return TransactionInput(
+                timestamp: s.timestamp,
+                amount: isIncome ? magnitude : -magnitude,
+                note: s.note,
+                category: category.name,
+                currencyCode: s.currencyCode,
+                goalId: nil,
+                categoryPersistentId: category.persistentId,
+                recurrenceRuleId: s.recurrenceRuleId
+            )
+        }
+    }
+
+    func bulkSetAmount(_ magnitude: Decimal) {
+        applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
+            // Preserve sign: expenses stay negative, income positive.
+            let signed = s.amount < 0 ? -abs(magnitude) : abs(magnitude)
+            return self.input(from: s, amount: signed)
+        }
+    }
+
+    func bulkSetNote(_ note: String) {
+        applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
+            self.input(from: s, note: note)
+        }
+    }
+
+    /// Shared edit driver: capture prior inputs, apply new inputs, arm the undo banner with a revert.
+    /// Order matters: write edits → `await armUndo` (which finalizes any prior pending mutation) →
+    /// reload. Reloading only after the flush avoids a transient reappear-then-vanish flicker of a
+    /// prior delete's rows.
+    private func applyBulkEdit(message: (Int) -> String,
+                               newInput: @escaping (TransactionSnapshot) -> TransactionInput) {
+        let targets = selectedSnapshots
+        guard !targets.isEmpty else { return }
+        let count = targets.count
+        let prior: [(PersistentIdentifier, TransactionInput)] = targets.map { ($0.id, input(from: $0)) }
+        let text = message(count)
+        exitSelection()
+        bulkEditTask = Task {
+            // ponytail: loop update; add updateBatch only if it measurably lags
+            for t in targets {
+                try? await repo.update(id: t.id, with: newInput(t))
+            }
+            await armUndo(message: text) {
+                for (id, input) in prior { try? await self.repo.update(id: id, with: input) }
+            }
+            onDataChanged?()
+            reload()
+        }
+    }
+
     /// Offloads per-row work (date parsing, Decimal conversion) to a background thread.
     /// CategorySnapshot re-resolution happens back on the MainActor after the task completes.
     func applyMapping() async {
@@ -674,5 +861,4 @@ final class TransactionListViewModel {
             }
         }
     }
-
 }
