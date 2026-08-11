@@ -1,6 +1,7 @@
 import Foundation
 import CryptoKit
 import Security
+import CommonCrypto
 
 enum PINValidationResult: Equatable {
     case success
@@ -11,10 +12,13 @@ enum PINValidationResult: Equatable {
 final class PINService {
     private let hashKey = "pft.pin_hash"
     private let saltKey = "pft.pin_salt"
+    private let versionKey = "pft.pin_hash_version"
     private let failuresKey = "pft.pin_failures"
     private let lockedUntilKey = "pft.pin_locked_until"
 
     private let escalationTiers: [Int] = [60, 300, 900, 3600] // 1, 5, 15, 60 minutes in seconds
+    private let pbkdf2Rounds: UInt32 = 210_000
+    private let derivedKeyLength: Int = 32
 
     func setPIN(_ pin: String) throws {
         var saltBytes = [UInt8](repeating: 0, count: 32)
@@ -22,40 +26,15 @@ final class PINService {
             throw PINServiceError.keychainError(status: -1)
         }
         let salt = Data(saltBytes)
-        let hashData = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
+        let hashData = derivePBKDF2(pin: pin, salt: salt)
         try store(data: salt, forKey: saltKey)
         try store(data: hashData, forKey: hashKey)
+        try store(data: "2".data(using: .utf8)!, forKey: versionKey)
     }
 
     func validatePIN(_ pin: String) -> Bool {
-        // Check for active lockout first (without touching hash or counter)
-        if checkCurrentLockout() != nil {
-            return false
-        }
-
-        guard let salt = fetch(forKey: saltKey),
-              let storedHash = fetch(forKey: hashKey) else {
-            return false
-        }
-
-        let computed = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
-        if computed == storedHash {
-            // Success: reset counter and clear deadline
-            try? delete(forKey: failuresKey)
-            try? delete(forKey: lockedUntilKey)
-            return true
-        } else {
-            // Failure: increment counter (but only if not already locked out)
-            incrementFailureCounter()
-            let failureCount = getFailureCount()
-            if failureCount >= 5 {
-                // Lock out: compute tier from count and set deadline
-                let tier = min(failureCount - 5, escalationTiers.count - 1)
-                let lockoutSeconds = escalationTiers[tier]
-                _ = setLockoutDeadline(lockoutSeconds: lockoutSeconds)
-            }
-            return false
-        }
+        let result = validatePINWithResult(pin)
+        return result == .success
     }
 
     // For Task 3 migration: internal method that returns the detailed result
@@ -71,11 +50,35 @@ final class PINService {
             return .failure(remainingAttempts: 5)
         }
 
-        let computed = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
-        if computed == storedHash {
+        let versionData = fetch(forKey: versionKey)
+        let versionString = versionData.flatMap { String(data: $0, encoding: .utf8) }
+        let isLegacy = versionString != "2"
+
+        let isValid: Bool
+        if isLegacy {
+            // ponytail: legacy SHA-256 verification, beta-only. DELETE before App Store
+            // release — drop this branch, drop `pft.pin_hash_version`, and have setPIN/
+            // validatePIN speak PBKDF2 only. Any straggler on the old format just
+            // re-runs PIN setup.
+            let computed = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
+            isValid = constantTimeEqual(computed, storedHash)
+        } else {
+            let computed = derivePBKDF2(pin: pin, salt: salt)
+            isValid = constantTimeEqual(computed, storedHash)
+        }
+
+        if isValid {
             // Success: reset counter and clear deadline
             try? delete(forKey: failuresKey)
             try? delete(forKey: lockedUntilKey)
+
+            // Lazy migration: if version was legacy, upgrade to PBKDF2
+            if isLegacy {
+                let pbkdf2Hash = derivePBKDF2(pin: pin, salt: salt)
+                try? store(data: pbkdf2Hash, forKey: hashKey)
+                try? store(data: "2".data(using: .utf8)!, forKey: versionKey)
+            }
+
             return .success
         } else {
             // Failure: increment counter and check if we've hit lockout threshold
@@ -103,8 +106,49 @@ final class PINService {
     func clearPIN() throws {
         try delete(forKey: hashKey)
         try delete(forKey: saltKey)
+        try delete(forKey: versionKey)
         try delete(forKey: failuresKey)
         try delete(forKey: lockedUntilKey)
+    }
+
+    // MARK: - PBKDF2 Derivation and Comparison
+
+    private func derivePBKDF2(pin: String, salt: Data) -> Data {
+        guard let pinBytes = pin.data(using: .utf8) else {
+            return Data()
+        }
+
+        var derivedKey = [UInt8](repeating: 0, count: derivedKeyLength)
+        let saltBytes = [UInt8](salt)
+
+        let status = CCKeyDerivationPBKDF(
+            CCPBKDFAlgorithm(kCCPBKDF2),
+            (pin as NSString).utf8String, pinBytes.count,
+            saltBytes, saltBytes.count,
+            CCPseudoRandomAlgorithm(kCCHmacAlgSHA256),
+            pbkdf2Rounds,
+            &derivedKey,
+            derivedKey.count
+        )
+
+        guard status == kCCSuccess else {
+            return Data()
+        }
+
+        return Data(derivedKey)
+    }
+
+    private func constantTimeEqual(_ a: Data, _ b: Data) -> Bool {
+        guard a.count == b.count else {
+            return false
+        }
+
+        var result: UInt8 = 0
+        for i in 0..<a.count {
+            result |= a[i] ^ b[i]
+        }
+
+        return result == 0
     }
 
     // MARK: - Lockout Management
@@ -197,6 +241,12 @@ final class PINService {
         if let encoded = String(newCount).data(using: .utf8) {
             try? store(data: encoded, forKey: failuresKey)
         }
+    }
+
+    // MARK: - Test Helpers (internal for @testable)
+
+    func storeTestData(_ data: Data, forKey key: String) throws {
+        try store(data: data, forKey: key)
     }
 
     // MARK: - Private Keychain helpers

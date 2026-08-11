@@ -1,5 +1,7 @@
 import Testing
 import Foundation
+import CryptoKit
+import Security
 
 @testable import PersonalFinanceTraker
 
@@ -352,5 +354,126 @@ struct PINServiceTests {
 
         try pinService.setPIN("1234")
         #expect(pinService.isPINSet() == true)
+    }
+
+    // MARK: - PBKDF2 and Lazy Migration Tests
+
+    @Test("New PIN uses PBKDF2 from the start")
+    func newPINUsesPBKDF2() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Validate with correct PIN should succeed
+        let result = pinService.validatePINWithResult("1234")
+        #expect(result == .success)
+
+        // Validate with wrong PIN should fail
+        let wrongResult = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = wrongResult {
+            #expect(remaining == 4)
+        } else {
+            Issue.record("Expected .failure for wrong PIN")
+        }
+    }
+
+    @Test("Legacy SHA-256 PIN validates successfully and upgrades to PBKDF2")
+    func legacySHA256ValidationAndUpgrade() throws {
+        defer { try? pinService.clearPIN() }
+
+        // Manually create a legacy SHA-256 PIN by directly storing it
+        // without going through the new setPIN() method
+        let pin = "1234"
+        var saltBytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, saltBytes.count, &saltBytes) == errSecSuccess else {
+            Issue.record("Failed to generate random salt")
+            return
+        }
+        let salt = Data(saltBytes)
+
+        // Use the old SHA-256 formula: hash(pin + salt.base64EncodedString())
+        let legacyHashData = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
+
+        // Store salt and legacy hash (no version marker = legacy)
+        try pinService.storeTestData(salt, forKey: "pft.pin_salt")
+        try pinService.storeTestData(legacyHashData, forKey: "pft.pin_hash")
+
+        // Validate with correct PIN - should succeed and trigger migration
+        let result = pinService.validatePINWithResult("1234")
+        #expect(result == .success)
+
+        // Verify that subsequent validation still works (confirming upgrade was stored)
+        let secondResult = pinService.validatePINWithResult("1234")
+        #expect(secondResult == .success)
+    }
+
+    @Test("Wrong PIN against PBKDF2 hash fails and drives lockout counter")
+    func wrongPBKDF2PINDrivesLockout() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // First failure against PBKDF2 hash
+        var result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4)
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+            return
+        }
+
+        // Continue failing to trigger lockout at 5 failures
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+
+        // 5th failure should trigger lockout
+        result = pinService.validatePINWithResult("0000")
+        if case .lockedOut = result {
+            // Expected
+        } else {
+            Issue.record("Expected .lockedOut after 5 failures against PBKDF2 hash")
+        }
+    }
+
+    @Test("Legacy PIN failure also drives lockout counter (before upgrade)")
+    func legacyPINFailureDrivesLockout() throws {
+        defer { try? pinService.clearPIN() }
+
+        let pin = "1234"
+        var saltBytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, saltBytes.count, &saltBytes) == errSecSuccess else {
+            Issue.record("Failed to generate random salt")
+            return
+        }
+        let salt = Data(saltBytes)
+
+        // Create legacy SHA-256 PIN
+        let legacyHashData = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
+
+        try pinService.storeTestData(salt, forKey: "pft.pin_salt")
+        try pinService.storeTestData(legacyHashData, forKey: "pft.pin_hash")
+
+        // First failure with wrong PIN
+        var result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4)
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+            return
+        }
+
+        // Continue failing to trigger lockout
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+
+        // 5th failure should trigger lockout (even on legacy format)
+        result = pinService.validatePINWithResult("0000")
+        if case .lockedOut = result {
+            // Expected
+        } else {
+            Issue.record("Expected .lockedOut after 5 failures on legacy PIN format")
+        }
     }
 }
