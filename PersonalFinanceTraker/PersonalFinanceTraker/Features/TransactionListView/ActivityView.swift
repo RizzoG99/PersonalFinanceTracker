@@ -87,12 +87,16 @@ struct ActivityView: View {
                                 }
                             }
                             .buttonStyle(.plain)
-                            .onLongPressGesture {
-                                if !viewModel.isSelecting {
-                                    viewModel.isSelecting = true
-                                    viewModel.toggleSelection(item.id)
+                            // A plain Button in a List swallows .onLongPressGesture, so run the
+                            // long-press alongside the button via .simultaneousGesture instead.
+                            .simultaneousGesture(
+                                LongPressGesture(minimumDuration: 0.4).onEnded { _ in
+                                    if !viewModel.isSelecting {
+                                        viewModel.isSelecting = true
+                                        viewModel.toggleSelection(item.id)
+                                    }
                                 }
-                            }
+                            )
                             .listRowBackground(Color.clear)
                             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             // Recurring rows must not use role: .destructive here — iOS plays the
@@ -181,6 +185,7 @@ struct ActivityView: View {
                     }
                 }
             }
+            .sensoryFeedback(.selection, trigger: viewModel.isSelecting)
             .safeAreaInset(edge: .bottom) {
                 selectionActionBar
             }
