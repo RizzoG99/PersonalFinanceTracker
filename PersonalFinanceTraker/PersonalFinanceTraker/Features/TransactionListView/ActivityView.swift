@@ -18,6 +18,9 @@ struct ActivityView: View {
     @State private var showCategorySheet = false
     @State private var showAmountSheet = false
     @State private var showNoteSheet = false
+    // Backing state for the shared category picker (same sheet the Add flow uses).
+    @State private var bulkCategories: [CategorySnapshot] = []
+    @State private var bulkSelectedCategory: CategorySnapshot?
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -193,7 +196,13 @@ struct ActivityView: View {
                 selectionActionBar
             }
             .sheet(isPresented: $showCategorySheet) {
-                categorySheet
+                // Reuse the Add flow's category picker for visual consistency.
+                CategoryPickerSheet(categories: bulkCategories, selectedCategory: $bulkSelectedCategory)
+            }
+            .onChange(of: bulkSelectedCategory) { _, newValue in
+                guard let newValue else { return }
+                viewModel.bulkSetCategory(newValue)
+                bulkSelectedCategory = nil
             }
             .sheet(isPresented: $showAmountSheet) {
                 amountSheet
@@ -235,7 +244,13 @@ struct ActivityView: View {
             if viewModel.isSelecting {
                 HStack {
                     bulkButton("Delete", "trash", tint: .red, role: .destructive) { viewModel.bulkDelete() }
-                    bulkButton("Category", "tag") { showCategorySheet = true }
+                    bulkButton("Category", "tag") {
+                        Task {
+                            bulkCategories = (try? await viewModel.repo.fetchCategories()) ?? []
+                            bulkSelectedCategory = nil
+                            showCategorySheet = true
+                        }
+                    }
                     bulkButton("Amount", "eurosign.circle") { showAmountSheet = true }
                     bulkButton("Description", "text.alignleft") { showNoteSheet = true }
                 }
@@ -244,16 +259,6 @@ struct ActivityView: View {
                 .background(.ultraThinMaterial)
             }
         }
-    }
-
-    private var categorySheet: some View {
-        CategoryBulkEditSheet(
-            count: viewModel.selectedIDs.count,
-            onSelect: { category in
-                viewModel.bulkSetCategory(category)
-                showCategorySheet = false
-            }
-        )
     }
 
     private var amountSheet: some View {
@@ -295,60 +300,6 @@ private struct ConditionalSearchable: ViewModifier {
             content.searchable(text: $text, prompt: prompt)
         } else {
             content
-        }
-    }
-}
-
-private struct CategoryBulkEditSheet: View {
-    @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
-    let count: Int
-    let onSelect: (CategorySnapshot) -> Void
-    @State private var categories: [CategorySnapshot] = []
-    @State private var query: String = ""
-    @Environment(\.dismiss) private var dismiss
-
-    private var filtered: [CategorySnapshot] {
-        guard !query.isEmpty else { return categories }
-        return categories.filter { $0.name.localizedCaseInsensitiveContains(query) }
-    }
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    ForEach(filtered) { category in
-                        Button(action: { onSelect(category) }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: category.systemImage)
-                                    .foregroundStyle(category.categoryColor)
-                                    .frame(width: 24)
-                                Text(category.name.localizedCategoryDisplay)
-                                    .foregroundStyle(.textPrimary)
-                            }
-                        }
-                    }
-                } header: {
-                    Text(String(localized: "Applies to \(count) transactions"))
-                }
-            }
-            .searchable(text: $query, prompt: Text(String(localized: "Search categories")))
-            .navigationTitle(Text(String(localized: "Category")))
-            .navigationBarTitleDisplayMode(.inline)
-            .presentationDetents([.medium, .large])
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(String(localized: "Cancel")) { dismiss() }
-                }
-            }
-            .onAppear {
-                Task {
-                    do {
-                        categories = try await viewModel.repo.fetchCategories()
-                    } catch {
-                        // Handle error silently for now
-                    }
-                }
-            }
         }
     }
 }
