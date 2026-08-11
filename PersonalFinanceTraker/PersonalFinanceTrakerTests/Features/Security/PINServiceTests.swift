@@ -197,19 +197,31 @@ struct PINServiceTests {
 
         try pinService.setPIN("1234")
 
-        // Trigger lockout (5 failures)
-        for _ in 0..<5 {
-            _ = pinService.validatePIN("0000")
+        // Trigger 4 failures (sub-threshold)
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
         }
+        #expect(pinService.lockoutDeadline == nil)
 
+        // Validate correct PIN → success
+        var result = pinService.validatePINWithResult("1234")
+        #expect(result == .success)
+        #expect(pinService.lockoutDeadline == nil)
+
+        // Trigger 5 failures to lock out
+        for _ in 0..<5 {
+            _ = pinService.validatePINWithResult("0000")
+        }
         #expect(pinService.lockoutDeadline != nil)
 
-        // Wait a brief moment to ensure deadline is in future, then success
-        try await Task.sleep(for: .milliseconds(10))
-
-        // Note: lockout prevents the correct PIN from being validated,
-        // so we can't test success during lockout with the Bool API.
-        // This will be better tested via validatePINWithResult() in integration tests.
+        // Attempt correct PIN while locked — should be rejected immediately
+        // without hash check or counter increment (short-circuit)
+        result = pinService.validatePINWithResult("1234")
+        if case .lockedOut = result {
+            // Expected: lockout prevents any validation
+        } else {
+            Issue.record("Expected .lockedOut while in lockout, got \(result)")
+        }
     }
 
     // MARK: - Clock Rollback Guard

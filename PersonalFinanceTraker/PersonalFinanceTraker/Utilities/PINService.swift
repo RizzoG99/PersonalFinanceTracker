@@ -125,6 +125,12 @@ final class PINService {
             let currentUptime = ProcessInfo.processInfo.systemUptime
             let storedUptime = lockoutInfo.uptimeAtSet
 
+            // ponytail: reboot detection only; does not catch active clock rollback.
+            // Ceiling: detects systemUptime reset (genuine reboot) but not device clock
+            // set backward during runtime. Upgrade path: compare stored uptime delta
+            // (deadline - uptimeAtSet) with current (now - currentUptime) to catch
+            // mid-runtime rollbacks.
+
             // Detect reboot: if current uptime < stored uptime, a reboot happened
             // (systemUptime resets near-zero on reboot)
             if currentUptime < storedUptime {
@@ -139,8 +145,7 @@ final class PINService {
                 }
             }
 
-            // No reboot: use uptime delta to detect clock rollback
-            // If the deadline is in the future (either by Date or by uptime comparison), we're locked
+            // No reboot: Date comparison alone; assumes device clock doesn't roll backward
             if lockoutInfo.deadline > Date() {
                 return lockoutInfo.deadline
             } else {
@@ -163,13 +168,22 @@ final class PINService {
             deadline: deadline,
             uptimeAtSet: ProcessInfo.processInfo.systemUptime
         )
-        if let encoded = try? JSONEncoder().encode(lockoutInfo) {
-            try? store(data: encoded, forKey: lockedUntilKey)
+        do {
+            let encoded = try JSONEncoder().encode(lockoutInfo)
+            try store(data: encoded, forKey: lockedUntilKey)
+        } catch {
+            // Encoding/storing lockout should not fail in normal operation.
+            // If it does, fail-safe: lockout deadline is forgotten on next app launch.
+            // Assert in debug to catch unexpected failures during development.
+            assertionFailure("Failed to persist lockout deadline: \(error)")
         }
         return deadline
     }
 
     private func getFailureCount() -> Int {
+        // ponytail: counter stored as UTF-8 string, not Codable struct.
+        // Ceiling: works for 0-8 attempts; upgrade path is Codable for type-safety
+        // and schema versioning if counter logic becomes more complex.
         guard let data = fetch(forKey: failuresKey),
               let count = Int(String(data: data, encoding: .utf8) ?? "") else {
             return 0
