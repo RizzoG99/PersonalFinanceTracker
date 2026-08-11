@@ -12,6 +12,7 @@ struct AuthenticationWrapper: View {
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
     @State private var showSplash = true
+    @State private var isCaptured = UIScreen.main.isCaptured
     // Owned here (not by MainTabView) since AuthenticationWrapper is never torn down
     // while the app is running — MainTabView is recreated on every lock/unlock cycle,
     // which would otherwise reset hideAmounts whenever the app is merely backgrounded.
@@ -53,7 +54,8 @@ struct AuthenticationWrapper: View {
 
             // ponytail: covers the task-switcher snapshot, which is taken on
             // .inactive (before .background triggers the PIN lock below).
-            if scenePhase != .active && !showSplash {
+            // Also covers screen recording / AirPlay mirroring via UIScreen.isCaptured.
+            if (scenePhase != .active || isCaptured) && !showSplash {
                 SplashView()
                     .transition(.opacity)
                     .zIndex(1)
@@ -78,6 +80,9 @@ struct AuthenticationWrapper: View {
         .onReceive(NotificationCenter.default.publisher(for: .pinSetupComplete)) { _ in
             isPINSetup = true
             authService.unlock()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIScreen.capturedDidChangeNotification)) { _ in
+            isCaptured = UIScreen.main.isCaptured
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background && isPINSetup {
