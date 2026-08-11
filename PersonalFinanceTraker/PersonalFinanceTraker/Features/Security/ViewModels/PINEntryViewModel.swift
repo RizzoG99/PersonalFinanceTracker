@@ -8,9 +8,12 @@ final class PINEntryViewModel {
     var eyesOpen: Bool = true
     var errorMessage: String = ""
     var showForgotPINSheet: Bool = false
+    var isLockedOut: Bool = false
+    var lockoutMessage: String = ""
 
     private let pinService: PINService
     let authService: BiometricAuthService
+    private var countdownTask: Task<Void, Never>?
 
     var showBiometricButton: Bool {
         authService.isBiometricFeatureEnabled && authService.isBiometricsAvailable
@@ -27,6 +30,7 @@ final class PINEntryViewModel {
     }
 
     func appendDigit(_ digit: String) {
+        guard !isLockedOut else { return }
         guard pinInput.count < 4 else { return }
         pinInput += digit
         eyesOpen = false
@@ -55,17 +59,56 @@ final class PINEntryViewModel {
     }
 
     private func verifyPIN() {
-        if pinService.validatePIN(pinInput) {
+        let result = pinService.validatePINWithResult(pinInput)
+        switch result {
+        case .success:
             authService.unlock()
-        } else {
-            errorMessage = "Incorrect PIN. Try again."
+        case .failure(let remainingAttempts):
+            errorMessage = "Incorrect PIN. \(remainingAttempts) attempt\(remainingAttempts == 1 ? "" : "s") remaining."
             triggerShake()
             Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }
+        case .lockedOut(let deadline):
+            startLockoutCountdown(until: deadline)
+        }
+    }
+
+    private func startLockoutCountdown(until deadline: Date) {
+        countdownTask?.cancel()
+        isLockedOut = true
+
+        countdownTask = Task {
+            while !Task.isCancelled {
+                let now = Date()
+                if now >= deadline {
+                    // Lockout expired
+                    isLockedOut = false
+                    lockoutMessage = ""
+                    errorMessage = ""
+                    pinInput = ""
+                    eyesOpen = true
+                    countdownTask = nil
+                    break
+                }
+
+                let remainingSeconds = Int(deadline.timeIntervalSince(now)) + 1
+                lockoutMessage = "Locked out. Try again in \(remainingSeconds)s."
+                errorMessage = lockoutMessage
+
+                do {
+                    try await Task.sleep(for: .milliseconds(500))
+                } catch {
+                    break
+                }
+            }
         }
     }
 
     private func triggerShake() {
         isShaking = true
         Task { try? await Task.sleep(for: .seconds(0.5)); self.isShaking = false }
+    }
+
+    deinit {
+        countdownTask?.cancel()
     }
 }
