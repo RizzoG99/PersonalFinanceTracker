@@ -3,6 +3,7 @@ import Foundation
 
 @testable import PersonalFinanceTraker
 
+@Suite(.serialized)
 @MainActor
 struct PINConfirmationViewModelTests {
     private let pinService = PINService()
