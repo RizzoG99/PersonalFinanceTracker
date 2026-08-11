@@ -20,7 +20,7 @@ class ChartDataService {
         case .week:
             return generateWeeklyData(from: filteredItems, referenceDate: referenceDate)
         case .month:
-            return generateMonthlyData(from: filteredItems, referenceDate: referenceDate)
+            return generateMonthlyData(from: filteredItems, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         case .year:
             return generateYearlyData(from: filteredItems, referenceDate: referenceDate)
         }
@@ -62,22 +62,28 @@ class ChartDataService {
         return data.reversed()
     }
 
-    private func generateMonthlyData(from items: [TransactionSnapshot], referenceDate: Date) -> [ChartDataPoint] {
+    // ponytail: weeks anchored to the financial-month start (not rolling from "today"), so
+    // every day in the month lands in exactly one bucket, matching what filterItems(for: .month) kept.
+    private func generateMonthlyData(from items: [TransactionSnapshot], referenceDate: Date, payCycleStartDay: Int) -> [ChartDataPoint] {
         let calendar = Calendar.current
+        let monthStart = PayCycleService.financialMonthStart(for: referenceDate, startDay: payCycleStartDay, calendar: calendar)
+        let monthEnd = calendar.date(byAdding: .month, value: 1, to: monthStart) ?? monthStart
+
         var data: [ChartDataPoint] = []
-
-        for i in 0..<4 {
-            let weekStart = calendar.date(byAdding: .weekOfYear, value: -i, to: referenceDate) ?? referenceDate
-            let weekEnd = calendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) ?? weekStart
-
+        var weekStart = monthStart
+        var weekNumber = 1
+        while weekStart < monthEnd {
+            let weekEnd = min(calendar.date(byAdding: .day, value: 7, to: weekStart) ?? monthEnd, monthEnd)
             let weekItems = items.filter { $0.timestamp >= weekStart && $0.timestamp < weekEnd }
             let income = calculateIncome(from: weekItems)
             let expenses = calculateExpenses(from: weekItems)
 
-            data.append(ChartDataPoint(period: "Week \(4-i)", income: income, expenses: expenses, date: weekStart))
+            data.append(ChartDataPoint(period: "Week \(weekNumber)", income: income, expenses: expenses, date: weekStart))
+            weekStart = weekEnd
+            weekNumber += 1
         }
 
-        return data.reversed()
+        return data
     }
 
     private func generateYearlyData(from items: [TransactionSnapshot], referenceDate: Date) -> [ChartDataPoint] {
