@@ -163,13 +163,16 @@ struct ActivityView: View {
             .scrollContentBackground(.hidden)
             .appBackground()
             .navigationTitle("Activity")
-            .navigationBarTitleDisplayMode(.large)
+            // Inline while selecting so the "N selected" principal item is visible
+            // (a large title suppresses it).
+            .navigationBarTitleDisplayMode(viewModel.isSelecting ? .inline : .large)
             .modifier(ConditionalSearchable(
                 isActive: !viewModel.hasNoTransactions,
                 text: $viewModel.searchText,
                 prompt: "Search transactions..."
             ))
-            .appToolbar(showingAddItemView: $showingAddItemView)
+            // Hide the gear/＋ while selecting — the selection toolbar takes over.
+            .appToolbar(showingAddItemView: $showingAddItemView, enabled: !viewModel.isSelecting)
             .toolbar {
                 if viewModel.isSelecting {
                     ToolbarItem(placement: .topBarLeading) {
@@ -207,7 +210,7 @@ struct ActivityView: View {
         }
     }
 
-    private func bulkButton(_ label: LocalizedStringKey, _ icon: String, role: ButtonRole? = nil, action: @escaping () -> Void) -> some View {
+    private func bulkButton(_ label: LocalizedStringKey, _ icon: String, tint: Color = .primary, role: ButtonRole? = nil, action: @escaping () -> Void) -> some View {
         Button(role: role, action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
@@ -216,7 +219,7 @@ struct ActivityView: View {
                     .font(.caption2)
             }
             .frame(maxWidth: .infinity)
-            .foregroundStyle(.white)
+            .foregroundStyle(tint)
         }
     }
 
@@ -231,7 +234,7 @@ struct ActivityView: View {
         Group {
             if viewModel.isSelecting {
                 HStack {
-                    bulkButton("Delete", "trash", role: .destructive) { viewModel.bulkDelete() }
+                    bulkButton("Delete", "trash", tint: .red, role: .destructive) { viewModel.bulkDelete() }
                     bulkButton("Category", "tag") { showCategorySheet = true }
                     bulkButton("Amount", "eurosign.circle") { showAmountSheet = true }
                     bulkButton("Description", "text.alignleft") { showNoteSheet = true }
@@ -301,20 +304,37 @@ private struct CategoryBulkEditSheet: View {
     let count: Int
     let onSelect: (CategorySnapshot) -> Void
     @State private var categories: [CategorySnapshot] = []
+    @State private var query: String = ""
     @Environment(\.dismiss) private var dismiss
+
+    private var filtered: [CategorySnapshot] {
+        guard !query.isEmpty else { return categories }
+        return categories.filter { $0.name.localizedCaseInsensitiveContains(query) }
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(categories) { category in
-                    Button(action: { onSelect(category) }) {
-                        Text(category.name)
-                            .foregroundStyle(.textPrimary)
+                Section {
+                    ForEach(filtered) { category in
+                        Button(action: { onSelect(category) }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: category.systemImage)
+                                    .foregroundStyle(category.categoryColor)
+                                    .frame(width: 24)
+                                Text(category.name.localizedCategoryDisplay)
+                                    .foregroundStyle(.textPrimary)
+                            }
+                        }
                     }
+                } header: {
+                    Text(String(localized: "Applies to \(count) transactions"))
                 }
             }
-            .navigationTitle(Text(String(localized: "Set category for \(count) transactions")))
+            .searchable(text: $query, prompt: Text(String(localized: "Search categories")))
+            .navigationTitle(Text(String(localized: "Category")))
             .navigationBarTitleDisplayMode(.inline)
+            .presentationDetents([.medium, .large])
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(String(localized: "Cancel")) { dismiss() }
@@ -338,26 +358,32 @@ private struct AmountBulkEditSheet: View {
     let onConfirm: (Double) -> Void
     @State private var amount: Double = 0.0
     @State private var currencyCode: String = "EUR"
+    @State private var focusToken = 0
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    CurrencyAmountField(amount: $amount, currencyCode: $currencyCode)
+                    CurrencyAmountField(amount: $amount, currencyCode: $currencyCode, focusTrigger: focusToken)
+                } footer: {
+                    Text(String(localized: "Applies to \(count) transactions"))
                 }
             }
-            .navigationTitle(Text(String(localized: "Set \(count) transactions to")))
+            .navigationTitle(Text(String(localized: "New amount")))
             .navigationBarTitleDisplayMode(.inline)
+            .presentationDetents([.medium])
+            .onAppear { focusToken += 1 }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("OK") {
+                    Button(String(localized: "Set")) {
                         onConfirm(amount)
                         dismiss()
                     }
+                    .disabled(amount <= 0)
                 }
             }
         }
@@ -368,6 +394,7 @@ private struct DescriptionBulkEditSheet: View {
     let count: Int
     let onConfirm: (String) -> Void
     @State private var description: String = ""
+    @FocusState private var noteFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -376,16 +403,21 @@ private struct DescriptionBulkEditSheet: View {
                 Section {
                     TextField("Description", text: $description, axis: .vertical)
                         .lineLimit(3...)
+                        .focused($noteFocused)
+                } footer: {
+                    Text(String(localized: "Applies to \(count) transactions"))
                 }
             }
-            .navigationTitle(Text(String(localized: "Set description for \(count) transactions")))
+            .navigationTitle(Text(String(localized: "Description")))
             .navigationBarTitleDisplayMode(.inline)
+            .presentationDetents([.medium])
+            .onAppear { noteFocused = true }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("OK") {
+                    Button(String(localized: "Set")) {
                         onConfirm(description)
                         dismiss()
                     }

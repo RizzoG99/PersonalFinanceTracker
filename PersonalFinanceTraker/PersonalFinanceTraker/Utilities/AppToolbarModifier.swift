@@ -10,6 +10,9 @@ struct AppToolbarModifier: ViewModifier {
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
     @Environment(DataChangedSignal.self) private var dataChanged: DataChangedSignal
     @Binding var showingAddItemView: Bool
+    /// When false, the gear/＋ items are hidden (e.g. while the Activity list is in
+    /// multi-select mode and shows its own Cancel / count / Select All toolbar instead).
+    var enabled: Bool = true
     @State private var showingProfile = false
     @State private var selectedDetent: PresentationDetent = .large
 
@@ -17,21 +20,23 @@ struct AppToolbarModifier: ViewModifier {
         @Bindable var transactionViewModel = transactionViewModel
         return content
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Open profile", systemImage: "gear") {
-                        selectedDetent = .large
-                        showingProfile = true
+                if enabled {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Open profile", systemImage: "gear") {
+                            selectedDetent = .large
+                            showingProfile = true
+                        }
+                        .font(.headline)
+                        .foregroundStyle(.textPrimary)
                     }
-                    .font(.headline)
-                    .foregroundStyle(.textPrimary)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Add transaction", systemImage: "plus") {
-                        showingAddItemView = true
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Add transaction", systemImage: "plus") {
+                            showingAddItemView = true
+                        }
+                        .font(.headline)
+                        .foregroundStyle(.textPrimary)
+                        .glassEffect(.regular.tint(Color.accentIndigo).interactive())
                     }
-                    .font(.headline)
-                    .foregroundStyle(.textPrimary)
-                    .glassEffect(.regular.tint(Color.accentIndigo).interactive())
                 }
             }
             .sheet(isPresented: $showingProfile) {
@@ -63,7 +68,7 @@ struct AppToolbarModifier: ViewModifier {
 }
 
 extension View {
-    func appToolbar(showingAddItemView: Binding<Bool>) -> some View {
-        modifier(AppToolbarModifier(showingAddItemView: showingAddItemView))
+    func appToolbar(showingAddItemView: Binding<Bool>, enabled: Bool = true) -> some View {
+        modifier(AppToolbarModifier(showingAddItemView: showingAddItemView, enabled: enabled))
     }
 }
