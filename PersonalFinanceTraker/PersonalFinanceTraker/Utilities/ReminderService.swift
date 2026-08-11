@@ -59,7 +59,6 @@ final class ReminderService {
             let content = UNMutableNotificationContent()
             content.title = "Log today's spending"
             content.body = "Take 30 seconds to record what you spent today."
-            content.interruptionLevel = .sensitive
             let comps = Calendar.current.dateComponents(
                 [.year, .month, .day, .hour, .minute], from: date
             )
