@@ -50,9 +50,18 @@ struct AuthenticationWrapper: View {
                     .transition(.opacity)
                     .zIndex(1)
             }
+
+            // ponytail: covers the task-switcher snapshot, which is taken on
+            // .inactive (before .background triggers the PIN lock below).
+            if scenePhase != .active && !showSplash {
+                SplashView()
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
         .animation(.easeInOut(duration: 0.25), value: isPINSetup)
         .animation(.easeInOut(duration: 0.25), value: authService.isUnlocked)
+        .animation(.easeInOut(duration: 0.25), value: scenePhase)
         .onAppear {
             if !isPINSetup {
                 try? pinService.clearPIN()
