@@ -105,7 +105,7 @@ final class PINSetupViewModel {
     }
 
     private func advanceToConfirm() {
-        if isChangeMode && pinService.validatePIN(pinInput) {
+        if isChangeMode && pinService.verifyPINForPolicyCheck(pinInput) {
             errorMessage = "New PIN must be different from the current one."
             triggerShake()
             Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }

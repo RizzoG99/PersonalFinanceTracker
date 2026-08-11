@@ -101,6 +101,33 @@ final class PINService {
         checkCurrentLockout()
     }
 
+    /// Verifies a PIN against the stored hash without counting it as an authentication attempt.
+    /// Used for business-rule checks (e.g., "new PIN must differ from current PIN") that should
+    /// never trigger the failure counter or lockout, only for policy validation.
+    /// - Parameter pin: The PIN to verify
+    /// - Returns: true if the PIN matches the stored hash, false otherwise
+    func verifyPINForPolicyCheck(_ pin: String) -> Bool {
+        guard let salt = fetch(forKey: saltKey),
+              let storedHash = fetch(forKey: hashKey) else {
+            return false
+        }
+
+        let versionData = fetch(forKey: versionKey)
+        let versionString = versionData.flatMap { String(data: $0, encoding: .utf8) }
+        let isLegacy = versionString != "2"
+
+        let isValid: Bool
+        if isLegacy {
+            let computed = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
+            isValid = constantTimeEqual(computed, storedHash)
+        } else {
+            let computed = derivePBKDF2(pin: pin, salt: salt)
+            isValid = constantTimeEqual(computed, storedHash)
+        }
+
+        return isValid
+    }
+
     func isPINSet() -> Bool { fetch(forKey: hashKey) != nil }
 
     func clearPIN() throws {

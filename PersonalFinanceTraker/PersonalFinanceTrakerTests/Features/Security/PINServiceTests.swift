@@ -321,6 +321,72 @@ struct PINServiceTests {
         }
     }
 
+    // MARK: - Policy Check (Non-Counting Validation)
+
+    @Test("verifyPINForPolicyCheck matches correct PIN without counting attempt")
+    func policyCheckCorrectPIN() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Policy check should succeed without side effects
+        #expect(pinService.verifyPINForPolicyCheck("1234") == true)
+
+        // Failure counter should not have incremented
+        let result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4) // Not 3, confirming no prior increment
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+        }
+    }
+
+    @Test("verifyPINForPolicyCheck rejects wrong PIN without counting attempt")
+    func policyCheckWrongPIN() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Policy check should fail without side effects
+        #expect(pinService.verifyPINForPolicyCheck("0000") == false)
+
+        // Failure counter should not have incremented
+        let result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4) // Not 3, confirming no prior increment
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+        }
+    }
+
+    @Test("verifyPINForPolicyCheck does not affect lockout state")
+    func policyCheckDoesNotDriveLockout() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger 4 failures via normal validation path
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+
+        // Policy check many times with wrong PIN - should not increment counter
+        for _ in 0..<10 {
+            #expect(pinService.verifyPINForPolicyCheck("0000") == false)
+        }
+
+        // Counter should still be at 4, not locked out
+        #expect(pinService.lockoutDeadline == nil)
+
+        // One more validation failure via normal path should lock out
+        let result = pinService.validatePINWithResult("0000")
+        if case .lockedOut = result {
+            // Expected: 5th failure triggers lockout
+        } else {
+            Issue.record("Expected .lockedOut after 5th validation failure")
+        }
+    }
+
     // MARK: - Edge Cases
 
     @Test("PIN can be cleared after lockout")
