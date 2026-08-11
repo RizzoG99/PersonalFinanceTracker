@@ -18,9 +18,6 @@ struct ActivityView: View {
     @State private var showCategorySheet = false
     @State private var showAmountSheet = false
     @State private var showNoteSheet = false
-    // Backing state for the shared category picker (same sheet the Add flow uses).
-    @State private var bulkCategories: [CategorySnapshot] = []
-    @State private var bulkSelectedCategory: CategorySnapshot?
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -197,12 +194,10 @@ struct ActivityView: View {
             }
             .sheet(isPresented: $showCategorySheet) {
                 // Reuse the Add flow's category picker for visual consistency.
-                CategoryPickerSheet(categories: bulkCategories, selectedCategory: $bulkSelectedCategory)
-            }
-            .onChange(of: bulkSelectedCategory) { _, newValue in
-                guard let newValue else { return }
-                viewModel.bulkSetCategory(newValue)
-                bulkSelectedCategory = nil
+                BulkCategoryPickerSheet(repo: viewModel.repo) { category in
+                    viewModel.bulkSetCategory(category)
+                    showCategorySheet = false
+                }
             }
             .sheet(isPresented: $showAmountSheet) {
                 amountSheet
@@ -244,13 +239,7 @@ struct ActivityView: View {
             if viewModel.isSelecting {
                 HStack {
                     bulkButton("Delete", "trash", tint: .red, role: .destructive) { viewModel.bulkDelete() }
-                    bulkButton("Category", "tag") {
-                        Task {
-                            bulkCategories = (try? await viewModel.repo.fetchCategories()) ?? []
-                            bulkSelectedCategory = nil
-                            showCategorySheet = true
-                        }
-                    }
+                    bulkButton("Category", "tag") { showCategorySheet = true }
                     bulkButton("Amount", "eurosign.circle") { showAmountSheet = true }
                     bulkButton("Description", "text.alignleft") { showNoteSheet = true }
                 }
@@ -301,6 +290,25 @@ private struct ConditionalSearchable: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// Loads categories, then presents the Add flow's shared `CategoryPickerSheet`.
+/// Fetching inside the sheet (not before presenting) guarantees the grid is populated.
+private struct BulkCategoryPickerSheet: View {
+    let repo: any ITransactionRepository
+    let onApply: (CategorySnapshot) -> Void
+    @State private var categories: [CategorySnapshot] = []
+    @State private var selected: CategorySnapshot?
+
+    var body: some View {
+        CategoryPickerSheet(categories: categories, selectedCategory: $selected)
+            .task {
+                categories = (try? await repo.fetchCategories()) ?? []
+            }
+            .onChange(of: selected) { _, newValue in
+                if let newValue { onApply(newValue) }
+            }
     }
 }
 
