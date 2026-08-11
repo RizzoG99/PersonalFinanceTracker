@@ -89,11 +89,13 @@ struct ActivityView: View {
                             .buttonStyle(.plain)
                             // A plain Button in a List swallows .onLongPressGesture, so run the
                             // long-press alongside the button via .simultaneousGesture instead.
+                            // The long-press ONLY enters selection mode — the button's own tap
+                            // (which fires on release) then selects the pressed row. Toggling here
+                            // too would double-fire with that tap and cancel the selection.
                             .simultaneousGesture(
                                 LongPressGesture(minimumDuration: 0.4).onEnded { _ in
                                     if !viewModel.isSelecting {
                                         viewModel.isSelecting = true
-                                        viewModel.toggleSelection(item.id)
                                     }
                                 }
                             )
@@ -214,7 +216,7 @@ struct ActivityView: View {
         }
     }
 
-    private func bulkButton(_ label: LocalizedStringKey, _ icon: String, tint: Color = .primary, role: ButtonRole? = nil, action: @escaping () -> Void) -> some View {
+    private func bulkButton(_ label: LocalizedStringKey, _ icon: String, tint: Color = .accentIndigo, role: ButtonRole? = nil, action: @escaping () -> Void) -> some View {
         Button(role: role, action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
@@ -237,15 +239,19 @@ struct ActivityView: View {
     private var selectionActionBar: some View {
         Group {
             if viewModel.isSelecting {
-                HStack {
+                HStack(spacing: 4) {
                     bulkButton("Delete", "trash", tint: .red, role: .destructive) { viewModel.bulkDelete() }
                     bulkButton("Category", "tag") { showCategorySheet = true }
                     bulkButton("Amount", "eurosign.circle") { showAmountSheet = true }
                     bulkButton("Description", "text.alignleft") { showNoteSheet = true }
                 }
                 .disabled(viewModel.selectedIDs.isEmpty)
-                .padding()
-                .background(.ultraThinMaterial)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 8)
+                // Floating glass bar, matching the app's GlassCard aesthetic.
+                .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                .padding(.horizontal, 12)
+                .padding(.bottom, 4)
             }
         }
     }
@@ -328,10 +334,13 @@ private struct AmountBulkEditSheet: View {
                 } footer: {
                     Text(String(localized: "Applies to \(count) transactions"))
                 }
+                .appFormSectionBackground()
             }
+            .appFormBackground()
             .navigationTitle(Text(String(localized: "New amount")))
             .navigationBarTitleDisplayMode(.inline)
             .presentationDetents([.medium])
+            .presentationBackground { AppBackground() }
             .onAppear { focusToken += 1 }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -366,10 +375,13 @@ private struct DescriptionBulkEditSheet: View {
                 } footer: {
                     Text(String(localized: "Applies to \(count) transactions"))
                 }
+                .appFormSectionBackground()
             }
+            .appFormBackground()
             .navigationTitle(Text(String(localized: "Description")))
             .navigationBarTitleDisplayMode(.inline)
             .presentationDetents([.medium])
+            .presentationBackground { AppBackground() }
             .onAppear { noteFocused = true }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

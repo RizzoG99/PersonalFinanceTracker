@@ -563,6 +563,20 @@ struct TransactionListViewModelTests {
         #expect(after.first { $0.id == target.id }!.note == "reconciled")
     }
 
+    @Test @MainActor func bulkSetNoteAppliesToEmptyNoteRows() async {
+        let (vm, _, _, _, _) = await makeRealRepoVM()
+        // Add a transaction with an EMPTY note.
+        try! await vm.repo.add(TransactionInput(timestamp: Date(), amount: -10, note: "", category: "Food", currencyCode: "EUR"))
+        vm.reload()
+        await vm.loadTask?.value
+        let emptyRow = vm.filteredItems.first { $0.note.isEmpty }!
+        vm.toggleSelection(emptyRow.id)
+        vm.bulkSetNote("groceries")
+        await vm.bulkEditTask?.value
+        let after = try! await vm.repo.fetchAll()
+        #expect(after.first { $0.id == emptyRow.id }!.note == "groceries")
+    }
+
     @Test @MainActor func bulkEditUndoRestoresPriorValues() async {
         let (vm, _, _, expenseId, _) = await makeRealRepoVM()
         let target = vm.filteredItems.first { $0.id == expenseId }!
