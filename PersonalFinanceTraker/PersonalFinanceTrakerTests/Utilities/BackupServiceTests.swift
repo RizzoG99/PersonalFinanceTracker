@@ -1,12 +1,24 @@
 import Testing
 import Foundation
+import CryptoKit
 @testable import PersonalFinanceTraker
 
 struct BackupServiceTests {
+    // ponytail: fresh per test invocation (struct is re-instantiated per @Test), so
+    // each test's BackupService gets its own isolated in-memory key instead of
+    // sharing BackupCrypto's process-global Keychain account — see BackupService's
+    // keyProvider doc comment for why that mattered (cross-test Keychain race under
+    // Swift Testing's default parallel execution).
+    private let backupKey = SymmetricKey(size: .bits256)
+
     private func makeTempStorage() -> (storage: TestBackupStorage, url: URL) {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return (TestBackupStorage(url: dir), dir)
+    }
+
+    private func makeService(storage: TestBackupStorage, maxBackupsKept: Int = 3) -> BackupService {
+        BackupService(storage: storage, maxBackupsKept: maxBackupsKept, keyProvider: { backupKey })
     }
 
     private func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int = 0, _ minute: Int = 0) -> Date {
@@ -15,7 +27,7 @@ struct BackupServiceTests {
 
     @Test func writeBackupCreatesAJSONFileInTheContainer() throws {
         let (storage, dir) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
+        let service = makeService(storage: storage, maxBackupsKept: 3)
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")]
 
         let url = try service.writeBackup(transactions: tx, recurrenceRules: [], now: date(2026, 1, 2))
@@ -26,7 +38,7 @@ struct BackupServiceTests {
 
     @Test func writeBackupThrowsWhenTransactionsAreEmpty() {
         let (storage, _) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
+        let service = makeService(storage: storage, maxBackupsKept: 3)
 
         #expect(throws: BackupService.BackupError.emptyStore) {
             try service.writeBackup(transactions: [], recurrenceRules: [], now: date(2026, 1, 1))
@@ -35,7 +47,7 @@ struct BackupServiceTests {
 
     @Test func writeBackupThrowsWhenICloudUnavailable() {
         let storage = TestBackupStorage(url: nil)
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
+        let service = makeService(storage: storage, maxBackupsKept: 3)
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")]
 
         #expect(throws: BackupService.BackupError.iCloudUnavailable) {
@@ -45,7 +57,7 @@ struct BackupServiceTests {
 
     @Test func newestBackupReturnsTheMostRecentlyWrittenFile() throws {
         let (storage, _) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
+        let service = makeService(storage: storage, maxBackupsKept: 3)
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")]
 
         let first = try service.writeBackup(transactions: tx, recurrenceRules: [], now: date(2026, 1, 1, 9, 0))
@@ -57,7 +69,7 @@ struct BackupServiceTests {
 
     @Test func writeBackupPrunesBeyondMaxBackupsKept() throws {
         let (storage, _) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 2)
+        let service = makeService(storage: storage, maxBackupsKept: 2)
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")]
 
         _ = try service.writeBackup(transactions: tx, recurrenceRules: [], now: date(2026, 1, 1, 9, 0))
@@ -69,7 +81,7 @@ struct BackupServiceTests {
 
     @Test func readBackupDecodesWhatWasWritten() throws {
         let (storage, _) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
+        let service = makeService(storage: storage, maxBackupsKept: 3)
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, note: "Lunch", category: "Food")]
 
         let url = try service.writeBackup(transactions: tx, recurrenceRules: [], now: date(2026, 1, 1))
@@ -81,7 +93,7 @@ struct BackupServiceTests {
 
     @Test func encryptedWriteAndReadRoundTrip() throws {
         let (storage, _) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
+        let service = makeService(storage: storage, maxBackupsKept: 3)
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, note: "Encrypted", category: "Food")]
 
         // Write creates an encrypted .pftbackup file
@@ -97,7 +109,7 @@ struct BackupServiceTests {
 
     @Test func legacyPlaintextJSONBackupStillRestores() throws {
         let (storage, dir) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 3)
+        let service = makeService(storage: storage, maxBackupsKept: 3)
 
         // Create a legacy .json backup by encoding plaintext
         let legacyPayload = BackupPayload(
@@ -134,7 +146,7 @@ struct BackupServiceTests {
 
     @Test func listBackupsIncludesBothJsonAndPftbackupExtensions() throws {
         let (storage, dir) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 10)
+        let service = makeService(storage: storage, maxBackupsKept: 10)
 
         // Create a legacy .json backup
         let legacyPayload = BackupPayload(
@@ -172,7 +184,7 @@ struct BackupServiceTests {
 
     @Test func newestBackupPicksCorrectlyAmongMixedFiles() throws {
         let (storage, dir) = makeTempStorage()
-        let service = BackupService(storage: storage, maxBackupsKept: 10)
+        let service = makeService(storage: storage, maxBackupsKept: 10)
 
         // Create an older encrypted backup
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")]

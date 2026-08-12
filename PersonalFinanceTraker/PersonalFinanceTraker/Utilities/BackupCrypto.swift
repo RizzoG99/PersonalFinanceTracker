@@ -5,17 +5,6 @@ import Security
 enum BackupCrypto {
     private static let backupKeyAccount = "pft.backup_key"
 
-    // ponytail: kSecAttrSynchronizable requires the machine running this code to be
-    // signed into iCloud with Keychain sync enabled — never guaranteed for a unit-test
-    // host (CI, a fresh simulator, a Mac not signed into iCloud), so BackupServiceTests
-    // (which exercise this real key()/fetchKey()/storeKey() path, unlike
-    // BackupCryptoTests which pass an explicit key) failed there with .keychainError.
-    // Store/fetch locally-only under the XCTest host so the encryption round-trip is
-    // still exercised without needing real iCloud state; production keeps syncing.
-    private static var isRunningTests: Bool {
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-    }
-
     /// Fetch or create a 256-bit backup encryption key from iCloud Keychain.
     /// Key is stored with synchronization enabled so it syncs to user's other devices.
     static func key() throws -> SymmetricKey {
@@ -79,7 +68,7 @@ enum BackupCrypto {
             kSecAttrAccount: backupKeyAccount,
             kSecReturnData: true,
             kSecMatchLimit: kSecMatchLimitOne,
-            kSecAttrSynchronizable: isRunningTests ? false : true
+            kSecAttrSynchronizable: true
         ]
 
         var result: AnyObject?
@@ -105,7 +94,7 @@ enum BackupCrypto {
             kSecAttrAccount: backupKeyAccount,
             kSecValueData: keyData,
             kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
-            kSecAttrSynchronizable: isRunningTests ? false : true
+            kSecAttrSynchronizable: true
         ]
 
         // Delete any existing key first
