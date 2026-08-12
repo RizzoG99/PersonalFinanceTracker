@@ -140,7 +140,17 @@ struct BackupServiceTests {
         let legacyPayload = BackupPayload(
             version: 1,
             createdAt: date(2026, 1, 1),
-            transactions: [TransactionSnapshot.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")],
+            transactions: [
+                BackupTransaction(
+                    timestamp: date(2026, 1, 1),
+                    amount: -10,
+                    note: "",
+                    category: "Food",
+                    currencyCode: "EUR",
+                    goalId: nil,
+                    recurrenceRuleId: nil
+                )
+            ],
             recurrenceRules: []
         )
         let encoder = JSONEncoder()
@@ -172,7 +182,17 @@ struct BackupServiceTests {
         let legacyPayload = BackupPayload(
             version: 1,
             createdAt: date(2026, 1, 2),
-            transactions: [TransactionSnapshot.test(timestamp: date(2026, 1, 2), amount: -20, category: "Transport")],
+            transactions: [
+                BackupTransaction(
+                    timestamp: date(2026, 1, 2),
+                    amount: -20,
+                    note: "",
+                    category: "Transport",
+                    currencyCode: "EUR",
+                    goalId: nil,
+                    recurrenceRuleId: nil
+                )
+            ],
             recurrenceRules: []
         )
         let encoder = JSONEncoder()

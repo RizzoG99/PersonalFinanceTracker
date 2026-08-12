@@ -3,14 +3,7 @@ import Foundation
 
 @testable import PersonalFinanceTraker
 
-private final class FakeBiometricAuthService: BiometricAuthService {
-    var isBiometricFeatureEnabled: Bool = true
-    var isBiometricsAvailable: Bool = true
-
-    func authenticate(completion: @escaping (Bool) -> Void) {
-        completion(true)
-    }
-}
+extension PINKeychainSerialTests {
 
 @MainActor
 @Suite(.serialized)
@@ -19,11 +12,15 @@ struct PINEntryViewModelTests {
 
     @Test("Correct PIN entered digit-by-digit unlocks the app")
     func correctPINUnlocks() async throws {
-        defer { try? pinService.clearPIN() }
+        await PINTestLock.shared.acquire()
+        defer {
+            try? pinService.clearPIN()
+            Task { await PINTestLock.shared.release() }
+        }
 
         try pinService.setPIN("1234")
 
-        let authService = FakeBiometricAuthService()
+        let authService = BiometricAuthService()
         let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
 
         #expect(viewModel.isLockedOut == false)
@@ -36,8 +33,9 @@ struct PINEntryViewModelTests {
 
         #expect(viewModel.pinInput == "1234")
 
-        // Wait for verifyPIN async validation to complete
-        try await Task.sleep(for: .seconds(0.3))
+        // Wait for verifyPIN async validation to complete. Generous margin —
+        // under full-suite CPU contention 0.3s wasn't always enough.
+        try await Task.sleep(for: .seconds(1.0))
 
         // Success should have cleared the input
         #expect(viewModel.pinInput.isEmpty)
@@ -51,7 +49,7 @@ struct PINEntryViewModelTests {
 
         try pinService.setPIN("1234")
 
-        let authService = FakeBiometricAuthService()
+        let authService = BiometricAuthService()
         let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
 
         // Trigger 5 failures to lock out
@@ -78,7 +76,7 @@ struct PINEntryViewModelTests {
 
         try pinService.setPIN("1234")
 
-        let authService = FakeBiometricAuthService()
+        let authService = BiometricAuthService()
         let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
 
         // Trigger 5 failures in pinService to lock out
@@ -113,7 +111,7 @@ struct PINEntryViewModelTests {
 
         try pinService.setPIN("1234")
 
-        let authService = FakeBiometricAuthService()
+        let authService = BiometricAuthService()
         let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
 
         viewModel.appendDigit("5")
@@ -137,7 +135,7 @@ struct PINEntryViewModelTests {
 
     @Test("appendDigit does not append beyond 4 digits")
     func appendDigitBoundary() {
-        let authService = FakeBiometricAuthService()
+        let authService = BiometricAuthService()
         let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
 
         viewModel.appendDigit("1")
@@ -152,7 +150,7 @@ struct PINEntryViewModelTests {
 
     @Test("deleteDigit removes last digit and updates eyesOpen")
     func deleteDigit() {
-        let authService = FakeBiometricAuthService()
+        let authService = BiometricAuthService()
         let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
 
         viewModel.appendDigit("1")
@@ -182,4 +180,6 @@ struct PINEntryViewModelTests {
         #expect(viewModel.pinInput.isEmpty)
         #expect(viewModel.eyesOpen)
     }
+}
+
 }

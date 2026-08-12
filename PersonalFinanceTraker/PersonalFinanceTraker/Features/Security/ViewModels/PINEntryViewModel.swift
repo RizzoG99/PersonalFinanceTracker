@@ -13,7 +13,12 @@ final class PINEntryViewModel {
 
     private let pinService: PINService
     let authService: BiometricAuthService
-    private var countdownTask: Task<Void, Never>?
+    // nonisolated(unsafe): Task<Void, Never> is Sendable and Task.cancel() is
+    // thread-safe, so this is a safe escape hatch — deinit is always nonisolated
+    // even on a @MainActor class, and plain `nonisolated` isn't accepted here
+    // because @Observable's macro expansion requires mutable stored properties
+    // to stay actor-isolated.
+    private nonisolated(unsafe) var countdownTask: Task<Void, Never>?
 
     var showBiometricButton: Bool {
         authService.isBiometricFeatureEnabled && authService.isBiometricsAvailable
@@ -63,6 +68,8 @@ final class PINEntryViewModel {
         switch result {
         case .success:
             authService.unlock()
+            pinInput = ""
+            eyesOpen = true
         case .failure(let remainingAttempts):
             errorMessage = "Incorrect PIN. \(remainingAttempts) attempt\(remainingAttempts == 1 ? "" : "s") remaining."
             triggerShake()

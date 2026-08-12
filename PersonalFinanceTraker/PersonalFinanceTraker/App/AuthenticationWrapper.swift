@@ -12,6 +12,10 @@ struct AuthenticationWrapper: View {
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
     @State private var showSplash = true
+    // ponytail: UIScreen.main is deprecated on iOS 26 in favor of a per-window-scene
+    // lookup; keeping it since this view has no window/scene context to source one
+    // from, and it's a deprecation warning, not a functional gap. Upgrade if/when
+    // this view gains access to a WindowScene (e.g. via @Environment).
     @State private var isCaptured = UIScreen.main.isCaptured
     // Owned here (not by MainTabView) since AuthenticationWrapper is never torn down
     // while the app is running — MainTabView is recreated on every lock/unlock cycle,
@@ -65,7 +69,16 @@ struct AuthenticationWrapper: View {
         .animation(.easeInOut(duration: 0.25), value: authService.isUnlocked)
         .animation(.easeInOut(duration: 0.25), value: scenePhase)
         .onAppear {
-            if !isPINSetup {
+            // ponytail: unit tests run inside this app as their host process, so this
+            // view's real onAppear fires alongside the test bundle. Without this guard,
+            // a fresh test-host launch (isPINSetup false, since the host process has no
+            // PIN set up) clears the SAME Keychain accounts PINServiceTests/
+            // PINEntryViewModelTests write to, at a moment no test-side lock can see —
+            // this was the actual cause of two long-flaky PIN tests, not a concurrency
+            // bug in PINService itself. Standard XCTest-host detection; skip the
+            // production side effect during test runs.
+            let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            if !isPINSetup && !isRunningTests {
                 try? pinService.clearPIN()
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {

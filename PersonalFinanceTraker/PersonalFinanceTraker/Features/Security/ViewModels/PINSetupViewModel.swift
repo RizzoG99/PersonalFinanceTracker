@@ -97,7 +97,7 @@ final class PINSetupViewModel {
             errorMessage = "Incorrect PIN. \(remainingAttempts) attempt\(remainingAttempts == 1 ? "" : "s") remaining."
             triggerShake()
             Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }
-        case .lockedOut(let deadline):
+        case .lockedOut:
             errorMessage = "Account locked. Try again later."
             triggerShake()
             Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }

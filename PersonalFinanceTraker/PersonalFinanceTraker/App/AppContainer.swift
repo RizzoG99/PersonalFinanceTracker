@@ -16,7 +16,7 @@ enum AppContainer {
 
     /// Check if a container creation error occurred and return a user-facing message.
     static var containerErrorMessage: String? {
-        guard let error = containerCreationError else { return nil }
+        guard containerCreationError != nil else { return nil }
         return "Unable to access your data. Please restart the app or reinstall if the issue persists."
     }
 
@@ -48,9 +48,7 @@ enum AppContainer {
 
             // Harden the store file protection so the SQLite database is unreadable
             // while the device is locked. Must be called after container creation.
-            if let storeURL = modelConfiguration.url {
-                hardenStore(at: storeURL)
-            }
+            hardenStore(at: modelConfiguration.url)
 
             return container
         } catch {

@@ -2321,6 +2321,9 @@
         }
       }
     },
+    "Data Access Error" : {
+
+    },
     "Date" : {
       "localizations" : {
         "en" : {
@@ -6676,6 +6679,9 @@
           }
         }
       }
+    },
+    "Unlock your phone to add a transaction." : {
+
     },
     "Unusually high spending in %@: %@" : {
       "localizations" : {

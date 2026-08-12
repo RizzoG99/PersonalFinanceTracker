@@ -5,6 +5,8 @@ import Security
 
 @testable import PersonalFinanceTraker
 
+extension PINKeychainSerialTests {
+
 @Suite(.serialized)
 struct PINServiceTests {
     private let pinService = PINService()
@@ -17,8 +19,17 @@ struct PINServiceTests {
     // MARK: - Lockout Triggering
 
     @Test("Lockout triggers at 5 consecutive failures")
-    func lockoutTriggersAtFiveFailures() throws {
-        defer { try? pinService.clearPIN() }
+    func lockoutTriggersAtFiveFailures() async throws {
+        await PINTestLock.shared.acquire()
+        defer {
+            try? pinService.clearPIN()
+            Task { await PINTestLock.shared.release() }
+        }
+        // init() already ran (and cleared PIN state) before acquire() above could
+        // block — a concurrent test holding the lock could have set fresh state
+        // between that init-time clear and this point. Clear again now that the
+        // lock is actually held, so the slate really is clean.
+        try? pinService.clearPIN()
 
         try pinService.setPIN("1234")
 
@@ -86,10 +97,14 @@ struct PINServiceTests {
 
         try pinService.setPIN("1234")
 
-        // Trigger 6 failures (increments through 5, then one more before next tier)
-        for _ in 0..<6 {
-            _ = pinService.validatePIN("0000")
-        }
+        // Seed 5 prior failures directly: the 6th real attempt below is what pushes
+        // the tier from 1-min to 5-min. Looping validatePIN 6 times doesn't work
+        // here — the 5th failure already triggers a lockout, and every attempt
+        // after that short-circuits in checkCurrentLockout() before the counter
+        // increments, so a real user's next attempt only arrives once that window
+        // has passed (simulated by seeding the counter, not the lockout deadline).
+        try pinService.storeTestData(Data("5".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
 
         guard let deadline = pinService.lockoutDeadline else {
             Issue.record("Expected lockout deadline after 6 failures")
@@ -108,10 +123,10 @@ struct PINServiceTests {
 
         try pinService.setPIN("1234")
 
-        // Trigger 7 failures
-        for _ in 0..<7 {
-            _ = pinService.validatePIN("0000")
-        }
+        // Seed 6 prior failures directly — see escalation5MinuteTier for why looping
+        // validatePIN doesn't reach this count on its own.
+        try pinService.storeTestData(Data("6".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
 
         guard let deadline = pinService.lockoutDeadline else {
             Issue.record("Expected lockout deadline after 7 failures")
@@ -130,10 +145,10 @@ struct PINServiceTests {
 
         try pinService.setPIN("1234")
 
-        // Trigger 8 failures
-        for _ in 0..<8 {
-            _ = pinService.validatePIN("0000")
-        }
+        // Seed 7 prior failures directly — see escalation5MinuteTier for why looping
+        // validatePIN doesn't reach this count on its own.
+        try pinService.storeTestData(Data("7".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
 
         guard let deadline8 = pinService.lockoutDeadline else {
             Issue.record("Expected lockout deadline after 8 failures")
@@ -145,22 +160,24 @@ struct PINServiceTests {
         // 60 minutes = 3600 seconds; allow ~5s margin for test execution
         #expect(lockoutSeconds8 > 3595 && lockoutSeconds8 <= 3605)
 
-        // Try 9 failures - tier should remain 60 min (capped)
-        // Simulate: clear lockout first to continue testing, then trigger 9th
+        // 9th failure - tier should remain 60 min (capped), not climb further.
+        // The 8th failure above is still actively locked out, so clear everything
+        // and re-seed rather than validating straight through — same reasoning as
+        // escalation5MinuteTier: an active lockout short-circuits before the
+        // counter would increment.
         try? pinService.clearPIN()
         try pinService.setPIN("1234")
-        for _ in 0..<9 {
-            _ = pinService.validatePIN("0000")
-        }
+        try pinService.storeTestData(Data("8".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
 
         guard let deadline9 = pinService.lockoutDeadline else {
             Issue.record("Expected lockout deadline after 9 failures")
             return
         }
 
-        let lockoutSeconds9 = deadline9.timeIntervalSince(now)
-        // Should also be around 60 minutes (capped) - allow wider margin since time has passed
-        #expect(lockoutSeconds9 > 3590 && lockoutSeconds9 <= 3610)
+        let lockoutSeconds9 = deadline9.timeIntervalSince(Date())
+        // Should also be around 60 minutes (capped)
+        #expect(lockoutSeconds9 > 3595 && lockoutSeconds9 <= 3605)
     }
 
     // MARK: - Success Resets Counter and Deadline
@@ -229,7 +246,7 @@ struct PINServiceTests {
     // MARK: - Clock Rollback Guard
 
     @Test("Clock rollback guard preserves lockout across reboot simulation")
-    func clockRollbackGuardHoldsLockout() throws {
+    func clockRollbackGuardHoldsLockout() async throws {
         defer { try? pinService.clearPIN() }
 
         try pinService.setPIN("1234")
@@ -542,4 +559,6 @@ struct PINServiceTests {
             Issue.record("Expected .lockedOut after 5 failures on legacy PIN format")
         }
     }
+}
+
 }
