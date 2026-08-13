@@ -214,14 +214,20 @@ The one legitimate `@Environment(\.colorScheme)` branch in the codebase — it i
 
 | Layer | Dark | Light |
 | --- | --- | --- |
-| base | `#030712` | `#E6EAF1` |
-| indigo bloom, top-left | `#818CF8` @ 0.22 | `#818CF8` @ **0.05** |
-| teal bloom, bottom-right | `#22D3A0` @ 0.10 | `#22D3A0` @ **0.03** |
-| indigo bloom, centre | `#6366F1` @ 0.10 | `#6366F1` @ **0.03** |
+| base | `#030712` | **`#DCE0EE`** |
+| indigo bloom, top-left | `#818CF8` @ 0.22 | **`#EEF0FF` @ 0.55** |
+| teal bloom, bottom-right | `#22D3A0` @ 0.10 | **`#EAF7F3` @ 0.35** |
+| indigo bloom, centre | `#6366F1` @ 0.10 | **`#EEF0FF` @ 0.35** |
 
-**Worst-case derivation.** `#DDE1F1` composites the top-left indigo bloom (0.05) and the centre indigo bloom (0.03) over the base at full strength. Adding the teal bloom (0.03) as well gives a slightly darker `#D7E1EF`; every token still clears its bar there, with `textDim` the tightest at **4.55:1** (margin +0.05). Both figures are conservative upper bounds — geometrically, the two corner blooms reach the screen centre at 94% of their radius, so their residual intensity there is ~6%, and a full-strength triple overlap does not physically occur. Tokens are specified against `#DDE1F1`; the `#D7E1EF` check confirms headroom.
+**The two themes bloom in opposite directions, and that is the whole design.**
 
-Light bloom opacities are roughly a quarter of dark, not equal. The asymmetry is deliberate: adding light to a near-black base barely moves contrast against light text, but adding saturated indigo to a light base moves it substantially. At the originally-considered 0.10/0.06 the worst-case backdrop was `#D5DAF2` and pushed four tokens below their bar.
+Dark adds light to a near-black base, so a strong bloom costs no contrast. Light originally used the same saturated hues at roughly a quarter opacity (0.05/0.03/0.03), because adding saturated indigo to a pale base *darkens* the backdrop toward the text and ate the contrast budget. The result was a gradient nobody could see: the bloom centres sit in the corners, so at that strength the falloff left it invisible across most of the screen, and light mode read as flat beside dark.
+
+Light now blooms **lighter than its base**. Every bloomed region therefore has *more* contrast with text than the base does, not less — so the worst case for every token becomes the unbloomed base, a single fixed value under direct control. Bloom strength stops competing with contrast at all, which is why the light opacities can be an order of magnitude higher.
+
+**Worst case is now simply `#DCE0EE`.** Verified: `textDim` 4.56:1, `accentIndigo` 4.77:1, `positive` 4.94:1, `textMid` 5.75:1, `negative` 6.31:1, `textPrimary` 13.55:1; every category fill ≥3.49:1 (tightest `categoryPink`). No token needed re-deriving. The earlier `#DDE1F1` / `#D7E1EF` composites no longer apply — they described a backdrop that darkened under blooms, which this one does not.
+
+The darker base has a second effect: it widens the gap between the page and `bg0`/`bg1`, so the tinted Income/Expense chips on Activity — which sit directly on the page rather than inside a card as they do on Dashboard — separate from it visibly without changing their fill or their text colour.
 
 Geometry, radii and `UnitPoint` centres are unchanged.
 

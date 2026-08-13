@@ -78,13 +78,37 @@ extension ShapeStyle where Self == Color {
 struct AppBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
+    private struct Bloom {
+        let color: Color
+        let opacity: Double
+    }
+
     // The one legitimate colorScheme branch in the app: a gradient can't live in the
-    // asset catalog. Light opacities are ~a quarter of dark, not equal — adding light
-    // to a near-black base barely moves contrast, but adding saturated indigo to a
-    // light base moves it a lot. At parity the worst-case backdrop pushed four tokens
-    // below their contrast bar.
-    private var bloom: (indigoTop: Double, teal: Double, indigoCentre: Double) {
-        colorScheme == .dark ? (0.22, 0.10, 0.10) : (0.05, 0.03, 0.03)
+    // asset catalog.
+    //
+    // The two themes bloom in opposite directions. Dark adds light to a near-black
+    // base, so a strong bloom costs nothing. Light originally added the same
+    // saturated indigo to a pale base, which *darkened* the backdrop toward the
+    // text — so the opacities had to be cut to ~a quarter to protect contrast, and
+    // the gradient became invisible.
+    //
+    // Light now blooms *lighter than its base* instead. That inverts the trade: the
+    // worst case for text is the unbloomed base, which is a fixed known value, so
+    // bloom strength no longer competes with the contrast budget at all and the
+    // opacities can be an order of magnitude higher.
+    private var blooms: (topLeft: Bloom, bottomRight: Bloom, centre: Bloom) {
+        if colorScheme == .dark {
+            (Bloom(color: Color(red: 0.506, green: 0.549, blue: 0.973), opacity: 0.22),
+             Bloom(color: Color(red: 0.133, green: 0.827, blue: 0.627), opacity: 0.10),
+             Bloom(color: Color(red: 0.388, green: 0.400, blue: 0.945), opacity: 0.10))
+        } else {
+            // Pale indigo #EEF0FF and pale teal #EAF7F3 — both lighter than the
+            // #DCE0EE base, so every bloomed region has *more* contrast with text
+            // than the base does, not less.
+            (Bloom(color: Color(red: 0.933, green: 0.941, blue: 1.000), opacity: 0.55),
+             Bloom(color: Color(red: 0.918, green: 0.969, blue: 0.953), opacity: 0.35),
+             Bloom(color: Color(red: 0.933, green: 0.941, blue: 1.000), opacity: 0.35))
+        }
     }
 
     var body: some View {
@@ -94,10 +118,7 @@ struct AppBackground: View {
 
                 // Indigo bloom — top-left (ellipse at 20% 0%)
                 RadialGradient(
-                    colors: [
-                        Color(red: 0.506, green: 0.549, blue: 0.973).opacity(bloom.indigoTop),
-                        .clear
-                    ],
+                    colors: [blooms.topLeft.color.opacity(blooms.topLeft.opacity), .clear],
                     center: UnitPoint(x: 0.2, y: 0),
                     startRadius: 0,
                     endRadius: geo.size.height * 0.55
@@ -105,10 +126,7 @@ struct AppBackground: View {
 
                 // Teal bloom — bottom-right (ellipse at 80% 100%)
                 RadialGradient(
-                    colors: [
-                        Color(red: 0.133, green: 0.827, blue: 0.627).opacity(bloom.teal),
-                        .clear
-                    ],
+                    colors: [blooms.bottomRight.color.opacity(blooms.bottomRight.opacity), .clear],
                     center: UnitPoint(x: 0.8, y: 1.0),
                     startRadius: 0,
                     endRadius: geo.size.height * 0.55
@@ -116,10 +134,7 @@ struct AppBackground: View {
 
                 // Indigo bloom — centre (ellipse at 50% 50%)
                 RadialGradient(
-                    colors: [
-                        Color(red: 0.388, green: 0.400, blue: 0.945).opacity(bloom.indigoCentre),
-                        .clear
-                    ],
+                    colors: [blooms.centre.color.opacity(blooms.centre.opacity), .clear],
                     center: .center,
                     startRadius: 0,
                     endRadius: geo.size.height * 0.60
