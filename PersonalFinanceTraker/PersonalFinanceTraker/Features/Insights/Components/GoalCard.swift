@@ -43,7 +43,7 @@ struct GoalCard: View {
 
                     GeometryReader { geo in
                         Capsule()
-                            .fill(Color.surfaceRaised)
+                            .fill(Color.hairline)
                             .overlay(alignment: .leading) {
                                 Capsule()
                                     .fill(goalColor)

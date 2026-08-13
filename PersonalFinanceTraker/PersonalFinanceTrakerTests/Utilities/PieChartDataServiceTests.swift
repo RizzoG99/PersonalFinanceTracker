@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import SwiftUI
 @testable import PersonalFinanceTraker
 
 struct PieChartDataServiceTests {
@@ -74,5 +75,53 @@ struct PieChartDataServiceTests {
         let tx = TransactionSnapshot.test(amount: -30, category: "")
         let result = sut.generatePieChartData(from: [tx], for: .expenses, timePeriod: .week)
         #expect(result.first?.category == "Other")
+    }
+
+    @Test func sliceColourComesFromTheCategorysOwnToken() {
+        let sut = PieChartDataService()
+        let food = CategorySnapshot.test(name: "Food", colorToken: "categoryPink")
+        let result = sut.generatePieChartData(
+            from: [expense(50, category: "Food")],
+            for: .expenses,
+            timePeriod: .week,
+            categories: [food]
+        )
+        #expect(result.first?.color == Color(categoryToken: "categoryPink"))
+    }
+
+    /// Regression guard. Colours used to be assigned by index after sorting by amount,
+    /// so a category's slice changed colour whenever its spending rank changed.
+    @Test func sliceColourIsStableWhenSpendingRankChanges() {
+        let sut = PieChartDataService()
+        let cats = [
+            CategorySnapshot.test(name: "Food", colorToken: "categoryTeal"),
+            CategorySnapshot.test(name: "Transport", colorToken: "categoryAmber")
+        ]
+
+        func foodColour(food: Decimal, transport: Decimal) -> Color? {
+            sut.generatePieChartData(
+                from: [expense(food, category: "Food"), expense(transport, category: "Transport")],
+                for: .expenses,
+                timePeriod: .week,
+                categories: cats
+            ).first { $0.category == "Food" }?.color
+        }
+
+        let whenRankedFirst = foodColour(food: 90, transport: 10)
+        let whenRankedLast = foodColour(food: 10, transport: 90)
+
+        #expect(whenRankedFirst == whenRankedLast)
+        #expect(whenRankedFirst == Color(categoryToken: "categoryTeal"))
+    }
+
+    @Test func unknownCategoryFallsBackToTheNameDerivedToken() {
+        let sut = PieChartDataService()
+        let result = sut.generatePieChartData(
+            from: [expense(50, category: "Groceries")],
+            for: .expenses,
+            timePeriod: .week,
+            categories: []
+        )
+        #expect(result.first?.color == Color(categoryToken: CategoryConstants.colorToken(forName: "Groceries")))
     }
 }

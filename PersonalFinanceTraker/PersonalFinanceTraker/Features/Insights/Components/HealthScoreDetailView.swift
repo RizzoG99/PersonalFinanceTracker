@@ -187,7 +187,7 @@ struct HealthScoreDetailView: View {
             }
 
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color.surfaceRaised)
+                .fill(Color.hairline)
                 .frame(height: 6)
                 .overlay(alignment: .leading) {
                     GeometryReader { geo in

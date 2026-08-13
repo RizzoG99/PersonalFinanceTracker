@@ -13,7 +13,7 @@ struct ScoreComponentRow: View {
 
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.surfaceRaised)
+                    .fill(Color.hairline)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(scoreColor.opacity(0.8))
                     .frame(width: 60 * CGFloat(component.score) / CGFloat(component.max), height: 5)

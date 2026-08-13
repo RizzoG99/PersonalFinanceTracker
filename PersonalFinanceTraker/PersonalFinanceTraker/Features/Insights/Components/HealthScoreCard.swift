@@ -33,7 +33,7 @@ struct HealthScoreCard: View {
                             }
 
                             Divider()
-                                .overlay { Color.surfaceRaised }
+                                .overlay { Color.hairline }
 
                             ForEach(healthScore.components) { component in
                                 ScoreComponentRow(component: component, scoreColor: scoreColor)
