@@ -42,6 +42,10 @@ enum ThemeMode: String, CaseIterable, Identifiable {
 
 - **Storage:** `@AppStorage("app_theme_mode")`, default `.auto` for all installs (new and existing). This app is not on the App Store, so no migration flag is needed — an existing install may visibly flip to light on first launch, which is accepted.
 - **Application:** `.preferredColorScheme(themeMode.colorScheme)` on `AuthenticationWrapper` in `PersonalFinanceTrakerApp.swift`. One modifier, one place.
+
+> **Prerequisite — already done in `1145b09`.** Eight *production* views each pinned `.preferredColorScheme(.dark)` on their own body: `MainTabView:156` (the root tab view), `SplashView:39`, `InsightsView:109`, `ProfileView:193`, `EditFullNameView:13`, `PINSetupView:55`, `PINEntryView:67`, `PINConfirmationView:44`. Because a descendant's `preferredColorScheme` overrides an ancestor's, a single modifier on `AuthenticationWrapper` **would have had no effect** — the feature would have silently failed on every one of those screens. All eight are removed and replaced by one root declaration, currently hardcoded `.dark` to preserve today's behaviour; the picker work only has to swap that literal for `themeMode.colorScheme`.
+>
+> Seven further occurrences remain inside `#Preview` blocks. Those are dev-only and are intentionally left alone.
 - **No `AppSettings` change.** This follows the `ProfileCurrencySection` idiom, which already reads `@AppStorage` directly.
 
 No view reads `@Environment(\.colorScheme)` except `AppBackground`. Everything else resolves through the asset catalog.
@@ -80,6 +84,8 @@ Elevation direction is **preserved** from dark — more raised = lighter — rat
 | `bg2` | `#131D30` | **`#FFFFFF`** | 100.0 |
 
 `LaunchBackground` takes the same **`#E6EAF1`** in light, staying coupled to the gradient base exactly as `#030712` is today.
+
+The base was written out as a raw literal in **three** places — `DesignTokens.swift:66`, `PersonalFinanceTrakerApp.swift:19` and `AuthenticationWrapper.swift:31` (the last of which an earlier draft of this spec missed). As of `1145b09` all three read the `LaunchBackground` colorset via `Color.appBackgroundBase` / `UIColor(named:)`, so adding the light appearance to that one colorset is now sufficient.
 
 ---
 
@@ -157,7 +163,6 @@ Dark values are chosen to reproduce the current rendering, so dark mode is uncha
 | `Insights/Components/SpendingTimelineChart.swift` | 84 | `AxisGridLine` 0.06 |
 | `Insights/Components/ForecastCard.swift` | 108 | `Divider().overlay` 0.2 |
 | `Insights/Components/ArcGaugeView.swift` | 11 | gauge track stroke 0.08 |
-| `TransactionListView/TransactionListView.swift` | 24 | stroke 0.3 |
 
 **→ `surfaceRaised`** (fills, tracks, row backgrounds)
 
@@ -171,7 +176,7 @@ Dark values are chosen to reproduce the current rendering, so dark mode is uncha
 | `Security/PINSetupView.swift` | 148 | keypad background 0.08 |
 | `Utilities/DesignTokens.swift` | 27 | `static let formRow = Color.white.opacity(0.06)` → `Color("surfaceRaised")` |
 
-**Needs a judgment call:** `TransactionListView.swift:27` strokes a solid `Color.white` as a selection indicator. It is not a hairline. Decide during implementation between `accentIndigo` (reads as selection) and `textPrimary` (reads as emphasis).
+**Correction — `TransactionListView.swift:24` and `:27` stay white.** An earlier draft of this spec listed line 24 as a `hairline` site. That was wrong. Both strokes are the countdown ring inside `UndoDeleteBanner`, which renders within `ToastBanner`'s opaque black capsule — not against the app background. White is correct there in both themes, and converting them would make the ring invisible on the pill.
 
 ### Sites that stay hardcoded — 6
 
@@ -267,3 +272,5 @@ Colour correctness is not unit-testable. Manual verification pass in light mode 
 - **High-contrast appearance variants.** Asset catalogs support a `luminosity: high` slot for users with Increase Contrast enabled; neither the current dark tokens nor this light palette define one. Worth noting that several light tokens land at 4.4–4.6:1, so those users get no boost from a palette with no headroom. Deferred.
 - **Per-screen UX/layout changes.** This spec covers the colour layer only.
 - **Reducing the category palette below 7 hues.** Flagged by the audit as worth questioning; not part of this work.
+- **`PieChartDataService.swift:37-41`.** Holds its own 13-colour system palette (`.blue, .green, .orange, .red, .purple, .pink, .yellow, .indigo, .mint, .cyan, .teal, .brown, .gray`) assigned round-robin by index, bypassing the `categoryX` tokens entirely. It is live code, reached from `CategoryBreakdownViewModel` and `SpendingInsightService`. Every light value derived in §5 is therefore **not** what the pie chart actually renders. Converting it would change the chart's colours in dark mode too, so it is a product decision rather than a mechanical refactor — deliberately left for a separate call.
+- **Threshold and destructive colours.** `CategoryDetailRow.progressBarColor` (`.red`/`.orange`/`.green`), swipe-action and validation `.red`, `AnomalyCalloutView`'s `.orange`. These are system semantic colours that already adapt per appearance and are HIG-idiomatic for their roles. Converting them to brand tokens would require inventing a warning token and would make them *worse*, not better. Left as-is deliberately.
