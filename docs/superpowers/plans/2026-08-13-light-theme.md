@@ -152,7 +152,9 @@ print("dark-value drift: %d" % bad)
 EOF
 ```
 
-Expected: `dark-value drift: 0`, with one `SKIP (was a reference)` line for `AccentColor`.
+Expected: `dark-value drift: 1`, with one `SKIP (was a reference)` line for `AccentColor`.
+
+**The single expected drift is `textDim`, and it is correct.** The shipped file held rounded floats (`0.440 / 0.500 / 0.590`); the exact conversion of the documented `#708096` is `0.439 / 0.502 / 0.588`. Both quantise to the same 8-bit colour, so nothing renders differently — the difference is below the quantisation floor. Ruled 2026-08-13: the hex table governs, so the file matches the documented value rather than preserving a historical rounding artifact. **Any drift other than `textDim` is a real defect** — dark mode must not shift.
 
 - [ ] **Step 4: Build**
 
