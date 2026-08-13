@@ -34,6 +34,28 @@ final class PINEntryViewModel {
         self.authService = authService
     }
 
+    /// Re-syncs the UI to the lockout state persisted in the Keychain.
+    /// Called on every appearance because the lockout survives a force-quit but the
+    /// view model doesn't: on a cold launch mid-lockout, nothing had consulted
+    /// `pinService.lockoutDeadline`, so the pad rendered enabled with no countdown
+    /// until the user burned another 4 digits and got `.lockedOut` back from
+    /// `verifyPIN`. The lockout was always *enforced* (validatePINWithResult
+    /// short-circuits before hashing) — this only restores the matching UI.
+    func refreshLockoutState() {
+        if let deadline = pinService.lockoutDeadline {
+            startLockoutCountdown(until: deadline)
+        } else if isLockedOut {
+            // Deadline elapsed while this view model wasn't running its countdown.
+            countdownTask?.cancel()
+            countdownTask = nil
+            isLockedOut = false
+            lockoutMessage = ""
+            errorMessage = ""
+            pinInput = ""
+            eyesOpen = true
+        }
+    }
+
     func appendDigit(_ digit: String) {
         guard !isLockedOut else { return }
         guard pinInput.count < 4 else { return }
@@ -82,6 +104,11 @@ final class PINEntryViewModel {
     private func startLockoutCountdown(until deadline: Date) {
         countdownTask?.cancel()
         isLockedOut = true
+        // Paint the first message synchronously. The Task below only gets to run on a
+        // later tick, which would otherwise leave the pad disabled with no explanation
+        // for a frame — most visible on a cold launch mid-lockout, where the countdown
+        // is the only thing telling the user why nothing responds.
+        updateLockoutMessage(until: deadline)
 
         countdownTask = Task {
             while !Task.isCancelled {
@@ -97,9 +124,7 @@ final class PINEntryViewModel {
                     break
                 }
 
-                let remainingSeconds = Int(deadline.timeIntervalSince(now)) + 1
-                lockoutMessage = "Locked out. Try again in \(remainingSeconds)s."
-                errorMessage = lockoutMessage
+                updateLockoutMessage(until: deadline)
 
                 do {
                     try await Task.sleep(for: .milliseconds(500))
@@ -108,6 +133,12 @@ final class PINEntryViewModel {
                 }
             }
         }
+    }
+
+    private func updateLockoutMessage(until deadline: Date) {
+        let remainingSeconds = max(1, Int(deadline.timeIntervalSince(Date())) + 1)
+        lockoutMessage = "Locked out. Try again in \(remainingSeconds)s."
+        errorMessage = lockoutMessage
     }
 
     private func triggerShake() {

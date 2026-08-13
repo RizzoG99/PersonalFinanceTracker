@@ -105,6 +105,60 @@ struct PINEntryViewModelTests {
         #expect(viewModel.errorMessage == viewModel.lockoutMessage)
     }
 
+    @Test("Lockout UI is restored on a cold launch mid-lockout")
+    func refreshLockoutStateRestoresLockoutAfterRelaunch() async throws {
+        await PINTestLock.shared.acquire()
+        defer {
+            try? pinService.clearPIN()
+            Task { await PINTestLock.shared.release() }
+        }
+        try? pinService.clearPIN()
+
+        try pinService.setPIN("1234")
+
+        for _ in 0..<5 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+        #expect(pinService.lockoutDeadline != nil)
+
+        // A brand-new view model stands in for the one built on a fresh launch:
+        // it has never seen a .lockedOut result, so its state starts clean.
+        let authService = BiometricAuthService()
+        let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
+        #expect(viewModel.isLockedOut == false)
+
+        viewModel.refreshLockoutState()
+
+        #expect(viewModel.isLockedOut)
+        #expect(viewModel.lockoutMessage.contains("Locked out"))
+        #expect(viewModel.errorMessage == viewModel.lockoutMessage)
+
+        // And the pad stays inert without spending an attempt.
+        viewModel.appendDigit("1")
+        #expect(viewModel.pinInput.isEmpty)
+    }
+
+    @Test("refreshLockoutState leaves an unlocked view model alone")
+    func refreshLockoutStateNoOpsWhenNotLockedOut() async throws {
+        await PINTestLock.shared.acquire()
+        defer {
+            try? pinService.clearPIN()
+            Task { await PINTestLock.shared.release() }
+        }
+        try? pinService.clearPIN()
+
+        try pinService.setPIN("1234")
+
+        let authService = BiometricAuthService()
+        let viewModel = PINEntryViewModel(pinService: pinService, authService: authService)
+
+        viewModel.refreshLockoutState()
+
+        #expect(viewModel.isLockedOut == false)
+        #expect(viewModel.lockoutMessage.isEmpty)
+        #expect(viewModel.errorMessage.isEmpty)
+    }
+
     @Test("Incorrect PIN shows remaining attempts")
     func incorrectPINShowsRemainingAttempts() async throws {
         defer { try? pinService.clearPIN() }

@@ -38,6 +38,7 @@ struct PINEntryView: View {
             )
             .disabled(viewModel.isLockedOut)
             .opacity(viewModel.isLockedOut ? 0.5 : 1.0)
+            .onAppear { viewModel.refreshLockoutState() }
 
             VStack(spacing: 16) {
                 if viewModel.showBiometricButton {
