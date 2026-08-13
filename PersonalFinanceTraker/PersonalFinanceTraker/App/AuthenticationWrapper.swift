@@ -85,7 +85,14 @@ struct AuthenticationWrapper: View {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     showSplash = false
                 }
-                if isPINSetup && authService.isBiometricFeatureEnabled {
+                // `!isUnlocked` matters: the scenePhase→.active trigger below usually
+                // fires first and can have finished a successful Face ID well before
+                // this 0.8s timer runs. PR #20's isAuthenticating guard only suppresses
+                // an *overlapping* second call, so once that first evaluation has
+                // completed this timer opened a second prompt on an already-unlocked
+                // app — the duplicate cold-launch prompt. Matches the condition the
+                // scenePhase trigger already uses.
+                if isPINSetup && authService.isBiometricFeatureEnabled && !authService.isUnlocked {
                     authService.authenticate { _ in }
                 }
             }
