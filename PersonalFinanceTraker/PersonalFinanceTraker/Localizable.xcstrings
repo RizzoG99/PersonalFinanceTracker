@@ -1321,6 +1321,9 @@
         }
       }
     },
+    "Auto" : {
+
+    },
     "Auto-Map All" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2303,6 +2306,9 @@
           }
         }
       }
+    },
+    "Dark" : {
+
     },
     "DATA" : {
       "extractionState" : "manual",
@@ -3841,6 +3847,9 @@
           }
         }
       }
+    },
+    "Light" : {
+
     },
     "Limit" : {
       "extractionState" : "manual",

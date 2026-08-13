@@ -30,7 +30,7 @@ struct PersonalFinanceTrakerApp: App {
     /// Alert state for container creation errors
     @State private var containerErrorMessage: String?
 
-    /// Drives the single `.preferredColorScheme` declaration below. Key must match
+    /// Drives the window appearance applied below. Key must match
     /// `ProfileAppearanceSection`.
     @AppStorage("app_theme_mode") private var themeMode: ThemeMode = .auto
 
@@ -42,7 +42,15 @@ struct PersonalFinanceTrakerApp: App {
                 // Single place the app's appearance is declared. Eight views used to
                 // pin `.preferredColorScheme(.dark)` on their own bodies, which meant a
                 // descendant silently overrode any app-level choice.
-                .preferredColorScheme(themeMode.colorScheme)
+                //
+                // Applied to the window rather than via `.preferredColorScheme`: that
+                // modifier only reaches its own presentation container, so a sheet that
+                // was already on screen kept its original appearance — including the
+                // Settings sheet that hosts the picker. Setting the window's trait
+                // propagates to every view controller it owns, presented sheets included.
+                .onChange(of: themeMode, initial: true) { _, mode in
+                    applyAppearance(mode)
+                }
                 .alert("Data Access Error", isPresented: .constant(containerErrorMessage != nil)) {
                     Button("OK") {
                         containerErrorMessage = nil
@@ -63,6 +71,18 @@ struct PersonalFinanceTrakerApp: App {
 // MARK: - Private Extensions
 
 private extension PersonalFinanceTrakerApp {
+
+    /// Pushes the chosen appearance onto every window in the scene. `.unspecified`
+    /// hands control back to the system, which is what Auto means.
+    @MainActor
+    func applyAppearance(_ mode: ThemeMode) {
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            for window in windowScene.windows {
+                window.overrideUserInterfaceStyle = mode.uiStyle
+            }
+        }
+    }
 
     func seedMemberSinceDateIfNeeded() {
         let key = "member_since_timestamp"
