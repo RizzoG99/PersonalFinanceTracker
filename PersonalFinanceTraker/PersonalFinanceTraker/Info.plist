@@ -2,10 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
+	<key>CFBundleDisplayName</key>
+	<string>Personal Finance</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authentication is required to unlock your financial data.</string>
 	<key>UIFileSharingEnabled</key>

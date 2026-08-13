@@ -36,6 +36,9 @@ struct PINEntryView: View {
                 onDigit: { viewModel.appendDigit($0) },
                 onDelete: { viewModel.deleteDigit() }
             )
+            .disabled(viewModel.isLockedOut)
+            .opacity(viewModel.isLockedOut ? 0.5 : 1.0)
+            .onAppear { viewModel.refreshLockoutState() }
 
             VStack(spacing: 16) {
                 if viewModel.showBiometricButton {

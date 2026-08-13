@@ -27,12 +27,27 @@ struct PersonalFinanceTrakerApp: App {
 
     /// Shared model container for SwiftData persistence
     var sharedModelContainer: ModelContainer = AppContainer.shared
-    
+
+    /// Alert state for container creation errors
+    @State private var containerErrorMessage: String?
+
     // MARK: - Body
-    
+
     var body: some Scene {
         WindowGroup {
             AuthenticationWrapper(modelContainer: sharedModelContainer)
+                .alert("Data Access Error", isPresented: .constant(containerErrorMessage != nil)) {
+                    Button("OK") {
+                        containerErrorMessage = nil
+                    }
+                } message: {
+                    if let message = containerErrorMessage {
+                        Text(message)
+                    }
+                }
+                .onAppear {
+                    containerErrorMessage = AppContainer.containerErrorMessage
+                }
         }
         .modelContainer(sharedModelContainer)
     }

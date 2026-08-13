@@ -86,20 +86,26 @@ final class PINSetupViewModel {
     }
 
     private func verifyCurrentPIN() {
-        if pinService.validatePIN(pinInput) {
+        let result = pinService.validatePINWithResult(pinInput)
+        switch result {
+        case .success:
             pinInput = ""
             eyesOpen = true
             errorMessage = ""
             withAnimation { currentStep = .enterPin }
-        } else {
-            errorMessage = "Incorrect PIN. Try again."
+        case .failure(let remainingAttempts):
+            errorMessage = "Incorrect PIN. \(remainingAttempts) attempt\(remainingAttempts == 1 ? "" : "s") remaining."
+            triggerShake()
+            Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }
+        case .lockedOut:
+            errorMessage = "Account locked. Try again later."
             triggerShake()
             Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }
         }
     }
 
     private func advanceToConfirm() {
-        if isChangeMode && pinService.validatePIN(pinInput) {
+        if isChangeMode && pinService.verifyPINForPolicyCheck(pinInput) {
             errorMessage = "New PIN must be different from the current one."
             triggerShake()
             Task { try? await Task.sleep(for: .seconds(0.45)); self.pinInput = ""; self.eyesOpen = true }

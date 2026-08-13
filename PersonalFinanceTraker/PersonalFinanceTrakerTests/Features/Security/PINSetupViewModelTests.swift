@@ -18,6 +18,8 @@ private final class FakeBiometricAuthService: BiometricAuthenticating {
     }
 }
 
+extension PINKeychainSerialTests {
+
 @MainActor
 @Suite(.serialized)
 struct PINSetupViewModelTests {
@@ -220,4 +222,6 @@ struct PINSetupViewModelTests {
         #expect(viewModel.currentStep == .success)
         #expect(UserDefaults.standard.bool(forKey: "pin_setup_complete"))
     }
+}
+
 }

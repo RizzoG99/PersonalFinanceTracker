@@ -148,6 +148,8 @@ struct ProfileView: View {
                                     do {
                                         try await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
                                         dataChanged.bump()
+                                    } catch BackupService.BackupError.decryptionFailed {
+                                        restoreErrorMessage = "Backup can't be decrypted. Make sure iCloud Keychain is enabled on this device."
                                     } catch {
                                         restoreErrorMessage = error.localizedDescription
                                     }

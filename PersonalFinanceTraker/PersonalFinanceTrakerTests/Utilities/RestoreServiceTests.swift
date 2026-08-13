@@ -1,16 +1,26 @@
 import Testing
 import Foundation
+import CryptoKit
 @testable import PersonalFinanceTraker
 
 struct RestoreServiceTests {
+    // ponytail: see BackupServiceTests' matching comment — an injected per-instance
+    // key avoids racing on BackupCrypto's process-global Keychain account under
+    // Swift Testing's default parallel execution.
+    private let backupKey = SymmetricKey(size: .bits256)
+
     private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
         Calendar.current.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    private func makeService(storage: TestBackupStorage, maxBackupsKept: Int = 3) -> BackupService {
+        BackupService(storage: storage, maxBackupsKept: maxBackupsKept, keyProvider: { backupKey })
     }
 
     @Test func restoreLatestThrowsWhenNoBackupExists() async {
         let repo = MockTransactionRepository()
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let service = BackupService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
+        let service = makeService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
 
         await #expect(throws: RestoreService.RestoreError.noBackupFound) {
             try await RestoreService.restoreLatest(repo: repo, backupService: service)
@@ -20,7 +30,7 @@ struct RestoreServiceTests {
     @Test func restoreLatestWipesThenRestoresFromNewestBackup() async throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let service = BackupService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
+        let service = makeService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
 
         let ruleId = UUID()
         _ = try service.writeBackup(
@@ -44,7 +54,7 @@ struct RestoreServiceTests {
     @Test func restoreLatestRethrowsWhenRepositoryFails() async throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let service = BackupService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
+        let service = makeService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
 
         _ = try service.writeBackup(
             transactions: [.test(timestamp: date(2026, 1, 5), amount: -42, note: "Lunch", category: "Food")],

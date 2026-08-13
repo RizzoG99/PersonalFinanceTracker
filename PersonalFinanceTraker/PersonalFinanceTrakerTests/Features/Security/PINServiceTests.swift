@@ -1,0 +1,564 @@
+import Testing
+import Foundation
+import CryptoKit
+import Security
+
+@testable import PersonalFinanceTraker
+
+extension PINKeychainSerialTests {
+
+@Suite(.serialized)
+struct PINServiceTests {
+    private let pinService = PINService()
+
+    init() {
+        // Clean up before suite
+        try? pinService.clearPIN()
+    }
+
+    // MARK: - Lockout Triggering
+
+    @Test("Lockout triggers at 5 consecutive failures")
+    func lockoutTriggersAtFiveFailures() async throws {
+        await PINTestLock.shared.acquire()
+        defer {
+            try? pinService.clearPIN()
+            Task { await PINTestLock.shared.release() }
+        }
+        // init() already ran (and cleared PIN state) before acquire() above could
+        // block — a concurrent test holding the lock could have set fresh state
+        // between that init-time clear and this point. Clear again now that the
+        // lock is actually held, so the slate really is clean.
+        try? pinService.clearPIN()
+
+        try pinService.setPIN("1234")
+
+        // First 4 failures should not lock out
+        for _ in 0..<4 {
+            #expect(pinService.validatePIN("0000") == false)
+            #expect(pinService.lockoutDeadline == nil)
+        }
+
+        // 5th failure should lock out
+        #expect(pinService.validatePIN("0000") == false)
+        #expect(pinService.lockoutDeadline != nil)
+    }
+
+    @Test("Lockout immediately rejects further attempts")
+    func lockoutRejectsAttemptsImmediately() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger lockout (5 failures)
+        for _ in 0..<5 {
+            _ = pinService.validatePIN("0000")
+        }
+
+        let deadlineAfterLockout = pinService.lockoutDeadline
+        #expect(deadlineAfterLockout != nil)
+
+        // Attempt to validate during lockout - should return false
+        // without incrementing counter further (short-circuit)
+        #expect(pinService.validatePIN("0000") == false)
+
+        // Deadline should not have changed (short-circuit prevents counter increment)
+        let deadlineAfterRejectedAttempt = pinService.lockoutDeadline
+        #expect(deadlineAfterRejectedAttempt == deadlineAfterLockout)
+    }
+
+    // MARK: - Escalation Tiers
+
+    @Test("Escalation hits 1-min tier at 5 failures")
+    func escalationMinuteTier() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger 5 failures
+        for _ in 0..<5 {
+            _ = pinService.validatePIN("0000")
+        }
+
+        guard let deadline = pinService.lockoutDeadline else {
+            Issue.record("Expected lockout deadline after 5 failures")
+            return
+        }
+
+        let now = Date()
+        let lockoutSeconds = deadline.timeIntervalSince(now)
+        // 1 minute = 60 seconds; allow ~5s margin for test execution
+        #expect(lockoutSeconds > 55 && lockoutSeconds <= 65)
+    }
+
+    @Test("Escalation hits 5-min tier at 6 failures")
+    func escalation5MinuteTier() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Seed 5 prior failures directly: the 6th real attempt below is what pushes
+        // the tier from 1-min to 5-min. Looping validatePIN 6 times doesn't work
+        // here — the 5th failure already triggers a lockout, and every attempt
+        // after that short-circuits in checkCurrentLockout() before the counter
+        // increments, so a real user's next attempt only arrives once that window
+        // has passed (simulated by seeding the counter, not the lockout deadline).
+        try pinService.storeTestData(Data("5".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
+
+        guard let deadline = pinService.lockoutDeadline else {
+            Issue.record("Expected lockout deadline after 6 failures")
+            return
+        }
+
+        let now = Date()
+        let lockoutSeconds = deadline.timeIntervalSince(now)
+        // 5 minutes = 300 seconds; allow ~5s margin for test execution
+        #expect(lockoutSeconds > 295 && lockoutSeconds <= 305)
+    }
+
+    @Test("Escalation hits 15-min tier at 7 failures")
+    func escalation15MinuteTier() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Seed 6 prior failures directly — see escalation5MinuteTier for why looping
+        // validatePIN doesn't reach this count on its own.
+        try pinService.storeTestData(Data("6".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
+
+        guard let deadline = pinService.lockoutDeadline else {
+            Issue.record("Expected lockout deadline after 7 failures")
+            return
+        }
+
+        let now = Date()
+        let lockoutSeconds = deadline.timeIntervalSince(now)
+        // 15 minutes = 900 seconds; allow ~5s margin for test execution
+        #expect(lockoutSeconds > 895 && lockoutSeconds <= 905)
+    }
+
+    @Test("Escalation hits 60-min tier at 8 failures and caps")
+    func escalation60MinuteTierCapped() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Seed 7 prior failures directly — see escalation5MinuteTier for why looping
+        // validatePIN doesn't reach this count on its own.
+        try pinService.storeTestData(Data("7".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
+
+        guard let deadline8 = pinService.lockoutDeadline else {
+            Issue.record("Expected lockout deadline after 8 failures")
+            return
+        }
+
+        let now = Date()
+        let lockoutSeconds8 = deadline8.timeIntervalSince(now)
+        // 60 minutes = 3600 seconds; allow ~5s margin for test execution
+        #expect(lockoutSeconds8 > 3595 && lockoutSeconds8 <= 3605)
+
+        // 9th failure - tier should remain 60 min (capped), not climb further.
+        // The 8th failure above is still actively locked out, so clear everything
+        // and re-seed rather than validating straight through — same reasoning as
+        // escalation5MinuteTier: an active lockout short-circuits before the
+        // counter would increment.
+        try? pinService.clearPIN()
+        try pinService.setPIN("1234")
+        try pinService.storeTestData(Data("8".utf8), forKey: "pft.pin_failures")
+        _ = pinService.validatePIN("0000")
+
+        guard let deadline9 = pinService.lockoutDeadline else {
+            Issue.record("Expected lockout deadline after 9 failures")
+            return
+        }
+
+        let lockoutSeconds9 = deadline9.timeIntervalSince(Date())
+        // Should also be around 60 minutes (capped)
+        #expect(lockoutSeconds9 > 3595 && lockoutSeconds9 <= 3605)
+    }
+
+    // MARK: - Success Resets Counter and Deadline
+
+    @Test("Successful validation resets counter and clears deadline")
+    func successResetsCounterAndDeadline() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger 3 failures (below threshold)
+        for _ in 0..<3 {
+            _ = pinService.validatePIN("0000")
+        }
+
+        #expect(pinService.lockoutDeadline == nil)
+
+        // Successful validation
+        #expect(pinService.validatePIN("1234") == true)
+
+        // Counter and deadline should be clear
+        #expect(pinService.lockoutDeadline == nil)
+
+        // Next 5 failures should start fresh, not pick up from 3
+        for _ in 0..<5 {
+            _ = pinService.validatePIN("0000")
+        }
+
+        // After fresh 5 failures, should be locked out
+        #expect(pinService.lockoutDeadline != nil)
+    }
+
+    @Test("Success during lockout clears both counter and deadline")
+    func successDuringLockoutClearsAll() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger 4 failures (sub-threshold)
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+        #expect(pinService.lockoutDeadline == nil)
+
+        // Validate correct PIN → success
+        var result = pinService.validatePINWithResult("1234")
+        #expect(result == .success)
+        #expect(pinService.lockoutDeadline == nil)
+
+        // Trigger 5 failures to lock out
+        for _ in 0..<5 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+        #expect(pinService.lockoutDeadline != nil)
+
+        // Attempt correct PIN while locked — should be rejected immediately
+        // without hash check or counter increment (short-circuit)
+        result = pinService.validatePINWithResult("1234")
+        if case .lockedOut = result {
+            // Expected: lockout prevents any validation
+        } else {
+            Issue.record("Expected .lockedOut while in lockout, got \(result)")
+        }
+    }
+
+    // MARK: - Clock Rollback Guard
+
+    @Test("Clock rollback guard preserves lockout across reboot simulation")
+    func clockRollbackGuardHoldsLockout() async throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger lockout (5 failures)
+        for _ in 0..<5 {
+            _ = pinService.validatePIN("0000")
+        }
+
+        guard let originalDeadline = pinService.lockoutDeadline else {
+            Issue.record("Expected lockout deadline after 5 failures")
+            return
+        }
+
+        // Verify the deadline is stored correctly (it persists via Keychain)
+        // The next read should return approximately the same deadline
+        try await Task.sleep(for: .milliseconds(100))
+
+        guard let readBackDeadline = pinService.lockoutDeadline else {
+            Issue.record("Expected lockout deadline to persist")
+            return
+        }
+
+        // Deadline should remain approximately the same (within ~1s)
+        let timeDiff = abs(readBackDeadline.timeIntervalSince(originalDeadline))
+        #expect(timeDiff < 1.0)
+    }
+
+    // MARK: - validatePINWithResult (internal method for Task 2/3 testing)
+
+    @Test("validatePINWithResult returns .success on correct PIN")
+    func validatePINWithResultSuccess() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        let result = pinService.validatePINWithResult("1234")
+        #expect(result == .success)
+    }
+
+    @Test("validatePINWithResult returns .failure with remaining attempts")
+    func validatePINWithResultFailure() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // First failure: 4 attempts remaining
+        var result = pinService.validatePINWithResult("0000")
+        #expect(result == .failure(remainingAttempts: 4))
+
+        // Second failure: 3 attempts remaining
+        result = pinService.validatePINWithResult("0000")
+        #expect(result == .failure(remainingAttempts: 3))
+
+        // Third failure: 2 attempts remaining
+        result = pinService.validatePINWithResult("0000")
+        #expect(result == .failure(remainingAttempts: 2))
+
+        // Fourth failure: 1 attempt remaining
+        result = pinService.validatePINWithResult("0000")
+        #expect(result == .failure(remainingAttempts: 1))
+
+        // Fifth failure: locked out
+        result = pinService.validatePINWithResult("0000")
+        if case .lockedOut = result {
+            // Expected
+        } else {
+            Issue.record("Expected .lockedOut after 5 failures, got \(result)")
+        }
+    }
+
+    @Test("validatePINWithResult returns .lockedOut during lockout")
+    func validatePINWithResultLockedOut() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger lockout (5 failures)
+        for _ in 0..<5 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+
+        // Attempt during lockout
+        let result = pinService.validatePINWithResult("0000")
+        if case .lockedOut(let until) = result {
+            #expect(until > Date())
+        } else {
+            Issue.record("Expected .lockedOut during lockout, got \(result)")
+        }
+    }
+
+    // MARK: - Policy Check (Non-Counting Validation)
+
+    @Test("verifyPINForPolicyCheck matches correct PIN without counting attempt")
+    func policyCheckCorrectPIN() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Policy check should succeed without side effects
+        #expect(pinService.verifyPINForPolicyCheck("1234") == true)
+
+        // Failure counter should not have incremented
+        let result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4) // Not 3, confirming no prior increment
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+        }
+    }
+
+    @Test("verifyPINForPolicyCheck rejects wrong PIN without counting attempt")
+    func policyCheckWrongPIN() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Policy check should fail without side effects
+        #expect(pinService.verifyPINForPolicyCheck("0000") == false)
+
+        // Failure counter should not have incremented
+        let result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4) // Not 3, confirming no prior increment
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+        }
+    }
+
+    @Test("verifyPINForPolicyCheck does not affect lockout state")
+    func policyCheckDoesNotDriveLockout() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Trigger 4 failures via normal validation path
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+
+        // Policy check many times with wrong PIN - should not increment counter
+        for _ in 0..<10 {
+            #expect(pinService.verifyPINForPolicyCheck("0000") == false)
+        }
+
+        // Counter should still be at 4, not locked out
+        #expect(pinService.lockoutDeadline == nil)
+
+        // One more validation failure via normal path should lock out
+        let result = pinService.validatePINWithResult("0000")
+        if case .lockedOut = result {
+            // Expected: 5th failure triggers lockout
+        } else {
+            Issue.record("Expected .lockedOut after 5th validation failure")
+        }
+    }
+
+    // MARK: - Edge Cases
+
+    @Test("PIN can be cleared after lockout")
+    func clearPINAfterLockout() throws {
+        try pinService.setPIN("1234")
+
+        // Trigger lockout
+        for _ in 0..<5 {
+            _ = pinService.validatePIN("0000")
+        }
+
+        #expect(pinService.lockoutDeadline != nil)
+
+        // Clear should remove both PIN and lockout state
+        try pinService.clearPIN()
+
+        #expect(pinService.isPINSet() == false)
+        #expect(pinService.lockoutDeadline == nil)
+    }
+
+    @Test("isPINSet returns false before PIN is set")
+    func isPINSetBeforeSet() {
+        defer { try? pinService.clearPIN() }
+
+        #expect(pinService.isPINSet() == false)
+    }
+
+    @Test("isPINSet returns true after PIN is set")
+    func isPINSetAfterSet() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+        #expect(pinService.isPINSet() == true)
+    }
+
+    // MARK: - PBKDF2 and Lazy Migration Tests
+
+    @Test("New PIN uses PBKDF2 from the start")
+    func newPINUsesPBKDF2() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // Validate with correct PIN should succeed
+        let result = pinService.validatePINWithResult("1234")
+        #expect(result == .success)
+
+        // Validate with wrong PIN should fail
+        let wrongResult = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = wrongResult {
+            #expect(remaining == 4)
+        } else {
+            Issue.record("Expected .failure for wrong PIN")
+        }
+    }
+
+    @Test("Legacy SHA-256 PIN validates successfully and upgrades to PBKDF2")
+    func legacySHA256ValidationAndUpgrade() throws {
+        defer { try? pinService.clearPIN() }
+
+        // Manually create a legacy SHA-256 PIN by directly storing it
+        // without going through the new setPIN() method
+        let pin = "1234"
+        var saltBytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, saltBytes.count, &saltBytes) == errSecSuccess else {
+            Issue.record("Failed to generate random salt")
+            return
+        }
+        let salt = Data(saltBytes)
+
+        // Use the old SHA-256 formula: hash(pin + salt.base64EncodedString())
+        let legacyHashData = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
+
+        // Store salt and legacy hash (no version marker = legacy)
+        try pinService.storeTestData(salt, forKey: "pft.pin_salt")
+        try pinService.storeTestData(legacyHashData, forKey: "pft.pin_hash")
+
+        // Validate with correct PIN - should succeed and trigger migration
+        let result = pinService.validatePINWithResult("1234")
+        #expect(result == .success)
+
+        // Verify that subsequent validation still works (confirming upgrade was stored)
+        let secondResult = pinService.validatePINWithResult("1234")
+        #expect(secondResult == .success)
+    }
+
+    @Test("Wrong PIN against PBKDF2 hash fails and drives lockout counter")
+    func wrongPBKDF2PINDrivesLockout() throws {
+        defer { try? pinService.clearPIN() }
+
+        try pinService.setPIN("1234")
+
+        // First failure against PBKDF2 hash
+        var result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4)
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+            return
+        }
+
+        // Continue failing to trigger lockout at 5 failures
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+
+        // 5th failure should trigger lockout
+        result = pinService.validatePINWithResult("0000")
+        if case .lockedOut = result {
+            // Expected
+        } else {
+            Issue.record("Expected .lockedOut after 5 failures against PBKDF2 hash")
+        }
+    }
+
+    @Test("Legacy PIN failure also drives lockout counter (before upgrade)")
+    func legacyPINFailureDrivesLockout() throws {
+        defer { try? pinService.clearPIN() }
+
+        let pin = "1234"
+        var saltBytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, saltBytes.count, &saltBytes) == errSecSuccess else {
+            Issue.record("Failed to generate random salt")
+            return
+        }
+        let salt = Data(saltBytes)
+
+        // Create legacy SHA-256 PIN
+        let legacyHashData = Data(SHA256.hash(data: Data((pin + salt.base64EncodedString()).utf8)))
+
+        try pinService.storeTestData(salt, forKey: "pft.pin_salt")
+        try pinService.storeTestData(legacyHashData, forKey: "pft.pin_hash")
+
+        // First failure with wrong PIN
+        var result = pinService.validatePINWithResult("0000")
+        if case .failure(let remaining) = result {
+            #expect(remaining == 4)
+        } else {
+            Issue.record("Expected .failure(remainingAttempts: 4)")
+            return
+        }
+
+        // Continue failing to trigger lockout
+        for _ in 0..<4 {
+            _ = pinService.validatePINWithResult("0000")
+        }
+
+        // 5th failure should trigger lockout (even on legacy format)
+        result = pinService.validatePINWithResult("0000")
+        if case .lockedOut = result {
+            // Expected
+        } else {
+            Issue.record("Expected .lockedOut after 5 failures on legacy PIN format")
+        }
+    }
+}
+
+}

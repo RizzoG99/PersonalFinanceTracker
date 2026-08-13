@@ -5,6 +5,7 @@
 
 import AppIntents
 import Foundation
+import UIKit
 
 enum QuickAddType: String, AppEnum {
     case expense, income
@@ -63,6 +64,12 @@ struct AddTransactionIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
+        // Fail gracefully if the device is locked and the store is protected.
+        // When `.complete` protection is active, the store is inaccessible until unlock.
+        guard UIApplication.shared.isProtectedDataAvailable else {
+            return .result(dialog: "Unlock your phone to add a transaction.")
+        }
+
         let repo = TransactionActor.make(AppContainer.shared)
         let categories = try await repo.fetchCategories()
         let input = try QuickAddService.makeInput(

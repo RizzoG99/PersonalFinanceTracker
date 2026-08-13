@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import CryptoKit
 @testable import PersonalFinanceTraker
 
 final class TestSchedulingSettings: BackupSchedulingSettings {
@@ -7,14 +8,23 @@ final class TestSchedulingSettings: BackupSchedulingSettings {
 }
 
 struct BackupSchedulerTests {
+    // ponytail: see BackupServiceTests' matching comment — an injected per-instance
+    // key avoids racing on BackupCrypto's process-global Keychain account under
+    // Swift Testing's default parallel execution.
+    private let backupKey = SymmetricKey(size: .bits256)
+
     private func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int = 9) -> Date {
         Calendar.current.date(from: DateComponents(year: year, month: month, day: day, hour: hour))!
+    }
+
+    private func makeService(storage: TestBackupStorage, maxBackupsKept: Int = 3) -> BackupService {
+        BackupService(storage: storage, maxBackupsKept: maxBackupsKept, keyProvider: { backupKey })
     }
 
     private func makeTempService() -> BackupService {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return BackupService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
+        return makeService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
     }
 
     @Test func runsBackupWhenNeverBackedUpBefore() async {
@@ -57,7 +67,7 @@ struct BackupSchedulerTests {
         let repo = MockTransactionRepository()
         repo.stubbedTransactions = [.test(timestamp: date(2026, 1, 1), amount: -10, category: "Food")]
         let settings = TestSchedulingSettings()
-        let service = BackupService(storage: TestBackupStorage(url: nil), maxBackupsKept: 3)
+        let service = makeService(storage: TestBackupStorage(url: nil), maxBackupsKept: 3)
 
         await BackupScheduler.runIfNeeded(repo: repo, settings: settings, backupService: service, now: date(2026, 1, 2))
 

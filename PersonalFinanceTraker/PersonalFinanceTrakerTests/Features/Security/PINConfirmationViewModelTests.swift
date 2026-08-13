@@ -3,6 +3,8 @@ import Foundation
 
 @testable import PersonalFinanceTraker
 
+extension PINKeychainSerialTests {
+
 @Suite(.serialized)
 @MainActor
 struct PINConfirmationViewModelTests {
@@ -117,4 +119,6 @@ struct PINConfirmationViewModelTests {
         #expect(viewModel.pinInput.isEmpty)
         #expect(viewModel.eyesOpen)
     }
+}
+
 }
