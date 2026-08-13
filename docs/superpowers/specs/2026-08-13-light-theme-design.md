@@ -1,0 +1,248 @@
+# Light Theme + Appearance Picker — Design
+
+**Date:** 2026-08-13
+**Status:** Approved design, ready for implementation planning
+
+## Goal
+
+Add a light theme to PersonalFinanceTracker and let the user choose Auto / Light / Dark. "Auto" follows the system appearance. The light theme mirrors the existing dark brand language — same gradient blooms, same accent identity — rather than falling back to plain iOS system colors.
+
+## Current state
+
+The app is dark-only by construction:
+
+- All 12 colorsets in `Assets.xcassets` define a **single appearance** (no light variant).
+- `AppBackground` (`Utilities/DesignTokens.swift:62`) hardcodes base `#030712` plus three radial blooms.
+- `PersonalFinanceTrakerApp.swift:19` paints `UIWindow` dark to suppress the launch-screen flash.
+- ~22 call sites hardcode `Color.white.opacity(…)` / `Color.black.opacity(…)`.
+- `AccentColor` is a reference to `systemBlueColor` and matches nothing in the app.
+
+The token layer already exists, so most of the work is asset-catalog data rather than code.
+
+---
+
+## 1. Mechanism
+
+A `ThemeMode` enum stored in `UserDefaults` via `@AppStorage`, applied at exactly one place in the view tree.
+
+```swift
+enum ThemeMode: String, CaseIterable, Identifiable {
+    case auto, light, dark
+    var id: String { rawValue }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .auto:  nil      // nil == follow system
+        case .light: .light
+        case .dark:  .dark
+        }
+    }
+}
+```
+
+- **Storage:** `@AppStorage("app_theme_mode")`, default `.auto` for all installs (new and existing). This app is not on the App Store, so no migration flag is needed — an existing install may visibly flip to light on first launch, which is accepted.
+- **Application:** `.preferredColorScheme(themeMode.colorScheme)` on `AuthenticationWrapper` in `PersonalFinanceTrakerApp.swift`. One modifier, one place.
+- **No `AppSettings` change.** This follows the `ProfileCurrencySection` idiom, which already reads `@AppStorage` directly.
+
+No view reads `@Environment(\.colorScheme)` except `AppBackground`. Everything else resolves through the asset catalog.
+
+---
+
+## 2. Contrast methodology
+
+**All light values in this spec are verified against `#DDE1F1`, not against `bg0`.**
+
+This matters. `AppBackground` composites radial blooms over the base color, and content sits on translucent `GlassCard` (`.glassEffect`). Neither is a flat `bg0`. `#DDE1F1` is the worst-case backdrop: the base `#E6EAF1` with the top-left indigo bloom and the centre indigo bloom overlapping at their new light-mode opacities.
+
+Measuring against flat `bg0` overstates real contrast by roughly 0.6–0.9 ratio points, which is enough to push nominally-passing tokens below the bar in the middle of the screen.
+
+**Bars applied by role:**
+
+| Role | Bar | Rationale |
+| --- | --- | --- |
+| Text tokens | 4.5:1 | WCAG 1.4.3 (normal text) |
+| Category fills | 3:1 | WCAG 1.4.11 (non-text contrast) |
+| Overlay tokens | ~1.9:1 vs backdrop | matches the measured iOS separator on light |
+
+---
+
+## 3. Surface ramp
+
+Hand-authored, hue 220° cool blue-gray. The dark ramp is bespoke (not on any Tailwind scale), so the light ramp is bespoke too.
+
+Elevation direction is **preserved** from dark — more raised = lighter — rather than mirroring L\*. A pure L\* mirror would put gray cards on a near-white backdrop, inverting iOS convention.
+
+| Token | Dark | Light | Light L\* |
+| --- | --- | --- | --- |
+| gradient base | `#030712` | **`#E6EAF1`** | 92.6 |
+| `bg0` | `#060B18` | **`#EEF0F6`** | 94.8 |
+| `bg1` | `#0D1526` | **`#F9FAFB`** | 98.2 |
+| `bg2` | `#131D30` | **`#FFFFFF`** | 100.0 |
+
+`LaunchBackground` takes the same **`#E6EAF1`** in light, staying coupled to the gradient base exactly as `#030712` is today.
+
+---
+
+## 4. Text and accent tokens
+
+Verified ≥4.5:1 against the worst-case backdrop `#DDE1F1`.
+
+| Token | Dark | Light | vs `#DDE1F1` | vs white |
+| --- | --- | --- | --- | --- |
+| `textPrimary` | `#F1F5F9` | **`#0F172A`** | 13.70:1 | 17.85:1 |
+| `textMid` | `#94A3B8` | **`#475569`** | 5.81:1 | 7.58:1 |
+| `textDim` | `#708096` | **`#576477`** | 4.61:1 | 6.01:1 |
+| `accentIndigo` | `#6366F1` | **`#4F46E5`** | 4.82:1 | 6.29:1 |
+| `positive` | `#22D3A0` | **`#0A6B4F`** | 4.99:1 | 6.50:1 |
+| `negative` | `#F87171` | **`#991B1B`** | 6.38:1 | 8.31:1 |
+
+`textDim` `#576477` is hue-matched to the custom `#708096`, not substituted with slate-500.
+
+`accentIndigo` and `categoryIndigo` share **one value**, as they do in dark (both `#6366F1` today). `#4F46E5` clears the stricter 4.5:1 text bar, so the shared value is set by the text role.
+
+`positive` `#0A6B4F` is chosen over the higher-contrast `#065F46` (5.90:1) deliberately: it keeps a 6.6 L\* gap to `negative` instead of 2.1, which matters more for colour-vision deficiency than the extra contrast headroom.
+
+---
+
+## 5. Category tokens
+
+Category colours are **fills** (pie segments, icon chips, swatches), so the 3:1 non-text bar applies.
+
+| Token | Dark | Light | vs `#DDE1F1` | L\* |
+| --- | --- | --- | --- | --- |
+| `categoryIndigo` | `#6366F1` | **`#4F46E5`** | 4.82:1 | 40.7 |
+| `categoryPurple` | `#8B5CF6` | **`#7C3AED`** | 4.37:1 | 43.4 |
+| `categoryPink` | `#EC4899` | **`#DB2777`** | 3.53:1 | 49.3 |
+| `categoryAmber` | `#F59E0B` | **`#B45309`** | 3.85:1 | 46.9 |
+| `categoryGreen` | `#22D3A0` | **`#0A6B4F`** | 4.99:1 | 39.8 |
+| `categoryTeal` | `#14B8A6` | **`#0E7490`** | 4.11:1 | 45.1 |
+| `categoryGray` | `#94A3B8` | **`#64748B`** | 3.65:1 | 48.3 |
+
+`categoryTeal` moves from teal to **cyan-700** to open hue distance from `categoryGreen`; at teal-600 the two were 1.01:1 apart and read as one colour.
+
+### Known limitation — colour alone is not sufficient
+
+Seven categorical hues **cannot** be made CVD-distinguishable on a light background while all clearing the contrast bar. A search over staggered lightness ladders reached only 1.11:1 minimum pairwise separation under simulated deuteranopia, and only by driving colours to near-black (`#09382A`, `#610A35`) — worse on every other axis.
+
+This is an over-determined constraint set, not a palette-tuning problem. The resolution is non-colour redundancy, which is the standard dataviz answer and is required by WCAG 1.4.1 regardless:
+
+- **`CategoryPieChart` must label segments directly** (or carry a legend pairing swatch with name adjacently). Hue alone must never be the only encoding.
+- **Amount signs are mandatory.** Verify `TransactionItemView.swift:52` renders an explicit `+`/`−`; if it does not, add one. Under simulated deuteranopia `positive` and `negative` separate by only **1.05:1** in light (1.3 L\*) against **1.18:1** in dark (5.3 L\*) — both effectively identical, and light is measurably worse. Dark mode already has this defect; it is not introduced by this work, but light mode deepens it and the sign fix covers both themes.
+
+  This is a structural limit, not a tuning failure: on a light background both colours must be dark to clear 4.5:1, which compresses exactly the lightness range CVD users rely on. No hue choice escapes it.
+
+---
+
+## 6. Overlay tokens
+
+Two new colorsets replace the hardcoded white-alpha overlays.
+
+| Token | Dark | Light | Light composited | vs backdrop |
+| --- | --- | --- | --- | --- |
+| `hairline` | `#FFFFFF` @ 10% | **`#0F172A` @ 28%** | `#AAAFB9` | 1.82:1 |
+| `surfaceRaised` | `#FFFFFF` @ 7% | **`#0F172A` @ 10%** | `#D0D5DD` | 1.22:1 |
+
+Tinted with slate-900 rather than pure black to keep the cool cast. Light alpha is **higher** than dark, not lower — low-alpha dark-on-light overlays are far less perceptible than the reverse. The 1.82:1 hairline is calibrated against the measured iOS separator on light (1.92:1).
+
+Dark values are chosen to reproduce the current rendering, so dark mode is unchanged.
+
+### Replacement map — 13 sites
+
+**→ `hairline`** (dividers, strokes, grid lines)
+
+| File | Line | Current |
+| --- | --- | --- |
+| `Insights/Components/HealthScoreDetailView.swift` | 73 | `Divider().overlay(Color.white.opacity(0.08))` |
+| `Insights/Components/HealthScoreDetailView.swift` | 139 | `Divider().overlay(Color.white.opacity(0.08))` |
+| `Insights/Components/SpendingTimelineChart.swift` | 84 | `AxisGridLine` 0.06 |
+| `Insights/Components/ForecastCard.swift` | 108 | `Divider().overlay` 0.2 |
+| `Insights/Components/ArcGaugeView.swift` | 11 | gauge track stroke 0.08 |
+| `TransactionListView/TransactionListView.swift` | 24 | stroke 0.3 |
+
+**→ `surfaceRaised`** (fills, tracks, row backgrounds)
+
+| File | Line | Current |
+| --- | --- | --- |
+| `Insights/Components/HealthScoreDetailView.swift` | 190 | `.fill` 0.07 |
+| `Insights/Components/HealthScoreCard.swift` | 36 | `.overlay` 0.1 |
+| `Insights/Components/GoalCard.swift` | 46 | `.fill` 0.08 |
+| `Insights/Components/ScoreComponentRow.swift` | 16 | `.fill` 0.07 |
+| `CategorySettings/IconGridPicker.swift` | 27 | unselected chip 0.06 |
+| `Security/PINSetupView.swift` | 148 | keypad background 0.08 |
+| `Utilities/DesignTokens.swift` | 27 | `static let formRow = Color.white.opacity(0.06)` → `Color("surfaceRaised")` |
+
+**Needs a judgment call:** `TransactionListView.swift:27` strokes a solid `Color.white` as a selection indicator. It is not a hairline. Decide during implementation between `accentIndigo` (reads as selection) and `textPrimary` (reads as emphasis).
+
+### Sites that stay hardcoded — 7
+
+These are foreground-on-saturated-fill and are correct in both themes. Do not touch:
+
+`Credit/Components/AddEditCreditCardSheet.swift:85` · `Security/PINSetupView.swift:122` · `Security/PINSetupView.swift:155` · `CategorySettings/ColorTokenPicker.swift:20` · `TransactionListView/Components/ImportResultView.swift:103` · `TransactionListView/Components/ImportResultView.swift:127` · `Utilities/DesignTokens.swift:194,196` (`ToastBanner` — self-contained black pill with white text).
+
+---
+
+## 7. AppBackground
+
+The one legitimate `@Environment(\.colorScheme)` branch in the codebase — it is a gradient, not a token.
+
+| Layer | Dark | Light |
+| --- | --- | --- |
+| base | `#030712` | `#E6EAF1` |
+| indigo bloom, top-left | `#818CF8` @ 0.22 | `#818CF8` @ **0.05** |
+| teal bloom, bottom-right | `#22D3A0` @ 0.10 | `#22D3A0` @ **0.03** |
+| indigo bloom, centre | `#6366F1` @ 0.10 | `#6366F1` @ **0.03** |
+
+Light bloom opacities are roughly a quarter of dark, not equal. The asymmetry is deliberate: adding light to a near-black base barely moves contrast against light text, but adding saturated indigo to a light base moves it substantially. At the originally-considered 0.10/0.06 the worst-case backdrop was `#D5DAF2` and pushed four tokens below their bar.
+
+Geometry, radii and `UnitPoint` centres are unchanged.
+
+`GlassCard` needs no change — `.glassEffect` is system Liquid Glass and adapts on its own.
+
+---
+
+## 8. UI
+
+New `Features/Profile/Components/ProfileAppearanceSection.swift`, matching the nine existing `Profile*Section` siblings:
+
+- `Text("APPEARANCE")` caption header, `.font(.caption.weight(.semibold))`, `.foregroundStyle(.textDim)`, `.padding(.horizontal, 4)`
+- Segmented `Picker` bound to `@AppStorage("app_theme_mode")`, three cases, `.tint(.accentIndigo)`
+
+Inserted in `ProfileView.swift` as its own `Section { … }.appFormSectionBackground()` directly after the Currency section — both are display preferences.
+
+---
+
+## 9. AccentColor
+
+`AccentColor` currently references `systemBlueColor`, so default-tinted system controls render blue while the app tints everything indigo. Repoint it to `#6366F1` (dark) / `#4F46E5` (light), matching `accentIndigo`.
+
+Independent of this feature, but light mode makes the mismatch conspicuous.
+
+---
+
+## 10. Launch flash — accepted limitation
+
+`UIWindow.appearance().backgroundColor` becomes `UIColor(named: "bg0")` so it resolves per appearance.
+
+The **launch screen** resolves `LaunchBackground` against the *system* trait before any app code runs. A user who forces Dark on a light phone will see a light launch screen for a beat. This is not fixable via `preferredColorScheme` and is accepted.
+
+If the window background itself mismatches during implementation, the fix is `overrideUserInterfaceStyle` on the window scene — verify before building it rather than adding it speculatively.
+
+---
+
+## 11. Testing
+
+**`ThemeModeTests`** (Swift Testing, `@Test`/`#expect`):
+
+- raw-value round-trip for all three cases
+- `colorScheme` mapping: `.auto → nil`, `.light → .light`, `.dark → .dark`
+- absent `UserDefaults` key defaults to `.auto`
+
+Colour correctness is not unit-testable. Manual verification pass in light mode over the screens with changed tokens: Dashboard, Activity, Insights (health score, goals, forecast, timeline chart), Credit, Budgets, Profile, PIN setup/entry, category settings, CSV import result.
+
+---
+
+## 12. Out of scope
+
+- **High-contrast appearance variants.** Asset catalogs support a `luminosity: high` slot for users with Increase Contrast enabled; neither the current dark tokens nor this light palette define one. Worth noting that several light tokens land at 4.4–4.6:1, so those users get no boost from a palette with no headroom. Deferred.
+- **Per-screen UX/layout changes.** This spec covers the colour layer only.
+- **Reducing the category palette below 7 hues.** Flagged by the audit as worth questioning; not part of this work.
