@@ -66,7 +66,10 @@ final class CompassViewModel {
         }
     }
 
-    private func reloadData() async {
+    /// Internal rather than private so tests can await the load directly. `load()`
+    /// is fire-and-forget, which left tests with nothing to wait on but a fixed
+    /// sleep — the cause of an intermittent failure in CompassViewModelTests.
+    func reloadData() async {
         do {
             async let txs = repo.fetchAll()
             async let fetchedGoals = repo.fetchGoals()

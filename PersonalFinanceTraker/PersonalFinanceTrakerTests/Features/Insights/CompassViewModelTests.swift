@@ -10,9 +10,10 @@ struct CompassViewModelTests {
         let repo = MockTransactionRepository()
         repo.stubbedTransactions = transactions
         let vm = CompassViewModel(repo: repo)
-        vm.load()
-        // Wait for async load to complete
-        try? await Task.sleep(for: .milliseconds(100))
+        // Awaits the load directly rather than sleeping past it. `load()` is
+        // fire-and-forget, so the previous 100ms sleep was a guess that came up
+        // short when the full suite ran and the load was scheduled late.
+        await vm.reloadData()
         return vm
     }
 
