@@ -46,7 +46,8 @@ enum ThemeMode: String, CaseIterable, Identifiable {
 > **Prerequisite — already done in `1145b09`.** Eight *production* views each pinned `.preferredColorScheme(.dark)` on their own body: `MainTabView:156` (the root tab view), `SplashView:39`, `InsightsView:109`, `ProfileView:193`, `EditFullNameView:13`, `PINSetupView:55`, `PINEntryView:67`, `PINConfirmationView:44`. Because a descendant's `preferredColorScheme` overrides an ancestor's, a single modifier on `AuthenticationWrapper` **would have had no effect** — the feature would have silently failed on every one of those screens. All eight are removed and replaced by one root declaration, currently hardcoded `.dark` to preserve today's behaviour; the picker work only has to swap that literal for `themeMode.colorScheme`.
 >
 > Seven further occurrences remain inside `#Preview` blocks. Those are dev-only and are intentionally left alone.
-- **No `AppSettings` change.** This follows the `ProfileCurrencySection` idiom, which already reads `@AppStorage` directly.
+
+**No `AppSettings` change.** This follows the `ProfileCurrencySection` idiom, which already reads `@AppStorage` directly.
 
 No view reads `@Environment(\.colorScheme)` except `AppBackground`. Everything else resolves through the asset catalog.
 
@@ -133,9 +134,11 @@ Seven categorical hues **cannot** be made CVD-distinguishable on a light backgro
 This is an over-determined constraint set, not a palette-tuning problem. The resolution is non-colour redundancy, which is the standard dataviz answer and is required by WCAG 1.4.1 regardless:
 
 - **`CategoryPieChart` must label segments directly** (or carry a legend pairing swatch with name adjacently). Hue alone must never be the only encoding.
-- **Amount signs are mandatory.** Verify `TransactionItemView.swift:52` renders an explicit `+`/`−`; if it does not, add one. Under simulated deuteranopia `positive` and `negative` separate by only **1.05:1** in light (1.3 L\*) against **1.18:1** in dark (5.3 L\*) — both effectively identical, and light is measurably worse. Dark mode already has this defect; it is not introduced by this work, but light mode deepens it and the sign fix covers both themes.
+- **Amount signs — resolved.** An earlier draft called for verifying that `TransactionItemView.swift:52` renders a sign, treating its absence as likely. It was already partly there: expenses are stored as negative `Decimal`, so `.currency` rendered "-€12,34" for expenses and a bare "€12,34" for income. As of `561d563` the format carries `.sign(strategy: .always())`, so income reads "+€12,34" too — matching the convention `ImportResultView.formattedSignedAmount` already used. Direction of a transaction therefore never depends on colour.
 
-  This is a structural limit, not a tuning failure: on a light background both colours must be dark to clear 4.5:1, which compresses exactly the lightness range CVD users rely on. No hue choice escapes it.
+  The measured deuteranopia separation between `positive` and `negative` is **1.05:1** in light (1.3 L\*) versus **1.18:1** in dark (5.3 L\*). Both are effectively identical, and light is measurably worse — but this describes a channel that is now redundant rather than load-bearing. `TransactionChart` is likewise safe (bars sit above/below the baseline, legend is text), as are the health-score bands (numeric score shown).
+
+  This is a structural limit, not a tuning failure: on a light background both colours must be dark to clear 4.5:1, which compresses exactly the lightness range CVD users rely on. No hue choice escapes it — which is why the fix is a non-colour channel, not a better palette.
 
 ---
 
@@ -272,5 +275,5 @@ Colour correctness is not unit-testable. Manual verification pass in light mode 
 - **High-contrast appearance variants.** Asset catalogs support a `luminosity: high` slot for users with Increase Contrast enabled; neither the current dark tokens nor this light palette define one. Worth noting that several light tokens land at 4.4–4.6:1, so those users get no boost from a palette with no headroom. Deferred.
 - **Per-screen UX/layout changes.** This spec covers the colour layer only.
 - **Reducing the category palette below 7 hues.** Flagged by the audit as worth questioning; not part of this work.
-- **`PieChartDataService.swift:37-41`.** Holds its own 13-colour system palette (`.blue, .green, .orange, .red, .purple, .pink, .yellow, .indigo, .mint, .cyan, .teal, .brown, .gray`) assigned round-robin by index, bypassing the `categoryX` tokens entirely. It is live code, reached from `CategoryBreakdownViewModel` and `SpendingInsightService`. Every light value derived in §5 is therefore **not** what the pie chart actually renders. Converting it would change the chart's colours in dark mode too, so it is a product decision rather than a mechanical refactor — deliberately left for a separate call.
+- ~~**`PieChartDataService.swift:37-41`**~~ — **resolved in `561d563`.** It held a private 13-colour system palette assigned round-robin by index *after sorting by amount*, which meant a category's slice colour was a function of its spending rank and changed between periods. It also ignored `CategoryModel.colorToken` entirely — the colour the user picks in `ColorTokenPicker` had no effect on the chart. Slices now read the category's own token (falling back to `CategoryConstants.colorToken(forName:)` for unknown names), so §5's light values do apply to the pie chart and colour finally has a stable referent. Covered by three new tests in `PieChartDataServiceTests`, including a regression guard on rank-independence.
 - **Threshold and destructive colours.** `CategoryDetailRow.progressBarColor` (`.red`/`.orange`/`.green`), swipe-action and validation `.red`, `AnomalyCalloutView`'s `.orange`. These are system semantic colours that already adapt per appearance and are HIG-idiomatic for their roles. Converting them to brand tokens would require inventing a warning token and would make them *worse*, not better. Left as-is deliberately.
