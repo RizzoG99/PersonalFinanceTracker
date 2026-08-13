@@ -29,9 +29,10 @@ struct PINConfirmationViewModelTests {
         #expect(viewModel.pinInput == "1234")
         #expect(!onConfirmedCalled)
 
-        try await Task.sleep(for: .seconds(0.3))
-
-        #expect(onConfirmedCalled)
+        // The view model waits 0.15s before verifying. Poll for the result rather
+        // than sleeping past it: a fixed wait tuned on an idle machine came up
+        // short under full-suite load and made this test intermittently fail.
+        #expect(await waitUntil { onConfirmedCalled })
         #expect(viewModel.errorMessage.isEmpty)
     }
 
@@ -53,18 +54,14 @@ struct PINConfirmationViewModelTests {
 
         #expect(viewModel.pinInput == "5678")
 
-        try await Task.sleep(for: .seconds(0.3))
-
+        // Wait for the rejection to land, then assert the callback never fired.
+        #expect(await waitUntil { !viewModel.errorMessage.isEmpty })
         #expect(!onConfirmedCalled)
-        #expect(!viewModel.errorMessage.isEmpty)
         #expect(viewModel.isShaking)
 
-        // ponytail: reset fires ~0.6s after last digit (0.15s verify delay +
-        // 0.45s reset delay in the view model); wait past that with margin
-        // instead of matching it exactly.
-        try await Task.sleep(for: .seconds(0.5))
-
-        #expect(viewModel.pinInput.isEmpty)
+        // The view model clears the input ~0.6s after the last digit (0.15s verify
+        // delay + 0.45s reset delay). Poll for the reset instead of racing it.
+        #expect(await waitUntil { viewModel.pinInput.isEmpty })
         #expect(viewModel.eyesOpen)
     }
 

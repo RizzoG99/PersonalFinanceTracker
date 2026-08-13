@@ -65,6 +65,10 @@ struct ProfileView: View {
                     }
                     .appFormSectionBackground()
                     Section {
+                        ProfileAppearanceSection()
+                    }
+                    .appFormSectionBackground()
+                    Section {
                         ProfilePayCycleSection()
                     }
                     .appFormSectionBackground()
@@ -190,7 +194,6 @@ struct ProfileView: View {
             }
             .padding(.top, 24)
             .appBackground()
-            .preferredColorScheme(.dark)
             .navigationTitle("Settings")
             .onAppear { viewModel.checkBiometrics() }
             .navigationBarTitleDisplayMode(.inline)

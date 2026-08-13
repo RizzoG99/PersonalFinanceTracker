@@ -24,7 +24,20 @@ extension Color {
     static let categoryPurple = Color("categoryPurple")
     static let categoryTeal = Color("categoryTeal")
     static let categoryGray = Color("categoryGray")
-    static let formRow = Color.white.opacity(0.06)
+
+    /// Subtle 1pt strokes, dividers and chart grid lines. White-on-dark / ink-on-light,
+    /// so it stays visible in both appearances — a raw `Color.white.opacity(…)` does not.
+    static let hairline = Color("hairline")
+
+    /// Low-elevation fills: form rows, gauge tracks, unselected chips.
+    static let surfaceRaised = Color("surfaceRaised")
+
+    /// The base colour behind `AppBackground`'s gradient blooms. Shares the
+    /// `LaunchBackground` colorset on purpose: the launch screen and the app's base
+    /// must be the same colour or the launch→SwiftUI handoff flashes.
+    static let appBackgroundBase = Color("LaunchBackground")
+
+    static let formRow = Color.surfaceRaised
 
     /// Safe category token lookup — validates token exists, falls back to categoryIndigo if not found.
     /// Prevents "No color named 'X' found in asset catalog" runtime errors.
@@ -52,25 +65,60 @@ extension ShapeStyle where Self == Color {
     static var categoryPurple: Color { .categoryPurple }
     static var categoryTeal: Color { .categoryTeal }
     static var categoryGray: Color { .categoryGray }
+    static var hairline: Color { .hairline }
+    static var surfaceRaised: Color { .surfaceRaised }
+    static var appBackgroundBase: Color { .appBackgroundBase }
     static var formRow: Color { .formRow }
 }
 
 // MARK: - App Background
 
 // Matches the Claude Design spec:
-// base #030712 with radial blooms — indigo at top-left (22%), teal at bottom-right (10%), indigo at center (10%)
+// base + radial blooms — indigo at top-left, teal at bottom-right, indigo at centre.
 struct AppBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    private struct Bloom {
+        let color: Color
+        let opacity: Double
+    }
+
+    // The one legitimate colorScheme branch in the app: a gradient can't live in the
+    // asset catalog.
+    //
+    // The two themes bloom in opposite directions. Dark adds light to a near-black
+    // base, so a strong bloom costs nothing. Light originally added the same
+    // saturated indigo to a pale base, which *darkened* the backdrop toward the
+    // text — so the opacities had to be cut to ~a quarter to protect contrast, and
+    // the gradient became invisible.
+    //
+    // Light now blooms *lighter than its base* instead. That inverts the trade: the
+    // worst case for text is the unbloomed base, which is a fixed known value, so
+    // bloom strength no longer competes with the contrast budget at all and the
+    // opacities can be an order of magnitude higher.
+    private var blooms: (topLeft: Bloom, bottomRight: Bloom, centre: Bloom) {
+        if colorScheme == .dark {
+            (Bloom(color: Color(red: 0.506, green: 0.549, blue: 0.973), opacity: 0.22),
+             Bloom(color: Color(red: 0.133, green: 0.827, blue: 0.627), opacity: 0.10),
+             Bloom(color: Color(red: 0.388, green: 0.400, blue: 0.945), opacity: 0.10))
+        } else {
+            // Pale indigo #EEF0FF and pale teal #EAF7F3 — both lighter than the
+            // #DCE0EE base, so every bloomed region has *more* contrast with text
+            // than the base does, not less.
+            (Bloom(color: Color(red: 0.933, green: 0.941, blue: 1.000), opacity: 0.55),
+             Bloom(color: Color(red: 0.918, green: 0.969, blue: 0.953), opacity: 0.35),
+             Bloom(color: Color(red: 0.933, green: 0.941, blue: 1.000), opacity: 0.35))
+        }
+    }
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color(red: 0.012, green: 0.027, blue: 0.071)
+                Color.appBackgroundBase
 
                 // Indigo bloom — top-left (ellipse at 20% 0%)
                 RadialGradient(
-                    colors: [
-                        Color(red: 0.506, green: 0.549, blue: 0.973).opacity(0.22),
-                        .clear
-                    ],
+                    colors: [blooms.topLeft.color.opacity(blooms.topLeft.opacity), .clear],
                     center: UnitPoint(x: 0.2, y: 0),
                     startRadius: 0,
                     endRadius: geo.size.height * 0.55
@@ -78,21 +126,15 @@ struct AppBackground: View {
 
                 // Teal bloom — bottom-right (ellipse at 80% 100%)
                 RadialGradient(
-                    colors: [
-                        Color(red: 0.133, green: 0.827, blue: 0.627).opacity(0.10),
-                        .clear
-                    ],
+                    colors: [blooms.bottomRight.color.opacity(blooms.bottomRight.opacity), .clear],
                     center: UnitPoint(x: 0.8, y: 1.0),
                     startRadius: 0,
                     endRadius: geo.size.height * 0.55
                 )
 
-                // Indigo bloom — center (ellipse at 50% 50%)
+                // Indigo bloom — centre (ellipse at 50% 50%)
                 RadialGradient(
-                    colors: [
-                        Color(red: 0.388, green: 0.400, blue: 0.945).opacity(0.10),
-                        .clear
-                    ],
+                    colors: [blooms.centre.color.opacity(blooms.centre.opacity), .clear],
                     center: .center,
                     startRadius: 0,
                     endRadius: geo.size.height * 0.60

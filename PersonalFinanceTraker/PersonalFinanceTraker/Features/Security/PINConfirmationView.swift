@@ -41,7 +41,6 @@ struct PINConfirmationView: View {
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appBackground()
-        .preferredColorScheme(.dark)
     }
 }
 

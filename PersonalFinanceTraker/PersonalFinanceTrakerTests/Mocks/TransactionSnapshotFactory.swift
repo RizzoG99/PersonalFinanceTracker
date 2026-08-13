@@ -49,6 +49,7 @@ extension CategorySnapshot {
         name: String,
         systemImage: String = "tag",
         type: TransactionType = .expense,
+        colorToken: String = "categoryIndigo",
         monthlyBudget: Decimal? = nil,
         currencyCode: String = "EUR"
     ) -> CategorySnapshot {
@@ -57,6 +58,7 @@ extension CategorySnapshot {
             name: name,
             systemImage: systemImage,
             type: type,
+            colorToken: colorToken,
             monthlyBudget: monthlyBudget,
             currencyCode: currencyCode
         )

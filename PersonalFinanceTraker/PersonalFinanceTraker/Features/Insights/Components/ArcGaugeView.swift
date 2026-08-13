@@ -8,7 +8,7 @@ struct ArcGaugeView: View {
         ZStack {
             Circle()
                 .trim(from: 0.1, to: 0.9)
-                .stroke(Color.white.opacity(0.08), style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                .stroke(Color.hairline, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                 .rotationEffect(.degrees(90))
 
             Circle()

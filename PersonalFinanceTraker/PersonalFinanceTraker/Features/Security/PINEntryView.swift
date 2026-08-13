@@ -64,7 +64,6 @@ struct PINEntryView: View {
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appBackground()
-        .preferredColorScheme(.dark)
         .sheet(isPresented: $viewModel.showForgotPINSheet) {
             if let setupViewModel = setupViewModel {
                 PINSetupView(viewModel: setupViewModel)

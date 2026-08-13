@@ -153,7 +153,6 @@ struct MainTabView: View {
             consumePendingAdd()
         }
         .appBackground()
-        .preferredColorScheme(.dark)
         .onShake {
             appSettings.toggleHideAmounts()
         }

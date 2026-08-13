@@ -81,7 +81,7 @@ struct SpendingTimelineChart: View {
                     .chartYAxis {
                         AxisMarks { _ in
                             AxisValueLabel().foregroundStyle(.textDim)
-                            AxisGridLine().foregroundStyle(Color.white.opacity(0.06))
+                            AxisGridLine().foregroundStyle(Color.hairline)
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: 220)

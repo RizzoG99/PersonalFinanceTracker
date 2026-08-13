@@ -52,7 +52,6 @@ struct PINSetupView: View {
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appBackground()
-        .preferredColorScheme(.dark)
         .navigationTitle(viewModel.isChangeMode ? "Change PIN" : "")
         .navigationBarTitleDisplayMode(.inline)
         .interactiveDismissDisabled(!viewModel.isChangeMode)
@@ -145,7 +144,7 @@ struct PINSetupView: View {
                 .onSubmit { viewModel.finishNameEntry() }
                 .padding(.vertical, 14)
                 .padding(.horizontal, 16)
-                .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                .background(Color.surfaceRaised, in: RoundedRectangle(cornerRadius: 14))
 
             Button {
                 viewModel.finishNameEntry()

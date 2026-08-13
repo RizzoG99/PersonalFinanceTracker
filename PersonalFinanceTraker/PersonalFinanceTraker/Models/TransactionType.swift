@@ -27,9 +27,9 @@ public enum TransactionType: String, CaseIterable {
     var color: Color {
         switch self {
         case .income:
-            return .green
+            return .positive
         case .expense:
-            return .red
+            return .negative
         case .transfer:
             return .accentIndigo
         }

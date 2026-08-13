@@ -36,7 +36,6 @@ struct SplashView: View {
                     appeared = true
                 }
             }
-            .preferredColorScheme(.dark)
     }
 }
 

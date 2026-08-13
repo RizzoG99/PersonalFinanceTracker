@@ -13,12 +13,11 @@ import UserNotifications
 @main
 struct PersonalFinanceTrakerApp: App {
 
-    // Dark base color (#030712) set as the window background so the
-    // system launch-screen → SwiftUI transition never flashes white.
+    // Base color set as the window background so the system launch-screen →
+    // SwiftUI transition never flashes. Reads the LaunchBackground colorset so the
+    // window, the launch screen and AppBackground's base can never drift apart.
     init() {
-        UIWindow.appearance().backgroundColor = UIColor(
-            red: 0.012, green: 0.027, blue: 0.071, alpha: 1
-        )
+        UIWindow.appearance().backgroundColor = UIColor(named: "LaunchBackground")
         seedMemberSinceDateIfNeeded()
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
     }
@@ -31,11 +30,29 @@ struct PersonalFinanceTrakerApp: App {
     /// Alert state for container creation errors
     @State private var containerErrorMessage: String?
 
+    /// Drives the window appearance applied below. Key must match
+    /// `ProfileAppearanceSection`.
+    @AppStorage("app_theme_mode") private var themeMode: ThemeMode = .auto
+
     // MARK: - Body
 
     var body: some Scene {
         WindowGroup {
             AuthenticationWrapper(modelContainer: sharedModelContainer)
+                // Single place the app's appearance is declared. Eight views used to
+                // pin `.preferredColorScheme(.dark)` on their own bodies, which meant a
+                // descendant silently overrode any app-level choice.
+                //
+                // Both mechanisms, because neither covers the whole app alone:
+                // `.preferredColorScheme` restyles the SwiftUI hierarchy including
+                // system chrome (the floating tab bar, glass toolbar buttons) but
+                // does not reach an already-presented sheet; the window trait reaches
+                // presented containers but leaves that chrome untouched. Same value
+                // from the same source, so they cannot disagree.
+                .preferredColorScheme(themeMode.colorScheme)
+                .onChange(of: themeMode, initial: true) { _, mode in
+                    applyAppearance(mode)
+                }
                 .alert("Data Access Error", isPresented: .constant(containerErrorMessage != nil)) {
                     Button("OK") {
                         containerErrorMessage = nil
@@ -56,6 +73,18 @@ struct PersonalFinanceTrakerApp: App {
 // MARK: - Private Extensions
 
 private extension PersonalFinanceTrakerApp {
+
+    /// Pushes the chosen appearance onto every window in the scene. `.unspecified`
+    /// hands control back to the system, which is what Auto means.
+    @MainActor
+    func applyAppearance(_ mode: ThemeMode) {
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            for window in windowScene.windows {
+                window.overrideUserInterfaceStyle = mode.uiStyle
+            }
+        }
+    }
 
     func seedMemberSinceDateIfNeeded() {
         let key = "member_since_timestamp"
