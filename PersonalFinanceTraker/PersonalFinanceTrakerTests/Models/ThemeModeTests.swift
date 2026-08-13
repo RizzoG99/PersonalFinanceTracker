@@ -4,6 +4,28 @@ import SwiftUI
 
 struct ThemeModeTests {
 
+    @Test func autoMapsToNilSoTheSystemDecides() {
+        #expect(ThemeMode.auto.colorScheme == nil)
+    }
+
+    @Test func lightAndDarkMapToTheirColorSchemes() {
+        #expect(ThemeMode.light.colorScheme == .light)
+        #expect(ThemeMode.dark.colorScheme == .dark)
+    }
+
+    /// Both mechanisms are applied together, so a divergence between them would
+    /// mean the SwiftUI hierarchy and the window disagreed about the appearance.
+    @Test func uiStyleAgreesWithColorScheme() {
+        for mode in ThemeMode.allCases {
+            switch mode.colorScheme {
+            case nil:     #expect(mode.uiStyle == .unspecified)
+            case .light?: #expect(mode.uiStyle == .light)
+            case .dark?:  #expect(mode.uiStyle == .dark)
+            @unknown default: Issue.record("unhandled ColorScheme for \(mode)")
+            }
+        }
+    }
+
     @Test func rawValuesRoundTrip() {
         for mode in ThemeMode.allCases {
             #expect(ThemeMode(rawValue: mode.rawValue) == mode)

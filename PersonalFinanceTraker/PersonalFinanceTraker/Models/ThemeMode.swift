@@ -10,18 +10,32 @@ enum ThemeMode: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    /// Applied to the window's `overrideUserInterfaceStyle` rather than through
-    /// `.preferredColorScheme`.
+    /// For `.preferredColorScheme`, which restyles the SwiftUI hierarchy itself —
+    /// including system chrome such as `TabView`'s floating tab bar and
+    /// `glassEffect` surfaces. `nil` means "follow the system".
     ///
-    /// `.preferredColorScheme` is a preference that only reaches its own
-    /// presentation container. A `.sheet` is a separate presentation, so a sheet
-    /// that was already on screen kept the appearance it was created with and the
-    /// Settings sheet — which contains the picker itself — visibly failed to
-    /// follow the switch. Changing the window's trait collection instead
-    /// propagates to every view controller in that window, presented sheets
-    /// included, and SwiftUI's `\.colorScheme` environment derives from the same
-    /// traits, so `AppBackground` still reacts.
+    /// Applied together with ``uiStyle``; see that property for why one mechanism
+    /// is not enough.
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .auto:  nil
+        case .light: .light
+        case .dark:  .dark
+        }
+    }
+
+    /// For the window's `overrideUserInterfaceStyle`, applied *alongside*
+    /// ``colorScheme``. Neither mechanism covers the whole app on its own:
     ///
+    /// - `.preferredColorScheme` is a preference that only reaches its own
+    ///   presentation container, so a `.sheet` already on screen kept the
+    ///   appearance it was created with — including the Settings sheet that
+    ///   hosts the picker.
+    /// - The window trait fixes those presented containers, but does not restyle
+    ///   SwiftUI's own chrome: with it alone the floating tab bar and the glass
+    ///   toolbar buttons stayed light after switching to dark.
+    ///
+    /// The two always carry the same value, so they cannot disagree.
     /// `.unspecified` means "follow the system".
     var uiStyle: UIUserInterfaceStyle {
         switch self {

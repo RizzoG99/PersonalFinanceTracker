@@ -43,11 +43,13 @@ struct PersonalFinanceTrakerApp: App {
                 // pin `.preferredColorScheme(.dark)` on their own bodies, which meant a
                 // descendant silently overrode any app-level choice.
                 //
-                // Applied to the window rather than via `.preferredColorScheme`: that
-                // modifier only reaches its own presentation container, so a sheet that
-                // was already on screen kept its original appearance — including the
-                // Settings sheet that hosts the picker. Setting the window's trait
-                // propagates to every view controller it owns, presented sheets included.
+                // Both mechanisms, because neither covers the whole app alone:
+                // `.preferredColorScheme` restyles the SwiftUI hierarchy including
+                // system chrome (the floating tab bar, glass toolbar buttons) but
+                // does not reach an already-presented sheet; the window trait reaches
+                // presented containers but leaves that chrome untouched. Same value
+                // from the same source, so they cannot disagree.
+                .preferredColorScheme(themeMode.colorScheme)
                 .onChange(of: themeMode, initial: true) { _, mode in
                     applyAppearance(mode)
                 }
