@@ -47,7 +47,10 @@ struct TransactionItemView: View {
 
             Spacer()
 
-            Text(item.amount, format: .currency(code: item.currencyCode))
+            // Always-signed: income reads "+€12,34", expenses "-€12,34". Matches the
+            // convention ImportResultView already uses, and means the direction of a
+            // transaction never depends on colour alone.
+            Text(item.amount, format: .currency(code: item.currencyCode).sign(strategy: .always()))
                 .font(.headline)
                 .foregroundStyle(item.amount >= 0 ? .positive : .negative)
                 .privacyBlur()

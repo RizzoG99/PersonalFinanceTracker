@@ -33,13 +33,6 @@ public class PieChartDataService {
     
     private let currencyService = CurrencyService()
     
-    /// Predefined colors for different categories
-    private let categoryColors: [Color] = [
-        .blue, .green, .orange, .red, .purple,
-        .pink, .yellow, .indigo, .mint, .cyan,
-        .teal, .brown, .gray
-    ]
-    
     /// Creates a new pie chart data service
     public init() {}
     
@@ -67,6 +60,9 @@ public class PieChartDataService {
         // Group by category and calculate totals
         let categoryGroupedData = groupByCategory(typeFilteredItems)
         let budgetsByName = Dictionary(uniqueKeysWithValues: categories.map { ($0.name, $0.monthlyBudget) })
+        // Slice colour comes from the category's own saved token, so it stays the same
+        // whatever the category's spending rank happens to be this period.
+        let colorTokensByName = Dictionary(uniqueKeysWithValues: categories.map { ($0.name, $0.colorToken) })
 
         // Calculate total amount for percentage calculations
         let totalAmount = categoryGroupedData.values.reduce(0, +)
@@ -74,9 +70,10 @@ public class PieChartDataService {
         // Generate pie chart data points
         var pieChartData: [PieChartDataPoint] = []
 
-        for (index, (categoryName, total)) in categoryGroupedData.sorted(by: { $0.value > $1.value }).enumerated() {
+        for (categoryName, total) in categoryGroupedData.sorted(by: { $0.value > $1.value }) {
             let percentage = totalAmount > 0 ? Double(truncating: (total / totalAmount * 100) as NSDecimalNumber) : 0
-            let color = categoryColors[index % categoryColors.count]
+            let token = colorTokensByName[categoryName] ?? CategoryConstants.colorToken(forName: categoryName)
+            let color = Color(categoryToken: token)
 
             pieChartData.append(PieChartDataPoint(
                 category: categoryName,
