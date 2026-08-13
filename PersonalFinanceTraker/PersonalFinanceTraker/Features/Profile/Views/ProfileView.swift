@@ -65,6 +65,10 @@ struct ProfileView: View {
                     }
                     .appFormSectionBackground()
                     Section {
+                        ProfileAppearanceSection()
+                    }
+                    .appFormSectionBackground()
+                    Section {
                         ProfilePayCycleSection()
                     }
                     .appFormSectionBackground()

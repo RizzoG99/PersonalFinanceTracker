@@ -30,16 +30,19 @@ struct PersonalFinanceTrakerApp: App {
     /// Alert state for container creation errors
     @State private var containerErrorMessage: String?
 
+    /// Drives the single `.preferredColorScheme` declaration below. Key must match
+    /// `ProfileAppearanceSection`.
+    @AppStorage("app_theme_mode") private var themeMode: ThemeMode = .auto
+
     // MARK: - Body
 
     var body: some Scene {
         WindowGroup {
             AuthenticationWrapper(modelContainer: sharedModelContainer)
-                // Single place the app's appearance is declared. Previously eight views
-                // each pinned `.preferredColorScheme(.dark)` on their own body, which
-                // meant a descendant silently overrode any app-level choice. Becomes
-                // `themeMode.colorScheme` when the Appearance picker lands.
-                .preferredColorScheme(.dark)
+                // Single place the app's appearance is declared. Eight views used to
+                // pin `.preferredColorScheme(.dark)` on their own bodies, which meant a
+                // descendant silently overrode any app-level choice.
+                .preferredColorScheme(themeMode.colorScheme)
                 .alert("Data Access Error", isPresented: .constant(containerErrorMessage != nil)) {
                     Button("OK") {
                         containerErrorMessage = nil
