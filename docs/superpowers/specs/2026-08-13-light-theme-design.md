@@ -11,7 +11,7 @@ Add a light theme to PersonalFinanceTracker and let the user choose Auto / Light
 
 The app is dark-only by construction:
 
-- All 12 colorsets in `Assets.xcassets` define a **single appearance** (no light variant).
+- All 18 colorsets in `Assets.xcassets` define a **single appearance** (no light variant) — 16 semantic tokens plus `AccentColor` and `LaunchBackground`.
 - `AppBackground` (`Utilities/DesignTokens.swift:62`) hardcodes base `#030712` plus three radial blooms.
 - `PersonalFinanceTrakerApp.swift:19` paints `UIWindow` dark to suppress the launch-screen flash.
 - ~22 call sites hardcode `Color.white.opacity(…)` / `Color.black.opacity(…)`.
@@ -173,11 +173,30 @@ Dark values are chosen to reproduce the current rendering, so dark mode is uncha
 
 **Needs a judgment call:** `TransactionListView.swift:27` strokes a solid `Color.white` as a selection indicator. It is not a hairline. Decide during implementation between `accentIndigo` (reads as selection) and `textPrimary` (reads as emphasis).
 
-### Sites that stay hardcoded — 7
+### Sites that stay hardcoded — 6
 
 These are foreground-on-saturated-fill and are correct in both themes. Do not touch:
 
-`Credit/Components/AddEditCreditCardSheet.swift:85` · `Security/PINSetupView.swift:122` · `Security/PINSetupView.swift:155` · `CategorySettings/ColorTokenPicker.swift:20` · `TransactionListView/Components/ImportResultView.swift:103` · `TransactionListView/Components/ImportResultView.swift:127` · `Utilities/DesignTokens.swift:194,196` (`ToastBanner` — self-contained black pill with white text).
+`Credit/Components/AddEditCreditCardSheet.swift:85` · `Security/PINSetupView.swift:122` · `Security/PINSetupView.swift:155` · `CategorySettings/ColorTokenPicker.swift:20` · `TransactionListView/Components/ImportResultView.swift:103` (always on `Color.accentColor`) · `Utilities/DesignTokens.swift:194,196` (`ToastBanner` — self-contained black pill with white text).
+
+### Pre-existing light-mode defect that must be fixed — `ImportResultView`
+
+`ImportResultView.swift:113` (`.tint(.white)` on the `ProgressView`) and `:127` (`.foregroundStyle(.white)`) sit inside a button whose background is:
+
+```swift
+.background(isImporting ? Color(.systemGray4) : Color.accentColor)
+```
+
+They are **not** always on a saturated fill. During the `isImporting` state the fill is `systemGray4`, and white on `systemGray4` measures:
+
+| Theme | `systemGray4` | White foreground |
+| --- | --- | --- |
+| Dark | `#3A3A3C` | 11.35:1 — fine |
+| Light | `#D1D1D6` | **1.52:1 — unreadable** |
+
+The "Importing…" label and its spinner would be effectively invisible in light mode. The defect is latent today because the app is dark-only, so shipping light mode exposes it.
+
+**Fix:** the white foreground must sit on a fill that holds ≥4.5:1 in both themes. Reference fix, verified: use `.textPrimary` for the importing state (11.73:1 on light `systemGray4`, and it inverts correctly in dark). Alternatively replace the `systemGray4` disabled fill with a token that keeps white legible in both themes — implementer's choice, but whichever is picked must be measured, not assumed.
 
 ---
 
@@ -191,6 +210,8 @@ The one legitimate `@Environment(\.colorScheme)` branch in the codebase — it i
 | indigo bloom, top-left | `#818CF8` @ 0.22 | `#818CF8` @ **0.05** |
 | teal bloom, bottom-right | `#22D3A0` @ 0.10 | `#22D3A0` @ **0.03** |
 | indigo bloom, centre | `#6366F1` @ 0.10 | `#6366F1` @ **0.03** |
+
+**Worst-case derivation.** `#DDE1F1` composites the top-left indigo bloom (0.05) and the centre indigo bloom (0.03) over the base at full strength. Adding the teal bloom (0.03) as well gives a slightly darker `#D7E1EF`; every token still clears its bar there, with `textDim` the tightest at **4.55:1** (margin +0.05). Both figures are conservative upper bounds — geometrically, the two corner blooms reach the screen centre at 94% of their radius, so their residual intensity there is ~6%, and a full-strength triple overlap does not physically occur. Tokens are specified against `#DDE1F1`; the `#D7E1EF` check confirms headroom.
 
 Light bloom opacities are roughly a quarter of dark, not equal. The asymmetry is deliberate: adding light to a near-black base barely moves contrast against light text, but adding saturated indigo to a light base moves it substantially. At the originally-considered 0.10/0.06 the worst-case backdrop was `#D5DAF2` and pushed four tokens below their bar.
 
