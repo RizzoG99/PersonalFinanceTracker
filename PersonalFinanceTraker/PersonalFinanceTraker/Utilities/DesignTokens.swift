@@ -74,8 +74,19 @@ extension ShapeStyle where Self == Color {
 // MARK: - App Background
 
 // Matches the Claude Design spec:
-// base #030712 with radial blooms — indigo at top-left (22%), teal at bottom-right (10%), indigo at center (10%)
+// base + radial blooms — indigo at top-left, teal at bottom-right, indigo at centre.
 struct AppBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    // The one legitimate colorScheme branch in the app: a gradient can't live in the
+    // asset catalog. Light opacities are ~a quarter of dark, not equal — adding light
+    // to a near-black base barely moves contrast, but adding saturated indigo to a
+    // light base moves it a lot. At parity the worst-case backdrop pushed four tokens
+    // below their contrast bar.
+    private var bloom: (indigoTop: Double, teal: Double, indigoCentre: Double) {
+        colorScheme == .dark ? (0.22, 0.10, 0.10) : (0.05, 0.03, 0.03)
+    }
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -84,7 +95,7 @@ struct AppBackground: View {
                 // Indigo bloom — top-left (ellipse at 20% 0%)
                 RadialGradient(
                     colors: [
-                        Color(red: 0.506, green: 0.549, blue: 0.973).opacity(0.22),
+                        Color(red: 0.506, green: 0.549, blue: 0.973).opacity(bloom.indigoTop),
                         .clear
                     ],
                     center: UnitPoint(x: 0.2, y: 0),
@@ -95,7 +106,7 @@ struct AppBackground: View {
                 // Teal bloom — bottom-right (ellipse at 80% 100%)
                 RadialGradient(
                     colors: [
-                        Color(red: 0.133, green: 0.827, blue: 0.627).opacity(0.10),
+                        Color(red: 0.133, green: 0.827, blue: 0.627).opacity(bloom.teal),
                         .clear
                     ],
                     center: UnitPoint(x: 0.8, y: 1.0),
@@ -103,10 +114,10 @@ struct AppBackground: View {
                     endRadius: geo.size.height * 0.55
                 )
 
-                // Indigo bloom — center (ellipse at 50% 50%)
+                // Indigo bloom — centre (ellipse at 50% 50%)
                 RadialGradient(
                     colors: [
-                        Color(red: 0.388, green: 0.400, blue: 0.945).opacity(0.10),
+                        Color(red: 0.388, green: 0.400, blue: 0.945).opacity(bloom.indigoCentre),
                         .clear
                     ],
                     center: .center,
