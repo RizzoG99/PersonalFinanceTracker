@@ -80,8 +80,22 @@ private extension PersonalFinanceTrakerApp {
     func applyAppearance(_ mode: ThemeMode) {
         for scene in UIApplication.shared.connectedScenes {
             guard let windowScene = scene as? UIWindowScene else { continue }
+            // A presented (not embedded) controller reliably re-renders when its
+            // override is set to a *concrete* .light/.dark — that's the path Light
+            // and Dark already use. Setting `.unspecified` on a presented controller
+            // removes the override but doesn't reliably force it to re-resolve from
+            // its ambient trait, so Auto needs a resolved concrete value here too.
+            // The window itself keeps `.unspecified` for Auto — the root hierarchy
+            // (not a presented controller) does track system changes live via that.
+            let resolvedForPresented: UIUserInterfaceStyle =
+                mode == .auto ? windowScene.traitCollection.userInterfaceStyle : mode.uiStyle
             for window in windowScene.windows {
                 window.overrideUserInterfaceStyle = mode.uiStyle
+                var presented = window.rootViewController?.presentedViewController
+                while let controller = presented {
+                    controller.overrideUserInterfaceStyle = resolvedForPresented
+                    presented = controller.presentedViewController
+                }
             }
         }
     }
