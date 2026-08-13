@@ -70,7 +70,7 @@ struct HealthScoreDetailView: View {
                     .foregroundStyle(.textMid)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Divider().overlay(Color.white.opacity(0.08))
+                Divider().overlay(Color.hairline)
                 scoreLegend
             }
         }
@@ -136,7 +136,7 @@ struct HealthScoreDetailView: View {
                     ForEach(healthScore.components) { component in
                         componentRow(component)
                         if component.id != healthScore.components.last?.id {
-                            Divider().overlay(Color.white.opacity(0.08))
+                            Divider().overlay(Color.hairline)
                         }
                     }
 
@@ -187,7 +187,7 @@ struct HealthScoreDetailView: View {
             }
 
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color.white.opacity(0.07))
+                .fill(Color.surfaceRaised)
                 .frame(height: 6)
                 .overlay(alignment: .leading) {
                     GeometryReader { geo in

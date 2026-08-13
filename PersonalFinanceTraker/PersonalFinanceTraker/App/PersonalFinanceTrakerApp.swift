@@ -13,12 +13,11 @@ import UserNotifications
 @main
 struct PersonalFinanceTrakerApp: App {
 
-    // Dark base color (#030712) set as the window background so the
-    // system launch-screen → SwiftUI transition never flashes white.
+    // Base color set as the window background so the system launch-screen →
+    // SwiftUI transition never flashes. Reads the LaunchBackground colorset so the
+    // window, the launch screen and AppBackground's base can never drift apart.
     init() {
-        UIWindow.appearance().backgroundColor = UIColor(
-            red: 0.012, green: 0.027, blue: 0.071, alpha: 1
-        )
+        UIWindow.appearance().backgroundColor = UIColor(named: "LaunchBackground")
         seedMemberSinceDateIfNeeded()
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
     }
@@ -36,6 +35,11 @@ struct PersonalFinanceTrakerApp: App {
     var body: some Scene {
         WindowGroup {
             AuthenticationWrapper(modelContainer: sharedModelContainer)
+                // Single place the app's appearance is declared. Previously eight views
+                // each pinned `.preferredColorScheme(.dark)` on their own body, which
+                // meant a descendant silently overrode any app-level choice. Becomes
+                // `themeMode.colorScheme` when the Appearance picker lands.
+                .preferredColorScheme(.dark)
                 .alert("Data Access Error", isPresented: .constant(containerErrorMessage != nil)) {
                     Button("OK") {
                         containerErrorMessage = nil

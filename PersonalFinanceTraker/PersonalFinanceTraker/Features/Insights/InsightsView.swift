@@ -106,7 +106,6 @@ struct CompassView: View {
     )
         .environment(ProfileViewModel())
         .modelContainer(container)
-        .preferredColorScheme(.dark)
 }
 
 #Preview { compassPreview() }

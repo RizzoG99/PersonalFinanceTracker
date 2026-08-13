@@ -62,7 +62,7 @@ public struct TransactionChart: View {
                     y: .value("Income", Double(truncating: dataPoint.income as NSDecimalNumber)),
                     width: .ratio(0.7)
                 )
-                .foregroundStyle(.green)
+                .foregroundStyle(.positive)
                 .opacity(0.8)
                 
                 // Expense bars (below baseline, using negative values)
@@ -71,7 +71,7 @@ public struct TransactionChart: View {
                     y: .value("Expenses", -Double(truncating: dataPoint.expenses as NSDecimalNumber)),
                     width: .ratio(0.7)
                 )
-                .foregroundStyle(.red)
+                .foregroundStyle(.negative)
                 .opacity(0.8)
             }
         }
@@ -97,8 +97,8 @@ public struct TransactionChart: View {
         }
         .chartLegend(position: .bottom) {
             HStack {
-                LegendItem(color: .green, label: "Income")
-                LegendItem(color: .red, label: "Expenses")
+                LegendItem(color: .positive, label: "Income")
+                LegendItem(color: .negative, label: "Expenses")
             }
         }
     }

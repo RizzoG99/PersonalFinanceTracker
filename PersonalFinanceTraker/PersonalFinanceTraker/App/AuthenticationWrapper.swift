@@ -28,7 +28,7 @@ struct AuthenticationWrapper: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.012, green: 0.027, blue: 0.071)
+            Color.appBackgroundBase
                 .ignoresSafeArea()
 
             if !isPINSetup {

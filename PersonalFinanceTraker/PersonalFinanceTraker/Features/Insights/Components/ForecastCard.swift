@@ -105,7 +105,7 @@ struct ForecastCard: View {
                     .chartYAxis(.hidden)
                 }
 
-                Divider().overlay { Color.white.opacity(0.2) }
+                Divider().overlay { Color.hairline }
 
                 // Summary row
                 HStack(alignment: .top) {

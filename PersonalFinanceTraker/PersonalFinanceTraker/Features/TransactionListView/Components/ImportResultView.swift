@@ -110,7 +110,7 @@ struct ImportResultView: View {
                             HStack(spacing: 8) {
                                 ProgressView()
                                     .scaleEffect(0.8)
-                                    .tint(.white)
+                                    .tint(.textPrimary)
                                 Text("Importing…")
                                     .fontWeight(.semibold)
                             }
@@ -124,7 +124,10 @@ struct ImportResultView: View {
                         }
                     }
                     .background(isImporting ? Color(.systemGray4) : Color.accentColor)
-                    .foregroundStyle(.white)
+                    // Not always white: while importing the fill is systemGray4, where
+                    // white measures 1.52:1 in light mode. textPrimary inverts per
+                    // appearance and stays legible on both fills.
+                    .foregroundStyle(isImporting ? Color.textPrimary : .white)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .disabled(isImporting)
                 }
@@ -170,7 +173,7 @@ struct ImportResultView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(formattedSignedAmount(t.amount, currencyCode: t.currencyCode))
                     .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(t.amount >= 0 ? .green : .red)
+                    .foregroundStyle(t.amount >= 0 ? .positive : .negative)
                 Text(t.timestamp, style: .date)
                     .font(.caption)
                     .foregroundStyle(.secondary)

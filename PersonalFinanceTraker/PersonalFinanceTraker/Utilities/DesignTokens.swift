@@ -24,7 +24,20 @@ extension Color {
     static let categoryPurple = Color("categoryPurple")
     static let categoryTeal = Color("categoryTeal")
     static let categoryGray = Color("categoryGray")
-    static let formRow = Color.white.opacity(0.06)
+
+    /// Subtle 1pt strokes, dividers and chart grid lines. White-on-dark / ink-on-light,
+    /// so it stays visible in both appearances — a raw `Color.white.opacity(…)` does not.
+    static let hairline = Color("hairline")
+
+    /// Low-elevation fills: form rows, gauge tracks, unselected chips.
+    static let surfaceRaised = Color("surfaceRaised")
+
+    /// The base colour behind `AppBackground`'s gradient blooms. Shares the
+    /// `LaunchBackground` colorset on purpose: the launch screen and the app's base
+    /// must be the same colour or the launch→SwiftUI handoff flashes.
+    static let appBackgroundBase = Color("LaunchBackground")
+
+    static let formRow = Color.surfaceRaised
 
     /// Safe category token lookup — validates token exists, falls back to categoryIndigo if not found.
     /// Prevents "No color named 'X' found in asset catalog" runtime errors.
@@ -52,6 +65,9 @@ extension ShapeStyle where Self == Color {
     static var categoryPurple: Color { .categoryPurple }
     static var categoryTeal: Color { .categoryTeal }
     static var categoryGray: Color { .categoryGray }
+    static var hairline: Color { .hairline }
+    static var surfaceRaised: Color { .surfaceRaised }
+    static var appBackgroundBase: Color { .appBackgroundBase }
     static var formRow: Color { .formRow }
 }
 
@@ -63,7 +79,7 @@ struct AppBackground: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color(red: 0.012, green: 0.027, blue: 0.071)
+                Color.appBackgroundBase
 
                 // Indigo bloom — top-left (ellipse at 20% 0%)
                 RadialGradient(

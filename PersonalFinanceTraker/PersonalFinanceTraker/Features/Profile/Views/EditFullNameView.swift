@@ -10,7 +10,6 @@ struct EditFullNameView: View {
         }
         .scrollContentBackground(.hidden)
         .appBackground()
-        .preferredColorScheme(.dark)
         .navigationTitle("Full Name")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { isFocused = true }

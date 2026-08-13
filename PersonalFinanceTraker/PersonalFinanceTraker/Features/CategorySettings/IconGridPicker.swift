@@ -24,7 +24,7 @@ struct IconGridPicker: View {
                 } label: {
                     ZStack {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(isSelected ? color.opacity(0.25) : Color.white.opacity(0.06))
+                            .fill(isSelected ? color.opacity(0.25) : Color.surfaceRaised)
                             .frame(width: 44, height: 44)
                         Image(systemName: symbol)
                             .foregroundStyle(isSelected ? color : .textDim)
