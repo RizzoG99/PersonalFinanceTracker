@@ -19,7 +19,7 @@
 - **Verify `tabIdentifier` before first use.** It changes per Xcode launch. Call `mcp__xcode__XcodeListWindows` and confirm `workspacePath` points at `.claude/worktrees/light-theme/...`, **not** the parent checkout. It was `windowtab1` at time of writing.
 - **Tests are Swift Testing** (`@Test`, `#expect`, `struct` suites), **not XCTest**. Use `@testable import PersonalFinanceTraker`.
 - Expenses are stored as **negative** `Decimal`. Currency is EUR throughout.
-- Adding a `.colorset` directory inside `Assets.xcassets` requires **no** `.xcodeproj` change. Adding a new `.swift` file **does** — add it to the `PersonalFinanceTraker` target in Xcode.
+- **No `.xcodeproj` edits are needed in this plan, for any file type.** The project is `objectVersion = 77` and uses `PBXFileSystemSynchronizedRootGroup` (synchronized filesystem groups) — it lists no individual `.swift in Sources` build references. Any `.swift` file created inside a source folder, and any `.colorset` created inside `Assets.xcassets`, is picked up by its target automatically. **Never hand-edit `project.pbxproj`.** If a new file appears not to compile, re-check its path, don't touch the project file.
 - Colour values below are verified against the worst-case composited backdrop `#DDE1F1`, not flat `bg0`. Do not "tidy" them toward rounder numbers.
 
 ## Prerequisites (already committed — do not redo)
@@ -288,7 +288,7 @@ light to a near-black one."
 - Consumes: nothing.
 - Produces: `enum ThemeMode: String, CaseIterable, Identifiable` with cases `.auto`, `.light`, `.dark`; `var id: String`; `var colorScheme: ColorScheme?`; `var label: LocalizedStringKey`. Task 4 consumes all of these and the raw values `"auto" | "light" | "dark"`.
 
-**Both new files must be added to their Xcode targets** — `ThemeMode.swift` to `PersonalFinanceTraker`, `ThemeModeTests.swift` to `PersonalFinanceTrakerTests`. Unlike colorsets, `.swift` files need a project entry.
+Both new files are picked up automatically by their targets — `ThemeMode.swift` sits under the app's source folder, `ThemeModeTests.swift` under the test folder. No project-file edit; see Global Constraints.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -387,8 +387,7 @@ Expected: `404 tests: 404 passed, 0 failed` — the previous 398 plus the 6 abov
 ```bash
 cd /Users/gabrielerizzo/Develop/PersonalFinanceTracker/.claude/worktrees/light-theme
 git add PersonalFinanceTraker/PersonalFinanceTraker/Models/ThemeMode.swift \
-        PersonalFinanceTraker/PersonalFinanceTrakerTests/Models/ThemeModeTests.swift \
-        PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj
+        PersonalFinanceTraker/PersonalFinanceTrakerTests/Models/ThemeModeTests.swift
 git commit -m "feat: add ThemeMode enum
 
 Auto maps to nil so .preferredColorScheme defers to the system. Raw values
@@ -411,7 +410,7 @@ This is the task that makes the feature visible. It ends with a manual visual pa
 - Consumes: `ThemeMode` (all members) from Task 3; the `app_theme_mode` storage key is shared between the picker and the root modifier and must match exactly in both.
 - Produces: `struct ProfileAppearanceSection: View` with a no-argument initialiser.
 
-Add `ProfileAppearanceSection.swift` to the `PersonalFinanceTraker` target.
+`ProfileAppearanceSection.swift` is picked up automatically — no project-file edit.
 
 - [ ] **Step 1: Create the section**
 
@@ -521,8 +520,7 @@ Report anything that looks wrong rather than fixing it silently — several valu
 cd /Users/gabrielerizzo/Develop/PersonalFinanceTracker/.claude/worktrees/light-theme
 git add PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileAppearanceSection.swift \
         PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift \
-        PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift \
-        PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj
+        PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift
 git commit -m "feat: Auto/Light/Dark appearance picker
 
 Adds a segmented picker to Profile and swaps the root .preferredColorScheme
