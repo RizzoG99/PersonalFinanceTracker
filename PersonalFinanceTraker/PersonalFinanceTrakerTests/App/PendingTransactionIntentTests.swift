@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import PersonalFinanceTraker
 
@@ -25,5 +26,24 @@ struct PendingTransactionIntentTests {
     @Test func consumeIsFalseWhenNothingPending() {
         let intent = PendingTransactionIntent()
         #expect(intent.consume(isEditSheetOpen: false) == false)
+    }
+
+    @Test func consumesPendingHabitTemplateOnce() {
+        let intent = PendingTransactionIntent()
+        intent.shouldRepeatHabitTemplate = true
+
+        #expect(intent.consumeHabitTemplate())
+        #expect(!intent.shouldRepeatHabitTemplate)
+        #expect(!intent.consumeHabitTemplate())
+    }
+
+    @Test func decodesRepeatTemplateFromWidgetURL() {
+        let url = URL(string: "personalfinancetraker://repeat-transaction?amount=5.5&isExpense=true&category=Food&note=Lunch")!
+        let request = PendingHabitTemplateRequest(widgetURL: url)
+
+        #expect(request?.amount == 5.5)
+        #expect(request?.isExpense == true)
+        #expect(request?.category == "Food")
+        #expect(request?.note == "Lunch")
     }
 }

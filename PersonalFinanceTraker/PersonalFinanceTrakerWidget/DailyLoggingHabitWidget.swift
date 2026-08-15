@@ -4,6 +4,7 @@
 //
 
 import AppIntents
+import Foundation
 import SwiftUI
 import WidgetKit
 
@@ -73,27 +74,6 @@ private enum HabitWidgetSnapshotStore {
     }
 }
 
-private struct PendingHabitTemplateRequest: Codable {
-    let amount: Double
-    let isExpense: Bool
-    let category: String
-    let note: String
-    let createdAt: Date
-}
-
-private enum PendingHabitTemplateStore {
-    private static let key = "pendingHabitTemplateRequest"
-
-    static func save(_ request: PendingHabitTemplateRequest) {
-        guard let data = try? JSONEncoder().encode(request) else { return }
-        defaults.set(data, forKey: key)
-    }
-
-    private static var defaults: UserDefaults {
-        UserDefaults(suiteName: HabitWidgetSnapshotStore.appGroupIdentifier) ?? .standard
-    }
-}
-
 private enum PendingHabitAddStore {
     private static let key = "pendingHabitAddRequest"
 
@@ -116,43 +96,6 @@ struct OpenAddTransactionIntent: AppIntent {
     }
 }
 
-struct QueueRepeatTemplateIntent: AppIntent {
-    static let title: LocalizedStringResource = "Repeat Transaction"
-    static var openAppWhenRun: Bool { true }
-
-    @Parameter(title: "Amount")
-    var amount: Double
-
-    @Parameter(title: "Is Expense")
-    var isExpense: Bool
-
-    @Parameter(title: "Category")
-    var category: String
-
-    @Parameter(title: "Note")
-    var note: String
-
-    init() {}
-
-    fileprivate init(template: HabitWidgetQuickTemplate) {
-        amount = template.amount
-        isExpense = template.isExpense
-        category = template.category
-        note = template.note
-    }
-
-    func perform() async throws -> some IntentResult {
-        PendingHabitTemplateStore.save(PendingHabitTemplateRequest(
-            amount: amount,
-            isExpense: isExpense,
-            category: category,
-            note: note,
-            createdAt: .now
-        ))
-        return .result()
-    }
-}
-
 private struct HabitEntry: TimelineEntry {
     let date: Date
     let snapshot: HabitWidgetSnapshot
@@ -160,6 +103,19 @@ private struct HabitEntry: TimelineEntry {
 
 private enum HabitWidgetDeepLink {
     static let addTransaction = URL(string: "personalfinancetraker://add-transaction")!
+
+    static func repeatTransaction(for template: HabitWidgetQuickTemplate) -> URL {
+        var components = URLComponents()
+        components.scheme = "personalfinancetraker"
+        components.host = "repeat-transaction"
+        components.queryItems = [
+            URLQueryItem(name: "amount", value: String(template.amount)),
+            URLQueryItem(name: "isExpense", value: String(template.isExpense)),
+            URLQueryItem(name: "category", value: template.category),
+            URLQueryItem(name: "note", value: template.note),
+        ]
+        return components.url ?? addTransaction
+    }
 }
 
 private struct HabitTimelineProvider: TimelineProvider {
@@ -244,10 +200,9 @@ private struct DailyLoggingHabitWidgetView: View {
                             .font(.subheadline)
                             .lineLimit(1)
                         Spacer(minLength: 8)
-                        Button(intent: QueueRepeatTemplateIntent(template: template)) {
+                        Link(destination: HabitWidgetDeepLink.repeatTransaction(for: template)) {
                             widgetActionLabel("Repeat")
                         }
-                        .buttonStyle(.plain)
                         .accessibilityLabel(Text("Repeat a usual transaction"))
                         .accessibilityInputLabels([
                             Text("Repeat"),

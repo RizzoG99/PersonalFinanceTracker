@@ -13,6 +13,7 @@ final class PendingTransactionIntent {
     static let shared = PendingTransactionIntent()
 
     var shouldPresentAdd = false
+    var shouldRepeatHabitTemplate = false
 
     /// Returns true (and clears the flag) when the Add sheet should present now.
     /// When an edit sheet is already open the flag is left set — SwiftUI presents one
@@ -20,6 +21,12 @@ final class PendingTransactionIntent {
     func consume(isEditSheetOpen: Bool) -> Bool {
         guard shouldPresentAdd, !isEditSheetOpen else { return false }
         shouldPresentAdd = false
+        return true
+    }
+
+    func consumeHabitTemplate() -> Bool {
+        guard shouldRepeatHabitTemplate else { return false }
+        shouldRepeatHabitTemplate = false
         return true
     }
 }

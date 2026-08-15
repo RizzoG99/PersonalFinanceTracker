@@ -66,10 +66,17 @@ struct PersonalFinanceTrakerApp: App {
                     containerErrorMessage = AppContainer.containerErrorMessage
                 }
                 .onOpenURL { url in
-                    guard url.scheme == "personalfinancetraker",
-                          url.host == "add-transaction"
-                    else { return }
-                    PendingTransactionIntent.shared.shouldPresentAdd = true
+                    guard url.scheme == "personalfinancetraker" else { return }
+                    switch url.host {
+                    case "add-transaction":
+                        PendingTransactionIntent.shared.shouldPresentAdd = true
+                    case "repeat-transaction":
+                        guard let request = PendingHabitTemplateRequest(widgetURL: url) else { return }
+                        PendingHabitTemplateStore.save(request)
+                        PendingTransactionIntent.shared.shouldRepeatHabitTemplate = true
+                    default:
+                        break
+                    }
                 }
         }
         .modelContainer(sharedModelContainer)

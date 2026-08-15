@@ -194,6 +194,11 @@ struct MainTabView: View {
         .onChange(of: PendingTransactionIntent.shared.shouldPresentAdd) { _, pending in
             if pending { consumePendingAdd() }
         }
+        .onChange(of: PendingTransactionIntent.shared.shouldRepeatHabitTemplate) { _, pending in
+            if PendingTransactionIntent.shared.consumeHabitTemplate(), pending {
+                consumePendingHabitTemplate()
+            }
+        }
     }
 }
 
