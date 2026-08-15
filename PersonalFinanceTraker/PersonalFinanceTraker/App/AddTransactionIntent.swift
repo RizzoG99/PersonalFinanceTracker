@@ -131,11 +131,22 @@ struct RepeatTransactionTemplateIntent: AppIntent {
 enum HabitSnapshotUpdater {
     static func refresh(using repo: any ITransactionRepository) async {
         guard let transactions = try? await repo.fetchAll() else { return }
-        let status = HabitLoggingService.computeStatus(transactions: transactions)
+        let now = Date.now
+        let status = HabitLoggingService.computeStatus(transactions: transactions, now: now)
+        if status.hasLoggedToday {
+            DailyCheckInStore.undoNoSpend(for: now)
+        }
+        let checkInStatus = DailyCheckInService.computeStatus(
+            transactions: transactions,
+            noSpendDateKeys: DailyCheckInStore.noSpendDateKeys(),
+            now: now
+        )
         let templates = HabitLoggingService.quickTemplates(from: transactions)
         HabitWidgetSnapshotStore.save(HabitWidgetSnapshotStore.makeSnapshot(
             status: status,
-            templates: templates
+            checkInStatus: checkInStatus,
+            templates: templates,
+            now: now
         ))
     }
 }

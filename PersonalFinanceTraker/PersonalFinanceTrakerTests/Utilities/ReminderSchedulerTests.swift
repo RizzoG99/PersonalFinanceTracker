@@ -18,7 +18,7 @@ struct ReminderSchedulerTests {
 
     @Test func schedulesSevenDaysWhenReminderTimeIsAhead() {
         let dates = ReminderScheduler.fireDates(
-            now: now, hour: 21, minute: 0, hasLoggedToday: false
+            now: now, hour: 21, minute: 0, hasCompletedToday: false
         )
         #expect(dates.count == 7)
         let first = Calendar.current.dateComponents([.day, .hour], from: dates[0])
@@ -28,7 +28,7 @@ struct ReminderSchedulerTests {
 
     @Test func skipsTodayWhenAlreadyLogged() {
         let dates = ReminderScheduler.fireDates(
-            now: now, hour: 21, minute: 0, hasLoggedToday: true
+            now: now, hour: 21, minute: 0, hasCompletedToday: true
         )
         #expect(dates.count == 6)
         #expect(Calendar.current.component(.day, from: dates[0]) == 24)
@@ -36,7 +36,7 @@ struct ReminderSchedulerTests {
 
     @Test func skipsTodayWhenTimeHasPassed() {
         let dates = ReminderScheduler.fireDates(
-            now: now, hour: 9, minute: 0, hasLoggedToday: false
+            now: now, hour: 9, minute: 0, hasCompletedToday: false
         )
         #expect(dates.count == 6)
         #expect(Calendar.current.component(.day, from: dates[0]) == 24)

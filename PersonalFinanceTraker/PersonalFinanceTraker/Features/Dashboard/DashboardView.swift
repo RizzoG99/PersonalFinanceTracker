@@ -20,7 +20,8 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     GreetingHeaderView()
                     BalanceCardView()
-                    if let callout = viewModel.anomalyCallout {
+                    if let callout = viewModel.anomalyCallout,
+                       viewModel.dailyCheckInStatus.isComplete {
                         AnomalyCalloutView(message: callout.message) {
                             viewModel.dismissAnomaly()
                         }
@@ -52,7 +53,8 @@ struct DashboardView: View {
                     }
                     if !viewModel.hasNoTransactions {
                         DailyLoggingHabitCard(
-                            status: viewModel.dailyLoggingStatus,
+                            transactionStatus: viewModel.dailyLoggingStatus,
+                            checkInStatus: viewModel.dailyCheckInStatus,
                             templates: viewModel.quickTransactionTemplates,
                             showsReminderPrompt: viewModel.showsReminderPrompt,
                             onAdd: { showingAddItemView = true },
@@ -62,6 +64,12 @@ struct DashboardView: View {
                                         dataChanged.bump()
                                     }
                                 }
+                            },
+                            onCompleteNoSpend: {
+                                viewModel.completeNoSpendCheckIn()
+                            },
+                            onUndoNoSpend: {
+                                viewModel.undoNoSpendCheckIn()
                             },
                             onSetReminder: {
                                 Task {

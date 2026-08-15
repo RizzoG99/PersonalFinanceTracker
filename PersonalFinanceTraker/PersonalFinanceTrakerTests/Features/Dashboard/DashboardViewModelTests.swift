@@ -264,4 +264,28 @@ struct DashboardViewModelTests {
             promptDismissed: false
         ))
     }
+
+    @Test func exposesNoSpendCheckInWithoutCreatingTransaction() async {
+        let calendar = Calendar(identifier: .gregorian)
+        let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 15, hour: 12))!
+        let key = DailyCheckInService.dateKey(for: now, calendar: calendar)
+        let repo = MockTransactionRepository()
+        repo.stubbedTransactions = [
+            TransactionSnapshot.test(
+                timestamp: calendar.date(byAdding: .day, value: -1, to: now)!,
+                amount: -10,
+                category: "Food"
+            )
+        ]
+        let vm = DashboardViewModel(repo: repo)
+        vm.currentDate = { now }
+        vm.noSpendDateKeys = { [key] }
+
+        vm.load()
+        await vm.loadTask?.value
+
+        #expect(vm.dailyLoggingStatus.todayCount == 0)
+        #expect(vm.dailyCheckInStatus.state == .noSpendConfirmed)
+        #expect(vm.dailyCheckInStatus.currentStreakDays == 2)
+    }
 }

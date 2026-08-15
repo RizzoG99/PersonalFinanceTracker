@@ -22,6 +22,8 @@ private struct HabitWidgetSnapshot: Codable {
     let hasLoggedToday: Bool
     let todayCount: Int
     let currentStreakDays: Int
+    let checkInState: String?
+    let checkInStreakDays: Int?
     let quickTemplates: [HabitWidgetQuickTemplate]
     let lastUpdated: Date
 
@@ -29,9 +31,30 @@ private struct HabitWidgetSnapshot: Codable {
         hasLoggedToday: false,
         todayCount: 0,
         currentStreakDays: 0,
+        checkInState: "pending",
+        checkInStreakDays: 0,
         quickTemplates: [],
         lastUpdated: .distantPast
     )
+
+    var resolvedCheckInState: HabitWidgetCheckInState {
+        HabitWidgetCheckInState(rawValue: checkInState ?? "")
+            ?? (hasLoggedToday ? .transactionLogged : .pending)
+    }
+
+    var resolvedCheckInStreakDays: Int {
+        checkInStreakDays ?? currentStreakDays
+    }
+}
+
+private enum HabitWidgetCheckInState: String {
+    case pending
+    case transactionLogged
+    case noSpendConfirmed
+
+    var isComplete: Bool {
+        self != .pending
+    }
 }
 
 private enum HabitWidgetSnapshotStore {
@@ -173,22 +196,16 @@ private struct DailyLoggingHabitWidgetView: View {
     private var small: some View {
         VStack(alignment: .leading, spacing: 8) {
             statusHeader
-            if entry.snapshot.hasLoggedToday {
-                Text("\(entry.snapshot.todayCount) logged today")
-                    .font(.headline)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-            } else {
-                Text("Not logged")
-                    .font(.headline)
-                    .lineLimit(1)
-            }
-            Text("\(entry.snapshot.currentStreakDays)-day streak")
+            Text(statusTitle)
+                .font(.headline)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+            Text("\(entry.snapshot.resolvedCheckInStreakDays)-day check-in streak")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             Spacer(minLength: 0)
-            if !entry.snapshot.hasLoggedToday {
+            if !entry.snapshot.resolvedCheckInState.isComplete {
                 Link(destination: HabitWidgetDeepLink.addTransaction) {
                     widgetActionLabel("Add")
                 }
@@ -201,22 +218,18 @@ private struct DailyLoggingHabitWidgetView: View {
     private var medium: some View {
         VStack(alignment: .leading, spacing: 10) {
             statusHeader
-            HStack(spacing: 4) {
-                Text("\(entry.snapshot.todayCount) logged today")
-                Text("·")
-                Text("\(entry.snapshot.currentStreakDays)-day streak")
-            }
+            Text("\(entry.snapshot.resolvedCheckInStreakDays)-day check-in streak")
             .font(.caption)
             .foregroundStyle(.secondary)
 
-            if entry.snapshot.hasLoggedToday {
+            if entry.snapshot.resolvedCheckInState.isComplete {
                 Spacer(minLength: 0)
                 HStack(spacing: 10) {
                     statusMetric {
-                        Text("\(entry.snapshot.todayCount) logged today")
+                        Text(statusTitle)
                     }
                     statusMetric {
-                        Text("\(entry.snapshot.currentStreakDays)-day streak")
+                        Text("Check-in complete")
                     }
                 }
                 .accessibilityElement(children: .combine)
@@ -227,7 +240,7 @@ private struct DailyLoggingHabitWidgetView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     HStack(spacing: 8) {
-                        Text(template.label)
+                        Text("A usual transaction is ready")
                             .font(.subheadline)
                             .lineLimit(1)
                         Spacer(minLength: 8)
@@ -235,10 +248,9 @@ private struct DailyLoggingHabitWidgetView: View {
                             widgetActionLabel("Repeat")
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(Text("Repeat \(template.label) transaction"))
+                        .accessibilityLabel(Text("Repeat a usual transaction"))
                         .accessibilityInputLabels([
                             Text("Repeat"),
-                            Text(template.label),
                         ])
                     }
                 }
@@ -262,7 +274,7 @@ private struct DailyLoggingHabitWidgetView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .frame(minWidth: 64, minHeight: 44)
-            .background(Color("accentIndigo"), in: Capsule())
+            .background(Color("accentIndigo"), in: RoundedRectangle(cornerRadius: 12))
     }
 
     private func statusMetric<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
@@ -277,10 +289,10 @@ private struct DailyLoggingHabitWidgetView: View {
     }
 
     private var accessory: some View {
-        Gauge(value: Double(entry.snapshot.currentStreakDays), in: 0...7) {
-            Image(systemName: entry.snapshot.hasLoggedToday ? "checkmark" : "plus")
+        Gauge(value: Double(entry.snapshot.resolvedCheckInStreakDays), in: 0...7) {
+            Image(systemName: entry.snapshot.resolvedCheckInState.isComplete ? "checkmark" : "circle.dotted")
         } currentValueLabel: {
-            Text("\(entry.snapshot.currentStreakDays)")
+            Text("\(entry.snapshot.resolvedCheckInStreakDays)")
         }
         .gaugeStyle(.accessoryCircular)
         .containerBackground(.background, for: .widget)
@@ -288,10 +300,21 @@ private struct DailyLoggingHabitWidgetView: View {
 
     private var statusHeader: some View {
         Label(
-            "Daily log",
-            systemImage: entry.snapshot.hasLoggedToday ? "checkmark.circle.fill" : "plus.circle.fill"
+            "Financial Pulse",
+            systemImage: entry.snapshot.resolvedCheckInState.isComplete ? "checkmark.circle.fill" : "circle.dotted.circle"
         )
         .font(.headline)
+    }
+
+    private var statusTitle: LocalizedStringKey {
+        switch entry.snapshot.resolvedCheckInState {
+        case .pending:
+            "Check in today"
+        case .transactionLogged:
+            "\(entry.snapshot.todayCount) logged today"
+        case .noSpendConfirmed:
+            "No-spend day"
+        }
     }
 }
 
@@ -302,8 +325,8 @@ struct DailyLoggingHabitWidget: Widget {
         StaticConfiguration(kind: kind, provider: HabitTimelineProvider()) { entry in
             DailyLoggingHabitWidgetView(entry: entry)
         }
-        .configurationDisplayName("Daily Logging")
-        .description("Track today's logging status and streak without showing amounts.")
+        .configurationDisplayName("Financial Pulse")
+        .description("Keep a private daily money check-in without showing amounts.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular])
     }
 }

@@ -162,10 +162,11 @@ struct MainTabView: View {
             if phase == .active || phase == .background {
                 // ponytail: in-memory check may lag a just-saved transaction by one
                 // phase change; the next foreground/background pass corrects it
-                let hasLoggedToday = viewModel.transactions.contains {
-                    Calendar.current.isDateInToday($0.timestamp)
-                }
-                ReminderService.shared.reschedule(hasLoggedToday: hasLoggedToday)
+                let checkInStatus = DailyCheckInService.computeStatus(
+                    transactions: viewModel.transactions,
+                    noSpendDateKeys: DailyCheckInStore.noSpendDateKeys()
+                )
+                ReminderService.shared.reschedule(hasCompletedToday: checkInStatus.isComplete)
             }
         }
         .task {

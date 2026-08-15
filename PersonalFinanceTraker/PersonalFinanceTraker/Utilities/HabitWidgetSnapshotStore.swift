@@ -23,6 +23,8 @@ struct HabitWidgetSnapshot: Equatable, Sendable, Codable {
     let hasLoggedToday: Bool
     let todayCount: Int
     let currentStreakDays: Int
+    let checkInState: DailyCheckInState?
+    let checkInStreakDays: Int?
     let quickTemplates: [HabitWidgetQuickTemplate]
     let lastUpdated: Date
 
@@ -30,9 +32,19 @@ struct HabitWidgetSnapshot: Equatable, Sendable, Codable {
         hasLoggedToday: false,
         todayCount: 0,
         currentStreakDays: 0,
+        checkInState: .pending,
+        checkInStreakDays: 0,
         quickTemplates: [],
         lastUpdated: .distantPast
     )
+
+    var resolvedCheckInState: DailyCheckInState {
+        checkInState ?? (hasLoggedToday ? .transactionLogged : .pending)
+    }
+
+    var resolvedCheckInStreakDays: Int {
+        checkInStreakDays ?? currentStreakDays
+    }
 }
 
 enum HabitWidgetSnapshotStore {
@@ -41,6 +53,7 @@ enum HabitWidgetSnapshotStore {
 
     static func makeSnapshot(
         status: DailyLoggingStatus,
+        checkInStatus: DailyCheckInStatus,
         templates: [QuickTransactionTemplate],
         now: Date = .now
     ) -> HabitWidgetSnapshot {
@@ -48,6 +61,8 @@ enum HabitWidgetSnapshotStore {
             hasLoggedToday: status.hasLoggedToday,
             todayCount: status.todayCount,
             currentStreakDays: status.currentStreakDays,
+            checkInState: checkInStatus.state,
+            checkInStreakDays: checkInStatus.currentStreakDays,
             quickTemplates: templates.map {
                 HabitWidgetQuickTemplate(
                     label: $0.displayLabel,

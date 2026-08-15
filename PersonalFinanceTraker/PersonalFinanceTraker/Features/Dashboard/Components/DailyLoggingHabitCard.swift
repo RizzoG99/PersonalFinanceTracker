@@ -6,43 +6,58 @@
 import SwiftUI
 
 struct DailyLoggingHabitCard: View {
-    let status: DailyLoggingStatus
+    let transactionStatus: DailyLoggingStatus
+    let checkInStatus: DailyCheckInStatus
     let templates: [QuickTransactionTemplate]
     let showsReminderPrompt: Bool
     let onAdd: () -> Void
     let onRepeat: (QuickTransactionTemplate) -> Void
+    let onCompleteNoSpend: () -> Void
+    let onUndoNoSpend: () -> Void
     let onSetReminder: () -> Void
     let onDismissReminder: () -> Void
 
     var body: some View {
         GlassCard(borderRadius: 18) {
             VStack(alignment: .leading, spacing: 12) {
-                header
-                if status.hasLoggedToday {
-                    loggedSummary
+                DailyLoggingHabitHeader(state: checkInStatus.state)
+                if checkInStatus.isComplete {
+                    DailyCheckInSummaryView(
+                        transactionStatus: transactionStatus,
+                        checkInStatus: checkInStatus,
+                        onUndoNoSpend: onUndoNoSpend
+                    )
                 } else {
-                    quickActions
+                    DailyCheckInActionsView(
+                        templates: templates,
+                        onAdd: onAdd,
+                        onRepeat: onRepeat,
+                        onCompleteNoSpend: onCompleteNoSpend
+                    )
                 }
                 if showsReminderPrompt {
-                    reminderPrompt
+                    DailyLoggingReminderPrompt(
+                        onSetReminder: onSetReminder,
+                        onDismissReminder: onDismissReminder
+                    )
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
+}
 
-    private var header: some View {
+private struct DailyLoggingHabitHeader: View {
+    let state: DailyCheckInState
+
+    var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: status.hasLoggedToday ? "checkmark.circle.fill" : "calendar.badge.plus")
-                .font(.title3)
-                .foregroundStyle(status.hasLoggedToday ? .positive : .accentIndigo)
-                .frame(width: 32, height: 32)
-
+            FinancialPulseIndicator(state: state)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Daily log")
+                Text("Financial Pulse")
                     .font(.headline)
                     .foregroundStyle(.textPrimary)
-                Text(status.hasLoggedToday ? "Logged today" : "No transaction logged today")
+                Text(subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.textDim)
             }
@@ -50,23 +65,52 @@ struct DailyLoggingHabitCard: View {
         }
     }
 
-    private var loggedSummary: some View {
-        HStack(spacing: 12) {
-            summaryChip {
-                Text("\(status.todayCount) logged today")
+    private var subtitle: LocalizedStringKey {
+        switch state {
+        case .pending:
+            "Take a moment to check today"
+        case .transactionLogged:
+            "Today's check-in is complete"
+        case .noSpendConfirmed:
+            "No spending recorded today"
+        }
+    }
+}
+
+private struct DailyCheckInSummaryView: View {
+    let transactionStatus: DailyLoggingStatus
+    let checkInStatus: DailyCheckInStatus
+    let onUndoNoSpend: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                DailyCheckInMetric(
+                    title: transactionStatus.hasLoggedToday
+                        ? "\(transactionStatus.todayCount) logged today"
+                        : "No-spend day"
+                )
+                DailyCheckInMetric(title: "\(checkInStatus.currentStreakDays)-day check-in streak")
             }
-            summaryChip {
-                Text("\(status.currentStreakDays)-day streak")
+            if checkInStatus.state == .noSpendConfirmed {
+                Button("Undo check-in", systemImage: "arrow.uturn.backward", action: onUndoNoSpend)
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .accessibilityHint("Marks today as needing a check-in again")
             }
         }
     }
+}
 
-    private func summaryChip<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        content()
+private struct DailyCheckInMetric: View {
+    let title: LocalizedStringKey
+
+    var body: some View {
+        Text(title)
             .font(.subheadline.bold())
             .foregroundStyle(.textPrimary)
             .lineLimit(1)
-            .minimumScaleFactor(0.85)
+            .minimumScaleFactor(0.8)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color.accentIndigo.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
@@ -76,107 +120,103 @@ struct DailyLoggingHabitCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
 
-    private var quickActions: some View {
+private struct DailyCheckInActionsView: View {
+    let templates: [QuickTransactionTemplate]
+    let onAdd: () -> Void
+    let onRepeat: (QuickTransactionTemplate) -> Void
+    let onCompleteNoSpend: () -> Void
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let primaryTemplate = templates.first {
-                Button {
+                DailyRepeatButton(template: primaryTemplate, isPrimary: true) {
                     onRepeat(primaryTemplate)
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: primaryTemplate.isExpense ? "minus.circle.fill" : "plus.circle.fill")
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("Repeat")
-                                .font(.caption)
-                            Text(primaryTemplate.displayLabel)
-                                .font(.subheadline.bold())
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                        }
-                        .layoutPriority(1)
-                        Spacer(minLength: 8)
-                        Text(primaryTemplate.signedDisplayAmount)
-                            .font(.subheadline)
-                            .bold()
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
-                    }
-                    .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.accentIndigo)
-                .accessibilityLabel(Text("Repeat \(primaryTemplate.displayLabel), \(primaryTemplate.signedDisplayAmount)"))
-                .accessibilityInputLabels([
-                    Text("Repeat"),
-                    Text(primaryTemplate.displayLabel),
-                ])
 
                 ForEach(templates.dropFirst()) { template in
-                    Button {
+                    DailyRepeatButton(template: template, isPrimary: false) {
                         onRepeat(template)
-                    } label: {
-                        HStack(spacing: 8) {
-                            Label(template.displayLabel, systemImage: template.isExpense ? "minus.circle" : "plus.circle")
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                                .layoutPriority(1)
-                            Spacer(minLength: 8)
-                            Text(template.signedDisplayAmount)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.85)
-                        }
-                        .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .accessibilityLabel(Text("Repeat \(template.displayLabel), \(template.signedDisplayAmount)"))
-                    .accessibilityInputLabels([
-                        Text("Repeat"),
-                        Text(template.displayLabel),
-                    ])
                 }
             }
 
-            if templates.isEmpty {
-                Button(action: onAdd) {
-                    Label("Add Transaction", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.accentIndigo)
-                .controlSize(.regular)
-                .accessibilityLabel(Text("Add new transaction"))
-            } else {
-                Button(action: onAdd) {
-                    Label("Add New", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: .infinity)
-                }
+            Button(action: onAdd) {
+                Label(templates.isEmpty ? "Add Transaction" : "Add New", systemImage: "plus.circle.fill")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(templates.isEmpty ? .borderedProminent : .bordered)
+            .tint(.accentIndigo)
+            .controlSize(.regular)
+            .accessibilityLabel(Text("Add new transaction"))
+
+            Button("Nothing to log today", systemImage: "checkmark", action: onCompleteNoSpend)
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
-                .accessibilityLabel(Text("Add new transaction"))
-            }
+                .frame(maxWidth: .infinity)
+                .accessibilityHint("Completes today's check-in without adding a transaction")
         }
     }
+}
 
-    private var reminderPrompt: some View {
+private struct DailyRepeatButton: View {
+    let template: QuickTransactionTemplate
+    let isPrimary: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: template.isExpense ? "minus.circle.fill" : "plus.circle.fill")
+                VStack(alignment: .leading, spacing: 1) {
+                    if isPrimary {
+                        Text("Repeat")
+                            .font(.caption)
+                    }
+                    Text(template.displayLabel)
+                        .font(isPrimary ? .subheadline.bold() : .subheadline)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                .layoutPriority(1)
+                Spacer(minLength: 8)
+                Text(template.signedDisplayAmount)
+                    .font(.subheadline)
+                    .bold()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(isPrimary ? .borderedProminent : .bordered)
+        .tint(.accentIndigo)
+        .controlSize(isPrimary ? .regular : .small)
+        .accessibilityLabel(Text("Repeat \(template.displayLabel), \(template.signedDisplayAmount)"))
+        .accessibilityInputLabels([
+            Text("Repeat"),
+            Text(template.displayLabel),
+        ])
+    }
+}
+
+private struct DailyLoggingReminderPrompt: View {
+    let onSetReminder: () -> Void
+    let onDismissReminder: () -> Void
+
+    var body: some View {
         HStack(spacing: 8) {
             Label("Set daily reminder", systemImage: "bell.badge")
                 .font(.subheadline)
                 .foregroundStyle(.textMid)
             Spacer(minLength: 8)
-            Button("Set") { onSetReminder() }
+            Button("Set", action: onSetReminder)
                 .buttonStyle(.bordered)
                 .controlSize(.small)
-            Button {
-                onDismissReminder()
-            } label: {
-                Image(systemName: "xmark")
-                    .frame(width: 28, height: 28)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("Dismiss reminder prompt"))
+            Button("Dismiss reminder prompt", systemImage: "xmark", action: onDismissReminder)
+                .buttonStyle(.plain)
+                .labelStyle(.iconOnly)
+                .frame(width: 28, height: 28)
         }
         .padding(.top, 2)
     }
