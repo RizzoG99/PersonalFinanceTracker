@@ -1,5 +1,15 @@
 # CLAUDE.md
 
+## Agent Setup
+
+This repository is configured for both Claude Code and Codex.
+
+- Claude Code reads this `CLAUDE.md`.
+- Codex reads `AGENTS.md`.
+- Claude project skills live in `.claude/skills`.
+- Codex project-local skills live in `.codex/skills`.
+- Keep shared project facts aligned between this file and `AGENTS.md`; keep tool-specific instructions in the file for that tool.
+
 ## Build & Development Commands
 
 **CRITICAL — BUILD & TEST RULES:**
@@ -31,6 +41,16 @@ mcp__xcode__RunAllTests(tabIdentifier: "windowtab1")
 The active `tabIdentifier` is always `"windowtab1"`.
 
 **Note**: The project is primarily developed in Xcode. Open `PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj` to work in the IDE.
+
+## Project
+
+- Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insight, import/export, and security workflows.
+- Deployment target: iOS 26.0.
+- Stack: Swift 6, SwiftUI, SwiftData, MVVM.
+- Third-party packages currently include ZIPFoundation and CoreXLSX.
+- Source root: `PersonalFinanceTraker/PersonalFinanceTraker`.
+- Unit tests: `PersonalFinanceTraker/PersonalFinanceTrakerTests`.
+- UI tests: `PersonalFinanceTraker/PersonalFinanceTrakerUITests`.
 
 ## Gotchas
 

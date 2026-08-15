@@ -1,0 +1,7 @@
+interface:
+  display_name: "graphify"
+  short_description: "Queries and maintains the code knowledge graph."
+  default_prompt: "Use $graphify to answer this codebase question."
+
+policy:
+  allow_implicit_invocation: true
