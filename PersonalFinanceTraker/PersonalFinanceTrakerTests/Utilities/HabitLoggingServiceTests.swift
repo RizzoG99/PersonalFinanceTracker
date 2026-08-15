@@ -109,6 +109,50 @@ struct HabitLoggingServiceTests {
         #expect(templates.contains { $0.note == "Coffee" && $0.isExpense && $0.amount == -8 })
     }
 
+    @Test func quickTemplateDisplayLabelPrefersNoteOverCategory() {
+        let withNote = QuickTransactionTemplate(
+            amount: -8,
+            note: "Coffee",
+            category: "Food",
+            currencyCode: "EUR",
+            lastUsed: now,
+            frequency: 1
+        )
+        let withoutNote = QuickTransactionTemplate(
+            amount: -5,
+            note: " ",
+            category: "Banking Fees",
+            currencyCode: "EUR",
+            lastUsed: now,
+            frequency: 1
+        )
+
+        #expect(withNote.displayLabel == "Coffee")
+        #expect(withoutNote.displayLabel == "Banking Fees")
+    }
+
+    @Test func quickTemplateSignedDisplayAmountFormatsIncomeAndExpense() {
+        let expense = QuickTransactionTemplate(
+            amount: -8,
+            note: "Coffee",
+            category: "Food",
+            currencyCode: "EUR",
+            lastUsed: now,
+            frequency: 1
+        )
+        let income = QuickTransactionTemplate(
+            amount: 100,
+            note: "Pay",
+            category: "Salary",
+            currencyCode: "EUR",
+            lastUsed: now,
+            frequency: 1
+        )
+
+        #expect(expense.signedDisplayAmount == Decimal(-8).formatted(.currency(code: "EUR").sign(strategy: .always())))
+        #expect(income.signedDisplayAmount == Decimal(100).formatted(.currency(code: "EUR").sign(strategy: .always())))
+    }
+
     @Test func reminderPromptRequiresEnoughHistoryAndOptInGap() {
         let transactions = [
             TransactionSnapshot.test(timestamp: day(0), amount: -5, category: "Food"),

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		ABCD00012E67A8C900000001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ABCD00022E67A8C900000002 /* ZIPFoundation */; };
+		F8B100152F39000000000015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F8B100162F39000000000016 /* Assets.xcassets */; };
 		F8B100102F39000000000010 /* PersonalFinanceTrakerWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F8B100022F39000000000002 /* PersonalFinanceTrakerWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F885D75730117AE20060FBCD /* CoreXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = F885D75630117AE20060FBCD /* CoreXLSX */; };
 /* End PBXBuildFile section */
@@ -51,6 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F8B100162F39000000000016 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = PersonalFinanceTraker/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PersonalFinanceTraker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8A524942E67A8CA0000E48D /* PersonalFinanceTrakerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PersonalFinanceTrakerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8A5249E2E67A8CA0000E48D /* PersonalFinanceTrakerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PersonalFinanceTrakerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -343,6 +345,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F8B100152F39000000000015 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -39,10 +39,10 @@ struct DailyLoggingHabitCard: View {
                 .frame(width: 32, height: 32)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(status.hasLoggedToday ? "Logged today" : "Log today")
+                Text("Daily log")
                     .font(.headline)
                     .foregroundStyle(.textPrimary)
-                Text(status.hasLoggedToday ? "Keep the daily record going." : "Repeat a usual transaction or add a new one.")
+                Text(status.hasLoggedToday ? "Logged today" : "No transaction logged today")
                     .font(.subheadline)
                     .foregroundStyle(.textDim)
             }
@@ -52,48 +52,111 @@ struct DailyLoggingHabitCard: View {
 
     private var loggedSummary: some View {
         HStack(spacing: 12) {
-            stat(value: "\(status.todayCount)", label: status.todayCount == 1 ? "entry today" : "entries today")
-            stat(value: "\(status.currentStreakDays)", label: status.currentStreakDays == 1 ? "day streak" : "day streak")
+            summaryChip {
+                Text("\(status.todayCount) logged today")
+            }
+            summaryChip {
+                Text("\(status.currentStreakDays)-day streak")
+            }
         }
     }
 
-    private func stat(value: String, label: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(value)
-                .font(.title3.bold())
-                .foregroundStyle(.textPrimary)
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.textDim)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+    private func summaryChip<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .font(.subheadline.bold())
+            .foregroundStyle(.textPrimary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.accentIndigo.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Color.accentIndigo.opacity(0.22), lineWidth: 1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var quickActions: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !templates.isEmpty {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 8)], alignment: .leading, spacing: 8) {
-                    ForEach(templates) { template in
-                        Button {
-                            onRepeat(template)
-                        } label: {
+            if let primaryTemplate = templates.first {
+                Button {
+                    onRepeat(primaryTemplate)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: primaryTemplate.isExpense ? "minus.circle.fill" : "plus.circle.fill")
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Repeat")
+                                .font(.caption)
+                            Text(primaryTemplate.displayLabel)
+                                .font(.subheadline.bold())
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                        .layoutPriority(1)
+                        Spacer(minLength: 8)
+                        Text(primaryTemplate.signedDisplayAmount)
+                            .font(.subheadline)
+                            .bold()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.accentIndigo)
+                .accessibilityLabel(Text("Repeat \(primaryTemplate.displayLabel), \(primaryTemplate.signedDisplayAmount)"))
+                .accessibilityInputLabels([
+                    Text("Repeat"),
+                    Text(primaryTemplate.displayLabel),
+                ])
+
+                ForEach(templates.dropFirst()) { template in
+                    Button {
+                        onRepeat(template)
+                    } label: {
+                        HStack(spacing: 8) {
                             Label(template.displayLabel, systemImage: template.isExpense ? "minus.circle" : "plus.circle")
                                 .lineLimit(1)
-                                .frame(maxWidth: .infinity)
+                                .truncationMode(.tail)
+                                .layoutPriority(1)
+                            Spacer(minLength: 8)
+                            Text(template.signedDisplayAmount)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.85)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                        .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .accessibilityLabel(Text("Repeat \(template.displayLabel), \(template.signedDisplayAmount)"))
+                    .accessibilityInputLabels([
+                        Text("Repeat"),
+                        Text(template.displayLabel),
+                    ])
                 }
             }
 
-            Button(action: onAdd) {
-                Label("Add Transaction", systemImage: "plus.circle.fill")
-                    .frame(maxWidth: .infinity)
+            if templates.isEmpty {
+                Button(action: onAdd) {
+                    Label("Add Transaction", systemImage: "plus.circle.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.accentIndigo)
+                .controlSize(.regular)
+                .accessibilityLabel(Text("Add new transaction"))
+            } else {
+                Button(action: onAdd) {
+                    Label("Add New", systemImage: "plus.circle.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+                .accessibilityLabel(Text("Add new transaction"))
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.accentIndigo)
-            .controlSize(.regular)
         }
     }
 
@@ -113,7 +176,7 @@ struct DailyLoggingHabitCard: View {
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Dismiss reminder prompt")
+            .accessibilityLabel(Text("Dismiss reminder prompt"))
         }
         .padding(.top, 2)
     }

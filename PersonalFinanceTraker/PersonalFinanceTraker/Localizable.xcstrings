@@ -400,6 +400,88 @@
         }
       }
     },
+    "%lld logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld logged today"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld logged today"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld registrata oggi"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld registrate oggi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld-day streak" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-day streak"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-day streak"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "serie di %lld giorno"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "serie di %lld giorni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld of %lld budgeted categories are within limit this month." : {
       "localizations" : {
         "en" : {
@@ -980,6 +1062,23 @@
         }
       }
     },
+    "Add New" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add New"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi nuovo"
+          }
+        }
+      }
+    },
     "Add transaction" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -993,6 +1092,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiungi transazione"
+          }
+        }
+      }
+    },
+    "Add new transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi nuova transazione"
           }
         }
       }
@@ -1077,6 +1193,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiunto %@ a %@."
+          }
+        }
+      }
+    },
+    "Added %@." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ aggiunta."
           }
         }
       }
@@ -1246,6 +1379,12 @@
           }
         }
       }
+    },
+    "Appearance" : {
+
+    },
+    "APPEARANCE" : {
+
     },
     "Applies to %lld transactions" : {
       "localizations" : {
@@ -2307,6 +2446,23 @@
         }
       }
     },
+    "Daily log" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily log"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registro giornaliero"
+          }
+        }
+      }
+    },
     "Dark" : {
 
     },
@@ -2541,6 +2697,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chiudi"
+          }
+        }
+      }
+    },
+    "Dismiss reminder prompt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss reminder prompt"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiudi suggerimento promemoria"
           }
         }
       }
@@ -3797,6 +3970,9 @@
         }
       }
     },
+    "Keep the daily record going." : {
+
+    },
     "Last 3 months" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3864,6 +4040,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Limite"
+          }
+        }
+      }
+    },
+    "Log today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra oggi"
+          }
+        }
+      }
+    },
+    "Logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logged today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrato oggi"
           }
         }
       }
@@ -4407,6 +4617,23 @@
         }
       }
     },
+    "No transaction logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transaction logged today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna transazione registrata oggi"
+          }
+        }
+      }
+    },
     "No credit cards yet" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4486,6 +4713,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ancora nessun modello ricorrente rilevato"
+          }
+        }
+      }
+    },
+    "Not logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not logged today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non registrato oggi"
+          }
+        }
+      }
+    },
+    "Not logged" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not logged"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non registrato"
           }
         }
       }
@@ -5164,7 +5425,123 @@
       }
     },
     "Repeat" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti"
+          }
+        }
+      }
+    },
+    "Repeat %@ transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat %@ transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti transazione %@"
+          }
+        }
+      }
+    },
+    "Repeat %@, %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat %@, %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti %@, %@"
+          }
+        }
+      }
+    },
+    "Repeat ${category}" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat ${category}"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti ${category}"
+          }
+        }
+      }
+    },
+    "Repeat a recent transaction template without opening the app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat a recent transaction template without opening the app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti una transazione recente senza aprire l'app."
+          }
+        }
+      }
+    },
+    "Repeat a usual transaction or add a new one." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat a usual transaction or add a new one."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti una transazione abituale o aggiungine una nuova."
+          }
+        }
+      }
+    },
+    "Repeat Transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat Transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti transazione"
+          }
+        }
+      }
     },
     "Required" : {
       "extractionState" : "manual",
@@ -5671,6 +6048,40 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Set daily reminder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set daily reminder"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imposta promemoria giornaliero"
+          }
+        }
+      }
+    },
+    "Suggested repeat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested repeat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripetizione suggerita"
           }
         }
       }

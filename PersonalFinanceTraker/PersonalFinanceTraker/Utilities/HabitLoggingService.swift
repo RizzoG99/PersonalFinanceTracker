@@ -38,6 +38,10 @@ struct QuickTransactionTemplate: Identifiable, Equatable, Sendable, Codable {
         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmedNote.isEmpty ? category : trimmedNote
     }
+
+    var signedDisplayAmount: String {
+        amount.formatted(.currency(code: currencyCode).sign(strategy: .always()))
+    }
 }
 
 struct HabitLoggingService {

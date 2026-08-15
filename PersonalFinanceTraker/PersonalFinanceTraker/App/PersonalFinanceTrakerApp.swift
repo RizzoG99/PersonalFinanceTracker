@@ -65,6 +65,12 @@ struct PersonalFinanceTrakerApp: App {
                 .onAppear {
                     containerErrorMessage = AppContainer.containerErrorMessage
                 }
+                .onOpenURL { url in
+                    guard url.scheme == "personalfinancetraker",
+                          url.host == "add-transaction"
+                    else { return }
+                    PendingTransactionIntent.shared.shouldPresentAdd = true
+                }
         }
         .modelContainer(sharedModelContainer)
     }
