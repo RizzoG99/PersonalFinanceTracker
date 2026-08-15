@@ -1,0 +1,7 @@
+interface:
+  display_name: "UX Audit"
+  short_description: "Audits mobile screenshots for UX issues."
+  default_prompt: "Use $ux-audit to audit these app screenshots."
+
+policy:
+  allow_implicit_invocation: true
