@@ -142,14 +142,7 @@ private struct DailyCheckInActionsView: View {
                 }
             }
 
-            Button(action: onAdd) {
-                Label(templates.isEmpty ? "Add Transaction" : "Add New", systemImage: "plus.circle.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(templates.isEmpty ? .borderedProminent : .bordered)
-            .tint(.accentIndigo)
-            .controlSize(.regular)
-            .accessibilityLabel(Text("Add new transaction"))
+            DailyAddButton(isPrimary: templates.isEmpty, action: onAdd)
 
             Button("Nothing to log today", systemImage: "checkmark", action: onCompleteNoSpend)
                 .buttonStyle(.bordered)
@@ -166,6 +159,16 @@ private struct DailyRepeatButton: View {
     let action: () -> Void
 
     var body: some View {
+        if isPrimary {
+            repeatButton
+                .buttonStyle(.borderedProminent)
+        } else {
+            repeatButton
+                .buttonStyle(.bordered)
+        }
+    }
+
+    private var repeatButton: some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: template.isExpense ? "minus.circle.fill" : "plus.circle.fill")
@@ -189,7 +192,6 @@ private struct DailyRepeatButton: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .buttonStyle(isPrimary ? .borderedProminent : .bordered)
         .tint(.accentIndigo)
         .controlSize(isPrimary ? .regular : .small)
         .accessibilityLabel(Text("Repeat \(template.displayLabel), \(template.signedDisplayAmount)"))
@@ -197,6 +199,31 @@ private struct DailyRepeatButton: View {
             Text("Repeat"),
             Text(template.displayLabel),
         ])
+    }
+}
+
+private struct DailyAddButton: View {
+    let isPrimary: Bool
+    let action: () -> Void
+
+    var body: some View {
+        if isPrimary {
+            addButton
+                .buttonStyle(.borderedProminent)
+        } else {
+            addButton
+                .buttonStyle(.bordered)
+        }
+    }
+
+    private var addButton: some View {
+        Button(action: action) {
+            Label(isPrimary ? "Add Transaction" : "Add New", systemImage: "plus.circle.fill")
+                .frame(maxWidth: .infinity)
+        }
+        .tint(.accentIndigo)
+        .controlSize(.regular)
+        .accessibilityLabel(Text("Add new transaction"))
     }
 }
 
