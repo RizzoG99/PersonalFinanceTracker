@@ -80,8 +80,63 @@ struct AddTransactionIntent: AppIntent {
             categories: categories
         )
         try await repo.add(input)
+        await HabitSnapshotUpdater.refresh(using: repo)
         let formatted = abs(input.amount).formatted(.currency(code: "EUR"))
         return .result(dialog: "Added \(formatted) to \(input.category).")
+    }
+}
+
+struct RepeatTransactionTemplateIntent: AppIntent {
+    static let title: LocalizedStringResource = "Repeat Transaction"
+    static let description = IntentDescription(
+        "Repeat a recent transaction template without opening the app."
+    )
+
+    @Parameter(title: "Amount")
+    var amount: Double
+
+    @Parameter(title: "Category")
+    var category: String
+
+    @Parameter(title: "Type")
+    var type: QuickAddType
+
+    @Parameter(title: "Note")
+    var note: String?
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Repeat \(\.$category)")
+    }
+
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard UIApplication.shared.isProtectedDataAvailable else {
+            return .result(dialog: "Unlock your phone to add a transaction.")
+        }
+
+        let repo = TransactionActor.make(AppContainer.shared)
+        let categories = try await repo.fetchCategories()
+        let input = try QuickAddService.makeInput(
+            amount: amount,
+            categoryName: category,
+            isExpense: type == .expense,
+            note: note ?? "",
+            categories: categories
+        )
+        try await repo.add(input)
+        await HabitSnapshotUpdater.refresh(using: repo)
+        return .result(dialog: "Added \(input.category).")
+    }
+}
+
+enum HabitSnapshotUpdater {
+    static func refresh(using repo: any ITransactionRepository) async {
+        guard let transactions = try? await repo.fetchAll() else { return }
+        let status = HabitLoggingService.computeStatus(transactions: transactions)
+        let templates = HabitLoggingService.quickTemplates(from: transactions)
+        HabitWidgetSnapshotStore.save(HabitWidgetSnapshotStore.makeSnapshot(
+            status: status,
+            templates: templates
+        ))
     }
 }
 

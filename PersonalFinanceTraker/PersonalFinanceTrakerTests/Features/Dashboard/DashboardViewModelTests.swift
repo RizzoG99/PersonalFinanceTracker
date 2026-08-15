@@ -232,4 +232,36 @@ struct DashboardViewModelTests {
 
         #expect(result.count == 1)
     }
+
+    @Test func reminderPromptAppearsOnlyWhenUseful() {
+        let calendar = Calendar.current
+        let transactions = (0..<3).map { offset in
+            TransactionSnapshot.test(
+                timestamp: calendar.date(byAdding: .day, value: -offset, to: .now)!,
+                amount: -10,
+                category: "Food"
+            )
+        }
+
+        #expect(DashboardViewModel.computeShowsReminderPrompt(
+            transactions,
+            remindersEnabled: false,
+            promptDismissed: false
+        ))
+        #expect(!DashboardViewModel.computeShowsReminderPrompt(
+            transactions,
+            remindersEnabled: true,
+            promptDismissed: false
+        ))
+        #expect(!DashboardViewModel.computeShowsReminderPrompt(
+            transactions,
+            remindersEnabled: false,
+            promptDismissed: true
+        ))
+        #expect(!DashboardViewModel.computeShowsReminderPrompt(
+            Array(transactions.prefix(2)),
+            remindersEnabled: false,
+            promptDismissed: false
+        ))
+    }
 }

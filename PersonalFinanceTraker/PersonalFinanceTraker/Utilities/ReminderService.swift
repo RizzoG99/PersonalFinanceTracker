@@ -35,6 +35,8 @@ final class ReminderService {
     // nonisolated: an immutable constant read from the notification delegate
     // (a nonisolated context) as well as on the main actor.
     nonisolated static let idPrefix = "daily-log-reminder-"
+    nonisolated static let reminderTitle = "Log today's spending"
+    nonisolated static let reminderBody = "Take 30 seconds to keep your streak."
     private let center = UNUserNotificationCenter.current()
 
     func requestPermission() async -> Bool {
@@ -57,8 +59,8 @@ final class ReminderService {
         )
         for (i, date) in dates.enumerated() {
             let content = UNMutableNotificationContent()
-            content.title = "Log today's spending"
-            content.body = "Take 30 seconds to record what you spent today."
+            content.title = Self.reminderTitle
+            content.body = Self.reminderBody
             let comps = Calendar.current.dateComponents(
                 [.year, .month, .day, .hour, .minute], from: date
             )

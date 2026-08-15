@@ -41,4 +41,9 @@ struct ReminderSchedulerTests {
         #expect(dates.count == 6)
         #expect(Calendar.current.component(.day, from: dates[0]) == 24)
     }
+
+    @Test func reminderCopySupportsHabitLoop() {
+        #expect(ReminderService.reminderTitle == "Log today's spending")
+        #expect(ReminderService.reminderBody == "Take 30 seconds to keep your streak.")
+    }
 }

@@ -37,8 +37,26 @@ struct MainTabView: View {
     }
 
     private func consumePendingAdd() {
-        if PendingTransactionIntent.shared.consume(isEditSheetOpen: viewModel.transactionToEdit != nil) {
+        if PendingTransactionIntent.shared.consume(isEditSheetOpen: viewModel.transactionToEdit != nil)
+            || PendingHabitAddStore.consume() {
             showingAddItemView = true
+        }
+    }
+
+    private func consumePendingHabitTemplate() {
+        guard let request = PendingHabitTemplateStore.consume() else { return }
+        Task {
+            let categories = (try? await repo.fetchCategories()) ?? []
+            guard let input = try? QuickAddService.makeInput(
+                amount: request.amount,
+                categoryName: request.category,
+                isExpense: request.isExpense,
+                note: request.note,
+                categories: categories
+            ) else { return }
+            try? await repo.add(input)
+            await HabitSnapshotUpdater.refresh(using: repo)
+            dataChanged.bump()
         }
     }
 
@@ -121,6 +139,7 @@ struct MainTabView: View {
         .onChange(of: dataChanged.revision) { _, _ in
             dashboardViewModel.reload()
             viewModel.reload()
+            Task { await HabitSnapshotUpdater.refresh(using: repo) }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -132,8 +151,13 @@ struct MainTabView: View {
                 viewModel.reload()
                 Task {
                     try? await materializationService.materialize(using: repo)
+                    await HabitSnapshotUpdater.refresh(using: repo)
                     dataChanged.bump()
                 }
+            }
+            if phase == .active {
+                consumePendingHabitTemplate()
+                consumePendingAdd()
             }
             if phase == .active || phase == .background {
                 // ponytail: in-memory check may lag a just-saved transaction by one
@@ -149,8 +173,10 @@ struct MainTabView: View {
             compassViewModel.onDataChanged = { dataChanged.bump() }
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
             try? await materializationService.materialize(using: repo)
+            await HabitSnapshotUpdater.refresh(using: repo)
             dataChanged.bump()
             consumePendingAdd()
+            consumePendingHabitTemplate()
         }
         .appBackground()
         .onShake {

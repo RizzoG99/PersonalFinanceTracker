@@ -21,6 +21,10 @@ final class DashboardViewModel {
     var loadError: String? = nil
     var anomalyCallout: AnomalyCallout? = nil
     var nearLimitBudgets: [BudgetProgress] = []
+    var dailyLoggingStatus = DailyLoggingStatus(hasLoggedToday: false, todayCount: 0, currentStreakDays: 0)
+    var quickTransactionTemplates: [QuickTransactionTemplate] = []
+    var showsReminderPrompt = false
+    var quickAddError: String? = nil
 
     private let repo: any ITransactionRepository
     private let currencyService = CurrencyService()
@@ -79,12 +83,23 @@ final class DashboardViewModel {
         monthlyIncome = income
         monthlyExpenses = expenses
         recentTransactions = recent
+        dailyLoggingStatus = HabitLoggingService.computeStatus(transactions: transactions)
+        quickTransactionTemplates = HabitLoggingService.quickTemplates(from: transactions)
         anomalyCallout = Self.computeAnomalyCallout(
             transactions,
             payCycleStartDay: payCycleStartDay,
             dismissedKey: UserDefaults.standard.string(forKey: Self.dismissedAnomalyDefaultsKey)
         )
         nearLimitBudgets = Self.computeNearLimitBudgets(transactions, categories, payCycleStartDay: payCycleStartDay)
+        showsReminderPrompt = Self.computeShowsReminderPrompt(
+            transactions,
+            remindersEnabled: UserDefaults.standard.bool(forKey: "reminderEnabled"),
+            promptDismissed: UserDefaults.standard.bool(forKey: Self.dismissedReminderPromptDefaultsKey)
+        )
+        HabitWidgetSnapshotStore.save(HabitWidgetSnapshotStore.makeSnapshot(
+            status: dailyLoggingStatus,
+            templates: quickTransactionTemplates
+        ))
     }
 
     nonisolated private static func computeMetrics(
@@ -118,6 +133,7 @@ final class DashboardViewModel {
     }
 
     private static let dismissedAnomalyDefaultsKey = "dismissedAnomalyCalloutKey"
+    private static let dismissedReminderPromptDefaultsKey = "dismissedDailyLoggingReminderPrompt"
 
     nonisolated static func computeNearLimitBudgets(
         _ transactions: [TransactionSnapshot],
@@ -166,6 +182,50 @@ final class DashboardViewModel {
 
     var hasNoTransactions: Bool {
         transactions.isEmpty
+    }
+
+    nonisolated static func computeShowsReminderPrompt(
+        _ transactions: [TransactionSnapshot],
+        remindersEnabled: Bool,
+        promptDismissed: Bool
+    ) -> Bool {
+        HabitLoggingService.shouldShowReminderPrompt(
+            transactions: transactions,
+            remindersEnabled: remindersEnabled,
+            promptDismissed: promptDismissed
+        )
+    }
+
+    func dismissReminderPrompt() {
+        UserDefaults.standard.set(true, forKey: Self.dismissedReminderPromptDefaultsKey)
+        showsReminderPrompt = false
+    }
+
+    func markReminderPromptAccepted() {
+        UserDefaults.standard.set(false, forKey: Self.dismissedReminderPromptDefaultsKey)
+        UserDefaults.standard.set(true, forKey: "reminderEnabled")
+        showsReminderPrompt = false
+        ReminderService.shared.reschedule(hasLoggedToday: dailyLoggingStatus.hasLoggedToday)
+    }
+
+    func repeatTemplate(_ template: QuickTransactionTemplate) async -> Bool {
+        do {
+            let input = try QuickAddService.makeInput(
+                amount: template.amountMagnitudeDouble,
+                categoryName: template.category,
+                isExpense: template.isExpense,
+                note: template.note,
+                categories: categories
+            )
+            try await repo.add(input)
+            quickAddError = nil
+            reload()
+            ReminderService.shared.reschedule(hasLoggedToday: true)
+            return true
+        } catch {
+            quickAddError = error.localizedDescription
+            return false
+        }
     }
 
 }
