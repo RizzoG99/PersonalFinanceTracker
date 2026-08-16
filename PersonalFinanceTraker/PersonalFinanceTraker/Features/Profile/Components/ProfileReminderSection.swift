@@ -19,7 +19,7 @@ struct ProfileReminderSection: View {
             let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
             reminderHour = comps.hour ?? 21
             reminderMinute = comps.minute ?? 0
-            ReminderService.shared.reschedule(hasLoggedToday: false)
+            ReminderService.shared.reschedule(hasCompletedToday: false)
         }
     }
 
@@ -32,13 +32,13 @@ struct ProfileReminderSection: View {
                 Task {
                     let granted = await ReminderService.shared.requestPermission()
                     if granted {
-                        ReminderService.shared.reschedule(hasLoggedToday: false)
+                        ReminderService.shared.reschedule(hasCompletedToday: false)
                     } else {
                         reminderEnabled = false
                     }
                 }
             } else {
-                ReminderService.shared.reschedule(hasLoggedToday: false)
+                ReminderService.shared.reschedule(hasCompletedToday: false)
             }
         }
         if reminderEnabled {

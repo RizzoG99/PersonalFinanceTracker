@@ -10,6 +10,7 @@ struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(DashboardViewModel.self) private var viewModel
     @Environment(TransactionListViewModel.self) private var transactionListViewModel
+    @Environment(DataChangedSignal.self) private var dataChanged
     @Binding var showingAddItemView: Bool
     @Binding var selectedTab: TabItem
 
@@ -19,7 +20,8 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     GreetingHeaderView()
                     BalanceCardView()
-                    if let callout = viewModel.anomalyCallout {
+                    if let callout = viewModel.anomalyCallout,
+                       viewModel.dailyCheckInStatus.isComplete {
                         AnomalyCalloutView(message: callout.message) {
                             viewModel.dismissAnomaly()
                         }
@@ -49,13 +51,46 @@ struct DashboardView: View {
                             action: { showingAddItemView = true }
                         )
                     }
+                    if !viewModel.hasNoTransactions {
+                        DailyLoggingHabitCard(
+                            transactionStatus: viewModel.dailyLoggingStatus,
+                            checkInStatus: viewModel.dailyCheckInStatus,
+                            templates: viewModel.quickTransactionTemplates,
+                            showsReminderPrompt: viewModel.showsReminderPrompt,
+                            onAdd: { showingAddItemView = true },
+                            onRepeat: { template in
+                                Task {
+                                    if await viewModel.repeatTemplate(template) {
+                                        dataChanged.bump()
+                                    }
+                                }
+                            },
+                            onCompleteNoSpend: {
+                                viewModel.completeNoSpendCheckIn()
+                            },
+                            onUndoNoSpend: {
+                                viewModel.undoNoSpendCheckIn()
+                            },
+                            onSetReminder: {
+                                Task {
+                                    let granted = await ReminderService.shared.requestPermission()
+                                    if granted {
+                                        viewModel.markReminderPromptAccepted()
+                                    }
+                                }
+                            },
+                            onDismissReminder: {
+                                viewModel.dismissReminderPrompt()
+                            }
+                        )
+                    }
                     if !viewModel.recentTransactions.isEmpty {
                         RecentTransactionsSectionView()
                     }
-                    Spacer(minLength: 80)
                 }
                 .padding(16)
             }
+            .safeAreaPadding(.bottom, 128)
             .safeAreaInset(edge: .top) { Color.clear.frame(height: 44) }
             .appBackground()
             .navigationBarTitleDisplayMode(.inline)
@@ -73,10 +108,11 @@ struct DashboardView: View {
     SampleData.populateModelContext(container.mainContext)
     let repo = TransactionActor.make(container)
     let dashVM = DashboardViewModel(repo: repo)
-    return DashboardView(showingAddItemView: .constant(false), selectedTab: .constant(.home))
+        return DashboardView(showingAddItemView: .constant(false), selectedTab: .constant(.home))
         .environment(dashVM)
         .environment(TransactionListViewModel(repo: repo))
         .environment(ProfileViewModel())
+        .environment(DataChangedSignal())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }
