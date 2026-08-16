@@ -35,8 +35,12 @@ final class ReminderService {
     // nonisolated: an immutable constant read from the notification delegate
     // (a nonisolated context) as well as on the main actor.
     nonisolated static let idPrefix = "daily-log-reminder-"
-    nonisolated static let reminderTitle = "Log today's spending"
-    nonisolated static let reminderBody = "Take 30 seconds to keep your streak."
+    nonisolated static var reminderTitle: String {
+        String(localized: "Log today's spending")
+    }
+    nonisolated static var reminderBody: String {
+        String(localized: "Take 30 seconds to keep your streak.")
+    }
     private let center = UNUserNotificationCenter.current()
 
     func requestPermission() async -> Bool {

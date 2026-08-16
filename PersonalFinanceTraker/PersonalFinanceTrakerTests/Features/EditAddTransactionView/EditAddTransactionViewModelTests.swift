@@ -18,6 +18,21 @@ struct EditAddTransactionViewModelTests {
         EditAddTransactionViewModel(editingItem: editingItem, repo: MockTransactionRepository())
     }
 
+    @Test @MainActor func widgetDraftKeepsTheInitialReviewFormUnfocused() {
+        let draft = TransactionDraft(
+            amount: 12.5,
+            transactionType: .expense,
+            categoryName: "Food",
+            note: "Lunch"
+        )
+
+        let vm = EditAddTransactionViewModel(draft: draft, repo: MockTransactionRepository())
+
+        #expect(vm.amount == 12.5)
+        #expect(vm.transactionType == .expense)
+        #expect(vm.shouldAutoFocusAmount == false)
+    }
+
     // MARK: isFormValid
 
     // Name is optional: a blank/whitespace name is valid as long as amount + category are set

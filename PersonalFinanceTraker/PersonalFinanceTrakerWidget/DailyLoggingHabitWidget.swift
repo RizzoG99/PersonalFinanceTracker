@@ -104,10 +104,10 @@ private struct HabitEntry: TimelineEntry {
 private enum HabitWidgetDeepLink {
     static let addTransaction = URL(string: "personalfinancetraker://add-transaction")!
 
-    static func repeatTransaction(for template: HabitWidgetQuickTemplate) -> URL {
+    static func reviewTransaction(for template: HabitWidgetQuickTemplate) -> URL {
         var components = URLComponents()
         components.scheme = "personalfinancetraker"
-        components.host = "repeat-transaction"
+        components.host = "review-transaction"
         components.queryItems = [
             URLQueryItem(name: "amount", value: String(template.amount)),
             URLQueryItem(name: "isExpense", value: String(template.isExpense)),
@@ -152,18 +152,18 @@ private struct DailyLoggingHabitWidgetView: View {
     private var small: some View {
         VStack(alignment: .leading, spacing: 8) {
             statusHeader
-            Text(statusTitle)
+            Text(smallStatusTitle)
                 .font(.headline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
-            Text("\(entry.snapshot.resolvedCheckInStreakDays)-day check-in streak")
+            Text("\(entry.snapshot.resolvedCheckInStreakDays) days in a row")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             Spacer(minLength: 0)
             if !entry.snapshot.resolvedCheckInState.isComplete {
                 Link(destination: HabitWidgetDeepLink.addTransaction) {
-                    widgetActionLabel("Add")
+                    widgetActionLabel("Add", systemImage: "plus.circle.fill")
                 }
                 .accessibilityLabel(Text("Add transaction"))
             }
@@ -174,69 +174,79 @@ private struct DailyLoggingHabitWidgetView: View {
     private var medium: some View {
         VStack(alignment: .leading, spacing: 10) {
             statusHeader
-            Text("\(entry.snapshot.resolvedCheckInStreakDays)-day check-in streak")
-            .font(.caption)
-            .foregroundStyle(.secondary)
 
             if entry.snapshot.resolvedCheckInState.isComplete {
                 Spacer(minLength: 0)
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     statusMetric {
-                        Text(statusTitle)
+                        Text(completionMetricTitle)
                     }
                     statusMetric {
-                        Text("Check-in complete")
+                        Text("\(entry.snapshot.resolvedCheckInStreakDays) days")
                     }
                 }
                 .accessibilityElement(children: .combine)
-            } else if let template = entry.snapshot.quickTemplates.first {
-                Spacer(minLength: 0)
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Suggested repeat")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    HStack(spacing: 8) {
-                        Text("A usual transaction is ready")
-                            .font(.subheadline)
-                            .lineLimit(1)
-                        Spacer(minLength: 8)
-                        Link(destination: HabitWidgetDeepLink.repeatTransaction(for: template)) {
-                            widgetActionLabel("Repeat")
-                        }
-                        .accessibilityLabel(Text("Repeat a usual transaction"))
-                        .accessibilityInputLabels([
-                            Text("Repeat"),
-                        ])
-                    }
-                }
             } else {
-                Spacer(minLength: 0)
-                Link(destination: HabitWidgetDeepLink.addTransaction) {
-                    widgetActionLabel("Add")
+                Text("\(entry.snapshot.resolvedCheckInStreakDays) days in a row")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if let template = entry.snapshot.quickTemplates.first {
+                    Spacer(minLength: 0)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Suggested transaction")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        HStack(spacing: 8) {
+                            Text(template.label)
+                                .font(.subheadline)
+                                .lineLimit(2)
+                            Spacer(minLength: 8)
+                            Link(destination: HabitWidgetDeepLink.reviewTransaction(for: template)) {
+                                widgetActionLabel("Review", systemImage: "arrow.right.circle.fill")
+                            }
+                            .accessibilityLabel(Text("Review suggested transaction"))
+                            .accessibilityInputLabels([
+                                Text("Review"),
+                            ])
+                        }
+                    }
+                } else {
+                    Spacer(minLength: 0)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(statusTitle)
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+
+                        Link(destination: HabitWidgetDeepLink.addTransaction) {
+                            widgetActionLabel("Add", systemImage: "plus.circle.fill")
+                        }
+                        .accessibilityLabel(Text("Add transaction"))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .accessibilityLabel(Text("Add transaction"))
             }
         }
         .containerBackground(.background, for: .widget)
     }
 
-    private func widgetActionLabel(_ title: LocalizedStringKey) -> some View {
-        Text(title)
-            .font(.subheadline.bold())
+    private func widgetActionLabel(_ title: LocalizedStringKey, systemImage: String) -> some View {
+        Label(title, systemImage: systemImage)
+            .font(.subheadline.weight(.semibold))
             .foregroundStyle(.white)
             .lineLimit(1)
             .minimumScaleFactor(0.85)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .frame(minWidth: 64, minHeight: 44)
-            .background(Color("accentIndigo"), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .frame(minHeight: 40)
+            .background(Color("accentIndigo"), in: Capsule())
     }
 
     private func statusMetric<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         content()
             .font(.subheadline.weight(.semibold))
-            .lineLimit(1)
-            .minimumScaleFactor(0.85)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
@@ -255,7 +265,7 @@ private struct DailyLoggingHabitWidgetView: View {
 
     private var statusHeader: some View {
         Label(
-            "Financial Pulse",
+            family == .systemSmall ? "Check-in" : "Financial Pulse",
             systemImage: entry.snapshot.resolvedCheckInState.isComplete ? "checkmark.circle.fill" : "circle.dotted.circle"
         )
         .font(.headline)
@@ -266,9 +276,31 @@ private struct DailyLoggingHabitWidgetView: View {
         case .pending:
             "Check in today"
         case .transactionLogged:
-            "\(entry.snapshot.todayCount) logged today"
+            "\(entry.snapshot.todayCount) transactions today"
         case .noSpendConfirmed:
-            "No-spend day"
+            "Nothing to add today"
+        }
+    }
+
+    private var smallStatusTitle: LocalizedStringKey {
+        switch entry.snapshot.resolvedCheckInState {
+        case .pending:
+            "Still to do"
+        case .transactionLogged:
+            "\(entry.snapshot.todayCount) transactions"
+        case .noSpendConfirmed:
+            "No spending"
+        }
+    }
+
+    private var completionMetricTitle: LocalizedStringKey {
+        switch entry.snapshot.resolvedCheckInState {
+        case .transactionLogged:
+            "\(entry.snapshot.todayCount) transactions"
+        case .noSpendConfirmed:
+            "No spending"
+        case .pending:
+            "Check in today"
         }
     }
 }

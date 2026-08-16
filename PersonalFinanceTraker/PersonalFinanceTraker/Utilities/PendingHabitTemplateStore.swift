@@ -5,6 +5,33 @@
 
 import Foundation
 
+/// A prefilled, unsaved transaction shown for confirmation in the normal add form.
+/// It intentionally contains only form fields, never a persisted transaction input.
+struct TransactionDraft: Sendable, Equatable {
+    let amount: Double
+    let transactionType: TransactionType
+    let categoryName: String
+    let note: String
+    let currencyCode: String
+    let date: Date
+
+    init(
+        amount: Double,
+        transactionType: TransactionType,
+        categoryName: String,
+        note: String,
+        currencyCode: String = "EUR",
+        date: Date = .now
+    ) {
+        self.amount = amount
+        self.transactionType = transactionType
+        self.categoryName = categoryName
+        self.note = note
+        self.currencyCode = currencyCode
+        self.date = date
+    }
+}
+
 struct PendingHabitTemplateRequest: Codable, Sendable {
     let amount: Double
     let isExpense: Bool
@@ -37,6 +64,15 @@ struct PendingHabitTemplateRequest: Codable, Sendable {
             category: category,
             note: note,
             createdAt: .now
+        )
+    }
+
+    var transactionDraft: TransactionDraft {
+        TransactionDraft(
+            amount: amount,
+            transactionType: isExpense ? .expense : .income,
+            categoryName: category,
+            note: note
         )
     }
 }

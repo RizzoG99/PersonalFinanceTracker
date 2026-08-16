@@ -89,28 +89,36 @@ struct HabitLoggingService {
                 note: transaction.note.trimmingCharacters(in: .whitespacesAndNewlines),
                 currencyCode: transaction.currencyCode
             )
-            var stats = grouped[key] ?? TemplateStats(frequency: 0, lastUsed: .distantPast)
+            var stats = grouped[key] ?? TemplateStats(
+                frequency: 0,
+                loggedDayKeys: [],
+                lastUsed: .distantPast
+            )
             stats.frequency += 1
+            stats.loggedDayKeys.insert(calendar.startOfDay(for: transaction.timestamp))
             stats.lastUsed = max(stats.lastUsed, transaction.timestamp)
             grouped[key] = stats
         }
 
-        return grouped.map { key, stats in
-            QuickTransactionTemplate(
-                amount: key.amount,
-                note: key.note,
-                category: key.category,
-                currencyCode: key.currencyCode,
-                lastUsed: stats.lastUsed,
-                frequency: stats.frequency
-            )
-        }
-        .sorted {
-            if $0.frequency != $1.frequency { return $0.frequency > $1.frequency }
-            return $0.lastUsed > $1.lastUsed
-        }
-        .prefix(limit)
-        .map { $0 }
+        // One-offs and same-day duplicates are not reliable repeat suggestions.
+        return grouped
+            .filter { $0.value.loggedDayKeys.count >= 2 }
+            .map { key, stats in
+                QuickTransactionTemplate(
+                    amount: key.amount,
+                    note: key.note,
+                    category: key.category,
+                    currencyCode: key.currencyCode,
+                    lastUsed: stats.lastUsed,
+                    frequency: stats.frequency
+                )
+            }
+            .sorted {
+                if $0.frequency != $1.frequency { return $0.frequency > $1.frequency }
+                return $0.lastUsed > $1.lastUsed
+            }
+            .prefix(limit)
+            .map { $0 }
     }
 
     static func shouldShowReminderPrompt(
@@ -143,6 +151,7 @@ struct HabitLoggingService {
 
     private struct TemplateStats {
         var frequency: Int
+        var loggedDayKeys: Set<Date>
         var lastUsed: Date
     }
 }

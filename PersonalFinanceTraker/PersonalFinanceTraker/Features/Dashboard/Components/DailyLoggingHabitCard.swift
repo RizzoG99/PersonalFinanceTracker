@@ -72,53 +72,88 @@ private struct DailyLoggingHabitHeader: View {
         case .transactionLogged:
             "Today's check-in is complete"
         case .noSpendConfirmed:
-            "No spending recorded today"
+            "Today's check-in is complete"
         }
     }
 }
 
 private struct DailyCheckInSummaryView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let transactionStatus: DailyLoggingStatus
     let checkInStatus: DailyCheckInStatus
     let onUndoNoSpend: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
-                DailyCheckInMetric(
-                    title: transactionStatus.hasLoggedToday
-                        ? "\(transactionStatus.todayCount) logged today"
-                        : "No-spend day"
-                )
-                DailyCheckInMetric(title: "\(checkInStatus.currentStreakDays)-day check-in streak")
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    metricStack
+                } else {
+                    ViewThatFits(in: .horizontal) {
+                        metricRow
+                        metricStack
+                    }
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             if checkInStatus.state == .noSpendConfirmed {
                 Button("Undo check-in", systemImage: "arrow.uturn.backward", action: onUndoNoSpend)
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.accentIndigo)
+                    .frame(minHeight: 44, alignment: .leading)
                     .accessibilityHint("Marks today as needing a check-in again")
             }
         }
+    }
+
+    private var metricRow: some View {
+        HStack(spacing: 12) {
+            primaryMetric
+            Divider()
+                .frame(height: 32)
+            DailyCheckInMetric(
+                title: "\(checkInStatus.currentStreakDays) days in a row",
+                systemImage: "flame.fill"
+            )
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var metricStack: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            primaryMetric
+            DailyCheckInMetric(
+                title: "\(checkInStatus.currentStreakDays) days in a row",
+                systemImage: "flame.fill"
+            )
+        }
+    }
+
+    private var primaryMetric: some View {
+        DailyCheckInMetric(
+            title: transactionStatus.hasLoggedToday
+                ? "\(transactionStatus.todayCount) transactions today"
+                : "No spending today",
+            systemImage: transactionStatus.hasLoggedToday ? "checkmark.circle.fill" : "checkmark.seal.fill"
+        )
     }
 }
 
 private struct DailyCheckInMetric: View {
     let title: LocalizedStringKey
+    let systemImage: String
 
     var body: some View {
-        Text(title)
-            .font(.subheadline.bold())
-            .foregroundStyle(.textPrimary)
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color.accentIndigo.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-            .overlay {
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.accentIndigo.opacity(0.22), lineWidth: 1)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(spacing: 6) {
+            Image(systemName: systemImage)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(Color.accentIndigo)
+            Text(title)
+                .foregroundStyle(.textPrimary)
+        }
+        .font(.subheadline.bold())
+        .lineLimit(2)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -144,10 +179,10 @@ private struct DailyCheckInActionsView: View {
 
             DailyAddButton(isPrimary: templates.isEmpty, action: onAdd)
 
-            Button("Nothing to log today", systemImage: "checkmark", action: onCompleteNoSpend)
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
-                .frame(maxWidth: .infinity)
+            Button("Confirm no spending", systemImage: "checkmark.circle", action: onCompleteNoSpend)
+                .buttonStyle(.plain)
+                .foregroundStyle(.accentIndigo)
+                .frame(maxWidth: .infinity, minHeight: 44)
                 .accessibilityHint("Completes today's check-in without adding a transaction")
         }
     }
@@ -173,11 +208,7 @@ private struct DailyRepeatButton: View {
             HStack(spacing: 8) {
                 Image(systemName: template.isExpense ? "minus.circle.fill" : "plus.circle.fill")
                 VStack(alignment: .leading, spacing: 1) {
-                    if isPrimary {
-                        Text("Repeat")
-                            .font(.caption)
-                    }
-                    Text(template.displayLabel)
+                    Text("Log \(template.displayLabel)")
                         .font(isPrimary ? .subheadline.bold() : .subheadline)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -193,10 +224,10 @@ private struct DailyRepeatButton: View {
             .frame(maxWidth: .infinity)
         }
         .tint(.accentIndigo)
-        .controlSize(isPrimary ? .regular : .small)
-        .accessibilityLabel(Text("Repeat \(template.displayLabel), \(template.signedDisplayAmount)"))
+        .controlSize(.regular)
+        .accessibilityLabel(Text("Log \(template.displayLabel), \(template.signedDisplayAmount)"))
         .accessibilityInputLabels([
-            Text("Repeat"),
+            Text("Log"),
             Text(template.displayLabel),
         ])
     }
@@ -218,7 +249,7 @@ private struct DailyAddButton: View {
 
     private var addButton: some View {
         Button(action: action) {
-            Label(isPrimary ? "Add Transaction" : "Add New", systemImage: "plus.circle.fill")
+            Label(isPrimary ? "Add Transaction" : "New transaction", systemImage: "plus.circle.fill")
                 .frame(maxWidth: .infinity)
         }
         .tint(.accentIndigo)

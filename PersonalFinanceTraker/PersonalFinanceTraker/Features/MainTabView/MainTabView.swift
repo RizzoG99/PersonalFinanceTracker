@@ -13,6 +13,7 @@ struct MainTabView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: TabItem = .home
     @State private var showingAddItemView: Bool = false
+    @State private var pendingTransactionDraft: TransactionDraft?
     @State private var viewModel: TransactionListViewModel
     @State private var dashboardViewModel: DashboardViewModel
     @State private var compassViewModel: CompassViewModel
@@ -44,20 +45,12 @@ struct MainTabView: View {
     }
 
     private func consumePendingHabitTemplate() {
+        guard !showingAddItemView, viewModel.transactionToEdit == nil else { return }
         guard let request = PendingHabitTemplateStore.consume() else { return }
-        Task {
-            let categories = (try? await repo.fetchCategories()) ?? []
-            guard let input = try? QuickAddService.makeInput(
-                amount: request.amount,
-                categoryName: request.category,
-                isExpense: request.isExpense,
-                note: request.note,
-                categories: categories
-            ) else { return }
-            try? await repo.add(input)
-            await HabitSnapshotUpdater.refresh(using: repo)
-            dataChanged.bump()
-        }
+        PendingTransactionIntent.shared.shouldReviewHabitTemplate = false
+        selectedTab = .home
+        pendingTransactionDraft = request.transactionDraft
+        showingAddItemView = true
     }
 
     var body: some View {
@@ -87,12 +80,20 @@ struct MainTabView: View {
             .environment(dataChanged)
             .sheet(isPresented: $showingAddItemView) {
                 NavigationStack {
-                    EditAddTransactionView(repo: repo, materializationService: materializationService)
+                    EditAddTransactionView(
+                        draft: pendingTransactionDraft,
+                        repo: repo,
+                        materializationService: materializationService
+                    )
                         .environment(dataChanged)
                         .environment(appSettings)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
+                .onDisappear {
+                    pendingTransactionDraft = nil
+                    consumePendingHabitTemplate()
+                }
             }
             .sheet(item: $viewModel.transactionToEdit) { item in
                 NavigationStack {
@@ -194,8 +195,8 @@ struct MainTabView: View {
         .onChange(of: PendingTransactionIntent.shared.shouldPresentAdd) { _, pending in
             if pending { consumePendingAdd() }
         }
-        .onChange(of: PendingTransactionIntent.shared.shouldRepeatHabitTemplate) { _, pending in
-            if PendingTransactionIntent.shared.consumeHabitTemplate(), pending {
+        .onChange(of: PendingTransactionIntent.shared.shouldReviewHabitTemplate) { _, pending in
+            if PendingTransactionIntent.shared.consumeHabitTemplate(isSheetOpen: showingAddItemView), pending {
                 consumePendingHabitTemplate()
             }
         }

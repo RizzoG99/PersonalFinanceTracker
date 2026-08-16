@@ -87,10 +87,10 @@ struct DashboardView: View {
                     if !viewModel.recentTransactions.isEmpty {
                         RecentTransactionsSectionView()
                     }
-                    Spacer(minLength: 80)
                 }
                 .padding(16)
             }
+            .safeAreaPadding(.bottom, 128)
             .safeAreaInset(edge: .top) { Color.clear.frame(height: 44) }
             .appBackground()
             .navigationBarTitleDisplayMode(.inline)

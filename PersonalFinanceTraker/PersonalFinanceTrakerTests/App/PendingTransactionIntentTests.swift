@@ -30,20 +30,44 @@ struct PendingTransactionIntentTests {
 
     @Test func consumesPendingHabitTemplateOnce() {
         let intent = PendingTransactionIntent()
-        intent.shouldRepeatHabitTemplate = true
+        intent.shouldReviewHabitTemplate = true
 
-        #expect(intent.consumeHabitTemplate())
-        #expect(!intent.shouldRepeatHabitTemplate)
-        #expect(!intent.consumeHabitTemplate())
+        #expect(intent.consumeHabitTemplate(isSheetOpen: false))
+        #expect(!intent.shouldReviewHabitTemplate)
+        #expect(!intent.consumeHabitTemplate(isSheetOpen: false))
+    }
+
+    @Test func preservesWidgetReviewWhileTransactionSheetIsOpen() {
+        let intent = PendingTransactionIntent()
+        intent.shouldReviewHabitTemplate = true
+
+        #expect(!intent.consumeHabitTemplate(isSheetOpen: true))
+        #expect(intent.shouldReviewHabitTemplate)
     }
 
     @Test func decodesRepeatTemplateFromWidgetURL() {
-        let url = URL(string: "personalfinancetraker://repeat-transaction?amount=5.5&isExpense=true&category=Food&note=Lunch")!
+        let url = URL(string: "personalfinancetraker://review-transaction?amount=5.5&isExpense=true&category=Food&note=Lunch")!
         let request = PendingHabitTemplateRequest(widgetURL: url)
 
         #expect(request?.amount == 5.5)
         #expect(request?.isExpense == true)
         #expect(request?.category == "Food")
         #expect(request?.note == "Lunch")
+    }
+
+    @Test func mapsWidgetTemplateToAnUnsavedTransactionDraft() {
+        let request = PendingHabitTemplateRequest(
+            amount: 5.5,
+            isExpense: true,
+            category: "Food",
+            note: "Lunch",
+            createdAt: .now
+        )
+
+        let draft = request.transactionDraft
+        #expect(draft.amount == 5.5)
+        #expect(draft.transactionType == .expense)
+        #expect(draft.categoryName == "Food")
+        #expect(draft.note == "Lunch")
     }
 }

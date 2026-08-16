@@ -70,6 +70,7 @@ struct HabitLoggingServiceTests {
         let transactions = [
             TransactionSnapshot.test(timestamp: day(-1), amount: -20, note: "Transfer", category: "Savings", goalId: goalId),
             TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-3), amount: -8, note: "Coffee", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
         #expect(templates.count == 1)
@@ -83,7 +84,7 @@ struct HabitLoggingServiceTests {
             TransactionSnapshot.test(timestamp: day(-3), amount: -12, note: "Lunch", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
-        #expect(templates.count == 2)
+        #expect(templates.count == 1)
         #expect(templates.first?.frequency == 2)
         #expect(templates.first?.note == "Coffee")
     }
@@ -91,9 +92,12 @@ struct HabitLoggingServiceTests {
     @Test func quickTemplatesSortByFrequencyThenRecency() {
         let transactions = [
             TransactionSnapshot.test(timestamp: day(-1), amount: -4, note: "Recent", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-6), amount: -4, note: "Recent", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Frequent", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-3), amount: -8, note: "Frequent", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-5), amount: -8, note: "Frequent", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-4), amount: -3, note: "Older", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-7), amount: -3, note: "Older", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
         #expect(templates.map(\.note) == ["Frequent", "Recent", "Older"])
@@ -102,11 +106,25 @@ struct HabitLoggingServiceTests {
     @Test func quickTemplatesPreserveIncomeAndExpenseSigns() {
         let transactions = [
             TransactionSnapshot.test(timestamp: day(-1), amount: 100, note: "Pay", category: "Salary"),
+            TransactionSnapshot.test(timestamp: day(-4), amount: 100, note: "Pay", category: "Salary"),
             TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-3), amount: -8, note: "Coffee", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
         #expect(templates.contains { $0.note == "Pay" && !$0.isExpense && $0.amount == 100 })
         #expect(templates.contains { $0.note == "Coffee" && $0.isExpense && $0.amount == -8 })
+    }
+
+    @Test func quickTemplatesRequireTwoDistinctLoggedDays() {
+        let transactions = [
+            TransactionSnapshot.test(timestamp: day(-1, hour: 9), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-1, hour: 12), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-2), amount: -12, note: "Lunch", category: "Food"),
+        ]
+
+        let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
+
+        #expect(templates.isEmpty)
     }
 
     @Test func quickTemplateDisplayLabelPrefersNoteOverCategory() {

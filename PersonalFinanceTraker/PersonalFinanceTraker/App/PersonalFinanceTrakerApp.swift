@@ -70,10 +70,10 @@ struct PersonalFinanceTrakerApp: App {
                     switch url.host {
                     case "add-transaction":
                         PendingTransactionIntent.shared.shouldPresentAdd = true
-                    case "repeat-transaction":
+                    case "review-transaction":
                         guard let request = PendingHabitTemplateRequest(widgetURL: url) else { return }
                         PendingHabitTemplateStore.save(request)
-                        PendingTransactionIntent.shared.shouldRepeatHabitTemplate = true
+                        PendingTransactionIntent.shared.shouldReviewHabitTemplate = true
                     default:
                         break
                     }

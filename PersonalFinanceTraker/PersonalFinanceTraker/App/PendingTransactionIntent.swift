@@ -5,15 +5,14 @@
 
 import Observation
 
-/// One-shot flag set by the notification tap handler and consumed by MainTabView
-/// to present the Add Transaction sheet. Singleton so the notification delegate can
-/// reach it and so its value survives a cold launch (the instance is never torn down).
+/// One-shot flags set by notification or Widget deep-link handlers and consumed by
+/// MainTabView. The singleton lets app-level handlers coordinate with the tab view.
 @Observable
 final class PendingTransactionIntent {
     static let shared = PendingTransactionIntent()
 
     var shouldPresentAdd = false
-    var shouldRepeatHabitTemplate = false
+    var shouldReviewHabitTemplate = false
 
     /// Returns true (and clears the flag) when the Add sheet should present now.
     /// When an edit sheet is already open the flag is left set — SwiftUI presents one
@@ -24,9 +23,9 @@ final class PendingTransactionIntent {
         return true
     }
 
-    func consumeHabitTemplate() -> Bool {
-        guard shouldRepeatHabitTemplate else { return false }
-        shouldRepeatHabitTemplate = false
+    func consumeHabitTemplate(isSheetOpen: Bool) -> Bool {
+        guard shouldReviewHabitTemplate, !isSheetOpen else { return false }
+        shouldReviewHabitTemplate = false
         return true
     }
 }
