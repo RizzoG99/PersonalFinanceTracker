@@ -10,6 +10,7 @@
 		ABCD00012E67A8C900000001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ABCD00022E67A8C900000002 /* ZIPFoundation */; };
 		F8B100152F39000000000015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F8B100162F39000000000016 /* Assets.xcassets */; };
 		F8B100102F39000000000010 /* PersonalFinanceTrakerWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F8B100022F39000000000002 /* PersonalFinanceTrakerWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F894959D302750C700031D5F /* SafeToSpendWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F894958C302750C500031D5F /* SafeToSpendWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F885D75730117AE20060FBCD /* CoreXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = F885D75630117AE20060FBCD /* CoreXLSX */; };
 /* End PBXBuildFile section */
 
@@ -20,6 +21,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = F8B100012F39000000000001;
 			remoteInfo = PersonalFinanceTrakerWidget;
+		};
+		F894959B302750C700031D5F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8A5247B2E67A8C80000E48D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F894958B302750C500031D5F;
+			remoteInfo = SafeToSpendWidgetExtension;
 		};
 		F8A524952E67A8CA0000E48D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -45,6 +53,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				F8B100102F39000000000010 /* PersonalFinanceTrakerWidget.appex in Embed Foundation Extensions */,
+				F894959D302750C700031D5F /* SafeToSpendWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -53,6 +62,8 @@
 
 /* Begin PBXFileReference section */
 		F8B100162F39000000000016 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = PersonalFinanceTraker/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		F894958C302750C500031D5F /* SafeToSpendWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SafeToSpendWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F89495A3302750D200031D5F /* SafeToSpendWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SafeToSpendWidgetExtension.entitlements; sourceTree = "<group>"; };
 		F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PersonalFinanceTraker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8A524942E67A8CA0000E48D /* PersonalFinanceTrakerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PersonalFinanceTrakerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8A5249E2E67A8CA0000E48D /* PersonalFinanceTrakerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PersonalFinanceTrakerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,9 +85,29 @@
 			);
 			target = F8B100012F39000000000001 /* PersonalFinanceTrakerWidget */;
 		};
+		F89495A2302750C700031D5F /* Exceptions for "SafeToSpendWidget" folder in "SafeToSpendWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F894958B302750C500031D5F /* SafeToSpendWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		D3935669F3903AD6CD21E6E2 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		F8949591302750C600031D5F /* SafeToSpendWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F89495A2302750C700031D5F /* Exceptions for "SafeToSpendWidget" folder in "SafeToSpendWidgetExtension" target */,
+			);
+			path = SafeToSpendWidget;
+			sourceTree = "<group>";
+		};
 		F8A524852E67A8C90000E48D /* PersonalFinanceTraker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -136,6 +167,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F8949589302750C500031D5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -149,8 +187,11 @@
 		F8A5247A2E67A8C80000E48D = {
 			isa = PBXGroup;
 			children = (
+				F89495A3302750D200031D5F /* SafeToSpendWidgetExtension.entitlements */,
+				D3935669F3903AD6CD21E6E2 /* Shared */,
 				F8A524852E67A8C90000E48D /* PersonalFinanceTraker */,
 				F8B100032F39000000000003 /* PersonalFinanceTrakerWidget */,
+				F8949591302750C600031D5F /* SafeToSpendWidget */,
 				F8A524972E67A8CA0000E48D /* PersonalFinanceTrakerTests */,
 				F8A524A12E67A8CA0000E48D /* PersonalFinanceTrakerUITests */,
 				F885D75530117AE20060FBCD /* Frameworks */,
@@ -163,6 +204,7 @@
 			children = (
 				F8A524832E67A8C90000E48D /* PersonalFinanceTraker.app */,
 				F8B100022F39000000000002 /* PersonalFinanceTrakerWidget.appex */,
+				F894958C302750C500031D5F /* SafeToSpendWidgetExtension.appex */,
 				F8A524942E67A8CA0000E48D /* PersonalFinanceTrakerTests.xctest */,
 				F8A5249E2E67A8CA0000E48D /* PersonalFinanceTrakerUITests.xctest */,
 			);
@@ -172,6 +214,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		F894958B302750C500031D5F /* SafeToSpendWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F89495A1302750C700031D5F /* Build configuration list for PBXNativeTarget "SafeToSpendWidgetExtension" */;
+			buildPhases = (
+				F8949588302750C500031D5F /* Sources */,
+				F8949589302750C500031D5F /* Frameworks */,
+				F894958A302750C500031D5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D3935669F3903AD6CD21E6E2 /* Shared */,
+				F8949591302750C600031D5F /* SafeToSpendWidget */,
+			);
+			name = SafeToSpendWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = SafeToSpendWidgetExtension;
+			productReference = F894958C302750C500031D5F /* SafeToSpendWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		F8A524822E67A8C90000E48D /* PersonalFinanceTraker */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F8A524A72E67A8CA0000E48D /* Build configuration list for PBXNativeTarget "PersonalFinanceTraker" */;
@@ -185,8 +250,10 @@
 			);
 			dependencies = (
 				F8B100142F39000000000014 /* PBXTargetDependency */,
+				F894959C302750C700031D5F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				D3935669F3903AD6CD21E6E2 /* Shared */,
 				F8A524852E67A8C90000E48D /* PersonalFinanceTraker */,
 			);
 			name = PersonalFinanceTraker;
@@ -282,6 +349,9 @@
 					F8B100012F39000000000001 = {
 						CreatedOnToolsVersion = 26.0;
 					};
+					F894958B302750C500031D5F = {
+						CreatedOnToolsVersion = 26.0;
+					};
 					F8A524932E67A8CA0000E48D = {
 						CreatedOnToolsVersion = 16.4;
 						TestTargetID = F8A524822E67A8C90000E48D;
@@ -313,6 +383,7 @@
 			targets = (
 				F8A524822E67A8C90000E48D /* PersonalFinanceTraker */,
 				F8B100012F39000000000001 /* PersonalFinanceTrakerWidget */,
+				F894958B302750C500031D5F /* SafeToSpendWidgetExtension */,
 				F8A524932E67A8CA0000E48D /* PersonalFinanceTrakerTests */,
 				F8A5249D2E67A8CA0000E48D /* PersonalFinanceTrakerUITests */,
 			);
@@ -349,6 +420,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F894958A302750C500031D5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -380,6 +458,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F8949588302750C500031D5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -387,6 +472,11 @@
 			isa = PBXTargetDependency;
 			target = F8B100012F39000000000001 /* PersonalFinanceTrakerWidget */;
 			targetProxy = F8B100112F39000000000011 /* PBXContainerItemProxy */;
+		};
+		F894959C302750C700031D5F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F894958B302750C500031D5F /* SafeToSpendWidgetExtension */;
+			targetProxy = F894959B302750C700031D5F /* PBXContainerItemProxy */;
 		};
 		F8A524962E67A8CA0000E48D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -523,6 +613,66 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTraker.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F894959F302750C700031D5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = SafeToSpendWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SafeToSpendWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTraker.SafeToSpendWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F89495A0302750C700031D5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = SafeToSpendWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9T6Z73ZMFU;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SafeToSpendWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rizzoG99.PersonalFinanceTraker.SafeToSpendWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -756,6 +906,15 @@
 			buildConfigurations = (
 				F8B100072F39000000000007 /* Debug */,
 				F8B100082F39000000000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F89495A1302750C700031D5F /* Build configuration list for PBXNativeTarget "SafeToSpendWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F894959F302750C700031D5F /* Debug */,
+				F89495A0302750C700031D5F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

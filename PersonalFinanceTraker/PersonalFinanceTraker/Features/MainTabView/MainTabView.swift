@@ -11,6 +11,7 @@ import SwiftData
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("app_base_currency") private var baseCurrency: String = Locale.current.currency?.identifier ?? "EUR"
     @State private var selectedTab: TabItem = .home
     @State private var showingAddItemView: Bool = false
     @State private var pendingTransactionDraft: TransactionDraft?
@@ -140,7 +141,16 @@ struct MainTabView: View {
         .onChange(of: dataChanged.revision) { _, _ in
             dashboardViewModel.reload()
             viewModel.reload()
-            Task { await HabitSnapshotUpdater.refresh(using: repo) }
+            Task {
+                await HabitSnapshotUpdater.refresh(using: repo)
+                await repo.refreshSafeToSpendWidgetSnapshot()
+            }
+        }
+        .onChange(of: appSettings.payCycleStartDay) { _, _ in
+            Task { await repo.refreshSafeToSpendWidgetSnapshot() }
+        }
+        .onChange(of: baseCurrency) { _, _ in
+            Task { await repo.refreshSafeToSpendWidgetSnapshot() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -153,6 +163,7 @@ struct MainTabView: View {
                 Task {
                     try? await materializationService.materialize(using: repo)
                     await HabitSnapshotUpdater.refresh(using: repo)
+                    await repo.refreshSafeToSpendWidgetSnapshot()
                     dataChanged.bump()
                 }
             }
@@ -176,6 +187,7 @@ struct MainTabView: View {
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
             try? await materializationService.materialize(using: repo)
             await HabitSnapshotUpdater.refresh(using: repo)
+            await repo.refreshSafeToSpendWidgetSnapshot()
             dataChanged.bump()
             consumePendingAdd()
             consumePendingHabitTemplate()

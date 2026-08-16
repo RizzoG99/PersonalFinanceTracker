@@ -1,0 +1,36 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "widget.seven_day_forecast.configuration_description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shows a seven-day cash-flow forecast." } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Mostra una previsione dei flussi di cassa per sette giorni." } }
+      }
+    },
+    "widget.seven_day_forecast.configuration_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "7-Day Forecast" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Previsione a 7 giorni" } }
+      }
+    },
+    "widget.seven_day_forecast.open_app_to_refresh" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open the app to update" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Apri l’app per aggiornare" } }
+      }
+    },
+    "widget.seven_day_forecast.through %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Through %@" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Fino al %@" } }
+      }
+    },
+    "widget.seven_day_forecast.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "7-day forecast" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Previsione prossimi 7 giorni" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

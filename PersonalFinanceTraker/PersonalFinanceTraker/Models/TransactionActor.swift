@@ -32,6 +32,7 @@ actor TransactionActor: ITransactionRepository {
         }
         modelContext.insert(model)
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func addBatch(_ inputs: [TransactionInput]) async throws {
@@ -53,12 +54,14 @@ actor TransactionActor: ITransactionRepository {
             modelContext.insert(model)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func delete(id: PersistentIdentifier) async throws {
         guard let model = modelContext.model(for: id) as? TransactionModel else { return }
         modelContext.delete(model)
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func deleteAllTransactions() async throws {
@@ -67,6 +70,7 @@ actor TransactionActor: ITransactionRepository {
             modelContext.delete(model)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws {
@@ -84,6 +88,7 @@ actor TransactionActor: ITransactionRepository {
             model.categoryModel = nil
         }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     // MARK: Recurrence rules
@@ -108,6 +113,7 @@ actor TransactionActor: ITransactionRepository {
         }
         modelContext.insert(rule)
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
@@ -143,6 +149,7 @@ actor TransactionActor: ITransactionRepository {
             rule.categoryModel = nil
         }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func closeRecurrenceRule(id: UUID, endDate: Date) async throws {
@@ -151,6 +158,7 @@ actor TransactionActor: ITransactionRepository {
         guard let rule = try modelContext.fetch(desc).first else { return }
         rule.endDate = endDate
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     /// Deletes already-materialized rows for this rule at/after `cutoffDate` (not "future"
@@ -171,6 +179,7 @@ actor TransactionActor: ITransactionRepository {
             rule.lastMaterializedDate = Calendar.current.date(byAdding: .day, value: -1, to: cutoffDate)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws {
@@ -197,6 +206,7 @@ actor TransactionActor: ITransactionRepository {
             rule.lastMaterializedDate = newCursor
         }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func deleteAllRecurrenceRules() async throws {
@@ -205,6 +215,7 @@ actor TransactionActor: ITransactionRepository {
             modelContext.delete(model)
         }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     // MARK: Categories
@@ -312,6 +323,21 @@ actor TransactionActor: ITransactionRepository {
         )
         modelContext.insert(model)
         try modelContext.save()
+    }
+
+    // MARK: Seven-day forecast widget
+
+    /// Recomputes the lightweight app-group snapshot after every mutation that affects
+    /// cash flow. The app also invokes this when it launches or becomes active.
+    func refreshSafeToSpendWidgetSnapshot() async {
+        guard let transactions = try? await fetchAll(),
+              let rules = try? await fetchActiveRecurrenceRules() else { return }
+        let payCycleStartDay = await AppSettings.storedStartDay
+        SafeToSpendSnapshotUpdater.refresh(
+            transactions: transactions,
+            activeRules: rules,
+            payCycleStartDay: payCycleStartDay
+        )
     }
 }
 
