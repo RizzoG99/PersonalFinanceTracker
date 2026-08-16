@@ -33,6 +33,7 @@ struct PersonalFinanceTrakerApp: App {
     /// Drives the window appearance applied below. Key must match
     /// `ProfileAppearanceSection`.
     @AppStorage("app_theme_mode") private var themeMode: ThemeMode = .auto
+    @AppStorage("pending_widget_destination") private var pendingWidgetDestination = ""
 
     // MARK: - Body
 
@@ -74,6 +75,8 @@ struct PersonalFinanceTrakerApp: App {
                         guard let request = PendingHabitTemplateRequest(widgetURL: url) else { return }
                         PendingHabitTemplateStore.save(request)
                         PendingTransactionIntent.shared.shouldReviewHabitTemplate = true
+                    case "insights":
+                        pendingWidgetDestination = "insights"
                     default:
                         break
                     }

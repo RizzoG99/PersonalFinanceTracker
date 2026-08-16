@@ -12,6 +12,7 @@ struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("app_base_currency") private var baseCurrency: String = Locale.current.currency?.identifier ?? "EUR"
+    @AppStorage("pending_widget_destination") private var pendingWidgetDestination = ""
     @State private var selectedTab: TabItem = .home
     @State private var showingAddItemView: Bool = false
     @State private var pendingTransactionDraft: TransactionDraft?
@@ -52,6 +53,12 @@ struct MainTabView: View {
         selectedTab = .home
         pendingTransactionDraft = request.transactionDraft
         showingAddItemView = true
+    }
+
+    private func consumePendingWidgetDestination() {
+        guard pendingWidgetDestination == "insights" else { return }
+        selectedTab = .insights
+        pendingWidgetDestination = ""
     }
 
     var body: some View {
@@ -191,6 +198,7 @@ struct MainTabView: View {
             dataChanged.bump()
             consumePendingAdd()
             consumePendingHabitTemplate()
+            consumePendingWidgetDestination()
         }
         .appBackground()
         .onShake {
@@ -211,6 +219,9 @@ struct MainTabView: View {
             if PendingTransactionIntent.shared.consumeHabitTemplate(isSheetOpen: showingAddItemView), pending {
                 consumePendingHabitTemplate()
             }
+        }
+        .onChange(of: pendingWidgetDestination) { _, destination in
+            if destination == "insights" { consumePendingWidgetDestination() }
         }
     }
 }

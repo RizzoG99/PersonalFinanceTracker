@@ -19,16 +19,22 @@
         "it" : { "stringUnit" : { "state" : "translated", "value" : "Apri l’app per aggiornare" } }
       }
     },
-    "widget.seven_day_forecast.through %@" : {
+    "widget.seven_day_forecast.on %@" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Through %@" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Fino al %@" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "on %@" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "al %@" } }
       }
     },
     "widget.seven_day_forecast.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "7-day forecast" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Previsione prossimi 7 giorni" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Projected balance" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Saldo previsto" } }
+      }
+    },
+    "widget.seven_day_forecast.unavailable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Forecast unavailable" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Previsione non disponibile" } }
       }
     }
   },
