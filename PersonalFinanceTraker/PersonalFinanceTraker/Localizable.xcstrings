@@ -1247,6 +1247,12 @@
         }
       }
     },
+    "Appearance" : {
+
+    },
+    "APPEARANCE" : {
+
+    },
     "Applies to %lld transactions" : {
       "localizations" : {
         "en" : {
@@ -2528,6 +2534,9 @@
         }
       }
     },
+    "DISCOVER" : {
+
+    },
     "Dismiss" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3015,6 +3024,9 @@
         }
       }
     },
+    "Explore the App" : {
+
+    },
     "Export Data" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3204,6 +3216,9 @@
           }
         }
       }
+    },
+    "Get started" : {
+
     },
     "Gift" : {
       "extractionState" : "manual",
@@ -6884,6 +6899,9 @@
           }
         }
       }
+    },
+    "What's New" : {
+
     },
     "Which category?" : {
       "comment" : "Label for the category parameter in the Add Transaction intent.",

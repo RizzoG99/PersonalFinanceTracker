@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2026.08.16",
+  "onboarding": {
+    "id": "explore-the-app",
+    "title": "Explore Personal Finance",
+    "pages": [
+      {
+        "id": "overview",
+        "title": "Your money, in one place",
+        "body": "Keep everyday spending and income together, so your financial picture stays clear.",
+        "symbolName": "sparkles",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/overview-v1.png",
+          "accessibilityLabel": "Three financial overview cards with charts, a receipt, and coins."
+        },
+        "destination": "home"
+      },
+      {
+        "id": "activity",
+        "title": "Stay close to every transaction",
+        "body": "Add, search, and filter activity whenever you need to understand where your money went.",
+        "symbolName": "list.bullet.rectangle",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/activity-v1.png",
+          "accessibilityLabel": "A calm transaction timeline with income and expense markers and a magnifying glass."
+        },
+        "destination": "activity"
+      },
+      {
+        "id": "budgets",
+        "title": "Plan with confidence",
+        "body": "Set category budgets and see your progress before a small expense becomes a surprise.",
+        "symbolName": "chart.pie",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/budgets-v1.png",
+          "accessibilityLabel": "Three organised budget compartments, a progress ring, and a checkmark."
+        },
+        "destination": "budgets"
+      },
+      {
+        "id": "insights",
+        "title": "Start with one transaction",
+        "body": "Add an expense or income in less than a minute, then let Personal Finance reveal your progress.",
+        "symbolName": "plus.circle",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/insights-v1.png",
+          "accessibilityLabel": "An indigo compass chart with a rising teal trend line and a star."
+        },
+        "destination": "addTransaction"
+      }
+    ]
+  },
+  "releases": [
+    {
+      "id": "1.0-feature-discovery",
+      "version": "1.0",
+      "title": "A clearer way to explore",
+      "summary": "Meet the tools that help you understand, plan, and move forward with your money.",
+      "items": [
+        {
+          "id": "feature-tour",
+          "title": "Explore the app",
+          "body": "A fresh guide introduces the essentials when you are new, and remains available whenever you want a refresher.",
+          "symbolName": "sparkles",
+          "media": {
+            "kind": "image",
+            "path": "onboarding/overview-v1.png",
+            "accessibilityLabel": "Three financial overview cards with charts, a receipt, and coins."
+          },
+          "destination": "home",
+          "actionTitle": "Explore now"
+        }
+      ]
+    }
+  ]
+}

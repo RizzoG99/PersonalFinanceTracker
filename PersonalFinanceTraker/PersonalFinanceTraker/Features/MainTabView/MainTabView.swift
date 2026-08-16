@@ -11,6 +11,7 @@ import SwiftData
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
     @State private var selectedTab: TabItem = .home
     @State private var showingAddItemView: Bool = false
     @State private var viewModel: TransactionListViewModel
@@ -38,6 +39,21 @@ struct MainTabView: View {
 
     private func consumePendingAdd() {
         if PendingTransactionIntent.shared.consume(isEditSheetOpen: viewModel.transactionToEdit != nil) {
+            showingAddItemView = true
+        }
+    }
+
+    private func consumeFeatureDiscoveryDestination() {
+        guard let destination = featureDiscovery.consumeDestination() else { return }
+        switch destination {
+        case .activity:
+            selectedTab = .activity
+        case .insights:
+            selectedTab = .insights
+        case .home, .budgets:
+            selectedTab = .home
+        case .addTransaction:
+            selectedTab = .home
             showingAddItemView = true
         }
     }
@@ -167,6 +183,9 @@ struct MainTabView: View {
         .onChange(of: PendingTransactionIntent.shared.shouldPresentAdd) { _, pending in
             if pending { consumePendingAdd() }
         }
+        .onChange(of: featureDiscovery.pendingDestination) { _, destination in
+            if destination != nil { consumeFeatureDiscoveryDestination() }
+        }
     }
 }
 
@@ -177,6 +196,7 @@ struct MainTabView: View {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
         SampleData.populateModelContext(container.mainContext)
         return MainTabView(modelContainer: container, appSettings: AppSettings())
+            .environment(FeatureDiscoveryCoordinator())
             .modelContainer(container)
     } catch {
         return Text("Failed to create preview container: \(error.localizedDescription)")

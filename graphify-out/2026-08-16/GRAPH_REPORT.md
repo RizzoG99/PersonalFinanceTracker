@@ -1,11 +1,11 @@
 # Graph Report - feature-discovery  (2026-08-16)
 
 ## Corpus Check
-- 346 files · ~1,459,412 words
+- 346 files · ~1,459,317 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3655 nodes · 5189 edges · 318 communities (283 shown, 35 thin omitted)
+- 3655 nodes · 5189 edges · 317 communities (282 shown, 35 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 142 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -223,7 +223,6 @@
 - [[_COMMUNITY_Community 206|Community 206]]
 - [[_COMMUNITY_Community 207|Community 207]]
 - [[_COMMUNITY_Community 208|Community 208]]
-- [[_COMMUNITY_Community 209|Community 209]]
 - [[_COMMUNITY_Community 210|Community 210]]
 - [[_COMMUNITY_Community 211|Community 211]]
 - [[_COMMUNITY_Community 212|Community 212]]
@@ -368,7 +367,7 @@
 - **Financial Analytics Visual System** — appicon_v2_pie_chart_svg, appicon_v2_bar_chart_report_svg, appicon_v2_trend_up_svg, design_concept_financial_analytics_icons [INFERRED 0.80]
 - **Multi-theme Icon Variants (Light/Dark/Clear)** — appicon_v2_icon_ios_default_1024_pie_chart, appicon_v2_icon_ios_dark_1024_pie_chart, appicon_v2_icon_ios_cleardark_1024_pie_chart [EXTRACTED 1.00]
 
-## Communities (318 total, 35 thin omitted)
+## Communities (317 total, 35 thin omitted)
 
 ### Community 0 - "Analytics & Dashboard Views"
 Cohesion: 0.15
@@ -959,8 +958,8 @@ Cohesion: 0.09
 Nodes (21): Addendum — 2026-07-29 (post-fix follow-up), Addendum 2 — 2026-07-30 (Dashboard "near limit" component), Budgets screen (empty state — all "No limit"), Budgets screen — header summary, Budgets screen (mid-edit — "11111" committed, "Books & Education" focused), Budgets screen — no period/unit label, Budgets screen — row treatment, Cross-screen consistency issues (+13 more)
 
 ### Community 152 - "Community 152"
-Cohesion: 0.40
-Nodes (4): Decimal, String, UserDefaults, CurrencyService
+Cohesion: 0.25
+Nodes (7): Decimal, Foundation, NumberFormatter, String, UserDefaults, CurrencyService, Decimal
 
 ### Community 153 - "Community 153"
 Cohesion: 0.17
@@ -1173,10 +1172,6 @@ Nodes (8): GoalCard, Color, Decimal, Double, GoalSnapshot, Int, SwiftUI, Void
 ### Community 208 - "Community 208"
 Cohesion: 0.18
 Nodes (10): 1. App Intent quick-add (background save), 2. Daily logging reminder, 3. Import mapping memory, 4. Dashboard anomaly callout, 5. Delete CreditScoreCard, 6. README refresh, Now-Tier Quick Wins — Design, Out of scope (+2 more)
-
-### Community 209 - "Community 209"
-Cohesion: 0.52
-Nodes (3): Foundation, NumberFormatter, Decimal
 
 ### Community 210 - "Community 210"
 Cohesion: 0.20

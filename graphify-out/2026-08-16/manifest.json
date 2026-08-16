@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionSaveButton.swift": {
-    "mtime": 1786883524.6662874,
-    "ast_hash": "0266b42470109a5e5c9122be849f7e18",
+    "mtime": 1786877149.2620034,
+    "ast_hash": "0e56e4f394c5b9d79ac0948cbc76a8f5",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/AddGoalSheet.swift": {
-    "mtime": 1786883524.735994,
-    "ast_hash": "8c7eee6cc34e634254022dcd3ac35d17",
+    "mtime": 1786877149.262849,
+    "ast_hash": "6177187c204d99d8f960d015de1739ec",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/CategoryTrendRow.swift": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsEmptyCard.swift": {
-    "mtime": 1786883524.811696,
-    "ast_hash": "89b3844d5c1d4f9ea881b035a71ce6e0",
+    "mtime": 1786877149.26716,
+    "ast_hash": "be19c9de190d688ecca54915b5915f9a",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/InsightsKPICard.swift": {
@@ -400,9 +400,9 @@
     "semantic_hash": "b78a1f9c68590ed2b5e8457d68ee3284"
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/LockView.swift": {
-    "mtime": 1786883524.9141212,
-    "ast_hash": "0daf008629d794f6c8b2f5d630c425ea",
-    "semantic_hash": ""
+    "mtime": 1786877149.2730446,
+    "ast_hash": "ae578732a24850e12337435ec84dc93a",
+    "semantic_hash": "ae578732a24850e12337435ec84dc93a"
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINEntryView.swift": {
     "mtime": 1786877149.273236,
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/PINSetupView.swift": {
-    "mtime": 1786883557.2194784,
-    "ast_hash": "f191da15247431b1c834adcfce1852d2",
+    "mtime": 1786877149.2733376,
+    "ast_hash": "ea737fa5b08a2b852b87b5e5a0ac3bc5",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/ViewModels/PINEntryViewModel.swift": {
@@ -520,8 +520,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/AppToolbarModifier.swift": {
-    "mtime": 1786883524.5827167,
-    "ast_hash": "5618a8ad3f0e5f227ceebbc245cd26d8",
+    "mtime": 1786877149.2912335,
+    "ast_hash": "eb934e3b72f05d78e05ca8b4963af476",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/BiometricAuthService.swift": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/DesignTokens.swift": {
-    "mtime": 1786883524.5081646,
-    "ast_hash": "72ab7257aa436ac8a720ab7b6616f979",
+    "mtime": 1786877149.29656,
+    "ast_hash": "7d0fa525d61bc801187cbdcaf4d3e5e5",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/PINService.swift": {
@@ -830,8 +830,8 @@
     "semantic_hash": "53567955694f1cfc64f45aab411fe89c"
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/GoalDetailSheet.swift": {
-    "mtime": 1786883525.1017516,
-    "ast_hash": "b44222a36c0dc7def3ad9c255a646af1",
+    "mtime": 1786877149.264413,
+    "ast_hash": "801c146ef05481fe1748e56b9280c98e",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/FinancialHealthService.swift": {
@@ -1890,8 +1890,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/FeatureDiscoveryViews.swift": {
-    "mtime": 1786883525.008505,
-    "ast_hash": "0f9fdf95288d3854b3bc00f6390e924e",
+    "mtime": 1786882980.265925,
+    "ast_hash": "d7afe758df4f6e0c325e04417f99bd70",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/FeatureDiscovery/FeatureDiscoveryCoordinatorTests.swift": {

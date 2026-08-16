@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2026.08.16",
+  "onboarding": {
+    "id": "explore-the-app",
+    "title": "Scopri Personal Finance",
+    "pages": [
+      {
+        "id": "overview",
+        "title": "Tutto il tuo denaro, in un unico posto",
+        "body": "Tieni insieme spese ed entrate quotidiane, per avere sempre un quadro finanziario chiaro.",
+        "symbolName": "sparkles",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/overview-v1.png",
+          "accessibilityLabel": "Tre schede di panoramica finanziaria con grafici, una ricevuta e monete."
+        },
+        "destination": "home"
+      },
+      {
+        "id": "activity",
+        "title": "Tieni d'occhio ogni transazione",
+        "body": "Aggiungi, cerca e filtra le attività per capire sempre dove sono finiti i tuoi soldi.",
+        "symbolName": "list.bullet.rectangle",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/activity-v1.png",
+          "accessibilityLabel": "Una linea temporale delle transazioni con indicatori di entrate e uscite e una lente di ingrandimento."
+        },
+        "destination": "activity"
+      },
+      {
+        "id": "budgets",
+        "title": "Pianifica con sicurezza",
+        "body": "Imposta budget per categoria e controlla i progressi prima che una piccola spesa diventi una sorpresa.",
+        "symbolName": "chart.pie",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/budgets-v1.png",
+          "accessibilityLabel": "Tre contenitori di budget ordinati, un anello di avanzamento e un segno di spunta."
+        },
+        "destination": "budgets"
+      },
+      {
+        "id": "insights",
+        "title": "Inizia con una transazione",
+        "body": "Aggiungi una spesa o un'entrata in meno di un minuto, poi lascia che Personal Finance mostri i tuoi progressi.",
+        "symbolName": "plus.circle",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/insights-v1.png",
+          "accessibilityLabel": "Una bussola indaco con una linea di tendenza turchese in crescita e una stella."
+        },
+        "destination": "addTransaction"
+      }
+    ]
+  },
+  "releases": [
+    {
+      "id": "1.0-feature-discovery",
+      "version": "1.0",
+      "title": "Un modo più chiaro per esplorare",
+      "summary": "Scopri gli strumenti che ti aiutano a capire, pianificare e progredire con i tuoi soldi.",
+      "items": [
+        {
+          "id": "feature-tour",
+          "title": "Scopri l'app",
+          "body": "Una guida rapida presenta le funzioni essenziali e resta disponibile quando vuoi rivederle.",
+          "symbolName": "sparkles",
+          "media": {
+            "kind": "image",
+            "path": "onboarding/overview-v1.png",
+            "accessibilityLabel": "Tre schede di panoramica finanziaria con grafici, una ricevuta e monete."
+          },
+          "destination": "home",
+          "actionTitle": "Esplora ora"
+        }
+      ]
+    }
+  ]
+}

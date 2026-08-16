@@ -34,7 +34,7 @@ struct AppToolbarModifier: ViewModifier {
                             showingAddItemView = true
                         }
                         .font(.headline)
-                        .foregroundStyle(.textPrimary)
+                        .foregroundStyle(.primaryActionForeground)
                         .glassEffect(.regular.tint(Color.accentIndigo).interactive())
                     }
                 }

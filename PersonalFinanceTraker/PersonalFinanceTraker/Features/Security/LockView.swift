@@ -57,7 +57,7 @@ struct LockView: View {
                     Text(biometryLabel)
                 }
                 .font(.headline)
-                .foregroundStyle(.textPrimary)
+                .foregroundStyle(.primaryActionForeground)
                 .padding()
                 .frame(maxWidth: .infinity)
                 .glassEffect(.regular.tint(Color.accentIndigo).interactive())

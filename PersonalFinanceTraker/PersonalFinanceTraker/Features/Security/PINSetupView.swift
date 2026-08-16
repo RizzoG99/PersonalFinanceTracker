@@ -118,7 +118,7 @@ struct PINSetupView: View {
             } label: {
                 Text("Set Up \(viewModel.biometricLabel)")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primaryActionForeground)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Color.accentIndigo, in: RoundedRectangle(cornerRadius: 14))
@@ -151,7 +151,7 @@ struct PINSetupView: View {
             } label: {
                 Text("Continue")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primaryActionForeground)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Color.accentIndigo, in: RoundedRectangle(cornerRadius: 14))
