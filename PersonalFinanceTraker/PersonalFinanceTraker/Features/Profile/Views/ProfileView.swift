@@ -16,6 +16,7 @@ struct ProfileView: View {
     var isHostedAsSheet: Bool = true
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.verticalSizeClass) private var vSizeClass
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
     @Environment(DataChangedSignal.self) private var dataChanged
     @Environment(AppSettings.self) private var appSettings
@@ -58,10 +59,13 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                ProfileHeader(displayName: viewModel.displayName, memberSince: viewModel.memberSince)
+                // Dropped in landscape: it's ~140pt of avatar and a name that the nav title already
+                // states, and with the keyboard up it left one visible form row.
+                if vSizeClass != .compact {
+                    ProfileHeader(displayName: viewModel.displayName, memberSince: viewModel.memberSince)
+                }
                 // ponytail: readableWidth caps form width on iPad to improve scanability (HIG
-                // readable-content guidance). iPhone portrait is ~390pt, well under 640, so it's
-                // unaffected. iPhone landscape is not supported by this app.
+                // readable-content guidance). iPhone portrait is ~390pt, well under 640.
                 Form {
                     Section {
                         ProfilePersonalInfoSection(fullName: $viewModel.fullName)

@@ -4812,6 +4812,23 @@
         }
       }
     },
+    "Next field": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next field"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Campo successivo"
+          }
+        }
+      }
+    },
     "No %@": {
       "localizations": {
         "en": {
@@ -5685,6 +5702,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anteprima"
+          }
+        }
+      }
+    },
+    "Previous field": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous field"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Campo precedente"
           }
         }
       }

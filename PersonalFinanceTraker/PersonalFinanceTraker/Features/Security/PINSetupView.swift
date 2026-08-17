@@ -5,53 +5,24 @@ struct PINSetupView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            MonkeyAnimationView(
-                eyesOpen: $viewModel.eyesOpen,
-                isShaking: viewModel.isShaking,
-                isBouncing: viewModel.isBouncing
-            )
-            .padding(.bottom, 32)
-
-            VStack(spacing: 8) {
-                Text(stepTitle)
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.textPrimary)
-                    .multilineTextAlignment(.center)
-
-                if !viewModel.errorMessage.isEmpty {
-                    Text(LocalizedStringKey(viewModel.errorMessage))
-                        .font(.subheadline)
-                        .foregroundStyle(.negative)
-                        .transition(.opacity)
-                        .animation(.easeInOut, value: viewModel.errorMessage)
-                }
-            }
-            .padding(.bottom, 32)
-
-            if showsPINDots {
-                PINDotsView(filledCount: currentFilledCount)
-                    .padding(.bottom, 48)
-            }
-
+        PINScreenLayout(
+            eyesOpen: $viewModel.eyesOpen,
+            isShaking: viewModel.isShaking,
+            isBouncing: viewModel.isBouncing,
+            title: stepTitle,
+            errorMessage: viewModel.errorMessage,
+            filledCount: showsPINDots ? currentFilledCount : nil
+        ) {
             stepContent
-
-            Spacer()
-
+        } footer: {
             if viewModel.currentStep == .confirmPin {
                 Button("Go back") { viewModel.goBackToEnterPin() }
                     .font(.subheadline)
                     .foregroundStyle(.textDim)
                     .frame(minHeight: 44)
                     .contentShape(Rectangle())
-                    .padding(.bottom, 32)
             }
         }
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .appBackground()
         .navigationTitle(viewModel.isChangeMode ? "Change PIN" : "")
         .navigationBarTitleDisplayMode(.inline)
         .interactiveDismissDisabled(!viewModel.isChangeMode)

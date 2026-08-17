@@ -5,33 +5,13 @@ struct PINEntryView: View {
     @State private var setupViewModel: PINSetupViewModel?
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            MonkeyAnimationView(
-                eyesOpen: $viewModel.eyesOpen,
-                isShaking: viewModel.isShaking
-            )
-            .padding(.bottom, 32)
-
-            VStack(spacing: 8) {
-                Text("Enter your PIN")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.textPrimary)
-
-                if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage)
-                        .font(.subheadline)
-                        .foregroundStyle(.negative)
-                        .transition(.opacity)
-                        .animation(.easeInOut, value: viewModel.errorMessage)
-                }
-            }
-            .padding(.bottom, 32)
-
-            PINDotsView(filledCount: viewModel.pinInput.count)
-                .padding(.bottom, 48)
-
+        PINScreenLayout(
+            eyesOpen: $viewModel.eyesOpen,
+            isShaking: viewModel.isShaking,
+            title: "Enter your PIN",
+            errorMessage: viewModel.errorMessage,
+            filledCount: viewModel.pinInput.count
+        ) {
             PINPadView(
                 onDigit: { viewModel.appendDigit($0) },
                 onDelete: { viewModel.deleteDigit() }
@@ -39,31 +19,25 @@ struct PINEntryView: View {
             .disabled(viewModel.isLockedOut)
             .opacity(viewModel.isLockedOut ? 0.5 : 1.0)
             .onAppear { viewModel.refreshLockoutState() }
-
-            VStack(spacing: 16) {
-                if viewModel.showBiometricButton {
+        } footer: {
+            if viewModel.showBiometricButton {
+                VStack(spacing: 12) {
                     Button(action: { viewModel.triggerBiometric() }) {
                         Image(systemName: viewModel.biometricIcon)
                             .font(.system(size: 28))
                             .foregroundStyle(.accentIndigo)
+                            .frame(minWidth: 44, minHeight: 44)
                     }
-                }
 
-                if viewModel.showBiometricButton {
                     Button("Forgot PIN?") {
                         viewModel.triggerForgotPIN()
                     }
                     .font(.caption)
                     .foregroundStyle(.textDim)
+                    .frame(minHeight: 44)
                 }
             }
-            .padding(.top, 32)
-
-            Spacer()
         }
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .appBackground()
         .sheet(isPresented: $viewModel.showForgotPINSheet) {
             if let setupViewModel = setupViewModel {
                 PINSetupView(viewModel: setupViewModel)

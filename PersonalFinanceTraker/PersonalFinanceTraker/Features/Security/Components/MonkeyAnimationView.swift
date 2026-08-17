@@ -4,6 +4,8 @@ struct MonkeyAnimationView: View {
     @Binding var eyesOpen: Bool
     var isShaking: Bool = false
     var isBouncing: Bool = false
+    /// Shrunk in landscape, where 100pt of monkey is most of the available height.
+    var size: CGFloat = 100
 
     @State private var shakeOffset: CGFloat = 0
 
@@ -11,11 +13,11 @@ struct MonkeyAnimationView: View {
         ZStack {
             if eyesOpen {
                 Text("🐵")
-                    .font(.system(size: 100))
+                    .font(.system(size: size))
                     .transition(.scale(scale: 0.8).combined(with: .opacity))
             } else {
                 Text("🙈")
-                    .font(.system(size: 100))
+                    .font(.system(size: size))
                     .transition(.scale(scale: 0.8).combined(with: .opacity))
             }
         }

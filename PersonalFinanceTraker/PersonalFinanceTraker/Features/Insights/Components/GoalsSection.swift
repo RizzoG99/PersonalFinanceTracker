@@ -35,7 +35,6 @@ struct GoalsSection: View {
                     message: "Set your first goal",
                     subtitle: "Trip fund, emergency buffer, dream purchase — make it visual."
                 )
-                .readableWidth(640)
             } else {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     ForEach(goals) { goal in

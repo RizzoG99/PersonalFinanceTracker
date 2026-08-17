@@ -7,6 +7,12 @@ import SwiftUI
 
 struct AddGoalSheet: View {
     @Environment(\.dismiss) private var dismiss
+    /// Landscape iPhone gives this sheet ~370pt, and the keyboard takes ~250 of it. An 80pt icon
+    /// block plus a pinned 70pt button left the form itself with nothing, so in compact height both
+    /// move out of the vertical flow: the icon into a form row, the save action into the toolbar
+    /// (which stays above the keyboard).
+    @Environment(\.verticalSizeClass) private var vSizeClass
+    private var compactHeight: Bool { vSizeClass == .compact }
 
     @State private var name: String
     @State private var targetAmountText: String
@@ -15,7 +21,12 @@ struct AddGoalSheet: View {
     @State private var selectedIcon: String
     @State private var selectedToken: String
     @State private var showIconPicker = false
-    @FocusState private var amountFocused: Bool
+    @FocusState private var focusedField: Field?
+
+    private enum Field: CaseIterable, Hashable {
+        case name
+        case amount
+    }
 
     private static let amountFormatter: NumberFormatter = {
         let f = NumberFormatter()
@@ -50,30 +61,24 @@ struct AddGoalSheet: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Button { showIconPicker = true } label: {
-                let tokenColor = Color(selectedToken)
-                Image(systemName: selectedIcon)
-                    .font(.system(size: 36))
-                    .foregroundStyle(tokenColor)
-                    .frame(width: 80, height: 80)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(tokenColor.opacity(0.15))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .strokeBorder(tokenColor.opacity(0.4), lineWidth: 1.5)
-                    )
-            }
-            .sheet(isPresented: $showIconPicker) {
-                GoalIconPickerSheet(selectedIcon: $selectedIcon)
-                    .presentationDetents([.height(280)])
-                    .presentationDragIndicator(.visible)
+            if !compactHeight {
+                iconButton(size: 80, glyph: 36, corner: 20)
             }
 
             Form {
                 Section("Details") {
+                    if compactHeight {
+                        HStack {
+                            Text("Icon")
+                                .foregroundStyle(.textMid)
+                            Spacer()
+                            iconButton(size: 44, glyph: 22, corner: 12)
+                        }
+                    }
                     TextField("Goal name", text: $name)
+                        .focused($focusedField, equals: .name)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .amount }
                         .onChange(of: name) { _, new in
                             if new.count > 24 { name = String(new.prefix(24)) }
                         }
@@ -81,7 +86,7 @@ struct AddGoalSheet: View {
                         Spacer()
                         Text("\(name.count)/24")
                             .font(.caption)
-                            .foregroundStyle(name.count >= 24 ? .red : .textDim)
+                            .foregroundStyle(name.count >= 24 ? Color.negative : .textDim)
                     }
                 }
                 .appFormSectionBackground()
@@ -96,8 +101,9 @@ struct AddGoalSheet: View {
                             .multilineTextAlignment(.trailing)
                             .foregroundStyle(.textPrimary)
                             .frame(maxWidth: 120)
-                            .focused($amountFocused)
-                            .onChange(of: amountFocused) { _, isFocused in
+                            .focused($focusedField, equals: .amount)
+                            .onChange(of: focusedField) { _, field in
+                                let isFocused = field == .amount
                                 if isFocused {
                                     targetAmountText = targetAmountText.replacingOccurrences(of: ",", with: "")
                                 } else if let value = parsedAmount, !targetAmountText.isEmpty {
@@ -127,18 +133,28 @@ struct AddGoalSheet: View {
                 .appFormSectionBackground()
             }
             .appFormBackground()
+            .keyboardFieldNavigation($focusedField, order: Field.allCases)
 
-            Button(action: save) {
-                Text(initialGoalInput == nil ? "Add Goal" : "Update Goal")
-                    .font(.headline)
-                    .foregroundStyle(.textPrimary)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .glassEffect(.regular.tint(isValid ? Color.accentIndigo : Color.gray).interactive())
+            if !compactHeight {
+                Button(action: save) {
+                    Text(initialGoalInput == nil ? "Add Goal" : "Update Goal")
+                        .font(.headline)
+                        .foregroundStyle(.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .glassEffect(.regular.tint(isValid ? Color.accentIndigo : Color.gray).interactive())
+                }
+                .disabled(!isValid)
+                .padding(.horizontal)
+                .padding(.bottom)
             }
-            .disabled(!isValid)
-            .padding(.horizontal)
-            .padding(.bottom)
+        }
+        .sheet(isPresented: $showIconPicker) {
+            GoalIconPickerSheet(selectedIcon: $selectedIcon)
+                // .height(280) is taller than a landscape iPhone, so the picker opened clipped with
+                // its own grid unreachable.
+                .presentationDetents(compactHeight ? [.large] : [.height(280)])
+                .presentationDragIndicator(.visible)
         }
         .onChange(of: selectedIcon) { old, new in
             let oldLabel = GoalIcon(rawValue: old)?.label ?? ""
@@ -152,7 +168,33 @@ struct AddGoalSheet: View {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") { dismiss() }
             }
+            if compactHeight {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(initialGoalInput == nil ? "Add Goal" : "Update Goal", action: save)
+                        .bold()
+                        .disabled(!isValid)
+                }
+            }
         }
+    }
+
+    private func iconButton(size: CGFloat, glyph: CGFloat, corner: CGFloat) -> some View {
+        Button { showIconPicker = true } label: {
+            let tokenColor = Color(selectedToken)
+            Image(systemName: selectedIcon)
+                .font(.system(size: glyph))
+                .foregroundStyle(tokenColor)
+                .frame(width: size, height: size)
+                .background(
+                    RoundedRectangle(cornerRadius: corner)
+                        .fill(tokenColor.opacity(0.15))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: corner)
+                        .strokeBorder(tokenColor.opacity(0.4), lineWidth: 1.5)
+                )
+        }
+        .accessibilityLabel("Choose Icon")
     }
 
     private func save() {
@@ -175,6 +217,9 @@ private struct GoalIconPickerSheet: View {
                 .font(.headline)
                 .padding(.top, 20)
 
+            // Scrollable: the grid is taller than the sheet in landscape, and a clipped grid gives
+            // no hint that there are more icons below.
+            ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(GoalIcon.allCases, id: \.rawValue) { icon in
                     Button {
@@ -208,6 +253,7 @@ private struct GoalIconPickerSheet: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
+            }
         }
     }
 }
