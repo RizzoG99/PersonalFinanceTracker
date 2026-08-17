@@ -1,8 +1,19 @@
 import SwiftUI
 
+/// The form's text fields, in tab order. Only the typed ones: pickers, chips and the date wheel are
+/// reached by tapping, and putting them in the chain would mean "Next" sometimes dismisses the
+/// keyboard for no visible reason.
+enum TransactionFormField: CaseIterable, Hashable {
+    case amount
+    case name
+}
+
 struct TransactionFormView: View {
     @Bindable var viewModel: EditAddTransactionViewModel
     var focusTrigger: Int = 0
+
+    @Environment(\.verticalSizeClass) private var vSizeClass
+    @FocusState private var focusedField: TransactionFormField?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -15,7 +26,8 @@ struct TransactionFormView: View {
                             amount: $viewModel.amount,
                             currencyCode: $viewModel.currencyCode,
                             shouldAutoFocus: viewModel.shouldAutoFocusAmount,
-                            focusTrigger: focusTrigger
+                            focusTrigger: focusTrigger,
+                            focus: $focusedField
                         )
                     }
                     .appFormSectionBackground()
@@ -86,7 +98,11 @@ struct TransactionFormView: View {
                     // Name is optional, so it follows the required Category (required-before-optional).
                     Section {
                         TextField("Name", text: $viewModel.transactionName, prompt: Text("Name (optional)"))
-                            .submitLabel(.next)
+                            .focused($focusedField, equals: .name)
+                            // .next promised a next field and delivered nothing — this is the last
+                            // one in the chain.
+                            .submitLabel(.done)
+                            .onSubmit { focusedField = nil }
                     }
                     .appFormSectionBackground()
 
@@ -100,10 +116,20 @@ struct TransactionFormView: View {
                     }
                     .appFormSectionBackground()
 
-                    // "Add another" is NOT in the form: it's a save-time mode, pinned above the
-                    // Add Transaction button in EditAddTransactionView's persistent action zone.
+                    // "Add another" is normally NOT in the form: it's a save-time mode, pinned above
+                    // the Add Transaction button in EditAddTransactionView's persistent action zone.
+                    // That zone doesn't exist in landscape (the keyboard owns the bottom), so the
+                    // toggle falls back to being a form row rather than disappearing.
+                    if vSizeClass == .compact && viewModel.editingItem == nil {
+                        Section {
+                            Toggle("Add another", isOn: $viewModel.addAnother)
+                                .tint(.accentIndigo)
+                        }
+                        .appFormSectionBackground()
+                    }
                 }
                 .appFormBackground()
+                .keyboardFieldNavigation($focusedField, order: TransactionFormField.allCases)
                 .onChange(of: focusTrigger) { _, _ in
                     // After an "Add another" save the form resets in place; snap back to the top
                     // (blank Amount) so the user isn't left at the bottom of the sheet. Fires on the

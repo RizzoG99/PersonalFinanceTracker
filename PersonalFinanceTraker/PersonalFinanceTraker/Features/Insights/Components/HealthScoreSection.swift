@@ -5,8 +5,9 @@ struct HealthScoreSection: View {
     let snapshots: [HealthScoreSnapshotData]
     let payCycleStartDay: Int
     @Binding var ignoreSubscriptions: Bool
-
-    @State private var showingDetail = false
+    /// Owned by `CompassViewModel` rather than local `@State` so the iPad shell, which opens
+    /// this as a content destination instead of a sheet, can drive the same selection.
+    @Binding var showingDetail: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -32,12 +33,15 @@ struct HealthScoreSection: View {
         }
         .sheet(isPresented: $showingDetail) {
             if let score = healthScore {
-                HealthScoreDetailView(
-                    healthScore: score,
-                    snapshots: snapshots,
-                    payCycleStartDay: payCycleStartDay,
-                    ignoreSubscriptions: $ignoreSubscriptions
-                )
+                NavigationStack {
+                    HealthScoreDetailView(
+                        healthScore: score,
+                        snapshots: snapshots,
+                        payCycleStartDay: payCycleStartDay,
+                        ignoreSubscriptions: $ignoreSubscriptions
+                    )
+                    .appBackground()
+                }
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }

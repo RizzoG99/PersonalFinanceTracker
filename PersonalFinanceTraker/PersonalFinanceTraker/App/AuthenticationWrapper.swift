@@ -22,16 +22,23 @@ struct AuthenticationWrapper: View {
     // which would otherwise reset hideAmounts whenever the app is merely backgrounded.
     @State private var appSettings = AppSettings()
     @State private var featureDiscovery = FeatureDiscoveryCoordinator()
+    /// Owned here for the same reason as `appSettings`: the shell below is destroyed and
+    /// rebuilt on every lock/unlock cycle, and the view models must not be.
+    @State private var shellModels: AppShellModels
 
     private let pinService = PINService()
     private let backupService = BackupService()
     let modelContainer: ModelContainer
 
+    init(modelContainer: ModelContainer) {
+        self.modelContainer = modelContainer
+        _shellModels = State(wrappedValue: AppShellModels(modelContainer: modelContainer))
+    }
+
     var body: some View {
         @Bindable var featureDiscovery = featureDiscovery
         ZStack {
-            Color.appBackgroundBase
-                .ignoresSafeArea()
+            AppBackground()
 
             if !isPINSetup {
                 PINSetupView(
@@ -43,9 +50,17 @@ struct AuthenticationWrapper: View {
                 )
                 .transition(.opacity)
             } else if authService.isUnlocked {
-                MainTabView(modelContainer: modelContainer, appSettings: appSettings)
-                    .environment(featureDiscovery)
-                    .transition(.opacity)
+                // iPad gets its own shell (sidebar + inspector); every other idiom keeps the
+                // iPhone tab bar. Both bind to the same `shellModels`, so neither can drift.
+                Group {
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        IPadRootView(models: shellModels, appSettings: appSettings)
+                    } else {
+                        MainTabView(models: shellModels, appSettings: appSettings)
+                    }
+                }
+                .environment(featureDiscovery)
+                .transition(.opacity)
             } else {
                 PINEntryView(
                     viewModel: PINEntryViewModel(pinService: pinService, authService: authService)

@@ -42,8 +42,33 @@ struct ReminderSchedulerTests {
         #expect(Calendar.current.component(.day, from: dates[0]) == 24)
     }
 
-    @Test func reminderCopySupportsHabitLoop() {
-        #expect(ReminderService.reminderTitle == "Log today's spending")
-        #expect(ReminderService.reminderBody == "Take 30 seconds to keep your streak.")
+    // The reminder copy is resolved in the device's language, so asserting the English wording
+    // directly only held on an English simulator — on an Italian one the same correct code returned
+    // "Registra le spese di oggi" and the test failed. Split into the two things actually worth
+    // protecting: that the service still points at these catalogue keys, and that both languages
+    // have real copy behind them.
+
+    @Test func reminderCopyUsesTheHabitLoopKeys() {
+        #expect(ReminderService.reminderTitle == String(localized: "Log today's spending"))
+        #expect(ReminderService.reminderBody == String(localized: "Take 30 seconds to keep your streak."))
+    }
+
+    @Test func reminderCopyIsTranslatedInEveryShippedLanguage() throws {
+        let expected = [
+            "en": ("Log today's spending", "Take 30 seconds to keep your streak."),
+            "it": ("Registra le spese di oggi", "Ti bastano 30 secondi per mantenere la serie."),
+        ]
+        for (language, copy) in expected {
+            // The language bundle, not String(localized:locale:) — that initializer's locale only
+            // affects how interpolations are formatted, not which table is consulted, so it returned
+            // the simulator's language for both entries.
+            let bundle = try #require(
+                Bundle.main.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)),
+                "no \(language).lproj in the app bundle"
+            )
+            #expect(bundle.localizedString(forKey: "Log today's spending", value: nil, table: nil) == copy.0)
+            #expect(bundle.localizedString(
+                forKey: "Take 30 seconds to keep your streak.", value: nil, table: nil) == copy.1)
+        }
     }
 }

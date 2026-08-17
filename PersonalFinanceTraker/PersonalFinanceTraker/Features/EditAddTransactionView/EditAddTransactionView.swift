@@ -21,6 +21,11 @@ private enum RecurrenceEditScope {
 struct EditAddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(DataChangedSignal.self) private var dataChanged
+    /// In landscape the keyboard leaves ~120pt, which the pinned toggle + save button consumed
+    /// entirely — the form was there but had no room to scroll in. Both move into the form and the
+    /// toolbar, the one strip that stays above the keyboard.
+    @Environment(\.verticalSizeClass) private var vSizeClass
+    private var compactHeight: Bool { vSizeClass == .compact }
     @State private var viewModel: EditAddTransactionViewModel
     @State private var pendingRecurrenceAction: PendingRecurrenceAction?
     @State private var refocusToken = 0
@@ -42,21 +47,24 @@ struct EditAddTransactionView: View {
     var body: some View {
         VStack(spacing: 24) {
             TransactionFormView(viewModel: viewModel, focusTrigger: refocusToken)
-            VStack(spacing: 12) {
-                // Pinned above the button (Add mode only): the mode and the action it changes share
-                // one persistent, thumb-reachable zone, instead of the toggle being buried in the scroll.
-                if viewModel.editingItem == nil {
-                    Toggle(String(localized: "Add another"), isOn: $viewModel.addAnother)
-                        .tint(.accentIndigo)
-                        .padding(.horizontal)
+            if !compactHeight {
+                VStack(spacing: 12) {
+                    // Pinned above the button (Add mode only): the mode and the action it changes share
+                    // one persistent, thumb-reachable zone, instead of the toggle being buried in the scroll.
+                    if viewModel.editingItem == nil {
+                        Toggle(String(localized: "Add another"), isOn: $viewModel.addAnother)
+                            .tint(.accentIndigo)
+                            .padding(.horizontal)
+                    }
+                    TransactionSaveButton(
+                        title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
+                        isValid: viewModel.isFormValid,
+                        action: saveTransaction
+                    )
                 }
-                TransactionSaveButton(
-                    title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
-                    isValid: viewModel.isFormValid,
-                    action: saveTransaction
-                )
             }
         }
+        .readableWidth()
         .sensoryFeedback(.success, trigger: savedCount)
         .overlay(alignment: .top) {
             if showSavedToast {
@@ -72,6 +80,20 @@ struct EditAddTransactionView: View {
         .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // No other dismissal affordance exists on this sheet besides swipe-down — give it an
+            // explicit, discoverable exit (Nielsen: user control and freedom).
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
+            if compactHeight {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction") {
+                        saveTransaction()
+                    }
+                    .bold()
+                    .disabled(!viewModel.isFormValid)
+                }
+            }
             // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
             // inline form space. Add mode only, and not for transfers (recurring transfers are
             // deferred — matches the type-change guard that also clears isRecurring).

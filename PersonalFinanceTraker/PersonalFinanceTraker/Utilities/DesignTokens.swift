@@ -118,36 +118,39 @@ struct AppBackground: View {
     }
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                Color.appBackgroundBase
+        // ponytail: EllipticalGradient sizes itself to its own frame (fractional radii),
+        // unlike RadialGradient which needs an explicit point radius. That's what let this
+        // used to be a GeometryReader reading a safe-area-inset rect — in landscape that
+        // rect's height collapses, the bloom radii collapsed with it, and flat
+        // appBackgroundBase showed through as a dark rail in the sensor-housing inset.
+        ZStack {
+            Color.appBackgroundBase
 
-                // Indigo bloom — top-left (ellipse at 20% 0%)
-                RadialGradient(
-                    colors: [blooms.topLeft.color.opacity(blooms.topLeft.opacity), .clear],
-                    center: UnitPoint(x: 0.2, y: 0),
-                    startRadius: 0,
-                    endRadius: geo.size.height * 0.55
-                )
+            // Indigo bloom — top-left (ellipse at 20% 0%)
+            EllipticalGradient(
+                colors: [blooms.topLeft.color.opacity(blooms.topLeft.opacity), .clear],
+                center: UnitPoint(x: 0.2, y: 0),
+                startRadiusFraction: 0,
+                endRadiusFraction: 0.55
+            )
 
-                // Teal bloom — bottom-right (ellipse at 80% 100%)
-                RadialGradient(
-                    colors: [blooms.bottomRight.color.opacity(blooms.bottomRight.opacity), .clear],
-                    center: UnitPoint(x: 0.8, y: 1.0),
-                    startRadius: 0,
-                    endRadius: geo.size.height * 0.55
-                )
+            // Teal bloom — bottom-right (ellipse at 80% 100%)
+            EllipticalGradient(
+                colors: [blooms.bottomRight.color.opacity(blooms.bottomRight.opacity), .clear],
+                center: UnitPoint(x: 0.8, y: 1.0),
+                startRadiusFraction: 0,
+                endRadiusFraction: 0.55
+            )
 
-                // Indigo bloom — centre (ellipse at 50% 50%)
-                RadialGradient(
-                    colors: [blooms.centre.color.opacity(blooms.centre.opacity), .clear],
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: geo.size.height * 0.60
-                )
-            }
+            // Indigo bloom — centre (ellipse at 50% 50%)
+            EllipticalGradient(
+                colors: [blooms.centre.color.opacity(blooms.centre.opacity), .clear],
+                center: .center,
+                startRadiusFraction: 0,
+                endRadiusFraction: 0.60
+            )
         }
-        .ignoresSafeArea()
+        .ignoresSafeArea(.all, edges: .all)
     }
 }
 
