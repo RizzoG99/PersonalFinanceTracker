@@ -35,7 +35,7 @@ struct FeatureDiscoveryCoordinatorTests {
         coordinator.prepare(content: fallbackContent, appVersion: "1.0")
         coordinator.showWhatsNew(appVersion: "1.0")
 
-        #expect(coordinator.releaseToPresent?.id == "1.0-feature-discovery")
+        #expect(coordinator.releaseToPresent?.id == "1.0-financial-pulse")
     }
 
     @Test @MainActor func finishingTourQueuesFirstTransactionAction() {
@@ -73,6 +73,13 @@ struct FeatureDiscoveryCoordinatorTests {
         #expect(localized.onboarding.title == "Scopri Personal Finance")
         #expect(localized.onboarding.pages[0].title == "Tutto il tuo denaro, in un unico posto")
         #expect(localized.onboarding.pages[0].media?.path == "onboarding/overview-v1.png")
+    }
+
+    @Test func fallbackIncludesTheFinancialPulseRelease() {
+        let release = FeatureDiscoveryManifest.fallback.releases.last
+
+        #expect(release?.id == "1.0-financial-pulse")
+        #expect(release?.items.map(\.destination) == [.home, .insights])
     }
 
     private var fallbackContent: FeatureDiscoveryLoadedContent {

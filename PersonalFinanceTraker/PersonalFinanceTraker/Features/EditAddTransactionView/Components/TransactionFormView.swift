@@ -14,7 +14,7 @@ struct TransactionFormView: View {
                             placeholder: "0",
                             amount: $viewModel.amount,
                             currencyCode: $viewModel.currencyCode,
-                            shouldAutoFocus: viewModel.editingItem == nil,
+                            shouldAutoFocus: viewModel.shouldAutoFocusAmount,
                             focusTrigger: focusTrigger
                         )
                     }

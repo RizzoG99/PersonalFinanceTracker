@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2026.08.16",
+  "contentVersion": "2026.08.16.1",
   "onboarding": {
     "id": "explore-the-app",
     "title": "Scopri Personal Finance",
@@ -74,6 +74,40 @@
           },
           "destination": "home",
           "actionTitle": "Esplora ora"
+        }
+      ]
+    },
+    {
+      "id": "1.0-financial-pulse",
+      "version": "1.0",
+      "title": "È arrivato l'Impulso finanziario",
+      "summary": "Crea un'abitudine quotidiana con il denaro e tieni sempre a portata di mano il margine di spesa settimanale.",
+      "items": [
+        {
+          "id": "daily-financial-pulse",
+          "title": "Un check-in quotidiano con il denaro",
+          "body": "Il nuovo Impulso finanziario ti aiuta a registrare la giornata, confermare una giornata senza spese e creare una tranquilla serie di check-in.",
+          "symbolName": "waveform.path.ecg",
+          "media": {
+            "kind": "image",
+            "path": "releases/financial-pulse-v1.png",
+            "accessibilityLabel": "Una scheda finanziaria in vetro con una linea dell'impulso indaco, un segno di spunta e un anello per il check-in quotidiano."
+          },
+          "destination": "home",
+          "actionTitle": "Apri Home"
+        },
+        {
+          "id": "safe-to-spend-widget",
+          "title": "Quanto puoi spendere, a colpo d'occhio",
+          "body": "Aggiungi il nuovo widget alla schermata Home per vedere il margine di spesa giornaliero e aprire Insights quando vuoi il quadro completo.",
+          "symbolName": "calendar.day.timeline.leading",
+          "media": {
+            "kind": "image",
+            "path": "releases/safe-to-spend-v1.png",
+            "accessibilityLabel": "Un widget in vetro sospeso con un indicatore di spesa turchese e indaco, sette indicatori giornalieri e monete."
+          },
+          "destination": "insights",
+          "actionTitle": "Apri Insights"
         }
       ]
     }

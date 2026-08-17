@@ -29,8 +29,13 @@ struct EditAddTransactionView: View {
     @State private var toastTask: Task<Void, Never>?
     private let materializationService: RecurrenceMaterializationService
 
-    init(_ snapshot: TransactionSnapshot? = nil, repo: any ITransactionRepository, materializationService: RecurrenceMaterializationService) {
-        _viewModel = State(wrappedValue: EditAddTransactionViewModel(editingItem: snapshot, repo: repo))
+    init(
+        _ snapshot: TransactionSnapshot? = nil,
+        draft: TransactionDraft? = nil,
+        repo: any ITransactionRepository,
+        materializationService: RecurrenceMaterializationService
+    ) {
+        _viewModel = State(wrappedValue: EditAddTransactionViewModel(editingItem: snapshot, draft: draft, repo: repo))
         self.materializationService = materializationService
     }
 

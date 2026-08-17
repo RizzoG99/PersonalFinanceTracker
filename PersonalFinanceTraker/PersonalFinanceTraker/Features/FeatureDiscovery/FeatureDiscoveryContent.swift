@@ -63,6 +63,32 @@ extension FeatureDiscoveryManifest {
                         actionTitle: copy("Explore now", "Esplora ora")
                     )
                 ]
+            ),
+            Release(
+                id: "1.0-financial-pulse",
+                version: "1.0",
+                title: copy("Financial Pulse is here", "È arrivato l'Impulso finanziario"),
+                summary: copy("Build a daily money habit and keep your weekly spending room close at hand.", "Crea un'abitudine quotidiana con il denaro e tieni sempre a portata di mano il margine di spesa settimanale."),
+                items: [
+                    ReleaseItem(
+                        id: "daily-financial-pulse",
+                        title: copy("A daily money check-in", "Un check-in quotidiano con il denaro"),
+                        body: copy("The new Financial Pulse helps you log your day, confirm a no-spend day, and build a calm check-in streak.", "Il nuovo Impulso finanziario ti aiuta a registrare la giornata, confermare una giornata senza spese e creare una tranquilla serie di check-in."),
+                        symbolName: "waveform.path.ecg",
+                        media: nil,
+                        destination: .home,
+                        actionTitle: copy("Open Home", "Apri Home")
+                    ),
+                    ReleaseItem(
+                        id: "safe-to-spend-widget",
+                        title: copy("Safe to spend, at a glance", "Quanto puoi spendere, a colpo d'occhio"),
+                        body: copy("Add the new Home Screen widget to see your daily spending room and open Insights when you need the full picture.", "Aggiungi il nuovo widget alla schermata Home per vedere il margine di spesa giornaliero e aprire Insights quando vuoi il quadro completo."),
+                        symbolName: "calendar.day.timeline.leading",
+                        media: nil,
+                        destination: .insights,
+                        actionTitle: copy("Open Insights", "Apri Insights")
+                    )
+                ]
             )
             ]
         )

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2026.08.16",
+  "contentVersion": "2026.08.16.1",
   "onboarding": {
     "id": "explore-the-app",
     "title": "Explore Personal Finance",
@@ -74,6 +74,40 @@
           },
           "destination": "home",
           "actionTitle": "Explore now"
+        }
+      ]
+    },
+    {
+      "id": "1.0-financial-pulse",
+      "version": "1.0",
+      "title": "Financial Pulse is here",
+      "summary": "Build a daily money habit and keep your weekly spending room close at hand.",
+      "items": [
+        {
+          "id": "daily-financial-pulse",
+          "title": "A daily money check-in",
+          "body": "The new Financial Pulse helps you log your day, confirm a no-spend day, and build a calm check-in streak.",
+          "symbolName": "waveform.path.ecg",
+          "media": {
+            "kind": "image",
+            "path": "releases/financial-pulse-v1.png",
+            "accessibilityLabel": "A glass financial card with an indigo pulse line, checkmark, and daily check-in ring."
+          },
+          "destination": "home",
+          "actionTitle": "Open Home"
+        },
+        {
+          "id": "safe-to-spend-widget",
+          "title": "Safe to spend, at a glance",
+          "body": "Add the new Home Screen widget to see your daily spending room and open Insights when you need the full picture.",
+          "symbolName": "calendar.day.timeline.leading",
+          "media": {
+            "kind": "image",
+            "path": "releases/safe-to-spend-v1.png",
+            "accessibilityLabel": "A floating glass widget with a teal and indigo spending gauge, seven day markers, and coins."
+          },
+          "destination": "insights",
+          "actionTitle": "Open Insights"
         }
       ]
     }

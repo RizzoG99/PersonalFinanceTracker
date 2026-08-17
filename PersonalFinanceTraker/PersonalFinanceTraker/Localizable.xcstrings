@@ -400,6 +400,137 @@
         }
       }
     },
+    "%lld logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld logged today"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld logged today"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld registrata oggi"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld registrate oggi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld days in a row" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%lld day in a row" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%lld days in a row" } }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%lld giorno di fila" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%lld giorni di fila" } }
+            }
+          }
+        }
+      }
+    },
+    "Confirm no spending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Confirm no spending" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Conferma nessuna spesa" } }
+      }
+    },
+    "%lld transactions today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%lld transaction today" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%lld transactions today" } }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%lld registrazione oggi" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%lld registrazioni oggi" } }
+            }
+          }
+        }
+      }
+    },
+    "%lld-day streak" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-day streak"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-day streak"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "serie di %lld giorno"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "serie di %lld giorni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld of %lld budgeted categories are within limit this month." : {
       "localizations" : {
         "en" : {
@@ -980,6 +1111,23 @@
         }
       }
     },
+    "Add New" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add New"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi nuovo"
+          }
+        }
+      }
+    },
     "Add transaction" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -993,6 +1141,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiungi transazione"
+          }
+        }
+      }
+    },
+    "Add new transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi nuova transazione"
           }
         }
       }
@@ -1077,6 +1242,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiunto %@ a %@."
+          }
+        }
+      }
+    },
+    "Added %@." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ aggiunta."
           }
         }
       }
@@ -2313,6 +2495,23 @@
         }
       }
     },
+    "Daily log" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily log"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registro giornaliero"
+          }
+        }
+      }
+    },
     "Dark" : {
 
     },
@@ -2550,6 +2749,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chiudi"
+          }
+        }
+      }
+    },
+    "Dismiss reminder prompt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss reminder prompt"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiudi suggerimento promemoria"
           }
         }
       }
@@ -3812,6 +4028,9 @@
         }
       }
     },
+    "Keep the daily record going." : {
+
+    },
     "Last 3 months" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3879,6 +4098,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Limite"
+          }
+        }
+      }
+    },
+    "Log today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra oggi"
+          }
+        }
+      }
+    },
+    "Log today's spending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log today's spending"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra le spese di oggi"
+          }
+        }
+      }
+    },
+    "Logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logged today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrato oggi"
+          }
+        }
+      }
+    },
+    "Take 30 seconds to keep your streak." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take 30 seconds to keep your streak."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ti bastano 30 secondi per mantenere la serie."
           }
         }
       }
@@ -4422,6 +4709,23 @@
         }
       }
     },
+    "No transaction logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transaction logged today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna transazione registrata oggi"
+          }
+        }
+      }
+    },
     "No credit cards yet" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4501,6 +4805,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ancora nessun modello ricorrente rilevato"
+          }
+        }
+      }
+    },
+    "Not logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not logged today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non registrato oggi"
+          }
+        }
+      }
+    },
+    "Not logged" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not logged"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non registrato"
           }
         }
       }
@@ -5179,7 +5517,123 @@
       }
     },
     "Repeat" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti"
+          }
+        }
+      }
+    },
+    "Repeat %@ transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat %@ transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti transazione %@"
+          }
+        }
+      }
+    },
+    "Repeat %@, %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat %@, %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti %@, %@"
+          }
+        }
+      }
+    },
+    "Repeat ${category}" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat ${category}"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti ${category}"
+          }
+        }
+      }
+    },
+    "Repeat a recent transaction template without opening the app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat a recent transaction template without opening the app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti una transazione recente senza aprire l'app."
+          }
+        }
+      }
+    },
+    "Repeat a usual transaction or add a new one." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat a usual transaction or add a new one."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti una transazione abituale o aggiungine una nuova."
+          }
+        }
+      }
+    },
+    "Repeat Transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat Transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti transazione"
+          }
+        }
+      }
     },
     "Required" : {
       "extractionState" : "manual",
@@ -5686,6 +6140,40 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Set daily reminder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set daily reminder"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imposta promemoria giornaliero"
+          }
+        }
+      }
+    },
+    "Suggested repeat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested repeat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripetizione suggerita"
           }
         }
       }
@@ -7041,6 +7529,330 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La tua spesa mensile varia del %lld%%."
+          }
+        }
+      }
+    },
+    "%lld logged today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld logged today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld registrati oggi"
+          }
+        }
+      }
+    },
+    "%lld-day check-in streak" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld-day check-in streak"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie di controlli di %lld giorni"
+          }
+        }
+      }
+    },
+    "Check in today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check in today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla oggi"
+          }
+        }
+      }
+    },
+    "Check-in complete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check-in complete"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controllo completato"
+          }
+        }
+      }
+    },
+    "Completes today's check-in without adding a transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completes today's check-in without adding a transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completa il controllo di oggi senza aggiungere una transazione"
+          }
+        }
+      }
+    },
+    "Financial Pulse" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Financial Pulse"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controllo quotidiano"
+          }
+        }
+      }
+    },
+    "Keep a private daily money check-in without showing amounts." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep a private daily money check-in without showing amounts."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantieni un controllo giornaliero privato senza mostrare importi."
+          }
+        }
+      }
+    },
+    "Marks today as needing a check-in again" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marks today as needing a check-in again"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segna di nuovo oggi come da controllare"
+          }
+        }
+      }
+    },
+    "No spending recorded today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No spending recorded today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna spesa registrata oggi"
+          }
+        }
+      }
+    },
+    "No spending today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No spending today" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Nessuna spesa oggi" } }
+      }
+    },
+    "No-spend day" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No-spend day"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giornata senza spese"
+          }
+        }
+      }
+    },
+    "Nothing to log today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to log today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niente da registrare oggi"
+          }
+        }
+      }
+    },
+    "Log %@, %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log %@, %@" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Registra %@, %@" } }
+      }
+    },
+    "Log %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log %@" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Registra %@" } }
+      }
+    },
+    "Log now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log now" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Registra ora" } }
+      }
+    },
+    "New transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New transaction" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Nuova transazione" } }
+      }
+    },
+    "Nothing to add today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to add today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niente da aggiungere oggi"
+          }
+        }
+      }
+    },
+    "Take a moment to check today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a moment to check today"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fai un rapido controllo di oggi"
+          }
+        }
+      }
+    },
+    "Today's check-in is complete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's check-in is complete"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il controllo di oggi è completo"
+          }
+        }
+      }
+    },
+    "Undo check-in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo check-in"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla controllo"
+          }
+        }
+      }
+    },
+    "A usual transaction is ready" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A usual transaction is ready"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una transazione abituale è pronta"
+          }
+        }
+      }
+    },
+    "Repeat a usual transaction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat a usual transaction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripeti una transazione abituale"
           }
         }
       }

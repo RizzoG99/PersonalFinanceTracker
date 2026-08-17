@@ -36,12 +36,20 @@ final class EditAddTransactionViewModel {
 
     let editingItem: TransactionSnapshot?
     let repo: any ITransactionRepository
+    private let draft: TransactionDraft?
 
-    init(editingItem: TransactionSnapshot? = nil, repo: any ITransactionRepository) {
+    init(
+        editingItem: TransactionSnapshot? = nil,
+        draft: TransactionDraft? = nil,
+        repo: any ITransactionRepository
+    ) {
         self.editingItem = editingItem
+        self.draft = draft
         self.repo = repo
         if let item = editingItem {
             populateForm(from: item)
+        } else if let draft {
+            populateForm(from: draft)
         }
     }
 
@@ -61,6 +69,10 @@ final class EditAddTransactionViewModel {
             // Set selectedCategory from editingItem.categoryId if editing
             if let catId = editingItem?.categoryId {
                 selectedCategory = availableCategories.first { $0.persistentId == catId }
+            } else if let draft {
+                selectedCategory = availableCategories.first {
+                    $0.name == draft.categoryName && $0.transactionType == draft.transactionType
+                }
             }
 
             // Pre-select goal when editing a transfer
@@ -91,6 +103,12 @@ final class EditAddTransactionViewModel {
         amount > 0 &&
         date <= Date.now &&
         (transactionType == .transfer ? selectedGoal != nil : selectedCategory != nil)
+    }
+
+    /// Widget reviews arrive with a complete draft. Keeping the keyboard closed lets
+    /// the user inspect the populated transaction before deciding to save it.
+    var shouldAutoFocusAmount: Bool {
+        editingItem == nil && draft == nil
     }
 
     private static let mediumDateFormatter: DateFormatter = {
@@ -221,6 +239,15 @@ final class EditAddTransactionViewModel {
         transactionType = type
 
         // selectedCategory set in setTransactionViewModel() after categories load
+    }
+
+    private func populateForm(from draft: TransactionDraft) {
+        amount = draft.amount
+        transactionName = draft.note
+        transactionType = draft.transactionType
+        currencyCode = draft.currencyCode
+        date = draft.date
+        // selectedCategory is resolved after the asynchronous category load.
     }
 
     func resetForm() {

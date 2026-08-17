@@ -41,7 +41,11 @@ actor FeatureDiscoveryService {
 
     private func loadManifest(from manifestURL: URL) async -> FeatureDiscoveryLoadedContent? {
         do {
-            let (data, response) = try await session.data(from: manifestURL)
+            var request = URLRequest(url: manifestURL)
+            // Release content is managed remotely. Avoid presenting a previous
+            // manifest after an editor has published a new What’s New entry.
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            let (data, response) = try await session.data(for: request)
             guard let response = response as? HTTPURLResponse, 200..<300 ~= response.statusCode else {
                 return nil
             }

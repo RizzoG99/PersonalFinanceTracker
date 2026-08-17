@@ -6,6 +6,17 @@
 	<string>Personal Finance</string>
 	<key>FeatureDiscoveryManifestURL</key>
 	<string>https://pub-acab7f749262455f81f509d6c0f66518.r2.dev/feature-discovery/manifest.json</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>rizzoG99.PersonalFinanceTraker</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>personalfinancetraker</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authentication is required to unlock your financial data.</string>
 	<key>UIFileSharingEnabled</key>

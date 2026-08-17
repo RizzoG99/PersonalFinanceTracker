@@ -12,8 +12,11 @@ struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
+    @AppStorage("app_base_currency") private var baseCurrency: String = Locale.current.currency?.identifier ?? "EUR"
+    @AppStorage("pending_widget_destination") private var pendingWidgetDestination = ""
     @State private var selectedTab: TabItem = .home
     @State private var showingAddItemView: Bool = false
+    @State private var pendingTransactionDraft: TransactionDraft?
     @State private var viewModel: TransactionListViewModel
     @State private var dashboardViewModel: DashboardViewModel
     @State private var compassViewModel: CompassViewModel
@@ -38,7 +41,8 @@ struct MainTabView: View {
     }
 
     private func consumePendingAdd() {
-        if PendingTransactionIntent.shared.consume(isEditSheetOpen: viewModel.transactionToEdit != nil) {
+        if PendingTransactionIntent.shared.consume(isEditSheetOpen: viewModel.transactionToEdit != nil)
+            || PendingHabitAddStore.consume() {
             showingAddItemView = true
         }
     }
@@ -56,6 +60,21 @@ struct MainTabView: View {
             selectedTab = .home
             showingAddItemView = true
         }
+    }
+
+    private func consumePendingHabitTemplate() {
+        guard !showingAddItemView, viewModel.transactionToEdit == nil else { return }
+        guard let request = PendingHabitTemplateStore.consume() else { return }
+        PendingTransactionIntent.shared.shouldReviewHabitTemplate = false
+        selectedTab = .home
+        pendingTransactionDraft = request.transactionDraft
+        showingAddItemView = true
+    }
+
+    private func consumePendingWidgetDestination() {
+        guard pendingWidgetDestination == "insights" else { return }
+        selectedTab = .insights
+        pendingWidgetDestination = ""
     }
 
     var body: some View {
@@ -85,12 +104,20 @@ struct MainTabView: View {
             .environment(dataChanged)
             .sheet(isPresented: $showingAddItemView) {
                 NavigationStack {
-                    EditAddTransactionView(repo: repo, materializationService: materializationService)
+                    EditAddTransactionView(
+                        draft: pendingTransactionDraft,
+                        repo: repo,
+                        materializationService: materializationService
+                    )
                         .environment(dataChanged)
                         .environment(appSettings)
                 }
                 .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
+                .onDisappear {
+                    pendingTransactionDraft = nil
+                    consumePendingHabitTemplate()
+                }
             }
             .sheet(item: $viewModel.transactionToEdit) { item in
                 NavigationStack {
@@ -137,6 +164,16 @@ struct MainTabView: View {
         .onChange(of: dataChanged.revision) { _, _ in
             dashboardViewModel.reload()
             viewModel.reload()
+            Task {
+                await HabitSnapshotUpdater.refresh(using: repo)
+                await repo.refreshSafeToSpendWidgetSnapshot()
+            }
+        }
+        .onChange(of: appSettings.payCycleStartDay) { _, _ in
+            Task { await repo.refreshSafeToSpendWidgetSnapshot() }
+        }
+        .onChange(of: baseCurrency) { _, _ in
+            Task { await repo.refreshSafeToSpendWidgetSnapshot() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -148,16 +185,23 @@ struct MainTabView: View {
                 viewModel.reload()
                 Task {
                     try? await materializationService.materialize(using: repo)
+                    await HabitSnapshotUpdater.refresh(using: repo)
+                    await repo.refreshSafeToSpendWidgetSnapshot()
                     dataChanged.bump()
                 }
+            }
+            if phase == .active {
+                consumePendingHabitTemplate()
+                consumePendingAdd()
             }
             if phase == .active || phase == .background {
                 // ponytail: in-memory check may lag a just-saved transaction by one
                 // phase change; the next foreground/background pass corrects it
-                let hasLoggedToday = viewModel.transactions.contains {
-                    Calendar.current.isDateInToday($0.timestamp)
-                }
-                ReminderService.shared.reschedule(hasLoggedToday: hasLoggedToday)
+                let checkInStatus = DailyCheckInService.computeStatus(
+                    transactions: viewModel.transactions,
+                    noSpendDateKeys: DailyCheckInStore.noSpendDateKeys()
+                )
+                ReminderService.shared.reschedule(hasCompletedToday: checkInStatus.isComplete)
             }
         }
         .task {
@@ -165,8 +209,12 @@ struct MainTabView: View {
             compassViewModel.onDataChanged = { dataChanged.bump() }
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
             try? await materializationService.materialize(using: repo)
+            await HabitSnapshotUpdater.refresh(using: repo)
+            await repo.refreshSafeToSpendWidgetSnapshot()
             dataChanged.bump()
             consumePendingAdd()
+            consumePendingHabitTemplate()
+            consumePendingWidgetDestination()
         }
         .appBackground()
         .onShake {
@@ -185,6 +233,14 @@ struct MainTabView: View {
         }
         .onChange(of: featureDiscovery.pendingDestination) { _, destination in
             if destination != nil { consumeFeatureDiscoveryDestination() }
+        }
+        .onChange(of: PendingTransactionIntent.shared.shouldReviewHabitTemplate) { _, pending in
+            if PendingTransactionIntent.shared.consumeHabitTemplate(isSheetOpen: showingAddItemView), pending {
+                consumePendingHabitTemplate()
+            }
+        }
+        .onChange(of: pendingWidgetDestination) { _, destination in
+            if destination == "insights" { consumePendingWidgetDestination() }
         }
     }
 }

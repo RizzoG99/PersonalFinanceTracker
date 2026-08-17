@@ -15,6 +15,9 @@ feature-discovery/
     activity-v1.png
     budgets-v1.png
     insights-v1.png
+  releases/
+    financial-pulse-v1.png
+    safe-to-spend-v1.png
 ```
 
 The app first loads `manifest-<language-code>.json` when one exists (for example `manifest-it.json`), then falls back to `manifest.json`. Media paths are relative to the manifest, so moving from staging to `https://assets.<your-domain>/feature-discovery/` does not require changing the JSON.
