@@ -2,7 +2,11 @@ import Foundation
 
 extension FeatureDiscoveryManifest {
     static var fallback: FeatureDiscoveryManifest {
-        let isItalian = Locale.current.language.languageCode?.identifier == "it"
+        fallback(for: Locale.current.language.languageCode?.identifier)
+    }
+
+    static func fallback(for languageCode: String?) -> FeatureDiscoveryManifest {
+        let isItalian = languageCode == "it"
         func copy(_ english: String, _ italian: String) -> String { isItalian ? italian : english }
 
         return FeatureDiscoveryManifest(
@@ -100,7 +104,7 @@ extension FeatureDiscoveryManifest {
     func applyingBuiltInCopy(for languageCode: String?) -> FeatureDiscoveryManifest {
         guard languageCode == "it" else { return self }
 
-        let italianFallback = FeatureDiscoveryManifest.fallback
+        let italianFallback = FeatureDiscoveryManifest.fallback(for: languageCode)
         let localizedPages = onboarding.pages.map { page in
             guard let translatedPage = italianFallback.onboarding.pages.first(where: { $0.id == page.id }) else {
                 return page

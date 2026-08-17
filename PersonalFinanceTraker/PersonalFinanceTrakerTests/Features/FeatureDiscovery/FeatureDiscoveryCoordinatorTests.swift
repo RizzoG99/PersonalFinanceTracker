@@ -76,10 +76,17 @@ struct FeatureDiscoveryCoordinatorTests {
     }
 
     @Test func fallbackIncludesTheFinancialPulseRelease() {
-        let release = FeatureDiscoveryManifest.fallback.releases.last
+        let release = FeatureDiscoveryManifest.fallback(for: "en").releases.last
 
         #expect(release?.id == "1.0-financial-pulse")
         #expect(release?.items.map(\.destination) == [.home, .insights])
+    }
+
+    @Test func italianFallbackDoesNotDependOnTheProcessLocale() {
+        let fallback = FeatureDiscoveryManifest.fallback(for: "it")
+
+        #expect(fallback.onboarding.title == "Scopri Personal Finance")
+        #expect(fallback.releases.last?.title == "È arrivato l'Impulso finanziario")
     }
 
     private var fallbackContent: FeatureDiscoveryLoadedContent {
