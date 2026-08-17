@@ -54,14 +54,14 @@ struct GoalCard: View {
                     .frame(height: 6)
 
                     HStack(spacing: 4) {
-                        Text(currentAmount.formattedEURCompact())
+                        Text(currentAmount.formattedEUR())
                             .font(.caption.bold())
                             .foregroundStyle(goalColor)
                             .privacyBlur()
                         Text("/")
                             .font(.caption)
                             .foregroundStyle(.textDim)
-                        Text(goal.targetAmount.formattedEURCompact())
+                        Text(goal.targetAmount.formattedEUR())
                             .font(.caption)
                             .foregroundStyle(.textDim)
                             .privacyBlur()
@@ -71,13 +71,19 @@ struct GoalCard: View {
                             .foregroundStyle(.textMid)
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
             }
         }
         .buttonStyle(.plain)
-        .frame(maxWidth: .infinity)
+        // ponytail: the 4:3 ratio is what made these cards ~500pt tall on iPad — at a 640pt-wide
+        // grid column the ratio, not the content, decides the height, and the content (~150pt)
+        // leaves the rest empty. Capping the width first keeps the ratio producing a phone-sized
+        // card on any screen. Cap it at the width iPhone already gives them, so iPhone is
+        // unchanged and iPad simply stops stretching.
+        .frame(maxWidth: 340)
         .aspectRatio(4/3, contentMode: .fill)
         .clipped()
         .contentShape(Rectangle())
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

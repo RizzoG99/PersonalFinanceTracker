@@ -6,6 +6,7 @@
 import SwiftUI
 import SwiftData
 import Charts
+import UIKit
 
 struct CompassView: View {
     @State private var viewModel: CompassViewModel
@@ -20,13 +21,18 @@ struct CompassView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 24) {
-                    GoalsSection(
-                        goals: viewModel.goals,
-                        showingAddGoal: $viewModel.showingAddGoal,
-                        transferTotal: viewModel.transferTotal(for:),
-                        onSelectGoal: { viewModel.selectedGoal = $0 },
-                        onDeleteGoal: viewModel.deleteGoal
-                    )
+                    // ponytail: Goals section is omitted on iPad where it has its own sidebar
+                    // destination (IPadGoalsView). iPhone keeps it in Insights for compact
+                    // horizontal scrolling through all insights at once.
+                    if UIDevice.current.userInterfaceIdiom != .pad {
+                        GoalsSection(
+                            goals: viewModel.goals,
+                            showingAddGoal: $viewModel.showingAddGoal,
+                            transferTotal: viewModel.transferTotal(for:),
+                            onSelectGoal: { viewModel.selectedGoal = $0 },
+                            onDeleteGoal: viewModel.deleteGoal
+                        )
+                    }
                     if let insight = viewModel.heroInsight {
                         HeroInsightCard(insight: insight)
                     }
@@ -37,7 +43,8 @@ struct CompassView: View {
                         ignoreSubscriptions: Binding(
                             get: { viewModel.ignoreSubscriptions },
                             set: { viewModel.ignoreSubscriptions = $0 }
-                        )
+                        ),
+                        showingDetail: $viewModel.showingHealthScoreDetail
                     )
                     SpendingTimelineChart(
                         selectedPeriod: $viewModel.selectedTimePeriod,
@@ -46,49 +53,49 @@ struct CompassView: View {
                     CategoryTrendsSection(trends: viewModel.categoryTrends)
                     HabitsSection(observations: viewModel.habitObservations)
                     ForecastSection(forecast: viewModel.forecast)
-                    Spacer(minLength: 80)
                 }
                 .padding(16)
             }
-            .appBackground()
             .navigationTitle("Insights")
             .navigationBarTitleDisplayMode(.large)
             .appToolbar(showingAddItemView: $showingAddItemView)
+            .appBackground()
         }
         .payCycleAware { viewModel.load() }
         .onAppear { viewModel.load() }
         .onChange(of: showingAddItemView) { _, isShowing in
             if !isShowing { viewModel.load() }
         }
-        .sheet(isPresented: $viewModel.showingAddGoal) {
+        // ponytail: On iPad, goal routing goes through the shared inspector (IPadInspector +
+        // IPadRootView.inspectorPresented), which prevents duplicate presentations. iPhone
+        // sheets fire normally here, preserving the existing experience and the close gesture.
+        .sheet(isPresented: UIDevice.current.userInterfaceIdiom == .phone ? $viewModel.showingAddGoal : .constant(false)) {
             NavigationStack {
                 AddGoalSheet { viewModel.addGoal($0) }
             }
-            .presentationDetents([.large])
             .presentationBackground { AppBackground() }
         }
-        .sheet(isPresented: Binding(
+        .sheet(isPresented: UIDevice.current.userInterfaceIdiom == .phone ? Binding(
             get: { viewModel.goalEditDraft != nil },
             set: { if !$0 { viewModel.goalEditDraft = nil; viewModel.goalEditId = nil } }
-        )) {
+        ) : .constant(false)) {
             NavigationStack {
                 AddGoalSheet(initialGoalInput: viewModel.goalEditDraft) { input in
                     viewModel.goalEditDraft = input
                     viewModel.saveGoalEdits()
                 }
             }
-            .presentationDetents([.large])
             .presentationBackground { AppBackground() }
         }
-        .sheet(item: $viewModel.selectedGoal) { goal in
+        .sheet(item: UIDevice.current.userInterfaceIdiom == .phone ? $viewModel.selectedGoal : .constant(nil)) { goal in
             GoalDetailSheet(goal: goal, viewModel: viewModel) {
                 viewModel.selectedGoal = nil
                 viewModel.beginEditingGoal(goal)
             }
-            .presentationDetents([.large])
             .presentationBackground { AppBackground() }
         }
     }
+
 }
 
 // MARK: - Preview

@@ -10,6 +10,10 @@ enum ProfileRoute: Hashable {
 struct ProfileView: View {
     @Bindable var viewModel: ProfileViewModel
     @Binding var selectedDetent: PresentationDetent
+    /// Controls whether the close (✕) button is shown in the top-right. On iPhone the profile
+    /// opens as a sheet and needs a dismiss affordance; on iPad it is a sidebar destination with
+    /// standard navigation UI, so the button is unnecessary and confusing.
+    var isHostedAsSheet: Bool = true
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
@@ -55,6 +59,9 @@ struct ProfileView: View {
         NavigationStack {
             VStack(spacing: 24) {
                 ProfileHeader(displayName: viewModel.displayName, memberSince: viewModel.memberSince)
+                // ponytail: readableWidth caps form width on iPad to improve scanability (HIG
+                // readable-content guidance). iPhone portrait is ~390pt, well under 640, so it's
+                // unaffected. iPhone landscape is not supported by this app.
                 Form {
                     Section {
                         ProfilePersonalInfoSection(fullName: $viewModel.fullName)
@@ -192,22 +199,25 @@ struct ProfileView: View {
                     }
                 }
             }
+            .readableWidth()
             .padding(.top, 24)
             .appBackground()
             .navigationTitle("Settings")
             .onAppear { viewModel.checkBiometrics() }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.textMid)
-                            .padding(8)
+                if isHostedAsSheet {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.textMid)
+                                .padding(8)
+                        }
+                        .accessibilityLabel("Close")
                     }
-                    .accessibilityLabel("Close")
                 }
             }
             .fileImporter(
@@ -243,7 +253,8 @@ struct ProfileView: View {
                     viewModel: PINConfirmationViewModel(pinService: pinService) {
                         showingPINConfirmation = false
                         performWipe()
-                    }
+                    },
+                    onCancel: { showingPINConfirmation = false }
                 )
             }
             .alert("All Data Deleted", isPresented: $showingDeleteSuccess) {

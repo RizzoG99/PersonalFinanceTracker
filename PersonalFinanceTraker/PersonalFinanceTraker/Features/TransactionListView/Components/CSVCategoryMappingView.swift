@@ -14,6 +14,8 @@ struct CSVCategoryMappingView: View {
     let currentStep: Int
     let totalSteps: Int
     let onContinue: () -> Void
+    /// See CSVColumnMappingView: false in the iPad two-pane layout, which has no next step.
+    var showsStepActions: Bool = true
 
     @Environment(TransactionListViewModel.self) private var viewModel
 
@@ -27,31 +29,41 @@ struct CSVCategoryMappingView: View {
         csvCategories.filter { selections[$0] == nil }.count
     }
 
+    /// Mirrors CSVColumnMappingView's canContinueBanner so both steps say "you're not done" the
+    /// same way.
+    private var unmappedBanner: some View {
+        Label {
+            // ponytail: "category"/"categories" plural handled by the catalog's plural variation, not a hand-rolled ternary
+            Text("Map all \(unmappedCount) remaining category to continue.")
+        } icon: {
+            Image(systemName: "exclamationmark.triangle.fill")
+        }
+        .font(.footnote)
+        .foregroundStyle(Color.negative)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(.bar)
+    }
+
     var body: some View {
         List {
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Map each CSV category to an existing app category, or create a new one.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Button("Auto-Map All") { autoMap() }
-                        .font(.subheadline.bold())
-                }
-                .padding(.vertical, 4)
-            } footer: {
-                if !allMapped {
-                    // ponytail: "category"/"categories" plural handled by the catalog's plural variation, not a hand-rolled ternary
-                    Text("Map all \(unmappedCount) remaining category to continue.")
-                        .foregroundStyle(.red)
-                }
-            }
-            .appFormSectionBackground()
+            // Plain copy, not a filled card: a card is chrome for controls, and giving one sentence
+            // of guidance the same weight as the rows below it made the pane look like it opened on
+            // an empty panel. The unmapped-count warning moved to a pinned banner, matching step 1 —
+            // as a footer here it scrolled out of sight exactly when it mattered.
+            Text("Map each CSV category to an existing app category, or create a new one.")
+                .font(.footnote)
+                .foregroundStyle(.textDim)
+                .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 4, trailing: 4))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
 
             let expenseCategories = csvCategories.filter { categoryTypes[$0] != .income }
             let incomeCategories  = csvCategories.filter { categoryTypes[$0] == .income }
 
             if !expenseCategories.isEmpty {
-                Section("Expenses") {
+                Section("Expenses (\(expenseCategories.count))") {
                     ForEach(expenseCategories, id: \.self) { csv in
                         categoryRow(for: csv)
                     }
@@ -59,7 +71,7 @@ struct CSVCategoryMappingView: View {
                 .appFormSectionBackground()
             }
             if !incomeCategories.isEmpty {
-                Section("Income") {
+                Section("Income (\(incomeCategories.count))") {
                     ForEach(incomeCategories, id: \.self) { csv in
                         categoryRow(for: csv)
                     }
@@ -68,14 +80,32 @@ struct CSVCategoryMappingView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .safeAreaInset(edge: .bottom) {
+            if !allMapped {
+                unmappedBanner
+            }
+        }
+        // The sheet's presentationBackground only reaches the NavigationStack's root (step 1);
+        // pushed destinations get their own opaque host, so each one paints the gradient itself.
+        .appBackground()
         .navigationTitle("Map Categories")
-        .navigationSubtitle("Step \(currentStep) of \(totalSteps)")
+        .navigationSubtitle(showsStepActions ? "Step \(currentStep) of \(totalSteps)" : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // Trailing, not leading: leading is the pushed view's back button, and crowding it is
+            // how you get users tapping Auto-Map when they meant to go back.
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Continue") { buildResolutionAndContinue() }
-                    .bold()
-                    .disabled(!allMapped)
+                Button(action: { autoMap() }) {
+                    Label("Auto-Map All", systemImage: "wand.and.stars")
+                }
+                .buttonStyle(.bordered)
+            }
+            if showsStepActions {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Continue") { buildResolutionAndContinue() }
+                        .bold()
+                        .disabled(!allMapped)
+                }
             }
         }
         .onAppear {
@@ -90,10 +120,13 @@ struct CSVCategoryMappingView: View {
     // MARK: - Row
 
     private func categoryRow(for csv: String) -> some View {
-        let displayName = csv.removingLeadingEmoji.isEmpty ? String(localized: "\(csv) (unnamed)") : csv
+        // The emoji is part of the CSV's own category name, so it stays on screen; only the
+        // emoji-only case needs help, and the only honest help is saying it has no name.
+        let isUnnamed = csv.removingLeadingEmoji.trimmingCharacters(in: .whitespaces).isEmpty
         return HStack {
-            Text(displayName)
+            Text(isUnnamed ? "\(csv) (unnamed)" : "\(csv)")
                 .font(.subheadline)
+                .accessibilityLabel(isUnnamed ? Text("Unnamed category") : Text(csv))
 
             Spacer()
 
@@ -135,24 +168,24 @@ struct CSVCategoryMappingView: View {
                 Button {
                     selections[csv] = newSentinel
                 } label: {
-                    Label("Create \"\(csv.removingLeadingEmoji.trimmingCharacters(in: .whitespaces))\"", systemImage: "plus.circle")
+                    Label("Create \"\(createName(for: csv))\"", systemImage: "plus.circle")
                 }
             } label: {
                 HStack(spacing: 4) {
                     if let sel = selections[csv] {
                         if sel == newSentinel {
-                            Text("New")
+                            Text("Create \"\(createName(for: csv))\"")
                                 .font(.subheadline)
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(.accentIndigo)
                         } else if let cat = availableCategories.first(where: { $0.id.uuidString == sel }) {
                             Text(cat.name.localizedCategoryDisplay)
                                 .font(.subheadline)
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(.accentIndigo)
                         }
                     } else {
                         Text("Select…")
                             .font(.subheadline)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(.accentIndigo)
                     }
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.caption2)
@@ -165,6 +198,13 @@ struct CSVCategoryMappingView: View {
 
     // MARK: - Helpers
 
+    /// Falls back to the raw value: an emoji-only category strips to nothing, and `Create ""` tells
+    /// the user less than the emoji does.
+    private func createName(for csv: String) -> String {
+        let stripped = csv.removingLeadingEmoji.trimmingCharacters(in: .whitespaces)
+        return stripped.isEmpty ? csv : stripped
+    }
+
     /// Returns categories filtered to the matching type, or all if type is unknown.
     private func filteredCategories(for type: TransactionType?) -> [CategorySnapshot] {
         guard let type else { return availableCategories }
@@ -173,106 +213,18 @@ struct CSVCategoryMappingView: View {
 
     // MARK: - Actions
 
-    private func autoMap() {
-        for csv in csvCategories {
-            if selections[csv] != nil { continue }
-            let type = categoryTypes[csv]
-            let pool = filteredCategories(for: type)
-            if let match = bestMatch(for: csv, in: pool) {
-                selections[csv] = match.id.uuidString
-            } else {
-                selections[csv] = newSentinel
-            }
-        }
-    }
-
-    // MARK: - Multilingual matching
-
-    /// Maps canonical keyword → synonyms in multiple languages.
-    private static let synonyms: [String: [String]] = [
-        "grocer":       ["spesa", "supermercato", "alimentari", "lebensmittel", "épicerie", "comestibles"],
-        "restaurant":   ["ristorante", "colazione", "pranzo", "cena", "bar", "caffè", "trattoria",
-                         "restaurant", "gaststätte", "comida"],
-        "transport":    ["trasporti", "trasporto", "moto", "auto", "veicolo", "benzina", "carburante",
-                         "treno", "bus", "metro", "transporte", "verkehr"],
-        "travel":       ["viaggi", "viaggio", "vacanza", "esperienze", "hotel", "volo", "reise", "voyage"],
-        "shopping":     ["acquisti", "acquisto", "vestiti", "abbigliamento", "einkauf", "achat"],
-        "subscript":    ["abbonamenti", "abbonamento", "abonnement", "abonnierung"],
-        "entertain":    ["intrattenimento", "divertimento", "cinema", "teatro", "unterhaltung", "loisir"],
-        "health":       ["salute", "benessere", "medico", "farmacia", "dottore", "gesundheit", "santé"],
-        "fitness":      ["palestra", "sport", "allenamento", "fitness", "fitnessstudio"],
-        "beauty":       ["parrucchiere", "estetista", "bellezza", "cura", "schönheit"],
-        "gift":         ["regali", "regalo", "dono", "geschenk", "cadeau"],
-        "salary":       ["stipendio", "salario", "retribuzione", "gehalt", "salaire"],
-        "invest":       ["investimenti", "investimento", "borsa", "azioni", "investition"],
-        "house":        ["casa", "affitto", "mutuo", "haus", "miete", "maison", "loyer"],
-        "util":         ["bollette", "bolletta", "luce", "gas", "acqua", "internet", "strom", "nebenkosten"],
-        "edu":          ["istruzione", "scuola", "università", "libri", "bildung", "école"],
-        "pet":          ["animali", "animale", "veterinario", "haustier", "vétérinaire"],
-        "other":        ["altro", "varie", "vario", "sonstiges", "autre", "otros"],
-    ]
-
-    /// Canonical keyword → set of synonyms (flattened, lowercased, pre-built once).
-    private static let synonymLookup: [String: String] = {
-        var map: [String: String] = [:]
-        for (canonical, words) in synonyms {
-            for word in words { map[word] = canonical }
-        }
-        return map
-    }()
-
-    /// Returns the canonical keyword set for a given string (CSV category or app category name).
-    private func canonicalKeywords(for text: String) -> Set<String> {
-        let tokens = text.lowercased()
-            .components(separatedBy: CharacterSet.alphanumerics.inverted)
-            .filter { $0.count > 2 }
-        var keys = Set<String>()
-        for token in tokens {
-            if let canonical = Self.synonymLookup[token] {
-                // Direct synonym hit: "spesa" → "grocer"
-                keys.insert(canonical)
-            } else {
-                // Prefix match so English inflections work:
-                // "groceries".hasPrefix("grocer") → canonical "grocer"
-                if let canonical = Self.synonyms.keys.first(where: {
-                    token.hasPrefix($0) || $0.hasPrefix(token)
-                }) {
-                    keys.insert(canonical)
-                }
-            }
-            keys.insert(token)
-        }
-        return keys
-    }
-
-    private func bestMatch(for csv: String, in pool: [CategorySnapshot]) -> CategorySnapshot? {
-        // 1. Exact name match
-        if let exact = pool.first(where: { $0.name.caseInsensitiveCompare(csv) == .orderedSame }) {
-            return exact
-        }
-        let csvKeys = canonicalKeywords(for: csv)
-        // 2. Most-keyword-overlap match
-        var bestScore = 0
-        var bestMatch: CategorySnapshot? = nil
-        for cat in pool {
-            let catKeys = canonicalKeywords(for: cat.name)
-            let overlap = csvKeys.intersection(catKeys).count
-            if overlap > bestScore {
-                bestScore = overlap
-                bestMatch = cat
-            }
-        }
-        if bestScore > 0 { return bestMatch }
-        // 3. Substring fallback
-        let lower = csv.lowercased()
-        return pool.first(where: {
-            lower.contains($0.name.lowercased()) || $0.name.lowercased().contains(lower)
-        })
-    }
-
     private func buildResolutionAndContinue() {
-        // Selections already contain the choices (UUID strings or newSentinel).
+        // Selections already contain the choices (UUID strings or the new-category sentinel).
         // Actual category creation happens in confirmImport; nothing to do here except continue.
         onContinue()
+    }
+
+    private func autoMap() {
+        selections = CategoryAutoMapper.resolve(
+            csvCategories: csvCategories,
+            categoryTypes: categoryTypes,
+            availableCategories: availableCategories,
+            existing: selections
+        )
     }
 }

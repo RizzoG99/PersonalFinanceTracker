@@ -92,9 +92,11 @@ struct DashboardView: View {
             }
             .safeAreaPadding(.bottom, 128)
             .safeAreaInset(edge: .top) { Color.clear.frame(height: 44) }
-            .appBackground()
             .navigationBarTitleDisplayMode(.inline)
             .appToolbar(showingAddItemView: $showingAddItemView)
+            // Inside the NavigationStack, not at the app root: TabView hosts each tab in its
+            // own opaque view controller, so an ancestor background never shows through here.
+            .appBackground()
         }
         .task { viewModel.load() }
     }
@@ -113,6 +115,7 @@ struct DashboardView: View {
         .environment(TransactionListViewModel(repo: repo))
         .environment(ProfileViewModel())
         .environment(DataChangedSignal())
+        .environment(AppSettings())
         .modelContainer(container)
         .preferredColorScheme(.dark)
 }

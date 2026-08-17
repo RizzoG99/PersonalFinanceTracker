@@ -24,22 +24,19 @@ struct HealthScoreDetailView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    scoreHeader
-                    if sortedSnapshots.count >= 2 {
-                        historySection
-                    }
-                    componentsSection
-                    toggleSection
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                scoreHeader
+                if sortedSnapshots.count >= 2 {
+                    historySection
                 }
-                .padding()
+                componentsSection
+                toggleSection
             }
-            .appBackground()
-            .navigationTitle("Health Score")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding()
         }
+        .navigationTitle("Health Score")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: - Score Header

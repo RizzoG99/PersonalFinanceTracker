@@ -148,6 +148,11 @@ struct AddGoalSheet: View {
         }
         .navigationTitle(initialGoalInput == nil ? "New Goal" : "Edit Goal")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
+        }
     }
 
     private func save() {

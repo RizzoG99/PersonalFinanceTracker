@@ -11,10 +11,6 @@ struct ActivityView: View {
     @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
 
-    init(showingAddItemView: Binding<Bool>) {
-        _showingAddItemView = showingAddItemView
-    }
-
     @State private var showCategorySheet = false
     @State private var showAmountSheet = false
     @State private var showNoteSheet = false
@@ -155,15 +151,9 @@ struct ActivityView: View {
                     }
                 }
 
-                // Bottom spacing for floating tab bar — matches DashboardView and CompassView pattern
-                Spacer(minLength: 80)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .appBackground()
             .navigationTitle("Activity")
             // Inline while selecting so the "N selected" principal item is visible
             // (a large title suppresses it).
@@ -193,6 +183,7 @@ struct ActivityView: View {
                     }
                 }
             }
+            .appBackground()
             .sensoryFeedback(.selection, trigger: viewModel.isSelecting)
             .safeAreaInset(edge: .bottom) {
                 selectionActionBar
@@ -306,7 +297,8 @@ private struct ConditionalSearchable: ViewModifier {
 
 /// Loads categories, then presents the Add flow's shared `CategoryPickerSheet`.
 /// Fetching inside the sheet (not before presenting) guarantees the grid is populated.
-private struct BulkCategoryPickerSheet: View {
+// Internal rather than private: the iPad ledger table reuses these three verbatim.
+struct BulkCategoryPickerSheet: View {
     let repo: any ITransactionRepository
     let onApply: (CategorySnapshot) -> Void
     @State private var categories: [CategorySnapshot] = []
@@ -323,7 +315,7 @@ private struct BulkCategoryPickerSheet: View {
     }
 }
 
-private struct AmountBulkEditSheet: View {
+struct AmountBulkEditSheet: View {
     let count: Int
     let onConfirm: (Double) -> Void
     @State private var amount: Double = 0.0
@@ -363,7 +355,7 @@ private struct AmountBulkEditSheet: View {
     }
 }
 
-private struct DescriptionBulkEditSheet: View {
+struct DescriptionBulkEditSheet: View {
     let count: Int
     let onConfirm: (String) -> Void
     @State private var description: String = ""

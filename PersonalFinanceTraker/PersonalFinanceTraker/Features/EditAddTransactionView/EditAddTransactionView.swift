@@ -57,6 +57,7 @@ struct EditAddTransactionView: View {
                 )
             }
         }
+        .readableWidth()
         .sensoryFeedback(.success, trigger: savedCount)
         .overlay(alignment: .top) {
             if showSavedToast {
@@ -72,6 +73,11 @@ struct EditAddTransactionView: View {
         .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // No other dismissal affordance exists on this sheet besides swipe-down — give it an
+            // explicit, discoverable exit (Nielsen: user control and freedom).
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
             // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
             // inline form space. Add mode only, and not for transfers (recurring transfers are
             // deferred — matches the type-change guard that also clears isRecurring).

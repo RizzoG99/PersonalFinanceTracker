@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct AppToolbarModifier: ViewModifier {
     @Environment(ProfileViewModel.self) private var profileViewModel: ProfileViewModel
@@ -16,11 +17,18 @@ struct AppToolbarModifier: ViewModifier {
     @State private var showingProfile = false
     @State private var selectedDetent: PresentationDetent = .large
 
+    /// The iPad shell owns these actions itself — Settings is a sidebar destination and Add
+    /// lives in the shell's toolbar — so showing them again per screen would duplicate both.
+    /// The sheets below still apply: ProfileView can trigger the import flow from anywhere.
+    private var showsItems: Bool {
+        enabled && UIDevice.current.userInterfaceIdiom != .pad
+    }
+
     func body(content: Content) -> some View {
         @Bindable var transactionViewModel = transactionViewModel
         return content
             .toolbar {
-                if enabled {
+                if showsItems {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Open profile", systemImage: "gear") {
                             selectedDetent = .large
