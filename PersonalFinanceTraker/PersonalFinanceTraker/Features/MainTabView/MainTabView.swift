@@ -19,24 +19,28 @@ struct MainTabView: View {
     @State private var viewModel: TransactionListViewModel
     @State private var dashboardViewModel: DashboardViewModel
     @State private var compassViewModel: CompassViewModel
-    @State private var profileViewModel = ProfileViewModel()
-    @State private var dataChanged = DataChangedSignal()
+    @State private var profileViewModel: ProfileViewModel
+    @State private var dataChanged: DataChangedSignal
     @State private var showPrivacyToast = false
     @State private var privacyToastTask: Task<Void, Never>?
     private let repo: TransactionActor
-    private let materializationService = RecurrenceMaterializationService()
+    private let materializationService: RecurrenceMaterializationService
     // Owned by AuthenticationWrapper (not MainTabView) so hideAmounts survives the
     // background→lock→foreground cycle: MainTabView itself is torn down and recreated
     // every time the PIN/biometric lock screen shows, which would otherwise reset it.
     private let appSettings: AppSettings
 
-    init(modelContainer: ModelContainer, appSettings: AppSettings) {
-        let actor = TransactionActor(modelContainer: modelContainer)
-        repo = actor
+    /// View models come from the shared `AppShellModels` rather than being built here, so the
+    /// iPad shell binds to the very same instances (see AppShellModels).
+    init(models: AppShellModels, appSettings: AppSettings) {
+        repo = models.repo
+        materializationService = models.materializationService
         self.appSettings = appSettings
-        _viewModel = State(wrappedValue: TransactionListViewModel(repo: actor))
-        _dashboardViewModel = State(wrappedValue: DashboardViewModel(repo: actor))
-        _compassViewModel = State(wrappedValue: CompassViewModel(repo: actor))
+        _viewModel = State(wrappedValue: models.transactions)
+        _dashboardViewModel = State(wrappedValue: models.dashboard)
+        _compassViewModel = State(wrappedValue: models.compass)
+        _profileViewModel = State(wrappedValue: models.profile)
+        _dataChanged = State(wrappedValue: models.dataChanged)
     }
 
     private func consumePendingAdd() {
@@ -96,7 +100,6 @@ struct MainTabView: View {
                         .environment(dataChanged)
                         .environment(appSettings)
                 }
-                .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
                 .onDisappear {
                     pendingTransactionDraft = nil
@@ -109,7 +112,6 @@ struct MainTabView: View {
                         .environment(dataChanged)
                         .environment(appSettings)
                 }
-                .presentationDetents([.large])
                 .presentationBackground { AppBackground() }
             }
         }
@@ -200,7 +202,6 @@ struct MainTabView: View {
             consumePendingHabitTemplate()
             consumePendingWidgetDestination()
         }
-        .appBackground()
         .onShake {
             appSettings.toggleHideAmounts()
         }
@@ -232,7 +233,7 @@ struct MainTabView: View {
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
         SampleData.populateModelContext(container.mainContext)
-        return MainTabView(modelContainer: container, appSettings: AppSettings())
+        return MainTabView(models: AppShellModels(modelContainer: container), appSettings: AppSettings())
             .modelContainer(container)
     } catch {
         return Text("Failed to create preview container: \(error.localizedDescription)")

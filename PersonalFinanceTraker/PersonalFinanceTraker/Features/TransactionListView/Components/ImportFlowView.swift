@@ -43,6 +43,7 @@ struct ImportFlowView: View {
                     case .results:
                         ImportResultView(
                             rows: viewModel.mappedRows,
+                            availableCategories: viewModel.availableCategories,
                             isImporting: viewModel.isImporting,
                             currentStep: totalSteps,
                             totalSteps: totalSteps,
@@ -59,6 +60,13 @@ struct ImportFlowView: View {
                 )
             }
         }
+        // ponytail: one line instead of a size-class branch — .page is already full-bleed on
+        // iPhone, and on iPad it takes the whole window instead of a phone-width form sheet,
+        // which is what was clipping the column preview to five columns.
+        .presentationSizing(.page)
+        // Same reason as iPad: losing a half-finished import to an accidental swipe is worse than
+        // making people reach for Cancel.
+        .interactiveDismissDisabled()
         .presentationBackground { AppBackground() }
     }
 

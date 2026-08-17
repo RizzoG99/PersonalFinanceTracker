@@ -25,6 +25,9 @@ final class CompassViewModel {
     var goalEditDraft: GoalInput?
     var goalEditId: UUID?
     var selectedGoal: GoalSnapshot?
+    /// Owned here (not local @State on HealthScoreSection) so the regular-width detail pane
+    /// (see CompassView/AdaptiveSplitView) and the compact-width sheet can both read it.
+    var showingHealthScoreDetail = false
     var scoreSnapshots: [HealthScoreSnapshotData] = []
     var ignoreSubscriptions: Bool = UserDefaults.standard.bool(forKey: "healthScore.ignoreSubscriptions") {
         didSet {

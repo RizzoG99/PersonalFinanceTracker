@@ -2,48 +2,37 @@ import SwiftUI
 
 struct PINConfirmationView: View {
     @State var viewModel: PINConfirmationViewModel
+    let onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            MonkeyAnimationView(
-                eyesOpen: $viewModel.eyesOpen,
-                isShaking: viewModel.isShaking
-            )
-            .padding(.bottom, 32)
-
-            VStack(spacing: 8) {
-                Text("Confirm your PIN")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.textPrimary)
-
-                if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage)
-                        .font(.subheadline)
-                        .foregroundStyle(.negative)
-                        .transition(.opacity)
-                        .animation(.easeInOut, value: viewModel.errorMessage)
-                }
-            }
-            .padding(.bottom, 32)
-
-            PINDotsView(filledCount: viewModel.pinInput.count)
-                .padding(.bottom, 48)
-
+        PINScreenLayout(
+            eyesOpen: $viewModel.eyesOpen,
+            isShaking: viewModel.isShaking,
+            // "Confirm your PIN" is what the PIN *setup* flow says on its second step, so here
+            // it read as "set a PIN" rather than "prove it's you before erasing everything".
+            title: "Enter your PIN",
+            subtitle: "Required before erasing all data",
+            errorMessage: viewModel.errorMessage,
+            filledCount: viewModel.pinInput.count
+        ) {
             PINPadView(
                 onDigit: { viewModel.appendDigit($0) },
                 onDelete: { viewModel.deleteDigit() }
             )
-
-            Spacer()
+        } footer: {
+            // A wrong guess here spends an attempt from the app-wide lockout budget, so a user who
+            // opened this by accident and can't back out can lock themselves out of the whole app.
+            Button("Cancel", action: onCancel)
+                .font(.body.weight(.medium))
+                .foregroundStyle(.textMid)
+                .frame(minWidth: 44, minHeight: 44)
         }
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .appBackground()
     }
 }
 
 #Preview {
-    PINConfirmationView(viewModel: PINConfirmationViewModel(pinService: PINService(), onConfirmed: {}))
+    PINConfirmationView(
+        viewModel: PINConfirmationViewModel(pinService: PINService(), onConfirmed: {}),
+        onCancel: {}
+    )
 }

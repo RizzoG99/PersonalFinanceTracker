@@ -5,7 +5,7 @@
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4023 nodes · 5802 edges · 346 communities (313 shown, 33 thin omitted)
+- 4252 nodes · 5998 edges · 374 communities (325 shown, 49 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 166 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -153,6 +153,7 @@
 - [[_COMMUNITY_Community 135|Community 135]]
 - [[_COMMUNITY_Community 136|Community 136]]
 - [[_COMMUNITY_Community 137|Community 137]]
+- [[_COMMUNITY_Community 138|Community 138]]
 - [[_COMMUNITY_Community 139|Community 139]]
 - [[_COMMUNITY_Community 140|Community 140]]
 - [[_COMMUNITY_Community 141|Community 141]]
@@ -176,6 +177,7 @@
 - [[_COMMUNITY_Community 159|Community 159]]
 - [[_COMMUNITY_Community 160|Community 160]]
 - [[_COMMUNITY_Community 161|Community 161]]
+- [[_COMMUNITY_Community 162|Community 162]]
 - [[_COMMUNITY_Community 163|Community 163]]
 - [[_COMMUNITY_Community 164|Community 164]]
 - [[_COMMUNITY_Community 165|Community 165]]
@@ -197,6 +199,7 @@
 - [[_COMMUNITY_Community 182|Community 182]]
 - [[_COMMUNITY_Community 183|Community 183]]
 - [[_COMMUNITY_Community 184|Community 184]]
+- [[_COMMUNITY_Community 185|Community 185]]
 - [[_COMMUNITY_Community 186|Community 186]]
 - [[_COMMUNITY_Community 187|Community 187]]
 - [[_COMMUNITY_Community 188|Community 188]]
@@ -225,6 +228,7 @@
 - [[_COMMUNITY_Community 211|Community 211]]
 - [[_COMMUNITY_Community 212|Community 212]]
 - [[_COMMUNITY_Community 213|Community 213]]
+- [[_COMMUNITY_Community 214|Community 214]]
 - [[_COMMUNITY_Community 215|Community 215]]
 - [[_COMMUNITY_Community 216|Community 216]]
 - [[_COMMUNITY_Community 217|Community 217]]
@@ -268,12 +272,14 @@
 - [[_COMMUNITY_Community 255|Community 255]]
 - [[_COMMUNITY_Community 256|Community 256]]
 - [[_COMMUNITY_Community 257|Community 257]]
+- [[_COMMUNITY_Community 258|Community 258]]
 - [[_COMMUNITY_Community 259|Community 259]]
 - [[_COMMUNITY_Community 260|Community 260]]
 - [[_COMMUNITY_Community 261|Community 261]]
 - [[_COMMUNITY_Community 262|Community 262]]
 - [[_COMMUNITY_Community 263|Community 263]]
 - [[_COMMUNITY_Community 264|Community 264]]
+- [[_COMMUNITY_Community 265|Community 265]]
 - [[_COMMUNITY_Community 266|Community 266]]
 - [[_COMMUNITY_Community 267|Community 267]]
 - [[_COMMUNITY_Community 268|Community 268]]
@@ -292,10 +298,12 @@
 - [[_COMMUNITY_Community 281|Community 281]]
 - [[_COMMUNITY_Community 282|Community 282]]
 - [[_COMMUNITY_Community 283|Community 283]]
+- [[_COMMUNITY_Community 284|Community 284]]
 - [[_COMMUNITY_Community 285|Community 285]]
 - [[_COMMUNITY_Community 286|Community 286]]
 - [[_COMMUNITY_Community 287|Community 287]]
 - [[_COMMUNITY_Community 288|Community 288]]
+- [[_COMMUNITY_Community 289|Community 289]]
 - [[_COMMUNITY_Community 290|Community 290]]
 - [[_COMMUNITY_Community 291|Community 291]]
 - [[_COMMUNITY_Community 292|Community 292]]
@@ -304,6 +312,7 @@
 - [[_COMMUNITY_Community 295|Community 295]]
 - [[_COMMUNITY_Community 296|Community 296]]
 - [[_COMMUNITY_Community 297|Community 297]]
+- [[_COMMUNITY_Community 298|Community 298]]
 - [[_COMMUNITY_Community 299|Community 299]]
 - [[_COMMUNITY_Community 300|Community 300]]
 - [[_COMMUNITY_Community 301|Community 301]]
@@ -313,6 +322,7 @@
 - [[_COMMUNITY_Community 305|Community 305]]
 - [[_COMMUNITY_Community 306|Community 306]]
 - [[_COMMUNITY_Community 307|Community 307]]
+- [[_COMMUNITY_Community 308|Community 308]]
 - [[_COMMUNITY_Community 309|Community 309]]
 - [[_COMMUNITY_Community 310|Community 310]]
 - [[_COMMUNITY_Community 311|Community 311]]
@@ -326,7 +336,12 @@
 - [[_COMMUNITY_Community 319|Community 319]]
 - [[_COMMUNITY_Community 320|Community 320]]
 - [[_COMMUNITY_Community 321|Community 321]]
+- [[_COMMUNITY_Community 322|Community 322]]
+- [[_COMMUNITY_Community 323|Community 323]]
 - [[_COMMUNITY_Community 324|Community 324]]
+- [[_COMMUNITY_Community 325|Community 325]]
+- [[_COMMUNITY_Community 326|Community 326]]
+- [[_COMMUNITY_Community 327|Community 327]]
 - [[_COMMUNITY_Community 328|Community 328]]
 - [[_COMMUNITY_Community 329|Community 329]]
 - [[_COMMUNITY_Community 330|Community 330]]
@@ -339,6 +354,14 @@
 - [[_COMMUNITY_Community 337|Community 337]]
 - [[_COMMUNITY_Community 338|Community 338]]
 - [[_COMMUNITY_Community 339|Community 339]]
+- [[_COMMUNITY_Community 340|Community 340]]
+- [[_COMMUNITY_Community 341|Community 341]]
+- [[_COMMUNITY_Community 342|Community 342]]
+- [[_COMMUNITY_Community 343|Community 343]]
+- [[_COMMUNITY_Community 344|Community 344]]
+- [[_COMMUNITY_Community 345|Community 345]]
+- [[_COMMUNITY_Community 346|Community 346]]
+- [[_COMMUNITY_Community 347|Community 347]]
 - [[_COMMUNITY_Community 349|Community 349]]
 - [[_COMMUNITY_Community 350|Community 350]]
 - [[_COMMUNITY_Community 351|Community 351]]
@@ -359,8 +382,11 @@
 - [[_COMMUNITY_Community 366|Community 366]]
 - [[_COMMUNITY_Community 367|Community 367]]
 - [[_COMMUNITY_Community 368|Community 368]]
+- [[_COMMUNITY_Community 369|Community 369]]
 - [[_COMMUNITY_Community 370|Community 370]]
+- [[_COMMUNITY_Community 371|Community 371]]
 - [[_COMMUNITY_Community 372|Community 372]]
+- [[_COMMUNITY_Community 373|Community 373]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `TransactionListViewModel` - 67 edges
@@ -370,8 +396,8 @@
 5. `TransactionListViewModelTests` - 41 edges
 6. `DashboardViewModel` - 35 edges
 7. `TransactionActor` - 30 edges
-8. `EditAddTransactionViewModel` - 25 edges
-9. `View` - 25 edges
+8. `View` - 25 edges
+9. `EditAddTransactionViewModel` - 25 edges
 10. `PINService` - 24 edges
 
 ## Surprising Connections (you probably didn't know these)
@@ -379,12 +405,12 @@
   PersonalFinanceTraker/PersonalFinanceTrakerTests/Mocks/MockTransactionRepository.swift → PersonalFinanceTraker/PersonalFinanceTraker/Models/TransactionRepository.swift
 - `App Icon (Default) - Briefcase with Euro Symbol` --semantically_similar_to--> `Euro Currency Briefcase SVG`  [INFERRED] [semantically similar]
   AppIcon/Icon-iOS-Default-1024x1024@1x.png → AppIcon/euro-currency-in-an-attache-case-svgrepo-com.svg
-- `ThemeMode` --references--> `String`  [EXTRACTED]
-  PersonalFinanceTraker/PersonalFinanceTraker/Models/ThemeMode.swift → PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift
 - `CurrencyAmountField` --references--> `View`  [EXTRACTED]
   PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift → PersonalFinanceTraker/PersonalFinanceTraker/Utilities/KeyboardFieldNavigation.swift
 - `PreviewWrapper` --references--> `View`  [EXTRACTED]
   PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/CurrencyAmountField.swift → PersonalFinanceTraker/PersonalFinanceTraker/Utilities/KeyboardFieldNavigation.swift
+- `EditAddTransactionView` --references--> `View`  [EXTRACTED]
+  PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift → PersonalFinanceTraker/PersonalFinanceTraker/Utilities/KeyboardFieldNavigation.swift
 
 ## Import Cycles
 - None detected.
@@ -397,14 +423,14 @@
 - **Financial Analytics Visual System** — appicon_v2_pie_chart_svg, appicon_v2_bar_chart_report_svg, appicon_v2_trend_up_svg, design_concept_financial_analytics_icons [INFERRED 0.80]
 - **Multi-theme Icon Variants (Light/Dark/Clear)** — appicon_v2_icon_ios_default_1024_pie_chart, appicon_v2_icon_ios_dark_1024_pie_chart, appicon_v2_icon_ios_cleardark_1024_pie_chart [EXTRACTED 1.00]
 
-## Communities (346 total, 33 thin omitted)
+## Communities (374 total, 49 thin omitted)
 
 ### Community 0 - "Analytics & Dashboard Views"
-Cohesion: 0.20
-Nodes (7): AnyObject, Bool, Foundation, LocalAuthentication, Void, BiometricAuthenticating, BiometricAuthService
+Cohesion: 0.11
+Nodes (18): Deliverables, Implementation Steps (1-10), Status, Step 10: Commit ✅, Step 1: Extract Shared Container ✅, Step 2: Build Verification ✅, Step 3: Write Failing Tests ✅, Step 4: Run Tests (RED - Expected) ✅ (+10 more)
 
 ### Community 1 - "Profile State Management"
-Cohesion: 0.07
+Cohesion: 0.06
 Nodes (28): ImportStep, Bool, CategorySnapshot, CSVFile, Date, Decimal, Double, Foundation (+20 more)
 
 ### Community 2 - "Community 2"
@@ -420,8 +446,8 @@ Cohesion: 0.13
 Nodes (14): File Structure, Global Constraints, Health Score V2 Implementation Plan, Summary, Task 10: Verify All Changes and Run Tests, Task 1: Create HealthScoreSnapshot SwiftData Model, Task 2: Extend ScoreComponent with Explanation and Tip Fields, Task 3: Add Snapshot Methods to TransactionRepository (+6 more)
 
 ### Community 5 - "Compass Goals & Forecasting"
-Cohesion: 0.09
-Nodes (23): CompassViewModel, Bool, CategoryTrend, CurrencyService, Decimal, FinancialHealthService, Foundation, GoalInput (+15 more)
+Cohesion: 0.12
+Nodes (16): CategoryTrend, HabitObservation, HeroInsight, CompassViewModel, Bool, Decimal, GoalInput, GoalSnapshot (+8 more)
 
 ### Community 6 - "Transaction Repository Layer"
 Cohesion: 0.08
@@ -448,20 +474,20 @@ Cohesion: 0.07
 Nodes (23): BiometricAuthenticating, BiometricAuthenticating, Bool, PINService, String, SwiftUI, Bool, Foundation (+15 more)
 
 ### Community 12 - "Cryptographic PIN Service"
-Cohesion: 0.11
-Nodes (22): CustomLocalizedStringResourceConvertible, Equatable, Error, MockError, forced, CryptoKit, Foundation, LocalizedStringResource (+14 more)
+Cohesion: 0.27
+Nodes (9): Equatable, Bool, Foundation, Int, DailyCheckInState, noSpendConfirmed, pending, transactionLogged (+1 more)
 
 ### Community 13 - "Transaction Form ViewModel"
-Cohesion: 0.09
-Nodes (26): BalanceCardView, GreetingHeaderView, ProfilePayCycleSection, Glass, SwiftData, SwiftUI, SwiftUI, SwiftUI (+18 more)
+Cohesion: 0.16
+Nodes (16): Glass, AppSettings, CGFloat, Content, Double, String, SwiftUI, AppBackground (+8 more)
 
 ### Community 14 - "Chart Data Aggregation"
 Cohesion: 0.15
 Nodes (16): ChartDataPoint, Date, Decimal, Foundation, Int, TimePeriod, TransactionSnapshot, Date (+8 more)
 
 ### Community 15 - "Profile & Toolbar UI"
-Cohesion: 0.18
-Nodes (14): Bool, Calendar, Date, Foundation, Int, Set, TransactionSnapshot, DailyCheckInService (+6 more)
+Cohesion: 0.38
+Nodes (6): Calendar, Date, Set, TransactionSnapshot, DailyCheckInService, DailyCheckInStore
 
 ### Community 17 - "Credit Card ViewModel"
 Cohesion: 0.13
@@ -473,11 +499,11 @@ Nodes (23): /graphify, For /graphify add and --watch, For /graphify query, For t
 
 ### Community 19 - "Currency Input Component"
 Cohesion: 0.20
-Nodes (12): CurrencyAmountField, PreviewWrapper, AppSettings, Binding, Bool, Double, FocusState, Int (+4 more)
+Nodes (12): AppSettings, Binding, CurrencyAmountField, PreviewWrapper, Double, Bool, FocusState, Int (+4 more)
 
 ### Community 20 - "Currency Formatting Service"
-Cohesion: 0.12
-Nodes (22): AddTransactionIntent, CategoryEntity, CategoryEntityQuery, PFTShortcuts, QuickAddType, expense, income, RepeatTransactionTemplateIntent (+14 more)
+Cohesion: 0.09
+Nodes (26): AddTransactionIntent, CategoryEntity, CategoryEntityQuery, HabitSnapshotUpdater, PFTShortcuts, QuickAddType, expense, income (+18 more)
 
 ### Community 21 - "UI Tests"
 Cohesion: 0.14
@@ -488,8 +514,8 @@ Cohesion: 0.33
 Nodes (6): Euro Currency Briefcase SVG, App Icon (Default) - Briefcase with Euro Symbol, Financial Analytics Visual Metaphors, Icon Design Evolution, Teal Color Scheme (Primary Brand Color), App Visual Identity and Branding
 
 ### Community 23 - "Category Breakdown ViewModel"
-Cohesion: 0.14
-Nodes (11): BiometricAuthService, Bool, Date, LocalAuthentication, Never, PINService, String, SwiftUI (+3 more)
+Cohesion: 0.17
+Nodes (9): BiometricAuthService, Bool, Date, Never, PINService, String, Task, Void (+1 more)
 
 ### Community 24 - "Category Pie Chart Component"
 Cohesion: 0.30
@@ -509,19 +535,19 @@ Nodes (8): Character, ColumnMapping, CryptoKit, Foundation, String, UserDefaults
 
 ### Community 28 - "Add Goal Sheet"
 Cohesion: 0.16
-Nodes (12): AddGoalSheet, GoalIconPickerSheet, Bool, CGFloat, Date, Decimal, Field, GoalInput (+4 more)
+Nodes (12): AddGoalSheet, GoalIconPickerSheet, GoalInput, Bool, CGFloat, Date, Decimal, Field (+4 more)
 
 ### Community 29 - "Dashboard ViewModel"
-Cohesion: 0.17
-Nodes (14): Character, Foundation, Int, Set, String, URL, Void, CSVFile (+6 more)
+Cohesion: 0.26
+Nodes (8): Character, Int, Set, String, URL, Void, CSVFile, CSVImportService
 
 ### Community 30 - "Sample Data Utilities"
 Cohesion: 0.24
 Nodes (7): CategoryModel, Foundation, ModelContext, SwiftData, SwiftUI, TransactionModel, SampleData
 
 ### Community 31 - "PIN Pad View"
-Cohesion: 0.18
-Nodes (5): Date, Foundation, PersonalFinanceTraker, Testing, ReminderSchedulerTests
+Cohesion: 0.17
+Nodes (7): PendingTransactionIntent, PendingTransactionIntentTests, Observation, Bool, Foundation, PersonalFinanceTraker, Testing
 
 ### Community 32 - "Transaction Chart Component"
 Cohesion: 0.29
@@ -536,8 +562,8 @@ Cohesion: 0.25
 Nodes (7): AddEditCreditCardSheet, Bool, Color, CreditCardModel, CreditViewModel, String, SwiftUI
 
 ### Community 35 - "Edit/Add Transaction View"
-Cohesion: 0.27
-Nodes (8): EditAddTransactionView, PendingRecurrenceAction, delete, save, Bool, Never, Task, Void
+Cohesion: 0.12
+Nodes (18): EditAddTransactionView, PendingRecurrenceAction, delete, save, RecurrenceEditScope, thisAndFuture, thisOnly, Never (+10 more)
 
 ### Community 36 - "Community 36"
 Cohesion: 0.09
@@ -580,8 +606,8 @@ Cohesion: 0.29
 Nodes (6): GoalsSection, Bool, Decimal, GoalSnapshot, SwiftUI, Void
 
 ### Community 46 - "Community 46"
-Cohesion: 0.21
-Nodes (10): BackupPayload, BackupStorage, Date, Int, RecurrenceRuleSnapshot, String, SymmetricKey, TransactionSnapshot (+2 more)
+Cohesion: 0.17
+Nodes (12): BackupPayload, BackupStorage, CryptoKit, Date, Foundation, Int, RecurrenceRuleSnapshot, String (+4 more)
 
 ### Community 47 - "Lock View Biometrics"
 Cohesion: 0.29
@@ -668,8 +694,8 @@ Cohesion: 0.21
 Nodes (9): TransactionActorRecurrenceTests, Date, Foundation, Int, PersonalFinanceTraker, RecurrenceRuleInput, SwiftData, Testing (+1 more)
 
 ### Community 68 - "Monkey Animation View"
-Cohesion: 0.40
-Nodes (4): MonkeyAnimationView, Bool, CGFloat, SwiftUI
+Cohesion: 0.18
+Nodes (8): MonkeyAnimationView, Bool, CGFloat, SwiftUI, PINSetupViewModel, SwiftUI, PINEntryViewModel, PINEntryView
 
 ### Community 69 - "Profile Avatar View"
 Cohesion: 0.40
@@ -696,8 +722,8 @@ Cohesion: 0.19
 Nodes (6): RecurrenceOccurrenceCalculatorTests, Date, Foundation, Int, PersonalFinanceTraker, Testing
 
 ### Community 75 - "Activity Search Bar"
-Cohesion: 0.07
-Nodes (26): Date, Foundation, Int, UIKit, BackupService, Date, Foundation, ITransactionRepository (+18 more)
+Cohesion: 0.05
+Nodes (33): AnyObject, Date, Foundation, Int, UIKit, BackupService, Date, Foundation (+25 more)
 
 ### Community 76 - "Community 76"
 Cohesion: 0.15
@@ -757,11 +783,11 @@ Nodes (15): AnomalyCalloutView, AnomalyCalloutView — structured data + combine
 
 ### Community 91 - "PIN Entry View"
 Cohesion: 0.22
-Nodes (8): PINScreenLayout, Footer, Bool, Content, Int, LocalizedStringKey, String, SwiftUI
+Nodes (8): PINScreenLayout, Content, Footer, Bool, Int, LocalizedStringKey, String, SwiftUI
 
 ### Community 93 - "README"
 Cohesion: 0.22
-Nodes (25): Hashable, CategoryInput, CategorySnapshot, DailyForecastCacheData, GoalInput, GoalSnapshot, HealthScoreSnapshotData, RecurrenceRuleInput (+17 more)
+Nodes (24): CategoryInput, CategorySnapshot, DailyForecastCacheData, GoalInput, GoalSnapshot, HealthScoreSnapshotData, RecurrenceRuleInput, RecurrenceRuleSnapshot (+16 more)
 
 ### Community 94 - "Community 94"
 Cohesion: 0.32
@@ -824,8 +850,8 @@ Cohesion: 0.11
 Nodes (17): Data Flow, Data Layer, Files to Create, Files to Modify, `FinancialHealthService.compute()` — updated signature, Health Score V2 — Design Spec, `HealthScoreCard` — changes, `HealthScoreDetailView` (new) (+9 more)
 
 ### Community 109 - "Community 109"
-Cohesion: 0.07
-Nodes (34): ButtonStyle, PINKeyButton, PINKeyStyle, PINPadView, CategoryChip, CategoryChipsGrid, CategoryPickerSheet, GoalChip (+26 more)
+Cohesion: 0.09
+Nodes (27): ButtonStyle, CategorySnapshot, PINKeyButton, PINKeyStyle, PINPadView, CategoryChip, CategoryChipsGrid, CategoryPickerSheet (+19 more)
 
 ### Community 110 - "Community 110"
 Cohesion: 0.13
@@ -868,8 +894,8 @@ Cohesion: 0.29
 Nodes (7): Context, Date, Timeline, Void, HabitEntry, HabitTimelineProvider, TimelineProvider
 
 ### Community 120 - "Community 120"
-Cohesion: 0.10
-Nodes (20): CaseIterable, Field, amount, name, Identifiable, Group, analyse, money (+12 more)
+Cohesion: 0.09
+Nodes (20): Identifiable, Group, analyse, money, overview, IPadSection, activity, goals (+12 more)
 
 ### Community 121 - "Community 121"
 Cohesion: 0.33
@@ -884,56 +910,60 @@ Cohesion: 0.28
 Nodes (7): JSONEncoder, BackupService, Date, Int, TestBackupStorage, URL, BackupServiceTests
 
 ### Community 124 - "Community 124"
-Cohesion: 0.38
-Nodes (4): HabitSnapshotUpdater, IntentResult, ITransactionRepository, ProvidesDialog
+Cohesion: 0.12
+Nodes (15): 1. Observable Property, 2. Private Categories Store, 3. Concurrent Fetch, 4. Metrics Calculation, 5. Static Computation Function, Commit, Concerns, Files Changed (+7 more)
 
 ### Community 125 - "Community 125"
-Cohesion: 0.29
-Nodes (5): Bool, PresentationDetent, ProfileViewModel, TransactionListViewModel, ProfileView
+Cohesion: 0.12
+Nodes (15): 1. BudgetProgressBarView Component, 2. Dashboard Integration, Build Status, Build & Verification Results, Commit, Concerns, Created, Files Modified/Created (+7 more)
 
 ### Community 126 - "Community 126"
-Cohesion: 0.29
-Nodes (6): TabItem, activity, credit, home, insights, SwiftUI
+Cohesion: 0.14
+Nodes (14): CaseIterable, Field, amount, name, TransactionFormField, amount, name, Hashable (+6 more)
 
 ### Community 127 - "Community 127"
-Cohesion: 0.33
-Nodes (5): RecurrenceEditScope, thisAndFuture, thisOnly, SwiftData, SwiftUI
+Cohesion: 0.13
+Nodes (14): Commit, Concerns, Coverage Summary, Default initialization (6 tests), filteredCategories (4 tests), formattedDate (4 tests), getTransactionData (8 tests), init(transaction:) (7 tests) (+6 more)
 
 ### Community 128 - "Community 128"
-Cohesion: 0.33
-Nodes (5): EditAddTransactionViewModel, ITransactionRepository, RecurrenceMaterializationService, TransactionDraft, TransactionSnapshot
+Cohesion: 0.19
+Nodes (10): ButtonRole, Binding, Bool, Color, Content, LocalizedStringKey, TransactionListViewModel, TransactionSnapshot (+2 more)
 
 ### Community 129 - "Community 129"
-Cohesion: 0.33
-Nodes (4): Data, TransactionSnapshot, ModelContainer, SentTransferredFile
+Cohesion: 0.14
+Nodes (13): 1. AppToolbarModifier.swift, 2. BudgetRow.swift, Analysis:, Build Result, Changes Made, Commit Information, Details:, Failed Tests (Pre-existing, Expected): (+5 more)
 
 ### Community 130 - "Community 130"
-Cohesion: 0.09
-Nodes (18): PendingTransactionIntent, PendingTransactionIntentTests, Observation, Bool, Bool, Date, Double, Foundation (+10 more)
+Cohesion: 0.19
+Nodes (12): JSONDecoder, Bool, Date, Double, Foundation, String, TransactionType, URL (+4 more)
 
 ### Community 131 - "Community 131"
 Cohesion: 0.18
-Nodes (12): ImportResultView, Bool, CategorySnapshot, Color, Decimal, Int, LocalizedStringKey, MappedRow (+4 more)
+Nodes (12): ImportResultView, MappedRow, PersistentIdentifier, Bool, CategorySnapshot, Color, Decimal, Int (+4 more)
 
 ### Community 132 - "Community 132"
 Cohesion: 0.21
 Nodes (15): Bool, Calendar, Date, Decimal, Double, Foundation, Int, Set (+7 more)
 
 ### Community 133 - "Community 133"
-Cohesion: 0.33
-Nodes (4): BackupService, Foundation, ITransactionRepository, RestoreService
+Cohesion: 0.15
+Nodes (12): Build & Preview Verification, Build Result, Code Pattern, Commit Info, Files Created, Functional Validation, Implementation Details, Notes (+4 more)
 
 ### Community 134 - "Community 134"
-Cohesion: 0.40
-Nodes (4): DailyPoint, Decimal, Foundation, Int
+Cohesion: 0.15
+Nodes (12): 1. Created ProfileBudgetsSection.swift, 2. Modified ProfileView.swift, Build, Build and Test Results, Files Modified, Full Test Suite, Git Status, Implementation Details (+4 more)
 
 ### Community 135 - "Community 135"
-Cohesion: 0.50
-Nodes (3): Foundation, PersonalFinanceTraker, SwiftData
+Cohesion: 0.17
+Nodes (11): Commit Command, Commit Output, Commit SHA, Files Created, Implementation Summary, Status: DONE, Step 2: Initial Test Run (Before Implementation), Step 4: Final Test Run (After Implementation) (+3 more)
 
 ### Community 137 - "Community 137"
-Cohesion: 0.67
-Nodes (3): ImportStep, categoryMapping, results
+Cohesion: 0.17
+Nodes (11): 1. `PendingTransactionIntent` (new, `@Observable`), 2. `NotificationTapHandler` (new, `NSObject, UNUserNotificationCenterDelegate`), 3. `MainTabView` consumes the intent, Approach, Components, Current state, Launch paths, Notification tap → Add Transaction sheet — design (+3 more)
+
+### Community 138 - "Community 138"
+Cohesion: 0.18
+Nodes (10): Code Quality, Commit Information, Files Changed, Implementation Details, Ready for Next Task, Self-Review Findings, Summary, Task 1: BudgetProgress + BudgetProgressService - Implementation Report (+2 more)
 
 ### Community 139 - "Community 139"
 Cohesion: 0.19
@@ -960,8 +990,8 @@ Cohesion: 0.21
 Nodes (9): Date, Double, Foundation, Int, PersonalFinanceTraker, SwiftData, Testing, TransactionSnapshot (+1 more)
 
 ### Community 145 - "Community 145"
-Cohesion: 0.08
-Nodes (23): Locale, Decimal, Foundation, NumberFormatter, String, UserDefaults, Bool, CategorySnapshot (+15 more)
+Cohesion: 0.06
+Nodes (27): Decimal, Foundation, Locale, PersonalFinanceTraker, Decimal, Foundation, NumberFormatter, String (+19 more)
 
 ### Community 146 - "Community 146"
 Cohesion: 0.13
@@ -996,8 +1026,8 @@ Cohesion: 0.15
 Nodes (13): ITransactionRepository, SearchDateRange, custom, last3Months, thisMonth, thisYear, TransactionTypeFilter, all (+5 more)
 
 ### Community 154 - "Community 154"
-Cohesion: 0.08
-Nodes (19): DailyForecastCache, HealthScoreSnapshot, TransactionActor, CategoryInput, CategorySnapshot, DailyForecastCacheData, Date, Foundation (+11 more)
+Cohesion: 0.07
+Nodes (23): DailyForecastCache, Data, HealthScoreSnapshot, TransactionActor, TransactionSnapshot, CategoryInput, CategorySnapshot, DailyForecastCacheData (+15 more)
 
 ### Community 155 - "Community 155"
 Cohesion: 0.15
@@ -1012,8 +1042,8 @@ Cohesion: 0.22
 Nodes (5): ImportProfileStore, Foundation, PersonalFinanceTraker, Testing, ImportProfileStoreTests
 
 ### Community 158 - "Community 158"
-Cohesion: 0.22
-Nodes (8): CoreTransferable, SwiftData, SwiftUI, UniformTypeIdentifiers, ProfileRoute, budgets, categories, changePIN
+Cohesion: 0.11
+Nodes (17): CoreTransferable, Bool, String, SwiftData, SwiftUI, PresentationDetent, ProfileViewModel, TransactionListViewModel (+9 more)
 
 ### Community 159 - "Community 159"
 Cohesion: 0.29
@@ -1027,13 +1057,17 @@ Nodes (5): Foundation, String, SwiftUI, TimePeriod, Date
 Cohesion: 0.43
 Nodes (5): DailyForecastCache, Double, Int, String, SwiftData
 
+### Community 162 - "Community 162"
+Cohesion: 0.20
+Nodes (9): Commit, Concerns, Files Created, Key Implementation Details, Status, Summary, Task 8 Report: CategoryBreakdownViewModel Tests, Test Results (+1 more)
+
 ### Community 163 - "Community 163"
 Cohesion: 0.33
 Nodes (5): DailyPoint, SpendingForecast, Decimal, Foundation, Int
 
 ### Community 164 - "Community 164"
-Cohesion: 0.22
-Nodes (8): JSONDecoder, Calendar, Date, Decimal, Foundation, String, URL, SafeToSpendSnapshot
+Cohesion: 0.15
+Nodes (12): SafeToSpendSnapshotTests, Calendar, Date, Int, Calendar, Date, Decimal, Foundation (+4 more)
 
 ### Community 165 - "Community 165"
 Cohesion: 0.33
@@ -1108,8 +1142,12 @@ Cohesion: 0.33
 Nodes (5): Delete All Data Implementation Plan, Global Constraints, Task 1: `DataWipeService` with unit tests, Task 2: `PINConfirmationView` + `PINConfirmationViewModel`, Task 3: Wire "Delete All Data" into `ProfileView`
 
 ### Community 184 - "Community 184"
-Cohesion: 0.13
-Nodes (17): AmountCell, BulkEditSheets, CategoryCell, DateCell, DescriptionCell, IPadLedgerTable, Binding, Bool (+9 more)
+Cohesion: 0.16
+Nodes (13): AmountCell, CategoryCell, DateCell, DescriptionCell, IPadLedgerTable, Binding, Date, Decimal (+5 more)
+
+### Community 185 - "Community 185"
+Cohesion: 0.22
+Nodes (8): Edits Made, Manual Verification (Pending), Step 1: Added `consumePendingAdd()` method, Step 2: Called `consumePendingAdd()` at the end of `.task` closure, Step 3: Added `.onChange` modifier for `PendingTransactionIntent.shared.shouldPresentAdd`, Summary, Task 3: Consume the Intent in MainTabView — Completion Report, Verification
 
 ### Community 186 - "Community 186"
 Cohesion: 0.25
@@ -1144,8 +1182,8 @@ Cohesion: 0.14
 Nodes (16): CategorySnapshot, GoalSnapshot, RecurrenceRuleSnapshot, SnapshotTestSupport, TransactionSnapshot, Date, Decimal, Foundation (+8 more)
 
 ### Community 195 - "Community 195"
-Cohesion: 0.13
-Nodes (20): CommonCrypto, LockoutInfo, Bool, CryptoKit, Data, Date, Foundation, Int (+12 more)
+Cohesion: 0.06
+Nodes (46): CommonCrypto, CustomLocalizedStringResourceConvertible, Error, LockoutInfo, MockError, forced, Bool, CryptoKit (+38 more)
 
 ### Community 196 - "Community 196"
 Cohesion: 0.17
@@ -1164,8 +1202,8 @@ Cohesion: 0.29
 Nodes (6): CategoryTrend, Bool, Double, Foundation, PieChartDataPoint, TrendDirection
 
 ### Community 200 - "Community 200"
-Cohesion: 0.40
-Nodes (4): CoreXLSX, Foundation, XLSXReadError, unreadable
+Cohesion: 0.13
+Nodes (13): CoreXLSX, LocalizedError, Foundation, Foundation, CSVReadError, binaryFile, emptyFile, missingHeader (+5 more)
 
 ### Community 201 - "Community 201"
 Cohesion: 0.14
@@ -1215,9 +1253,13 @@ Nodes (12): Cross-screen consistency issues, Executive Summary, High Impact Impr
 Cohesion: 0.40
 Nodes (4): SwiftUI, Void, PINConfirmationViewModel, PINConfirmationView
 
+### Community 214 - "Community 214"
+Cohesion: 0.29
+Nodes (6): CurrencyService, FinancialHealthService, ITransactionRepository, SpendingForecastService, SpendingInsightService, StatisticalAverageService
+
 ### Community 215 - "Community 215"
 Cohesion: 0.30
-Nodes (10): CSVColumnMappingView, Binding, Bool, ColumnMapping, CSVFile, Int, LocalizedStringKey, String (+2 more)
+Nodes (10): ColumnMapping, CSVColumnMappingView, CSVFile, Binding, Bool, Int, LocalizedStringKey, String (+2 more)
 
 ### Community 216 - "Community 216"
 Cohesion: 0.15
@@ -1297,7 +1339,7 @@ Nodes (5): Development, Features, Personal Finance Tracker · iOS, Tech Stack, W
 
 ### Community 235 - "Community 235"
 Cohesion: 0.19
-Nodes (9): BudgetRow, Bool, CategoryModel, Decimal, FocusState, PersistentIdentifier, String, SwiftData (+1 more)
+Nodes (9): BudgetRow, FocusState, Bool, CategoryModel, Decimal, PersistentIdentifier, String, SwiftData (+1 more)
 
 ### Community 236 - "Community 236"
 Cohesion: 0.22
@@ -1320,8 +1362,8 @@ Cohesion: 0.25
 Nodes (7): Global Constraints, Onboarding Name + Biometric Steps Implementation Plan, Task 1: `BiometricAuthService` — testable seam + live enable challenge, Task 2: `PINSetupViewModel` — new steps, DI, and tests, Task 3: `PINSetupView` — UI for the two new steps, Task 4: Wire up all call sites to the new init signature, Task 5: Manual verification
 
 ### Community 241 - "Community 241"
-Cohesion: 0.19
-Nodes (17): DailyAddButton, DailyCheckInActionsView, DailyCheckInMetric, DailyCheckInSummaryView, DailyLoggingHabitCard, DailyLoggingHabitHeader, DailyLoggingReminderPrompt, DailyRepeatButton (+9 more)
+Cohesion: 0.12
+Nodes (24): DailyAddButton, DailyCheckInActionsView, DailyCheckInMetric, DailyCheckInSummaryView, DailyLoggingHabitCard, DailyLoggingHabitHeader, DailyLoggingReminderPrompt, DailyRepeatButton (+16 more)
 
 ### Community 242 - "Community 242"
 Cohesion: 0.25
@@ -1348,8 +1390,8 @@ Cohesion: 0.33
 Nodes (5): DashboardView, Bool, SwiftData, SwiftUI, TabItem
 
 ### Community 248 - "Community 248"
-Cohesion: 0.16
-Nodes (19): Bool, CSVFile, Date, Decimal, Foundation, Int, TransactionInput, TransactionType (+11 more)
+Cohesion: 0.14
+Nodes (22): Bool, CSVFile, Date, Decimal, Foundation, Int, TransactionInput, TransactionType (+14 more)
 
 ### Community 250 - "Community 250"
 Cohesion: 0.23
@@ -1379,6 +1421,10 @@ Nodes (5): EmptyStateView, LocalizedStringKey, String, SwiftUI, Void
 Cohesion: 0.33
 Nodes (5): InsightsKPICard, Color, LocalizedStringKey, String, SwiftUI
 
+### Community 258 - "Community 258"
+Cohesion: 0.22
+Nodes (8): "Add another transaction" toggle — Implementation Plan, File Structure, Global Constraints, Self-Review, Task 1: `addAnother` flag on the view model, Task 2: `focusTrigger` on `CurrencyAmountField` (clear + re-focus), Task 3: "Add another" toggle in the form, Task 4: Save-flow coordination in `EditAddTransactionView`
+
 ### Community 259 - "Community 259"
 Cohesion: 0.22
 Nodes (10): WidgetConfiguration, SwiftUI, WidgetConfiguration, WidgetKit, DailyLoggingHabitWidget, PersonalFinanceTrakerWidgetBundle, SafeToSpendWidget, SafeToSpendWidgetBundle (+2 more)
@@ -1402,6 +1448,10 @@ Nodes (6): Approach, Architecture notes, Design: Entitlements Bootstrap + Safe-t
 ### Community 264 - "Community 264"
 Cohesion: 0.33
 Nodes (5): CryptoKit, Foundation, PersonalFinanceTraker, Security, Testing
+
+### Community 265 - "Community 265"
+Cohesion: 0.25
+Nodes (7): Build Result, Commit, Files Created, Files Modified, Summary, Task 2 Report: Notification Tap Handler + Delegate Registration, Verification
 
 ### Community 266 - "Community 266"
 Cohesion: 0.20
@@ -1432,12 +1482,12 @@ Cohesion: 0.47
 Nodes (4): TransactionCategory, Foundation, String, UUID
 
 ### Community 273 - "Community 273"
-Cohesion: 0.12
-Nodes (22): ButtonRole, Content, Binding, Bool, CategorySnapshot, Color, Content, Double (+14 more)
+Cohesion: 0.21
+Nodes (12): Content, CategorySnapshot, Double, Int, ITransactionRepository, String, SwiftData, SwiftUI (+4 more)
 
 ### Community 274 - "Community 274"
-Cohesion: 0.25
-Nodes (6): CategorySettingsView, CategoryModel, String, SwiftData, SwiftUI, text
+Cohesion: 0.29
+Nodes (5): CategorySettingsView, CategoryModel, String, SwiftData, SwiftUI
 
 ### Community 275 - "Community 275"
 Cohesion: 0.40
@@ -1468,12 +1518,16 @@ Cohesion: 0.33
 Nodes (4): ImportFlowView, Int, SwiftUI, TransactionListViewModel
 
 ### Community 282 - "Community 282"
-Cohesion: 0.22
-Nodes (8): SafeToSpendSnapshotTests, Calendar, Date, Foundation, Int, PersonalFinanceTraker, Testing, SafeToSpendDayValue
+Cohesion: 0.50
+Nodes (3): Foundation, PersonalFinanceTraker, Testing
 
 ### Community 283 - "Community 283"
-Cohesion: 0.28
-Nodes (6): Content, SwiftUI, View, Void, PayCycleAware, View
+Cohesion: 0.18
+Nodes (10): BulkEditSheets, Bool, TransactionListViewModel, Content, SwiftUI, View, Void, PayCycleAware (+2 more)
+
+### Community 284 - "Community 284"
+Cohesion: 0.25
+Nodes (7): Changes, Commit, Implementation Notes, Status, Task 7: TransactionListViewModel Test Coverage Expansion — Report, Test Results, Tests Added
 
 ### Community 285 - "Community 285"
 Cohesion: 0.33
@@ -1491,13 +1545,17 @@ Nodes (6): EditCategorySheet, Bool, CategoryModel, String, SwiftData, SwiftUI
 Cohesion: 0.29
 Nodes (4): Bool, Foundation, UserDefaults, PendingHabitAddStore
 
+### Community 289 - "Community 289"
+Cohesion: 0.29
+Nodes (6): Global Constraints, Notification Tap → Add Sheet Implementation Plan, Self-Review, Task 1: `PendingTransactionIntent` with testable consume logic, Task 2: Notification tap handler + delegate registration, Task 3: Consume the intent in `MainTabView`
+
 ### Community 290 - "Community 290"
 Cohesion: 0.33
 Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
 ### Community 291 - "Community 291"
-Cohesion: 0.18
-Nodes (11): HealthScoreDetailView, Bool, Charts, Color, HealthScore, HealthScoreSnapshotData, Int, ScoreComponent (+3 more)
+Cohesion: 0.17
+Nodes (12): HealthScoreDetailView, Bool, Charts, Color, HealthScore, HealthScoreSnapshotData, Int, String (+4 more)
 
 ### Community 292 - "Community 292"
 Cohesion: 0.33
@@ -1523,9 +1581,13 @@ Nodes (5): Creating a uniform design in this app, Design, Ensuring designs work 
 Cohesion: 0.33
 Nodes (5): Method, Context, Finding Format, Required Ending Sections, UX Audit
 
+### Community 298 - "Community 298"
+Cohesion: 0.33
+Nodes (5): 1. Notification tap → Add Transaction sheet, 2. "Add another transaction" toggle, 3. Multi-select + bulk edit in transaction list, Backlog / follow-ups, Transaction flow ideas — backlog
+
 ### Community 299 - "Community 299"
-Cohesion: 0.18
-Nodes (12): LocalizedError, Data, Foundation, Int, String, TransactionSnapshot, CellValue, number (+4 more)
+Cohesion: 0.23
+Nodes (9): Data, Foundation, Int, String, TransactionSnapshot, CellValue, number, XLSXExportService (+1 more)
 
 ### Community 300 - "Community 300"
 Cohesion: 0.40
@@ -1600,8 +1662,8 @@ Cohesion: 0.20
 Nodes (9): IPadRootView, IPadSection, AppSettings, AppShellModels, Binding, Bool, PresentationDetent, SwiftData (+1 more)
 
 ### Community 357 - "Community 357"
-Cohesion: 0.22
-Nodes (9): ITransactionRepository, ITransactionRepository, String, Transferable, TransferRepresentation, Format, csv, xlsx (+1 more)
+Cohesion: 0.40
+Nodes (5): ITransactionRepository, ITransactionRepository, Transferable, TransferRepresentation, TransactionsExport
 
 ### Community 358 - "Community 358"
 Cohesion: 0.25
@@ -1651,25 +1713,29 @@ Nodes (3): Foundation, PersonalFinanceTraker, Testing
 Cohesion: 0.40
 Nodes (4): ScoreComponent, Foundation, Int, String
 
+### Community 371 - "Community 371"
+Cohesion: 0.50
+Nodes (3): BalanceCardView, SwiftData, SwiftUI
+
 ## Knowledge Gaps
-- **1694 isolated node(s):** `AppIntents`, `Foundation`, `UIKit`, `expense`, `income` (+1689 more)
+- **1854 isolated node(s):** `SwiftUI`, `AppSettings`, `Binding`, `SwiftUI`, `amount` (+1849 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **49 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `DashboardViewModel` connect `Community 103` to `Community 248`, `Community 324`?**
+- **Why does `MockTransactionRepository` connect `Transaction Repository Layer` to `Community 195`, `Community 357`, `App Navigation & Protocols`, `Category Settings View`, `Community 141`, `Community 150`, `Community 153`?**
   _High betweenness centrality (0.055) - this node is a cross-community bridge._
-- **Why does `MockTransactionRepository` connect `Transaction Repository Layer` to `Community 357`, `Community 135`, `Category Settings View`, `App Navigation & Protocols`, `Community 141`, `Community 150`, `Community 153`?**
-  _High betweenness centrality (0.054) - this node is a cross-community bridge._
-- **Why does `EditAddTransactionView` connect `Edit/Add Transaction View` to `Community 128`, `Transaction Form ViewModel`, `Community 109`, `Community 127`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **Why does `CompassViewModel` connect `Compass Goals & Forecasting` to `Community 324`, `Community 357`, `Community 167`, `Community 369`, `Community 214`?**
+  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+- **Why does `DashboardViewModel` connect `Community 103` to `Community 248`, `Community 324`?**
+  _High betweenness centrality (0.048) - this node is a cross-community bridge._
 - **Are the 26 inferred relationships involving `MockTransactionRepository` (e.g. with `.loadPopulatesTransactions()` and `.loadSetsErrorOnRepositoryFailure()`) actually correct?**
   _`MockTransactionRepository` has 26 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `AppIntents`, `Foundation`, `UIKit` to the rest of the system?**
-  _1694 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `SwiftUI`, `AppSettings`, `Binding` to the rest of the system?**
+  _1854 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Analytics & Dashboard Views` be split into smaller, more focused modules?**
+  _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._
 - **Should `Profile State Management` be split into smaller, more focused modules?**
-  _Cohesion score 0.06558558558558558 - nodes in this community are weakly interconnected._
-- **Should `Project Architecture Docs` be split into smaller, more focused modules?**
-  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06421052631578947 - nodes in this community are weakly interconnected._

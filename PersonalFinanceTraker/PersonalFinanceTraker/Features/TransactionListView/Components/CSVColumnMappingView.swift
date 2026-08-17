@@ -12,6 +12,9 @@ struct CSVColumnMappingView: View {
     let totalSteps: Int
     let onContinue: () -> Void
     let onCancel: () -> Void
+    /// False when hosted in the iPad two-pane layout, which owns Cancel and has no "next step" —
+    /// the preview pane updates as you map, so there is nothing to advance to.
+    var showsStepActions: Bool = true
 
     private let noneOption = "(None)"
 
@@ -29,26 +32,72 @@ struct CSVColumnMappingView: View {
         mapping.dateColumn != nil && mapping.amountColumn != nil
     }
 
-    private var dateFormatCheckMessage: String {
+    /// A value rather than a pre-formatted string: the previous version decided validity by
+    /// testing whether the message started with "✗", which any translation would have broken —
+    /// and it wrapped interpolated text in `String(localized:)`, which can never match a
+    /// catalogue key, so those messages were untranslatable anyway.
+    private enum DateFormatCheck {
+        case needsColumn
+        case parsed(raw: String, display: String)
+        case failed(raw: String)
+    }
+
+    private var dateFormatCheck: DateFormatCheck {
         guard let dateCol = mapping.dateColumn,
               let preview = file.preview(maxRows: 1).first,
               let colIdx = file.headers.firstIndex(of: dateCol),
               colIdx < preview.count else {
-            return String(localized: "Select a Date column to preview")
+            return .needsColumn
         }
         let dateString = preview[colIdx]
         let formatter = DateFormatter()
         formatter.dateFormat = mapping.dateFormat
-        if let _ = formatter.date(from: dateString) {
-            // Try to format back for display
-            if let parsed = formatter.date(from: dateString) {
-                let display = parsed.formatted(.dateTime.month(.abbreviated).day().year())
-                return String(localized: "✓ \(dateString) → \(display)")
-            }
-            return String(localized: "✓ \(dateString) parsed successfully")
-        } else {
-            return String(localized: "✗ Cannot parse '\(dateString)' with this format")
+        guard let parsed = formatter.date(from: dateString) else {
+            return .failed(raw: dateString)
         }
+        return .parsed(
+            raw: dateString,
+            display: parsed.formatted(.dateTime.month(.abbreviated).day().year())
+        )
+    }
+
+    /// SF Symbols plus text, not a ✓/✗ glyph: validity must not rest on colour or on a
+    /// character a screen reader reads as "check mark" (WCAG 1.4.1).
+    @ViewBuilder
+    private var dateFormatFooter: some View {
+        switch dateFormatCheck {
+        case .needsColumn:
+            Text("Select a Date column to preview")
+                .foregroundStyle(.secondary)
+        case let .parsed(raw, display):
+            Label {
+                Text("Valid format — \(raw) reads as \(display)")
+            } icon: {
+                Image(systemName: "checkmark.circle.fill")
+            }
+            .foregroundStyle(.secondary)
+        case let .failed(raw):
+            Label {
+                Text("Invalid format — can't read \(raw)")
+            } icon: {
+                Image(systemName: "exclamationmark.triangle.fill")
+            }
+            .foregroundStyle(Color.negative)
+        }
+    }
+
+    private var canContinueBanner: some View {
+        Label {
+            Text("Map Date and Amount to continue.")
+        } icon: {
+            Image(systemName: "exclamationmark.triangle.fill")
+        }
+        .font(.footnote)
+        .foregroundStyle(Color.negative)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(.bar)
     }
 
     var body: some View {
@@ -57,7 +106,13 @@ struct CSVColumnMappingView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     previewTable
                         .padding(.vertical, 4)
+                        // Zero row insets gave the table the full card width but left the first
+                        // column's text flush against the card's edge.
+                        .padding(.horizontal, 14)
                 }
+                // The preview is the reason this step exists, so it gets the full sheet width —
+                // the default row insets were costing it about a column and a half on iPad.
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
             }
             .appFormSectionBackground()
 
@@ -66,11 +121,6 @@ struct CSVColumnMappingView: View {
                 requiredPicker(title: "Amount", keyPath: \.amountColumn)
             } header: {
                 Text("Required")
-            } footer: {
-                if !canContinue {
-                    Text("Map Date and Amount to continue.")
-                        .foregroundStyle(.red)
-                }
             }
             .appFormSectionBackground()
 
@@ -114,7 +164,6 @@ struct CSVColumnMappingView: View {
 
                 HStack {
                     Text("Format")
-                        .foregroundStyle(.secondary)
                     Spacer()
                     TextField("e.g. yyyy-MM-dd", text: $mapping.dateFormat)
                         .multilineTextAlignment(.trailing)
@@ -124,24 +173,36 @@ struct CSVColumnMappingView: View {
             } header: {
                 Text("Date Format")
             } footer: {
-                Text(dateFormatCheckMessage)
-                    .foregroundStyle(dateFormatCheckMessage.starts(with: "✗") ? .red : .secondary)
+                dateFormatFooter
             }
             .appFormSectionBackground()
         }
+        // Capped on the List, not per Section: a frame on a Section doesn't reach the rows — the
+        // List lays those out itself — so per-section caps just detach headers from their content.
+        // 900 rather than the 640 default because this screen has to serve both a form and a wide
+        // table; it keeps label-to-value travel sane without starving the preview of columns.
+        .readableWidth(900)
         .scrollContentBackground(.hidden)
+        // Pinned rather than left as the Required section's footer: that footer scrolls away, so
+        // the disabled Continue button ends up with no explanation anywhere on screen.
+        .safeAreaInset(edge: .bottom) {
+            if !canContinue {
+                canContinueBanner
+            }
+        }
         .navigationTitle("Map Columns")
-        .navigationSubtitle("Step \(currentStep) of \(totalSteps)")
+        .navigationSubtitle(showsStepActions ? "Step \(currentStep) of \(totalSteps)" : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Cancel") { onCancel() }
-                    .foregroundStyle(.red)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Continue") { onContinue() }
-                    .bold()
-                    .disabled(!canContinue)
+            if showsStepActions {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { onCancel() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Continue") { onContinue() }
+                        .bold()
+                        .disabled(!canContinue)
+                }
             }
         }
     }
@@ -190,6 +251,18 @@ struct CSVColumnMappingView: View {
     // can never freeze this non-lazy HStack
     private static let previewColumnCap = 30
 
+    /// "Row 1. Period: 21/05/2026. Accounts: Buddybank." — headers paired with their values, so a
+    /// screen-reader user can tell what they are mapping.
+    private func rowLabel(_ row: [String], headers: [String], index: Int) -> String {
+        let pairs = headers.enumerated().map { offset, header in
+            let value = offset < row.count && !row[offset].isEmpty ? row[offset] : String(localized: "empty")
+            return "\(header): \(value)"
+        }
+        // Interpolating into the key is what broke the date-format messages; keep the key literal.
+        let rowNumber = "\(String(localized: "Row")) \(index + 1)"
+        return ([rowNumber] + pairs).joined(separator: ". ")
+    }
+
     @ViewBuilder
     private var previewTable: some View {
         let previewRows = file.preview(maxRows: 3)
@@ -200,16 +273,17 @@ struct CSVColumnMappingView: View {
                 .foregroundStyle(.secondary)
                 .padding()
         } else {
+            let headers = Array(file.headers.prefix(shownColumns))
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 0) {
-                    ForEach(file.headers.prefix(shownColumns), id: \.self) { header in
+                    ForEach(headers, id: \.self) { header in
                         Text(header)
                             .font(.caption.bold())
                             .lineLimit(1)
                             .frame(width: 110, alignment: .leading)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 6)
-                            .background(Color(.systemGray5))
+                            .background(Color.bg2)
                     }
                     if file.headers.count > shownColumns {
                         Text("… +\(file.headers.count - shownColumns) more")
@@ -232,17 +306,23 @@ struct CSVColumnMappingView: View {
                                 .frame(width: 110, alignment: .leading)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 5)
-                                .background(rowIdx % 2 == 0 ? Color.clear : Color(.systemGray6))
+                                .background(rowIdx % 2 == 0 ? Color.clear : Color.bg1)
                         }
                     }
+                    // One utterance per row, paired header-to-value. Left as loose cells VoiceOver
+                    // reads a column of values with nothing saying which column they came from.
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(rowLabel(previewRows[rowIdx], headers: headers, index: rowIdx))
                     if rowIdx < previewRows.count - 1 { Divider() }
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color(.systemGray4), lineWidth: 0.5)
+                    .stroke(Color.hairline, lineWidth: 0.5)
             )
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("File preview, first \(previewRows.count) rows")
         }
     }
 }
