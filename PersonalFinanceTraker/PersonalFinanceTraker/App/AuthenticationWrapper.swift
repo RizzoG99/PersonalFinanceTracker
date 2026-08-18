@@ -9,6 +9,8 @@ import SwiftData
 struct AuthenticationWrapper: View {
     @StateObject private var authService = BiometricAuthService()
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
     @State private var showSplash = true
@@ -21,6 +23,7 @@ struct AuthenticationWrapper: View {
     // while the app is running — MainTabView is recreated on every lock/unlock cycle,
     // which would otherwise reset hideAmounts whenever the app is merely backgrounded.
     @State private var appSettings = AppSettings()
+    @State private var featureDiscovery = FeatureDiscoveryCoordinator()
     /// Owned here for the same reason as `appSettings`: the shell below is destroyed and
     /// rebuilt on every lock/unlock cycle, and the view models must not be.
     @State private var shellModels: AppShellModels
@@ -34,7 +37,37 @@ struct AuthenticationWrapper: View {
         _shellModels = State(wrappedValue: AppShellModels(modelContainer: modelContainer))
     }
 
+    private var compactHeight: Bool {
+        verticalSizeClass == .compact
+    }
+
+    private var shouldExpandFeatureDiscoverySheet: Bool {
+        compactHeight || horizontalSizeClass == .regular
+    }
+
+    private var presentsTourAsIPadCard: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+
     var body: some View {
+        @Bindable var featureDiscovery = featureDiscovery
+        let isShowingTourAsCard = Binding(
+            get: { featureDiscovery.isShowingTour && presentsTourAsIPadCard },
+            set: { isPresented in
+                if !isPresented {
+                    featureDiscovery.isShowingTour = false
+                }
+            }
+        )
+        let isShowingTourFullScreen = Binding(
+            get: { featureDiscovery.isShowingTour && !presentsTourAsIPadCard },
+            set: { isPresented in
+                if !isPresented {
+                    featureDiscovery.isShowingTour = false
+                }
+            }
+        )
+
         ZStack {
             AppBackground()
 
@@ -57,6 +90,7 @@ struct AuthenticationWrapper: View {
                         MainTabView(models: shellModels, appSettings: appSettings)
                     }
                 }
+                .environment(featureDiscovery)
                 .transition(.opacity)
             } else {
                 PINEntryView(
@@ -83,6 +117,44 @@ struct AuthenticationWrapper: View {
         .animation(.easeInOut(duration: 0.25), value: isPINSetup)
         .animation(.easeInOut(duration: 0.25), value: authService.isUnlocked)
         .animation(.easeInOut(duration: 0.25), value: scenePhase)
+        .fullScreenCover(isPresented: isShowingTourFullScreen) {
+            FeatureDiscoveryTourView(
+                onboarding: featureDiscovery.manifest.onboarding,
+                mediaBaseURL: featureDiscovery.mediaBaseURL,
+                onFinish: { destination in featureDiscovery.finishTour(destination: destination) }
+            )
+        }
+        .sheet(isPresented: isShowingTourAsCard) {
+            FeatureDiscoveryTourView(
+                onboarding: featureDiscovery.manifest.onboarding,
+                mediaBaseURL: featureDiscovery.mediaBaseURL,
+                onFinish: { destination in featureDiscovery.finishTour(destination: destination) }
+            )
+            .interactiveDismissDisabled()
+            .presentationDetents([.fraction(0.72)])
+            .presentationCornerRadius(32)
+            .presentationBackground(.clear)
+            .presentationDragIndicator(.hidden)
+        }
+        .sheet(item: $featureDiscovery.releaseToPresent, onDismiss: {
+            featureDiscovery.dismissWhatsNew()
+        }) { release in
+            FeatureDiscoveryWhatsNewView(
+                release: release,
+                mediaBaseURL: featureDiscovery.mediaBaseURL,
+                onAction: { destination in
+                    featureDiscovery.performReleaseAction(destination: destination)
+                },
+                onDone: { featureDiscovery.dismissWhatsNew() }
+            )
+            .presentationDetents(shouldExpandFeatureDiscoverySheet ? [.large] : [.medium, .large])
+            .presentationBackground { AppBackground() }
+        }
+        .task(id: isPINSetup && authService.isUnlocked && !showSplash) {
+            guard isPINSetup, authService.isUnlocked, !showSplash else { return }
+            let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+            await featureDiscovery.loadAndPrepare(appVersion: appVersion)
+        }
         .onAppear {
             // ponytail: unit tests run inside this app as their host process, so this
             // view's real onAppear fires alongside the test bundle. Without this guard,

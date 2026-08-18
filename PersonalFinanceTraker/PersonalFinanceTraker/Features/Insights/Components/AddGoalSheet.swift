@@ -139,7 +139,7 @@ struct AddGoalSheet: View {
                 Button(action: save) {
                     Text(initialGoalInput == nil ? "Add Goal" : "Update Goal")
                         .font(.headline)
-                        .foregroundStyle(.textPrimary)
+                        .foregroundStyle(isValid ? .primaryActionForeground : .textMid)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .glassEffect(.regular.tint(isValid ? Color.accentIndigo : Color.gray).interactive())

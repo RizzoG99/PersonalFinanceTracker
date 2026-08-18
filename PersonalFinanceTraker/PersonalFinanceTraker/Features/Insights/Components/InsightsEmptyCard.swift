@@ -35,7 +35,7 @@ struct EmptyStateView: View {
                     Button(action: action) {
                         Text(actionTitle)
                             .font(.subheadline.bold())
-                            .foregroundStyle(.textPrimary)
+                            .foregroundStyle(.primaryActionForeground)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
                             .glassEffect(.regular.tint(Color.accentIndigo).interactive())

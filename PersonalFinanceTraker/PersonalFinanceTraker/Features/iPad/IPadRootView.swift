@@ -13,6 +13,8 @@ import SwiftData
 /// is selected, which is most of the time — `.inspector()` collapses instead, so the content
 /// column gets the full width until there is actually something to show in it.
 struct IPadRootView: View {
+    @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
+
     let models: AppShellModels
     let appSettings: AppSettings
 
@@ -66,6 +68,10 @@ struct IPadRootView: View {
             await HabitSnapshotUpdater.refresh(using: models.repo)
             await models.repo.refreshSafeToSpendWidgetSnapshot()
             models.dataChanged.bump()
+            consumeFeatureDiscoveryDestination()
+        }
+        .onChange(of: featureDiscovery.pendingDestination) { _, destination in
+            if destination != nil { consumeFeatureDiscoveryDestination() }
         }
         // Outermost, and it has to stay that way: a .sheet or .inspector attached further out than
         // these would present its content outside this environment, and anything reading
@@ -91,6 +97,21 @@ struct IPadRootView: View {
             get: { models.transactions.importError != nil },
             set: { if !$0 { models.transactions.importError = nil } }
         )
+    }
+
+    private func consumeFeatureDiscoveryDestination() {
+        guard let destination = featureDiscovery.consumeDestination() else { return }
+        switch destination {
+        case .activity:
+            section = .activity
+        case .insights:
+            section = .insights
+        case .home, .budgets:
+            section = .home
+        case .addTransaction:
+            section = .home
+            showingAddItemView = true
+        }
     }
 
     // MARK: - Sidebar

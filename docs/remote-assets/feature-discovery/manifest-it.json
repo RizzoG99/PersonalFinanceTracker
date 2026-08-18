@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2026.08.16.1",
+  "onboarding": {
+    "id": "explore-the-app",
+    "title": "Scopri Personal Finance",
+    "pages": [
+      {
+        "id": "overview",
+        "title": "Tutto il tuo denaro, in un unico posto",
+        "body": "Tieni insieme spese ed entrate quotidiane, per avere sempre un quadro finanziario chiaro.",
+        "symbolName": "sparkles",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/overview-v1.png",
+          "accessibilityLabel": "Tre schede di panoramica finanziaria con grafici, una ricevuta e monete."
+        },
+        "destination": "home"
+      },
+      {
+        "id": "activity",
+        "title": "Tieni d'occhio ogni transazione",
+        "body": "Aggiungi, cerca e filtra le attività per capire sempre dove sono finiti i tuoi soldi.",
+        "symbolName": "list.bullet.rectangle",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/activity-v1.png",
+          "accessibilityLabel": "Una linea temporale delle transazioni con indicatori di entrate e uscite e una lente di ingrandimento."
+        },
+        "destination": "activity"
+      },
+      {
+        "id": "budgets",
+        "title": "Pianifica con sicurezza",
+        "body": "Imposta budget per categoria e controlla i progressi prima che una piccola spesa diventi una sorpresa.",
+        "symbolName": "chart.pie",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/budgets-v1.png",
+          "accessibilityLabel": "Tre contenitori di budget ordinati, un anello di avanzamento e un segno di spunta."
+        },
+        "destination": "budgets"
+      },
+      {
+        "id": "insights",
+        "title": "Inizia con una transazione",
+        "body": "Aggiungi una spesa o un'entrata in meno di un minuto, poi lascia che Personal Finance mostri i tuoi progressi.",
+        "symbolName": "plus.circle",
+        "media": {
+          "kind": "image",
+          "path": "onboarding/insights-v1.png",
+          "accessibilityLabel": "Una bussola indaco con una linea di tendenza turchese in crescita e una stella."
+        },
+        "destination": "addTransaction"
+      }
+    ]
+  },
+  "releases": [
+    {
+      "id": "1.0-feature-discovery",
+      "version": "1.0",
+      "title": "Un modo più chiaro per esplorare",
+      "summary": "Scopri gli strumenti che ti aiutano a capire, pianificare e progredire con i tuoi soldi.",
+      "items": [
+        {
+          "id": "feature-tour",
+          "title": "Scopri l'app",
+          "body": "Una guida rapida presenta le funzioni essenziali e resta disponibile quando vuoi rivederle.",
+          "symbolName": "sparkles",
+          "media": {
+            "kind": "image",
+            "path": "onboarding/overview-v1.png",
+            "accessibilityLabel": "Tre schede di panoramica finanziaria con grafici, una ricevuta e monete."
+          },
+          "destination": "home",
+          "actionTitle": "Esplora ora"
+        }
+      ]
+    },
+    {
+      "id": "1.0-financial-pulse",
+      "version": "1.0",
+      "title": "È arrivato l'Impulso finanziario",
+      "summary": "Crea un'abitudine quotidiana con il denaro e tieni sempre a portata di mano il margine di spesa settimanale.",
+      "items": [
+        {
+          "id": "daily-financial-pulse",
+          "title": "Un check-in quotidiano con il denaro",
+          "body": "Il nuovo Impulso finanziario ti aiuta a registrare la giornata, confermare una giornata senza spese e creare una tranquilla serie di check-in.",
+          "symbolName": "waveform.path.ecg",
+          "media": {
+            "kind": "image",
+            "path": "releases/financial-pulse-v1.png",
+            "accessibilityLabel": "Una scheda finanziaria in vetro con una linea dell'impulso indaco, un segno di spunta e un anello per il check-in quotidiano."
+          },
+          "destination": "home",
+          "actionTitle": "Apri Home"
+        },
+        {
+          "id": "safe-to-spend-widget",
+          "title": "Quanto puoi spendere, a colpo d'occhio",
+          "body": "Aggiungi il nuovo widget alla schermata Home per vedere il margine di spesa giornaliero e aprire Insights quando vuoi il quadro completo.",
+          "symbolName": "calendar.day.timeline.leading",
+          "media": {
+            "kind": "image",
+            "path": "releases/safe-to-spend-v1.png",
+            "accessibilityLabel": "Un widget in vetro sospeso con un indicatore di spesa turchese e indaco, sette indicatori giornalieri e monete."
+          },
+          "destination": "insights",
+          "actionTitle": "Apri Insights"
+        }
+      ]
+    }
+  ]
+}

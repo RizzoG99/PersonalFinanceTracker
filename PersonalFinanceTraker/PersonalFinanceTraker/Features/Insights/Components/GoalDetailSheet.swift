@@ -11,6 +11,7 @@ struct GoalDetailSheet: View {
     let onEdit: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showingFundEntry = false
     @State private var fundAmountText = ""
 
@@ -23,6 +24,16 @@ struct GoalDetailSheet: View {
 
     private var goalColor: Color { Color(categoryToken: goal.colorToken) }
     private var isComplete: Bool { currentAmount >= goal.targetAmount }
+
+    /// A few dark-mode category tints are intentionally bright. They need dark ink,
+    /// while the remaining category tints and every light-mode tint need white ink.
+    private var goalActionForeground: Color {
+        if colorScheme == .dark,
+           ["categoryGreen", "categoryAmber", "categoryTeal"].contains(goal.colorToken) {
+            return .black
+        }
+        return .primaryActionForeground
+    }
 
     var body: some View {
         NavigationStack {
@@ -128,7 +139,7 @@ struct GoalDetailSheet: View {
             Button(action: { showingFundEntry = true }) {
                 Label("Add Funds", systemImage: "plus.circle.fill")
                     .font(.headline)
-                    .foregroundStyle(.textPrimary)
+                    .foregroundStyle(goalActionForeground)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .glassEffect(.regular.tint(goalColor).interactive())
@@ -189,7 +200,7 @@ struct GoalDetailSheet: View {
                         showingFundEntry = false
                     }
                     .font(.subheadline.bold())
-                    .foregroundStyle(.textPrimary)
+                    .foregroundStyle(goalActionForeground)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .glassEffect(.regular.tint(goalColor).interactive())

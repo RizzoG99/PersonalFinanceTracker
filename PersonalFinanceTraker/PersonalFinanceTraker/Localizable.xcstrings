@@ -8395,7 +8395,12 @@
         }
       }
     },
-    "🙈": {}
+    "🙈": {},
+    "DISCOVER": {},
+    "Explore the App": {},
+    "Get started": {},
+    "Keep the daily record going.": {},
+    "What's New": {}
   },
   "version": "1.1"
 }

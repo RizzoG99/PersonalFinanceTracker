@@ -12,6 +12,11 @@ extension Color {
     static let bg1 = Color("bg1")
     static let bg2 = Color("bg2")
     static let accentIndigo = Color("accentIndigo")
+
+    /// Foreground for controls using the saturated indigo action tint. It must not
+    /// follow the screen's adaptive ink token: that becomes dark text on indigo in
+    /// light appearance.
+    static let primaryActionForeground = Color.white
     static let positive = Color("positive")
     static let negative = Color("negative")
     static let textPrimary = Color("textPrimary")
@@ -53,6 +58,7 @@ extension ShapeStyle where Self == Color {
     static var bg1: Color { .bg1 }
     static var bg2: Color { .bg2 }
     static var accentIndigo: Color { .accentIndigo }
+    static var primaryActionForeground: Color { .primaryActionForeground }
     static var positive: Color { .positive }
     static var negative: Color { .negative }
     static var textPrimary: Color { .textPrimary }

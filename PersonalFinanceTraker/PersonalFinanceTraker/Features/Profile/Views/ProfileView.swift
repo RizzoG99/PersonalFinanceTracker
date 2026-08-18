@@ -20,6 +20,7 @@ struct ProfileView: View {
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
     @Environment(DataChangedSignal.self) private var dataChanged
     @Environment(AppSettings.self) private var appSettings
+    @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
     @State private var showingFileImporter = false
     @State private var showingDeleteConfirmation = false
     @State private var showingPINConfirmation = false
@@ -190,6 +191,26 @@ struct ProfileView: View {
                         ProfileSecuritySection(viewModel: viewModel, selectedDetent: $selectedDetent, route: $route)
                     }
                     .appFormSectionBackground()
+                    Section {
+                        Button {
+                            featureDiscovery.showTour()
+                        } label: {
+                            Label("Explore the App", systemImage: "sparkles")
+                        }
+
+                        Button {
+                            let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+                            featureDiscovery.showWhatsNew(appVersion: appVersion)
+                        } label: {
+                            Label("What's New", systemImage: "gift")
+                        }
+                    } header: {
+                        Text("DISCOVER")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.textDim)
+                            .padding(.horizontal, 4)
+                    }
+                    .appFormSectionBackground()
                 }
                 .appFormBackground()
                 .navigationDestination(item: $route) { route in
@@ -354,4 +375,5 @@ struct TransactionsExport: Transferable {
 
 #Preview {
     ProfileView(viewModel: ProfileViewModel(), selectedDetent: .constant(.large))
+        .environment(FeatureDiscoveryCoordinator())
 }
