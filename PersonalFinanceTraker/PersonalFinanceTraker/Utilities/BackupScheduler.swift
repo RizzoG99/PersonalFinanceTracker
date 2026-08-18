@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 protocol BackupSchedulingSettings: AnyObject {
     var lastBackupDate: Date? { get set }
 }
@@ -13,7 +14,7 @@ enum BackupScheduler {
         backupService: BackupService,
         now: Date = Date()
     ) async {
-        if let last = settings.lastBackupDate, now.timeIntervalSince(last) < staleInterval {
+        if let last = await settings.lastBackupDate, now.timeIntervalSince(last) < staleInterval {
             return
         }
         guard let transactions = try? await repo.fetchAll() else { return }

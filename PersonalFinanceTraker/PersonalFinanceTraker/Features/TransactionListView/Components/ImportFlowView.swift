@@ -73,9 +73,10 @@ struct ImportFlowView: View {
     private func handleColumnMappingContinue() {
         if viewModel.columnMapping.categoryColumn != nil {
             // Compute categories and types on background thread before navigating
-            Task.detached(priority: .userInitiated) { [weak viewModel, columnMapping = viewModel.columnMapping] in
-                guard let viewModel = viewModel,
-                      let file = viewModel.csvFile else { return }
+            Task.detached(priority: .userInitiated) { [weak viewModel,
+                                                       columnMapping = viewModel.columnMapping,
+                                                       file = viewModel.csvFile] in
+                guard let viewModel, let file else { return }
                 let (categories, types) = CSVColumnMapper.extractCategoriesAndTypes(
                     from: file,
                     mapping: columnMapping

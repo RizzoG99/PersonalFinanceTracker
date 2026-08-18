@@ -66,7 +66,7 @@ struct AddTransactionIntent: AppIntent {
     func perform() async throws -> some IntentResult & ProvidesDialog {
         // Fail gracefully if the device is locked and the store is protected.
         // When `.complete` protection is active, the store is inaccessible until unlock.
-        guard UIApplication.shared.isProtectedDataAvailable else {
+        guard await UIApplication.shared.isProtectedDataAvailable else {
             return .result(dialog: "Unlock your phone to add a transaction.")
         }
 
@@ -109,7 +109,7 @@ struct RepeatTransactionTemplateIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        guard UIApplication.shared.isProtectedDataAvailable else {
+        guard await UIApplication.shared.isProtectedDataAvailable else {
             return .result(dialog: "Unlock your phone to add a transaction.")
         }
 

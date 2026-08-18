@@ -3,10 +3,12 @@ import Foundation
 import CryptoKit
 @testable import PersonalFinanceTraker
 
+@MainActor
 final class TestSchedulingSettings: BackupSchedulingSettings {
     var lastBackupDate: Date?
 }
 
+@MainActor
 struct BackupSchedulerTests {
     // ponytail: see BackupServiceTests' matching comment — an injected per-instance
     // key avoids racing on BackupCrypto's process-global Keychain account under

@@ -1,6 +1,13 @@
 import SwiftUI
 import LocalAuthentication
 
+// ponytail: `nonisolated` is rejected on any *mutable* stored property, only on `let` —
+// this box's single field of indirection turns the storage immutable at the class level
+// so plain `nonisolated` applies below, no `unsafe` escape hatch needed.
+private final class TaskBox: @unchecked Sendable {
+    var task: Task<Void, Never>?
+}
+
 @Observable @MainActor
 final class PINEntryViewModel {
     var pinInput: String = ""
@@ -13,12 +20,9 @@ final class PINEntryViewModel {
 
     private let pinService: PINService
     let authService: BiometricAuthService
-    // nonisolated(unsafe): Task<Void, Never> is Sendable and Task.cancel() is
-    // thread-safe, so this is a safe escape hatch — deinit is always nonisolated
-    // even on a @MainActor class, and plain `nonisolated` isn't accepted here
-    // because @Observable's macro expansion requires mutable stored properties
-    // to stay actor-isolated.
-    private nonisolated(unsafe) var countdownTask: Task<Void, Never>?
+    // Only deinit (nonisolated) needs access off the main actor; every other read/write
+    // here already runs on MainActor. Task.cancel() is thread-safe regardless.
+    private nonisolated let countdownBox = TaskBox()
 
     var showBiometricButton: Bool {
         authService.isBiometricFeatureEnabled && authService.isBiometricsAvailable
@@ -46,8 +50,8 @@ final class PINEntryViewModel {
             startLockoutCountdown(until: deadline)
         } else if isLockedOut {
             // Deadline elapsed while this view model wasn't running its countdown.
-            countdownTask?.cancel()
-            countdownTask = nil
+            countdownBox.task?.cancel()
+            countdownBox.task = nil
             isLockedOut = false
             lockoutMessage = ""
             errorMessage = ""
@@ -102,7 +106,7 @@ final class PINEntryViewModel {
     }
 
     private func startLockoutCountdown(until deadline: Date) {
-        countdownTask?.cancel()
+        countdownBox.task?.cancel()
         isLockedOut = true
         // Paint the first message synchronously. The Task below only gets to run on a
         // later tick, which would otherwise leave the pad disabled with no explanation
@@ -110,7 +114,7 @@ final class PINEntryViewModel {
         // is the only thing telling the user why nothing responds.
         updateLockoutMessage(until: deadline)
 
-        countdownTask = Task {
+        countdownBox.task = Task {
             while !Task.isCancelled {
                 let now = Date()
                 if now >= deadline {
@@ -120,7 +124,7 @@ final class PINEntryViewModel {
                     errorMessage = ""
                     pinInput = ""
                     eyesOpen = true
-                    countdownTask = nil
+                    countdownBox.task = nil
                     break
                 }
 
@@ -147,6 +151,6 @@ final class PINEntryViewModel {
     }
 
     deinit {
-        countdownTask?.cancel()
+        countdownBox.task?.cancel()
     }
 }

@@ -414,7 +414,7 @@ struct TransactionListViewModelTests {
     @Test @MainActor func selectAllVisibleSelectsOnlyFiltered() async {
         let vm = await makeLoadedVM()
         vm.searchText = "coffee"
-        try? await vm.searchDebounceTask?.value
+        await vm.searchDebounceTask?.value
         vm.selectAllVisible()
         #expect(vm.selectedIDs == Set(vm.filteredItems.map(\.id)))
         #expect(vm.selectedIDs.count < vm.transactions.count)
@@ -425,7 +425,7 @@ struct TransactionListViewModelTests {
         let id = vm.filteredItems.first { $0.note.localizedCaseInsensitiveContains("coffee") == false }!.id
         vm.toggleSelection(id)
         vm.searchText = "coffee"
-        try? await vm.searchDebounceTask?.value
+        await vm.searchDebounceTask?.value
         #expect(!vm.selectedIDs.contains(id))
     }
 
@@ -502,7 +502,7 @@ struct TransactionListViewModelTests {
     }
 
     @Test @MainActor func bulkSetCategoryRewritesOnlySelected() async {
-        let (vm, foodCat, newCat, expenseId, _) = await makeRealRepoVM()
+        let (vm, _, newCat, expenseId, _) = await makeRealRepoVM()
         // Select first (expense) transaction
         let target = vm.filteredItems.first { $0.id == expenseId }!
         let other = vm.filteredItems.first { $0.id != expenseId }!

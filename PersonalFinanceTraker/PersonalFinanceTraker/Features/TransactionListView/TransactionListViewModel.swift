@@ -168,14 +168,14 @@ final class TransactionListViewModel {
     func add(_ input: TransactionInput) async {
         do {
             try await repo.add(input)
-            await reload()
+            reload()
         } catch { print(error) }
     }
 
     func update(id: PersistentIdentifier, with input: TransactionInput) async {
         do {
             try await repo.update(id: id, with: input)
-            await reload()
+            reload()
         } catch { print(error) }
     }
 
@@ -206,11 +206,10 @@ final class TransactionListViewModel {
     }
 
     private func updateGroupedItems() {
-        Task.detached(priority: .userInitiated) { [weak self, items = filteredItems] in
-            let grouped = Self.group(items)
-            await MainActor.run {
-                self?.groupedItems = grouped
-            }
+        let items = filteredItems
+        Task { [weak self] in
+            let grouped = await Task.detached(priority: .userInitiated) { Self.group(items) }.value
+            self?.groupedItems = grouped
         }
     }
 
