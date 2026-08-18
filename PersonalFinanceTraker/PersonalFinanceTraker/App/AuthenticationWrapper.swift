@@ -14,11 +14,7 @@ struct AuthenticationWrapper: View {
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
     @State private var showSplash = true
-    // ponytail: UIScreen.main is deprecated on iOS 26 in favor of a per-window-scene
-    // lookup; keeping it since this view has no window/scene context to source one
-    // from, and it's a deprecation warning, not a functional gap. Upgrade if/when
-    // this view gains access to a WindowScene (e.g. via @Environment).
-    @State private var isCaptured = UIScreen.main.isCaptured
+    @State private var isCaptured = Self.isScreenCaptured()
     // Owned here (not by MainTabView) since AuthenticationWrapper is never torn down
     // while the app is running — MainTabView is recreated on every lock/unlock cycle,
     // which would otherwise reset hideAmounts whenever the app is merely backgrounded.
@@ -189,7 +185,7 @@ struct AuthenticationWrapper: View {
             authService.unlock()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIScreen.capturedDidChangeNotification)) { _ in
-            isCaptured = UIScreen.main.isCaptured
+            isCaptured = Self.isScreenCaptured()
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background && isPINSetup {
@@ -208,5 +204,12 @@ struct AuthenticationWrapper: View {
                 }
             }
         }
+    }
+
+    // ponytail: single-window app, so "any captured scene" is the scene.
+    private static func isScreenCaptured() -> Bool {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .contains { $0.screen.isCaptured }
     }
 }

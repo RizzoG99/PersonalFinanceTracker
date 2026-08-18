@@ -123,7 +123,6 @@ struct SpendingInsightService {
                 } else {
                     let inverseRatio = Double(truncating: (weekdayAvg / weekendAvg) as NSDecimalNumber)
                     if inverseRatio >= 1.3 {
-                        let ratioStr = String(format: "%.1f", inverseRatio)
                         observations.append(HabitObservation(
                             sfSymbol: "briefcase",
                             title: String(localized: "Weekdays are your heaviest spending days"),

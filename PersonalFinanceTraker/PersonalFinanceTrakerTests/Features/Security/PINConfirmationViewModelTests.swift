@@ -67,10 +67,7 @@ struct PINConfirmationViewModelTests {
 
     @Test("appendDigit does not append beyond 4 digits")
     func appendDigitBoundary() {
-        var onConfirmedCalled = false
-        let viewModel = PINConfirmationViewModel(pinService: pinService) {
-            onConfirmedCalled = true
-        }
+        let viewModel = PINConfirmationViewModel(pinService: pinService) {}
 
         viewModel.appendDigit("1")
         viewModel.appendDigit("2")
@@ -84,10 +81,7 @@ struct PINConfirmationViewModelTests {
 
     @Test("deleteDigit removes last digit and updates eyesOpen")
     func deleteDigit() {
-        var onConfirmedCalled = false
-        let viewModel = PINConfirmationViewModel(pinService: pinService) {
-            onConfirmedCalled = true
-        }
+        let viewModel = PINConfirmationViewModel(pinService: pinService) {}
 
         viewModel.appendDigit("1")
         viewModel.appendDigit("2")

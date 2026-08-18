@@ -173,7 +173,7 @@ struct BackupServiceTests {
 
         // Create an encrypted backup via writeBackup
         let tx = [TransactionSnapshot.test(timestamp: date(2026, 1, 2), amount: -20, category: "Transport")]
-        let encryptedURL = try service.writeBackup(transactions: tx, recurrenceRules: [], now: date(2026, 1, 2))
+        _ = try service.writeBackup(transactions: tx, recurrenceRules: [], now: date(2026, 1, 2))
 
         // listBackups should include both
         let backups = service.listBackups()
