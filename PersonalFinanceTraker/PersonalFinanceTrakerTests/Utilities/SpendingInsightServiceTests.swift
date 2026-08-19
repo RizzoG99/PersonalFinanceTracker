@@ -95,6 +95,58 @@ struct SpendingInsightServiceTests {
         #expect(!obs.contains { $0.sfSymbol == "calendar.badge.clock" || $0.sfSymbol == "briefcase" })
     }
 
+    /// Regression guard: categoryTrends used to compare "this month" against itself (the `.month`
+    /// filter ignored `referenceDate`), so every row showed a flat "0%" change no matter what
+    /// actually happened last month.
+    @Test("categoryTrends reports a non-zero change when last month differs from this month")
+    func categoryTrendsComputesRealDelta() {
+        let service = makeService()
+        let calendar = Calendar.current
+        let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: .now)!
+
+        let txns = [
+            makeExpense(amount: 100, category: "🛒 Groceries", on: .now),
+            makeExpense(amount: 50, category: "🛒 Groceries", on: lastMonthRef)
+        ]
+
+        let trends = service.categoryTrends(expenseTransactions: txns)
+        let groceries = trends.first { $0.category.category == "🛒 Groceries" }
+        #expect(groceries?.changePercent != 0)
+        #expect(groceries?.direction == .up)
+    }
+
+    /// Regression guard: heroInsight kept using plain calendar-month boundaries even after
+    /// categoryTrends was fixed to be pay-cycle-aware, so the two insights on the same screen
+    /// could silently disagree about what "this month" means for anyone with a non-default
+    /// pay-cycle start day.
+    @Test("heroInsight uses the pay-cycle month, not the calendar month")
+    func heroInsightRespectsPayCycleStartDay() {
+        let calendar = Calendar.current
+        let now = Date.now
+        let todayDay = calendar.component(.day, from: now)
+        // Needs today comfortably before the chosen start day, so "now" falls in a financial
+        // month that began last calendar month — skip near month-end, where that can't be
+        // constructed with a valid (1-28) start day.
+        guard todayDay < 27 else { return }
+        let startDay = todayDay + 1
+
+        let financialStart = PayCycleService.financialMonthStart(for: now, startDay: startDay, calendar: calendar)
+        // A day into the financial month, but still inside the *previous* calendar month: plain
+        // calendar-month logic would file this as "last month"; pay-cycle-aware logic must file
+        // it as "current".
+        let probeDate = calendar.date(byAdding: .day, value: 1, to: financialStart) ?? financialStart
+        let service = makeService()
+        let txns = [makeExpense(amount: 40, on: probeDate)]
+
+        let insight = service.heroInsight(expenseTransactions: txns, payCycleStartDay: startDay)
+        // Correctly classified as current-period spend with no prior period to compare against,
+        // this hits the existing "not enough history" guard (lastTotal == 0) and returns the
+        // placeholder. Misclassified as *last* month instead, currentTotal would be 0 and
+        // lastTotal > 0, producing a spurious "100% less" reading — that's the bug this guards.
+        #expect(insight.title == String(localized: "Building your picture"))
+        #expect(insight.trendDirection == .flat)
+    }
+
     @Test("weekday-heavy: emits briefcase observation")
     func weekdayHeavySpending() {
         let service = makeService()
