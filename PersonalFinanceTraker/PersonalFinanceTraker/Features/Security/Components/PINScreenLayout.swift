@@ -82,6 +82,10 @@ struct PINScreenLayout<Content: View, Footer: View>: View {
                 PINDotsView(filledCount: filledCount)
                     .padding(.top, compact ? 16 : 32)
                     .padding(.bottom, compact ? 0 : 48)
+            } else {
+                // Steps without PIN dots (biometric prompt, name entry) still need a gap
+                // before their content — normally supplied by the dots block above.
+                Spacer().frame(height: compact ? 16 : 32)
             }
         }
         // Landscape: the heading takes half the width and the content the rest, so the keypad keeps
