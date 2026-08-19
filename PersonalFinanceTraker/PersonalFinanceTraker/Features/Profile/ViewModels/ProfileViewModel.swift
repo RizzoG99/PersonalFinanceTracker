@@ -27,6 +27,15 @@ final class ProfileViewModel {
         checkBiometrics()
     }
 
+    /// Re-reads name + biometric preference from UserDefaults. `ProfileViewModel` is created once
+    /// at app launch (before onboarding runs) and lives for the whole session, so its initial
+    /// snapshot goes stale the moment onboarding writes the real values — call this whenever the
+    /// profile screen appears to pick them up.
+    func refresh() {
+        fullName = UserDefaults.standard.string(forKey: "user_full_name") ?? ""
+        isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometric_lock_enabled")
+    }
+
     func checkBiometrics() {
         let ctx = LAContext()
         var error: NSError?
