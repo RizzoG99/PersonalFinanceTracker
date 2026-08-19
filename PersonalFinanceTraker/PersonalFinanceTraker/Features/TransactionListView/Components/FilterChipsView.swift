@@ -22,7 +22,8 @@ struct FilterChipsView: View {
         }
         .sheet(isPresented: $showAmountSheet) {
             AmountFilterSheet().environment(vm)
-                .presentationDetents([.height(300)])
+                .presentationDetents([.height(220)])
+                .presentationBackground { AppBackground() }
         }
         .sheet(isPresented: $showCustomDateSheet) {
             CustomDateRangeSheet().environment(vm)
@@ -105,11 +106,49 @@ struct FilterChipsView: View {
         }
     }
 
+    // Two separate tap targets, not one button like the other chips: tapping the ✕ clears the
+    // filter, tapping the rest of the pill opens the sheet to edit it — the other chips only
+    // ever offer "clear" once active, but a min/max range is worth editing in place too.
+    @ViewBuilder
     private var amountChip: some View {
-        Button { showAmountSheet = true } label: {
-            chip(amountLabel, isActive: vm.filters.amountMin != nil || vm.filters.amountMax != nil)
+        let isActive = vm.filters.amountMin != nil || vm.filters.amountMax != nil
+        HStack(spacing: 4) {
+            Button { showAmountSheet = true } label: {
+                Text(amountLabel)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isActive {
+                Button {
+                    vm.filters.amountMin = nil
+                    vm.filters.amountMax = nil
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.caption2.weight(.bold))
+                        .padding(6)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                // Claws back the extra padding above so the icon doesn't visually
+                // enlarge the pill, while still giving the tap target some room.
+                .padding(-6)
+            } else {
+                Image(systemName: "chevron.down")
+                    .font(.caption2)
+            }
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(isActive ? Color.accentIndigo : Color.clear)
+        .foregroundStyle(isActive ? Color.bg0 : Color.textPrimary)
+        .clipShape(.rect(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .strokeBorder(isActive ? Color.clear : Color.textPrimary.opacity(0.35), lineWidth: 1)
+        )
     }
 
     private var amountLabel: String {
