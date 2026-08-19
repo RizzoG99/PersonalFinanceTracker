@@ -136,7 +136,10 @@ struct CurrencyAmountField: View {
                     }
                     .onAppear {
                         updateDisplayText()
-                        if shouldAutoFocus {
+                        // Skip auto-focus while amounts are hidden: focusing immediately would
+                        // unblur the field before the user ever chose to look at it, defeating
+                        // the privacy toggle the moment the sheet opens.
+                        if shouldAutoFocus && !(settings?.hideAmounts ?? false) {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 setFocus(true)
                             }

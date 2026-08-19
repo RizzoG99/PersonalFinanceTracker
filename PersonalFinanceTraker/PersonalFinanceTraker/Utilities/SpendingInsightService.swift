@@ -9,10 +9,12 @@ struct SpendingInsightService {
     let currencyService: CurrencyService
     let pieDataService: PieChartDataService
 
-    func heroInsight(expenseTransactions: [TransactionSnapshot]) -> HeroInsight {
+    func heroInsight(expenseTransactions: [TransactionSnapshot], payCycleStartDay startDay: Int = 1) -> HeroInsight {
         let calendar = Calendar.current
         let now = Date.now
-        let startOfCurrentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
+        // Pay-cycle-aware, like categoryTrends — otherwise this and Category Trends can silently
+        // disagree about what "this month" means for anyone with a non-default cycle start day.
+        let startOfCurrentMonth = PayCycleService.financialMonthStart(for: now, startDay: startDay, calendar: calendar)
         let startOfLastMonth = calendar.date(byAdding: .month, value: -1, to: startOfCurrentMonth) ?? now
 
         let currentTotal = sumExpenses(expenseTransactions.filter { $0.timestamp >= startOfCurrentMonth })
@@ -53,13 +55,15 @@ struct SpendingInsightService {
         }
     }
 
-    func categoryTrends(expenseTransactions: [TransactionSnapshot]) -> [CategoryTrend] {
+    func categoryTrends(expenseTransactions: [TransactionSnapshot], payCycleStartDay startDay: Int = 1) -> [CategoryTrend] {
         let calendar = Calendar.current
         let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: .now) ?? .now
 
-        let current = pieDataService.generatePieChartData(from: expenseTransactions, for: .expenses, timePeriod: .month)
+        let current = pieDataService.generatePieChartData(
+            from: expenseTransactions, for: .expenses, timePeriod: .month, payCycleStartDay: startDay
+        )
         let last = pieDataService.generatePieChartData(
-            from: expenseTransactions, for: .expenses, timePeriod: .month, referenceDate: lastMonthRef
+            from: expenseTransactions, for: .expenses, timePeriod: .month, referenceDate: lastMonthRef, payCycleStartDay: startDay
         )
         let lastDict = Dictionary(last.map { ($0.category, $0.amount) }, uniquingKeysWith: { a, _ in a })
 

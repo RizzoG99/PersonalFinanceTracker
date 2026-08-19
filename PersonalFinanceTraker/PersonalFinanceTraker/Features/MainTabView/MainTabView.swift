@@ -14,7 +14,9 @@ struct MainTabView: View {
     @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
     @AppStorage("app_base_currency") private var baseCurrency: String = Locale.current.currency?.identifier ?? "EUR"
     @AppStorage("pending_widget_destination") private var pendingWidgetDestination = ""
-    @State private var selectedTab: TabItem = .home
+    // Seeded from `AppShellModels.selectedTab` and written back on change (below), so the tab
+    // the user was on survives the shell being torn down and rebuilt on lock/unlock.
+    @State private var selectedTab: TabItem
     @State private var showingAddItemView: Bool = false
     @State private var pendingTransactionDraft: TransactionDraft?
     @State private var viewModel: TransactionListViewModel
@@ -30,6 +32,9 @@ struct MainTabView: View {
     // background→lock→foreground cycle: MainTabView itself is torn down and recreated
     // every time the PIN/biometric lock screen shows, which would otherwise reset it.
     private let appSettings: AppSettings
+    /// Kept only to write `selectedTab` back on change — everything else comes from it up front,
+    /// into this view's own `@State`, same as the other models below.
+    private let shellModels: AppShellModels
 
     /// View models come from the shared `AppShellModels` rather than being built here, so the
     /// iPad shell binds to the very same instances (see AppShellModels).
@@ -37,6 +42,8 @@ struct MainTabView: View {
         repo = models.repo
         materializationService = models.materializationService
         self.appSettings = appSettings
+        shellModels = models
+        _selectedTab = State(wrappedValue: models.selectedTab)
         _viewModel = State(wrappedValue: models.transactions)
         _dashboardViewModel = State(wrappedValue: models.dashboard)
         _compassViewModel = State(wrappedValue: models.compass)
@@ -157,6 +164,9 @@ struct MainTabView: View {
         }
         .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
         .animation(.spring(duration: 0.3), value: showPrivacyToast)
+        .onChange(of: selectedTab) { _, newTab in
+            shellModels.selectedTab = newTab
+        }
         .onChange(of: viewModel.pendingDeletion) { _, pending in
             if !pending.isEmpty { dashboardViewModel.optimisticRemove(ids: pending.map(\.id)) }
         }
@@ -166,6 +176,7 @@ struct MainTabView: View {
         .onChange(of: dataChanged.revision) { _, _ in
             dashboardViewModel.reload()
             viewModel.reload()
+            compassViewModel.load()
             Task {
                 await HabitSnapshotUpdater.refresh(using: repo)
                 await repo.refreshSafeToSpendWidgetSnapshot()
@@ -185,6 +196,7 @@ struct MainTabView: View {
                 // Data may have changed outside the UI (App Intent quick-add)
                 dashboardViewModel.reload()
                 viewModel.reload()
+                compassViewModel.load()
                 Task {
                     try? await materializationService.materialize(using: repo)
                     await HabitSnapshotUpdater.refresh(using: repo)

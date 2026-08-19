@@ -122,12 +122,13 @@ public class PieChartDataService {
     ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Filtered array of items within the time period
     private func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
+        let calendar = Calendar.current
         switch timePeriod {
         case .month:
-            let (start, end) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
-            return items.filter { $0.timestamp >= start && $0.timestamp <= end }
+            let start = PayCycleService.financialMonthStart(for: referenceDate, startDay: payCycleStartDay, calendar: calendar)
+            let end = calendar.date(byAdding: .month, value: 1, to: start) ?? start
+            return items.filter { $0.timestamp >= start && $0.timestamp < end }
         default:
-            let calendar = Calendar.current
             let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate
             return items.filter { $0.timestamp >= startDate && $0.timestamp <= referenceDate }
         }

@@ -63,7 +63,6 @@ struct AmountFilterSheet: View {
                 if let max = vm.filters.amountMax { maxText = "\(max)" }
             }
         }
-        .appBackground()
     }
 
     private var parsedMin: Decimal? {

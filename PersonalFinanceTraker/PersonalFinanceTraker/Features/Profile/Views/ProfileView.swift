@@ -154,25 +154,6 @@ struct ProfileView: View {
                             Label("Restore from Backup", systemImage: "arrow.clockwise.icloud")
                         }
                         .disabled(backupService.newestBackup() == nil)
-                        .confirmationDialog(
-                            "This replaces all current data with your last backup. This cannot be undone.",
-                            isPresented: $showingRestoreConfirmation,
-                            titleVisibility: .visible
-                        ) {
-                            Button("Restore", role: .destructive) {
-                                Task {
-                                    do {
-                                        try await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
-                                        dataChanged.bump()
-                                    } catch BackupService.BackupError.decryptionFailed {
-                                        restoreErrorMessage = "Backup can't be decrypted. Make sure iCloud Keychain is enabled on this device."
-                                    } catch {
-                                        restoreErrorMessage = error.localizedDescription
-                                    }
-                                }
-                            }
-                            Button("Cancel", role: .cancel) {}
-                        }
 
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
@@ -228,7 +209,10 @@ struct ProfileView: View {
             .padding(.top, 24)
             .appBackground()
             .navigationTitle("Settings")
-            .onAppear { viewModel.checkBiometrics() }
+            .onAppear {
+                viewModel.refresh()
+                viewModel.checkBiometrics()
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isHostedAsSheet {
@@ -260,6 +244,23 @@ struct ProfileView: View {
                 case .failure(let error):
                     transactionViewModel.importError = error.localizedDescription
                 }
+            }
+            .alert("Restore from Backup?", isPresented: $showingRestoreConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Restore", role: .destructive) {
+                    Task {
+                        do {
+                            try await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
+                            dataChanged.bump()
+                        } catch BackupService.BackupError.decryptionFailed {
+                            restoreErrorMessage = "Backup can't be decrypted. Make sure iCloud Keychain is enabled on this device."
+                        } catch {
+                            restoreErrorMessage = error.localizedDescription
+                        }
+                    }
+                }
+            } message: {
+                Text("This replaces all current data with your last backup. This cannot be undone.")
             }
             .alert("Delete All Data?", isPresented: $showingDeleteConfirmation) {
                 Button("Cancel", role: .cancel) {}

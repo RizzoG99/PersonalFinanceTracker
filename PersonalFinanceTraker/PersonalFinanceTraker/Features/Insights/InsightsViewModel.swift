@@ -156,7 +156,9 @@ final class CompassViewModel {
     // MARK: - Computations
 
     private func computeHeroInsight() async {
-        heroInsight = insightService.heroInsight(expenseTransactions: expenseTransactions)
+        heroInsight = insightService.heroInsight(
+            expenseTransactions: expenseTransactions, payCycleStartDay: AppSettings.storedStartDay
+        )
     }
 
     private func computeHealthScore() async {
@@ -192,7 +194,9 @@ final class CompassViewModel {
     }
 
     private func computeCategoryTrends() async {
-        categoryTrends = insightService.categoryTrends(expenseTransactions: expenseTransactions)
+        categoryTrends = insightService.categoryTrends(
+            expenseTransactions: expenseTransactions, payCycleStartDay: AppSettings.storedStartDay
+        )
     }
 
     private func computeHabits() async {

@@ -6407,6 +6407,9 @@
         }
       }
     },
+    "Restore from Backup?" : {
+
+    },
     "Review recurring charges regularly" : {
       "localizations" : {
         "en" : {

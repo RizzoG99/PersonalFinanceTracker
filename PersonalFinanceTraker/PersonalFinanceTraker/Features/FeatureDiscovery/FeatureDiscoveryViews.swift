@@ -317,11 +317,11 @@ private struct FeatureDiscoveryAdvanceButton: View {
             Text(title)
                 .foregroundStyle(.primaryActionForeground)
                 .frame(maxWidth: .infinity, minHeight: 52)
+                .glassEffect(.regular.tint(.accentIndigo).interactive(), in: Capsule())
+                .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.tint(.accentIndigo).interactive(), in: Capsule())
         .frame(maxWidth: maximumWidth)
-        .contentShape(Capsule())
         .accessibilityIdentifier("featureDiscovery.advance")
     }
 }

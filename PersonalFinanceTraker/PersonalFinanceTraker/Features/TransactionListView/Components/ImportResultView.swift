@@ -99,6 +99,15 @@ struct ImportResultView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+            } footer: {
+                // Was under the pinned Import button; now that the action lives in the nav bar
+                // (see the confirmationAction toolbar item below), this is the only place left
+                // for a warning about what tapping it does — and it's visible without scrolling.
+                if !validTransactions.isEmpty {
+                    Text("This can't be undone.")
+                        .font(.caption2)
+                        .foregroundStyle(.textDim)
+                }
             }
             .appFormSectionBackground()
 
@@ -146,64 +155,33 @@ struct ImportResultView: View {
         // Empty in the iPad two-pane layout, where this pane isn't a step you arrive at.
         .navigationSubtitle(totalSteps > 0 ? "Step \(currentStep) of \(totalSteps)" : "")
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 6) {
-            ZStack {
-                // .borderedProminent + .tint(.accentIndigo) is the app's primary button (see the
-                // Add Transaction button in DailyLoggingHabitCard). The hand-rolled fill this
-                // replaces had its own corner radius, used accentColor instead of the token, and
-                // had no pressed or disabled state — the disabled look was a manual grey fill.
-                if validTransactions.isEmpty && !isImporting {
-                    // Nothing to import (e.g. every row was a duplicate) — let
-                    // the user finish instead of staring at a dead-end button.
-                    Button("Done") { onDone() }
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
+        .toolbar {
+            // Same move as the Add/Edit Transaction sheet: the primary action lives in the nav
+            // bar instead of a bar pinned above the list. That pinned version had rows from the
+            // list rendering past its background, fully opaque — `List` wasn't reliably sizing
+            // its own bottom content inset to match a `safeAreaInset` view here. Rather than keep
+            // fighting that, there's nothing left at the bottom to fight with.
+            ToolbarItem(placement: .confirmationAction) {
+                if isImporting {
+                    ProgressView()
                 } else {
                     Button {
-                        onConfirm(validTransactions)
-                    } label: {
-                        if isImporting {
-                            HStack(spacing: 8) {
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                                Text("Importing…")
-                            }
-                            .frame(maxWidth: .infinity)
+                        // Nothing to import (e.g. every row was a duplicate) — finish instead
+                        // of running an import of zero rows.
+                        if validTransactions.isEmpty {
+                            onDone()
                         } else {
-                            Text("Import \(validTransactions.count) Transactions")
-                                .frame(maxWidth: .infinity)
+                            onConfirm(validTransactions)
                         }
+                    } label: {
+                        Image(systemName: "checkmark")
                     }
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .disabled(isImporting)
+                    .accessibilityLabel(
+                        validTransactions.isEmpty
+                            ? String(localized: "Done")
+                            : String(localized: "Import \(validTransactions.count) Transactions")
+                    )
                 }
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.accentIndigo)
-            .controlSize(.large)
-            // On screen, not in .help(): a tooltip needs a pointer, so touch users — most of them —
-            // would never have seen it. There is genuinely no undo for a batch import
-            // (confirmImport calls repo.addBatch directly; the undo banner only covers deletes).
-            if !isImporting && !validTransactions.isEmpty {
-                Text("This can't be undone.")
-                    .font(.caption2)
-                    .foregroundStyle(.textDim)
-            }
-            }
-            .padding(.horizontal)
-            .padding(.top, 16)
-            .padding(.bottom, 8)
-            // A fade instead of a material slab: the bar read as a grey panel bolted under the
-            // button, and all this needs to do is stop rows colliding with it as they scroll past.
-            .background {
-                LinearGradient(
-                    colors: [Color.bg0.opacity(0), Color.bg0.opacity(0.92), Color.bg0],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .allowsHitTesting(false)
             }
         }
     }
@@ -325,5 +303,32 @@ struct ImportResultView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
+    }
+}
+
+#Preview {
+    let rows = (0..<20).map { i in
+        MappedRow(
+            input: TransactionInput(
+                timestamp: .now,
+                amount: -Decimal(10 + i),
+                note: "Spesa",
+                category: "🛒 Spesa",
+                currencyCode: "EUR"
+            ),
+            error: nil,
+            rowIndex: i
+        )
+    }
+    return NavigationStack {
+        ImportResultView(
+            rows: rows,
+            availableCategories: [],
+            isImporting: false,
+            currentStep: 3,
+            totalSteps: 3,
+            onConfirm: { _ in },
+            onDone: {}
+        )
     }
 }

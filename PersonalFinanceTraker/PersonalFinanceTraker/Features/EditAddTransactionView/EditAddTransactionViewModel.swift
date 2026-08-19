@@ -38,6 +38,32 @@ final class EditAddTransactionViewModel {
     let repo: any ITransactionRepository
     private let draft: TransactionDraft?
 
+    /// The user-editable fields, snapshotted once loading finishes — lets `hasChanges` tell "the
+    /// user actually touched something" apart from "the async category/goal load just hasn't
+    /// finished yet". Edit mode only; stays nil in Add mode, where `hasChanges` isn't consulted.
+    private struct FormSnapshot: Equatable {
+        var name: String
+        var amount: Double
+        var type: TransactionType
+        var date: Date
+        var category: CategorySnapshot?
+        var goal: GoalSnapshot?
+    }
+    private var originalFormSnapshot: FormSnapshot?
+    private var currentFormSnapshot: FormSnapshot {
+        FormSnapshot(name: transactionName, amount: amount, type: transactionType, date: date, category: selectedCategory, goal: selectedGoal)
+    }
+
+    /// Edit mode's nav-bar save button stays disabled until this is true — editing an existing
+    /// transaction without changing anything has nothing to save. Always false in Add mode
+    /// (`originalFormSnapshot` is never set there); callers should gate on `editingItem != nil`
+    /// rather than relying on that, since it's an implementation detail of when the snapshot
+    /// gets captured.
+    var hasChanges: Bool {
+        guard let originalFormSnapshot else { return false }
+        return currentFormSnapshot != originalFormSnapshot
+    }
+
     init(
         editingItem: TransactionSnapshot? = nil,
         draft: TransactionDraft? = nil,
@@ -82,6 +108,10 @@ final class EditAddTransactionViewModel {
 
             if editingItem == nil {
                 currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
+            } else {
+                // Everything above (category/goal resolution included) has landed — this is the
+                // form as loaded, before the user has touched anything.
+                originalFormSnapshot = currentFormSnapshot
             }
         }
     }

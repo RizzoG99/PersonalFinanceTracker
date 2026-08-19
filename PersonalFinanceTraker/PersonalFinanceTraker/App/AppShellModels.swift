@@ -22,6 +22,10 @@ final class AppShellModels {
     let compass: CompassViewModel
     let profile = ProfileViewModel()
     let dataChanged = DataChangedSignal()
+    /// Which tab the user was on, kept here (not as `@State` in `MainTabView`) so it survives
+    /// the shell being torn down and rebuilt on every lock cycle — otherwise every relock would
+    /// silently drop the user back onto Home.
+    var selectedTab: TabItem = .home
 
     init(modelContainer: ModelContainer) {
         let actor = TransactionActor(modelContainer: modelContainer)

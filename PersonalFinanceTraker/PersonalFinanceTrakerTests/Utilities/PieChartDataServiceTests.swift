@@ -114,6 +114,29 @@ struct PieChartDataServiceTests {
         #expect(whenRankedFirst == Color(categoryToken: "categoryTeal"))
     }
 
+    /// Regression guard: `.month` used to always resolve the *current* financial month and
+    /// silently ignore `referenceDate`, so asking for "last month" returned this month's data —
+    /// which is why Category Trends always showed "0%" (current vs. current diffs to nothing).
+    @Test func monthFilterUsesReferenceDateNotToday() {
+        let calendar = Calendar.current
+        let now = Date.now
+        let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: now)!
+
+        let thisMonthTx = TransactionSnapshot.test(timestamp: now, amount: -50, category: "Food")
+        let lastMonthTx = TransactionSnapshot.test(timestamp: lastMonthRef, amount: -80, category: "Food")
+
+        let sut = PieChartDataService()
+        let currentResult = sut.generatePieChartData(
+            from: [thisMonthTx, lastMonthTx], for: .expenses, timePeriod: .month
+        )
+        let lastResult = sut.generatePieChartData(
+            from: [thisMonthTx, lastMonthTx], for: .expenses, timePeriod: .month, referenceDate: lastMonthRef
+        )
+
+        #expect(currentResult.first?.amount == 50)
+        #expect(lastResult.first?.amount == 80)
+    }
+
     @Test func unknownCategoryFallsBackToTheNameDerivedToken() {
         let sut = PieChartDataService()
         let result = sut.generatePieChartData(

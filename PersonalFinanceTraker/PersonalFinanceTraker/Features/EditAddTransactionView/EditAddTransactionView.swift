@@ -21,16 +21,12 @@ private enum RecurrenceEditScope {
 struct EditAddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(DataChangedSignal.self) private var dataChanged
-    /// In landscape the keyboard leaves ~120pt, which the pinned toggle + save button consumed
-    /// entirely — the form was there but had no room to scroll in. Both move into the form and the
-    /// toolbar, the one strip that stays above the keyboard.
-    @Environment(\.verticalSizeClass) private var vSizeClass
-    private var compactHeight: Bool { vSizeClass == .compact }
     @State private var viewModel: EditAddTransactionViewModel
     @State private var pendingRecurrenceAction: PendingRecurrenceAction?
     @State private var refocusToken = 0
     @State private var savedCount = 0
     @State private var showSavedToast = false
+    @State private var didFocusOnAmount = false
     @State private var toastTask: Task<Void, Never>?
     private let materializationService: RecurrenceMaterializationService
 
@@ -45,25 +41,7 @@ struct EditAddTransactionView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            TransactionFormView(viewModel: viewModel, focusTrigger: refocusToken)
-            if !compactHeight {
-                VStack(spacing: 12) {
-                    // Pinned above the button (Add mode only): the mode and the action it changes share
-                    // one persistent, thumb-reachable zone, instead of the toggle being buried in the scroll.
-                    if viewModel.editingItem == nil {
-                        Toggle(String(localized: "Add another"), isOn: $viewModel.addAnother)
-                            .tint(.accentIndigo)
-                            .padding(.horizontal)
-                    }
-                    TransactionSaveButton(
-                        title: viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction",
-                        isValid: viewModel.isFormValid,
-                        action: saveTransaction
-                    )
-                }
-            }
-        }
+        TransactionFormView(viewModel: viewModel, focusTrigger: refocusToken)
         .readableWidth()
         .sensoryFeedback(.success, trigger: savedCount)
         .overlay(alignment: .top) {
@@ -85,30 +63,21 @@ struct EditAddTransactionView: View {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") { dismiss() }
             }
-            if compactHeight {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction") {
-                        saveTransaction()
-                    }
-                    .bold()
-                    .disabled(!viewModel.isFormValid)
+            // Lives in the nav bar (not a pinned button above the keyboard) so it's never in a
+            // fight with the keyboard's own accessory bar for screen space — same pattern as
+            // Notes/Reminders. Used to be landscape-only; the portrait pinned-bar alternative was
+            // tried and rejected (kept getting covered by, or visually clashing with, the
+            // keyboard toolbar), so this is now unconditional.
+            ToolbarItem(placement: .confirmationAction) {
+                Button {
+                    saveTransaction()
+                } label: {
+                    Image(systemName: "checkmark")
                 }
-            }
-            // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
-            // inline form space. Add mode only, and not for transfers (recurring transfers are
-            // deferred — matches the type-change guard that also clears isRecurring).
-            if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        viewModel.isRecurring.toggle()
-                    } label: {
-                        Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat")
-                    }
-                    // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
-                    // read as "active" while recurrence is actually off.
-                    .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
-                    .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
-                }
+                .accessibilityLabel(viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction")
+                // Edit mode: nothing to save until the user changes something. Add mode is
+                // unaffected — isFormValid alone already gates it there.
+                .disabled(!viewModel.isFormValid || (viewModel.editingItem != nil && !viewModel.hasChanges))
             }
             if viewModel.editingItem != nil {
                 ToolbarItem(placement: .destructiveAction) {
