@@ -6,13 +6,23 @@ import SwiftUI
 enum TransactionFormField: CaseIterable, Hashable {
     case amount
     case name
+    /// The calculator bubble. Kept as a case of this same enum — not a second `@FocusState`
+    /// property — so switching into/out of math mode is a single atomic focus reassignment.
+    /// Two separate `FocusState`s each resigning/becoming first responder on their own pass
+    /// makes the keyboard fully dismiss and reappear in between (a visible flash, the form
+    /// reflowing to show the rows underneath) instead of one continuous swap.
+    case mathExpression
 }
 
 struct TransactionFormView: View {
     @Bindable var viewModel: EditAddTransactionViewModel
     var focusTrigger: Int = 0
+    @State var mathMode: Bool = false
+    /// The calculator bubble's raw text (e.g. "(500+504)×6÷8") — a separate field from
+    /// `viewModel.amount`, not a reformatting of it, so the amount field's own parsing
+    /// (currency formatting, hidden-amounts blur) never has to understand operator characters.
+    @State private var mathExpression: String = ""
 
-    @Environment(\.verticalSizeClass) private var vSizeClass
     @FocusState private var focusedField: TransactionFormField?
 
     var body: some View {
@@ -116,20 +126,75 @@ struct TransactionFormView: View {
                     }
                     .appFormSectionBackground()
 
-                    // "Add another" is normally NOT in the form: it's a save-time mode, pinned above
-                    // the Add Transaction button in EditAddTransactionView's persistent action zone.
-                    // That zone doesn't exist in landscape (the keyboard owns the bottom), so the
-                    // toggle falls back to being a form row rather than disappearing.
-                    if vSizeClass == .compact && viewModel.editingItem == nil {
-                        Section {
-                            Toggle("Add another", isOn: $viewModel.addAnother)
-                                .tint(.accentIndigo)
-                        }
-                        .appFormSectionBackground()
-                    }
                 }
                 .appFormBackground()
-                .keyboardFieldNavigation($focusedField, order: TransactionFormField.allCases)
+                .keyboardFieldNavigation($focusedField, order: [.amount, .name], hideDone: mathMode, hideFocusButtons: mathMode) {
+                    // Save-time mode, not a form field — lives on the keyboard accessory bar
+                    // instead, visible exactly while the keyboard the Add button used to sit
+                    // above is open. Add mode only.
+                    Spacer()
+                    if !mathMode {
+                        if viewModel.editingItem == nil {
+                            Button {
+                                viewModel.addAnother.toggle()
+                            } label: {
+                                Image(systemName: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle")
+                            }
+                            .tint(viewModel.addAnother ? Color.accentIndigo : Color.primary)
+                            .accessibilityValue(viewModel.addAnother ? String(localized: "On") : String(localized: "Off"))
+                        }
+                        // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
+                        // inline form space. Add mode only, and not for transfers (recurring transfers are
+                        // deferred — matches the type-change guard that also clears isRecurring).
+                        if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
+                            Button {
+                                viewModel.isRecurring.toggle()
+                            } label: {
+                                Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
+                            }
+                            // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
+                            // read as "active" while recurrence is actually off.
+                            .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
+                            .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
+                        }
+                    }
+                    
+                    if mathMode {
+                        // The expression bubble is a real (small, borderless) TextField, not a
+                        // label: digits always go wherever the system keyboard's current focus
+                        // is, so this — not viewModel.amount — has to be the focused control
+                        // while calculating, or typed digits would have nowhere to land.
+                        TextField("0", text: expressionDisplayBinding)
+                            .keyboardType(.decimalPad)
+                            .focused($focusedField, equals: .mathExpression)
+                            .font(.system(.callout, design: .monospaced))
+                            .lineLimit(1)
+                            .frame(minWidth: 60, maxWidth: 140)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.surfaceRaised, in: Capsule())
+
+                        operatorButton("+", systemImage: "plus", accessibilityLabel: "Add")
+                        operatorButton("-", systemImage: "minus", accessibilityLabel: "Subtract")
+                        operatorButton("×", systemImage: "multiply", accessibilityLabel: "Multiply")
+                        operatorButton("÷", systemImage: "divide", accessibilityLabel: "Divide")
+                    }
+
+                    Button {
+                        withAnimation {
+                            if mathMode {
+                                commitMathExpression()
+                            } else {
+                                enterMathMode()
+                            }
+                        }
+                    } label: {
+                        Label(
+                            mathMode ? String(localized: "Equal") : String(localized: "Math operation"),
+                            systemImage: mathMode ? "equal" : "plus.forwardslash.minus"
+                        )
+                    }
+                }
                 .onChange(of: focusTrigger) { _, _ in
                     // After an "Add another" save the form resets in place; snap back to the top
                     // (blank Amount) so the user isn't left at the bottom of the sheet. Fires on the
@@ -138,6 +203,91 @@ struct TransactionFormView: View {
                 }
             }
         }
+    }
+
+    /// Live-formatted view of `mathExpression` for the bubble — parens are decorative (this
+    /// bubble has no paren key), so editing through here just strips them back out; the flat
+    /// string in `mathExpression` itself — what `appendOperator`/`commitMathExpression` actually
+    /// work with — is unaffected either way.
+    ///
+    /// Known trade-off: the displayed text can grow/shrink by more than the one character the
+    /// user typed (a paren appearing, or shifting position), so the cursor can occasionally snap
+    /// to the end after a keystroke instead of staying mid-string. Acceptable here since this is
+    /// calculator-style entry — type/backspace at the end — not a field people routinely
+    /// reposition a cursor inside.
+    private var expressionDisplayBinding: Binding<String> {
+        Binding(
+            get: { MathExpressionEvaluator.liveFormatted(mathExpression) },
+            set: { mathExpression = $0.filter { $0 != "(" && $0 != ")" } }
+        )
+    }
+
+    private func operatorButton(_ symbol: String, systemImage: String, accessibilityLabel: LocalizedStringKey) -> some View {
+        Button {
+            appendOperator(symbol)
+        } label: {
+            Image(systemName: systemImage)
+        }
+        .tint(Color.primary)
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    /// Seeds the bubble from the amount already typed (if any) so tapping into math mode
+    /// extends what's there instead of discarding it, then moves keyboard focus to the bubble.
+    /// One assignment to the shared `focusedField` — not a second FocusState — so the keyboard
+    /// swaps directly onto the bubble instead of dismissing and reappearing.
+    private func enterMathMode() {
+        mathExpression = viewModel.amount > 0 ? plainString(viewModel.amount) : ""
+        mathMode = true
+        focusedField = .mathExpression
+    }
+
+    /// Appends an operator, replacing a trailing one instead of stacking ("5+" tap "×" → "5×")
+    /// — the obvious behavior for correcting a mis-tap, and it costs nothing extra to support.
+    private func appendOperator(_ op: String) {
+        if mathExpression.isEmpty {
+            if op == "-" { mathExpression = op }  // leading minus = negative number; the rest need a left side
+            return
+        }
+        if let last = mathExpression.last, "+-×÷".contains(last) {
+            mathExpression.removeLast()
+        }
+        mathExpression.append(op)
+    }
+
+    /// The same button doubles as "=" once math mode is on. An empty bubble has nothing to
+    /// compute, so treat that tap as "never mind" and just exit rather than no-op silently.
+    /// A non-empty but unparseable expression is left alone (stays in math mode) so the user
+    /// can fix it — `MathExpressionEvaluator` never throws, so there's nothing to catch here.
+    private func commitMathExpression() {
+        guard !mathExpression.isEmpty else {
+            exitMathMode()
+            return
+        }
+        guard let result = MathExpressionEvaluator.evaluate(mathExpression) else { return }
+        // `amount` is a magnitude (CurrencyAmountField itself only ever accepts >= 0); the
+        // expense/income sign lives in the Type picker, not here.
+        viewModel.amount = abs(result)
+        exitMathMode()
+    }
+
+    private func exitMathMode() {
+        mathMode = false
+        mathExpression = ""
+        focusedField = .amount
+    }
+
+    /// Plain (non-currency) decimal string for seeding the bubble — same convention
+    /// `CurrencyAmountField` uses for its own editing text, duplicated rather than exposed
+    /// since it's a few lines and that view's formatting is private/internal to it.
+    private func plainString(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.decimalSeparator = Locale.current.decimalSeparator ?? ","
+        formatter.groupingSeparator = ""
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: NSNumber(value: value)) ?? ""
     }
 }
 

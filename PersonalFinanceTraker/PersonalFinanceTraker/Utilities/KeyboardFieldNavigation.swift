@@ -7,36 +7,55 @@ extension View {
     /// which in landscape means scrolling a form that has almost no room to scroll. The amount fields
     /// make it worse: a `decimalPad` has no Return key at all, so `submitLabel` can't help there.
     ///
-    /// - Parameter order: the fields in tab order. Typed fields only — chaining into a picker would
-    ///   make Next look like it dismissed the keyboard for nothing.
-    func keyboardFieldNavigation<Field: Hashable>(
+    /// - Parameters:
+    ///   - order: the fields in tab order. Typed fields only — chaining into a picker would
+    ///     make Next look like it dismissed the keyboard for nothing.
+    ///   - accessory: extra content on its own row below ‹ › Done, for form-specific controls
+    ///     that only make sense while this particular keyboard is up. Empty by default so
+    ///     existing callers (e.g. AddGoalSheet) are unaffected.
+    func keyboardFieldNavigation<Field: Hashable, Accessory: View>(
         _ focus: FocusState<Field?>.Binding,
-        order: [Field]
+        order: [Field],
+        hideDone: Bool = false,
+        hideFocusButtons: Bool = false,
+        @ViewBuilder accessory: () -> Accessory = { EmptyView() }
     ) -> some View {
+        // A single ToolbarItem wrapping a VStack (not ToolbarItemGroup, whose children lay out
+        // in one row) so the accessory content gets its own row under ‹ › Done instead of being
+        // squeezed into the same line.
         toolbar {
             ToolbarItemGroup(placement: .keyboard) {
-                let index = focus.wrappedValue.flatMap { order.firstIndex(of: $0) }
+                HStack {
+                    if (!hideFocusButtons) {
+                        let index = focus.wrappedValue.flatMap { order.firstIndex(of: $0) }
 
-                Button {
-                    if let index, index > 0 { focus.wrappedValue = order[index - 1] }
-                } label: {
-                    Image(systemName: "chevron.up")
+                        Button {
+                            if let index, index > 0 { focus.wrappedValue = order[index - 1] }
+                        } label: {
+                            Image(systemName: "chevron.up")
+                        }
+                        .accessibilityLabel("Previous field")
+                        .disabled(index == nil || index == 0)
+
+                        Button {
+                            if let index, index < order.count - 1 { focus.wrappedValue = order[index + 1] }
+                        } label: {
+                            Image(systemName: "chevron.down")
+                        }
+                        .accessibilityLabel("Next field")
+                        .disabled(index == nil || index == order.count - 1)
+                    }
+                    
+                    accessory()
+
+                    Spacer()
+
+                    if (!hideDone) {
+                        Button("Done") { focus.wrappedValue = nil }
+                            .fontWeight(.semibold)
+                    }
                 }
-                .accessibilityLabel("Previous field")
-                .disabled(index == nil || index == 0)
-
-                Button {
-                    if let index, index < order.count - 1 { focus.wrappedValue = order[index + 1] }
-                } label: {
-                    Image(systemName: "chevron.down")
-                }
-                .accessibilityLabel("Next field")
-                .disabled(index == nil || index == order.count - 1)
-
-                Spacer()
-
-                Button("Done") { focus.wrappedValue = nil }
-                    .fontWeight(.semibold)
+                
             }
         }
     }
