@@ -9,19 +9,18 @@ import SwiftData
 struct AuthenticationWrapper: View {
     @StateObject private var authService = BiometricAuthService()
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
     @State private var showSplash = true
     @State private var isCaptured = Self.isScreenCaptured()
     // Owned here (not by MainTabView) since AuthenticationWrapper is never torn down
-    // while the app is running — MainTabView is recreated on every lock/unlock cycle,
+    // while the app is running — the shell below is rebuilt on every lock/unlock cycle,
     // which would otherwise reset hideAmounts whenever the app is merely backgrounded.
     @State private var appSettings = AppSettings()
     @State private var featureDiscovery = FeatureDiscoveryCoordinator()
     /// Owned here for the same reason as `appSettings`: the shell below is destroyed and
-    /// rebuilt on every lock/unlock cycle, and the view models must not be.
+    /// rebuilt on every lock/unlock cycle, and the view models (and the state deliberately
+    /// lifted into `AppShellModels` to survive that, like `selectedTab`) must not be.
     @State private var shellModels: AppShellModels
 
     private let pinService = PINService()
@@ -31,14 +30,6 @@ struct AuthenticationWrapper: View {
     init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer
         _shellModels = State(wrappedValue: AppShellModels(modelContainer: modelContainer))
-    }
-
-    private var compactHeight: Bool {
-        verticalSizeClass == .compact
-    }
-
-    private var shouldExpandFeatureDiscoverySheet: Bool {
-        compactHeight || horizontalSizeClass == .regular
     }
 
     private var presentsTourAsIPadCard: Bool {
@@ -79,6 +70,14 @@ struct AuthenticationWrapper: View {
             } else if authService.isUnlocked {
                 // iPad gets its own shell (sidebar + inspector); every other idiom keeps the
                 // iPhone tab bar. Both bind to the same `shellModels`, so neither can drift.
+                //
+                // This view is intentionally swapped out for PINEntryView on lock rather than
+                // staying mounted underneath it: `.sheet`/`.fullScreenCover` are UIKit modal
+                // presentations that sit above their presenting view controller regardless of
+                // SwiftUI zIndex, so an open sheet here would render on top of — or bleed through
+                // — a same-level PIN overlay instead of being covered by it. State worth keeping
+                // across a lock cycle (selectedTab) is lifted into `shellModels` instead; the rest
+                // resets, same as any modal being dismissed when a screen relocks.
                 Group {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         IPadRootView(models: shellModels, appSettings: appSettings)
@@ -143,7 +142,10 @@ struct AuthenticationWrapper: View {
                 },
                 onDone: { featureDiscovery.dismissWhatsNew() }
             )
-            .presentationDetents(shouldExpandFeatureDiscoverySheet ? [.large] : [.medium, .large])
+            // .large only: at .medium the release card's illustration gets clipped right at the
+            // sheet edge instead of reading as "scroll for more" — the tour view avoids .medium
+            // for the same reason (.fraction(0.72)/fullScreen).
+            .presentationDetents([.large])
             .presentationBackground { AppBackground() }
         }
         .task(id: isPINSetup && authService.isUnlocked && !showSplash) {
