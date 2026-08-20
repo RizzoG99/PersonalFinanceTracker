@@ -14,14 +14,22 @@ struct AuthenticationWrapper: View {
     @State private var showSplash = true
     @State private var isCaptured = Self.isScreenCaptured()
     // Owned here (not by MainTabView) since AuthenticationWrapper is never torn down
-    // while the app is running — the shell below is rebuilt on every lock/unlock cycle,
-    // which would otherwise reset hideAmounts whenever the app is merely backgrounded.
+    // while the app is running, and neither is the shell below anymore (see `overlay`) —
+    // but keeping ownership here still protects against a future shell rebuild resetting it.
     @State private var appSettings = AppSettings()
     @State private var featureDiscovery = FeatureDiscoveryCoordinator()
-    /// Owned here for the same reason as `appSettings`: the shell below is destroyed and
-    /// rebuilt on every lock/unlock cycle, and the view models (and the state deliberately
-    /// lifted into `AppShellModels` to survive that, like `selectedTab`) must not be.
+    /// Guards the `.task(id:)` below to a single run per launch. The shell now stays mounted
+    /// across a lock cycle (see `overlay`), so an open sheet (e.g. Add Transaction) can still be
+    /// up on a later unlock — without this, the id's false→true toggle on every unlock would
+    /// re-run `loadAndPrepare`, which can set `releaseToPresent`/`isShowingTour` and attempt a
+    /// second `.sheet` presentation on top of it ("Currently, only presenting a single sheet is
+    /// supported"). Feature discovery is a once-per-launch check anyway, not a per-unlock one.
+    @State private var didPrepareFeatureDiscovery = false
+    /// Owned here for the same reason as `appSettings`.
     @State private var shellModels: AppShellModels
+    /// PIN lock screen and privacy cover render in their own window above the shell — see
+    /// `overlay` and `LockOverlayWindow`'s doc comment for why.
+    @State private var lockOverlay = LockOverlayWindow()
 
     private let pinService = PINService()
     private let backupService = BackupService()
@@ -34,6 +42,49 @@ struct AuthenticationWrapper: View {
 
     private var presentsTourAsIPadCard: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
+    }
+
+    private enum Overlay: Equatable {
+        case none
+        /// Task-switcher snapshot / screen-capture cover. Wins over `.pin` so an `.inactive`
+        /// relock never flashes the PIN pad mid-transition.
+        case cover
+        case pin
+    }
+
+    private var overlay: Overlay {
+        if showSplash { return .none } // splash is already shown in-window
+        if scenePhase != .active || isCaptured { return .cover }
+        if isPINSetup && !authService.isUnlocked { return .pin }
+        return .none
+    }
+
+    private func syncLockOverlay() {
+        switch overlay {
+        case .none:
+            lockOverlay.hide()
+        case .cover:
+            lockOverlay.show(interactive: false) { SplashView() }
+        case .pin:
+            // The software keyboard is its own system-owned window, docked to the screen
+            // regardless of our overlay's level — it stays up and hittable, still routing
+            // input to the shell's first responder (e.g. the Add Transaction amount field)
+            // underneath, unless explicitly dismissed. Verified on-device via the
+            // accessibility tree: without this, the keyboard's digit keys stayed reachable
+            // while locked, even though the field's contents were correctly hidden.
+            //
+            // Scoped to `.pin` (not `.cover`): only here is the user actually unauthenticated
+            // — a `.cover`-only blip (Control Center, a notification banner) never calls
+            // `authService.lock()`, so dismissing the keyboard there would just interrupt
+            // typing elsewhere in the app for no security benefit.
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            lockOverlay.show(interactive: true) {
+                ZStack {
+                    AppBackground()
+                    PINEntryView(viewModel: PINEntryViewModel(pinService: pinService, authService: authService))
+                }
+            }
+        }
     }
 
     var body: some View {
@@ -67,17 +118,20 @@ struct AuthenticationWrapper: View {
                     )
                 )
                 .transition(.opacity)
-            } else if authService.isUnlocked {
+            } else {
                 // iPad gets its own shell (sidebar + inspector); every other idiom keeps the
                 // iPhone tab bar. Both bind to the same `shellModels`, so neither can drift.
                 //
-                // This view is intentionally swapped out for PINEntryView on lock rather than
-                // staying mounted underneath it: `.sheet`/`.fullScreenCover` are UIKit modal
-                // presentations that sit above their presenting view controller regardless of
-                // SwiftUI zIndex, so an open sheet here would render on top of — or bleed through
-                // — a same-level PIN overlay instead of being covered by it. State worth keeping
-                // across a lock cycle (selectedTab) is lifted into `shellModels` instead; the rest
-                // resets, same as any modal being dismissed when a screen relocks.
+                // Stays mounted across a lock cycle — including anything it has presented, like
+                // an open Add Transaction sheet — instead of being swapped out for PINEntryView.
+                // The lock screen renders in its own window instead (see `overlay`), which is
+                // what actually needs to cover this, sheets included.
+                //
+                // ponytail: this also means the shell now mounts (and its .task/.onAppear work
+                // runs) behind the lock on cold launch, before the first unlock — previously it
+                // didn't exist yet at that point. Nothing renders visibly (opaque overlay window
+                // + accessibilityViewIsModal), so this is a one-time startup-ordering trade for a
+                // single code path instead of two; revisit if it ever shows up as a real cost.
                 Group {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         IPadRootView(models: shellModels, appSettings: appSettings)
@@ -87,11 +141,6 @@ struct AuthenticationWrapper: View {
                 }
                 .environment(featureDiscovery)
                 .transition(.opacity)
-            } else {
-                PINEntryView(
-                    viewModel: PINEntryViewModel(pinService: pinService, authService: authService)
-                )
-                .transition(.opacity)
             }
 
             if showSplash {
@@ -99,19 +148,8 @@ struct AuthenticationWrapper: View {
                     .transition(.opacity)
                     .zIndex(1)
             }
-
-            // ponytail: covers the task-switcher snapshot, which is taken on
-            // .inactive (before .background triggers the PIN lock below).
-            // Also covers screen recording / AirPlay mirroring via UIScreen.isCaptured.
-            if (scenePhase != .active || isCaptured) && !showSplash {
-                SplashView()
-                    .transition(.opacity)
-                    .zIndex(1)
-            }
         }
         .animation(.easeInOut(duration: 0.25), value: isPINSetup)
-        .animation(.easeInOut(duration: 0.25), value: authService.isUnlocked)
-        .animation(.easeInOut(duration: 0.25), value: scenePhase)
         .fullScreenCover(isPresented: isShowingTourFullScreen) {
             FeatureDiscoveryTourView(
                 onboarding: featureDiscovery.manifest.onboarding,
@@ -149,11 +187,17 @@ struct AuthenticationWrapper: View {
             .presentationBackground { AppBackground() }
         }
         .task(id: isPINSetup && authService.isUnlocked && !showSplash) {
-            guard isPINSetup, authService.isUnlocked, !showSplash else { return }
+            guard isPINSetup, authService.isUnlocked, !showSplash, !didPrepareFeatureDiscovery else { return }
             let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
             await featureDiscovery.loadAndPrepare(appVersion: appVersion)
+            // Set only after completing (not before awaiting): if this task gets cancelled
+            // mid-flight — id flips back to false, e.g. an instant re-background — the next
+            // unlock should retry rather than have permanently skipped the check this session.
+            didPrepareFeatureDiscovery = true
         }
+        .onChange(of: overlay) { _, _ in syncLockOverlay() }
         .onAppear {
+            syncLockOverlay()
             // ponytail: unit tests run inside this app as their host process, so this
             // view's real onAppear fires alongside the test bundle. Without this guard,
             // a fresh test-host launch (isPINSetup false, since the host process has no
