@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 import UIKit
 import UserNotifications
 
@@ -20,6 +21,7 @@ struct PersonalFinanceTrakerApp: App {
         UIWindow.appearance().backgroundColor = UIColor(named: "LaunchBackground")
         seedMemberSinceDateIfNeeded()
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
+        configureTips()
     }
 
     // MARK: - Properties
@@ -120,5 +122,17 @@ private extension PersonalFinanceTrakerApp {
         let key = "member_since_timestamp"
         guard UserDefaults.standard.double(forKey: key) == 0 else { return }
         UserDefaults.standard.set(Date.now.timeIntervalSince1970, forKey: key)
+    }
+
+    /// `-resetTips` lets a Debug build re-see already-shown tips without an
+    /// uninstall — the shared simulator is also used for manual testing that
+    /// shouldn't get wiped by a reinstall (see feedback_shared_simulator_collision).
+    func configureTips() {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-resetTips") {
+            try? Tips.resetDatastore()
+        }
+        #endif
+        try? Tips.configure()
     }
 }

@@ -210,6 +210,55 @@ extension View {
     }
 }
 
+// MARK: - Focus Scrim (blur + dim behind a transient overlay)
+
+/// Pushes content back — blur plus a light dim — so a transient thing layered on top
+/// (a tip card, a coach mark, an inline prompt) reads as the focus.
+private struct FocusScrim: ViewModifier {
+    let isActive: Bool
+    let radius: CGFloat
+    let dimOpacity: Double
+
+    func body(content: Content) -> some View {
+        content
+            // Load-bearing, not decoration. Without it the blur is recomputed against
+            // the whole live view hierarchy every frame of the animation, which visibly
+            // stutters on anything as deep as a Form. Flattening to a single layer first
+            // means each frame blurs one cached texture instead.
+            .compositingGroup()
+            .blur(radius: isActive ? radius : 0)
+            .overlay {
+                if isActive {
+                    Color.black.opacity(dimOpacity)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                }
+            }
+    }
+}
+
+extension View {
+    /// Blurs and dims this view while `isActive`, so something layered over it reads as
+    /// the focus. Apply to the content being pushed back, not to the overlay itself.
+    ///
+    /// **Blocks interaction** with what it covers: the dim layer is deliberately
+    /// hit-testable, so the backgrounded content can't be tapped while the scrim is up.
+    /// Scope it to just the part that should go inert — a scrim on a `Form` leaves the
+    /// keyboard and its accessory bar reachable, since those render outside it.
+    ///
+    /// **Animate from the caller.** This reads `isActive` but never animates it, so a
+    /// caller can commit the scrim and whatever it's backing in one `withAnimation`
+    /// transaction. Driving it off a value that changes across separate render passes
+    /// (async state, `@FocusState`) and relying on an implicit `.animation` desyncs
+    /// them — the blur interpolates while structural insertions snap in a frame early.
+    ///
+    /// `.ultraThinMaterial` is the tempting alternative and the wrong one here: its
+    /// blur radius is fixed and system-defined, far heavier than a readable backdrop.
+    func focusScrim(_ isActive: Bool, radius: CGFloat = 4, dimOpacity: Double = 0.15) -> some View {
+        modifier(FocusScrim(isActive: isActive, radius: radius, dimOpacity: dimOpacity))
+    }
+}
+
 // MARK: - Toast Banner
 
 /// Shared black-pill toast used for transient status/undo messages. Convention: place

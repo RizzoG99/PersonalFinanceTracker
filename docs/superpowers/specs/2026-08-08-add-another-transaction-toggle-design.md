@@ -57,6 +57,12 @@ session-only, defaults-OFF behavior is automatic — no persistence code.
 - Label wrapped in `String(localized: "Add another")` and added to the string
   catalog.
 
+> **Superseded 2026-08-20.** This toggle (and Repeat alongside it) later moved
+> off the form entirely, into the keyboard accessory bar as icon-only buttons —
+> full history in `docs/superpowers/plans/2026-08-08-add-another-transaction-toggle.md`
+> Task 3. That traded away visible labels, tracked and fixed via TipKit tips
+> under issue #31.
+
 ### 3. `CurrencyAmountField`
 
 **Why this exists — clearing the stale display, not raising the keyboard.**

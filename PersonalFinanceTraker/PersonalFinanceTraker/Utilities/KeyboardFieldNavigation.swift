@@ -55,8 +55,20 @@ extension View {
                             .fontWeight(.semibold)
                     }
                 }
-                
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                // Glass only. A `.bar` background under it was tried as a fallback in case the
+                // toolbar stripped the glass effect — it doesn't, and `.bar` is opaque enough
+                // that it filled in the very translucency the glass is there to provide.
+                .glassEffect(.regular, in: .capsule)
+                .padding(.bottom, 20)
             }
+            // The load-bearing line. iOS 26 reserves ~48pt of height for a keyboard toolbar
+            // item and draws a shared glass background filling it, so the bar sits flush to
+            // the keyboard and any padding just makes that background taller. Hiding it frees
+            // the item to be smaller than its slot, which is what turns the padding above
+            // into a real gap — and obliges us to bring our own background.
+            .sharedBackgroundVisibility(.hidden)
         }
     }
 }

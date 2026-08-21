@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 /// The form's text fields, in tab order. Only the typed ones: pickers, chips and the date wheel are
 /// reached by tapping, and putting them in the chain would mean "Next" sometimes dismisses the
@@ -14,6 +15,28 @@ enum TransactionFormField: CaseIterable, Hashable {
     case mathExpression
 }
 
+/// Shows a keyboard-bar button's title beside its icon only where the bar has room for it:
+/// iPad's spans the whole window, iPhone's is cramped enough that dropping those labels is
+/// what created issue #31 in the first place.
+///
+/// One style taking a `Bool`, rather than `.labelStyle(cond ? .titleAndIcon : .iconOnly)` at
+/// each call site — `TitleAndIconLabelStyle` and `IconOnlyLabelStyle` are distinct types, so
+/// that ternary has no common type to resolve to and doesn't compile.
+private struct KeyboardBarLabelStyle: LabelStyle {
+    let showsTitle: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        if showsTitle {
+            HStack(spacing: 6) {
+                configuration.icon
+                configuration.title
+            }
+        } else {
+            configuration.icon
+        }
+    }
+}
+
 struct TransactionFormView: View {
     @Bindable var viewModel: EditAddTransactionViewModel
     var focusTrigger: Int = 0
@@ -24,6 +47,31 @@ struct TransactionFormView: View {
     @State private var mathExpression: String = ""
 
     @FocusState private var focusedField: TransactionFormField?
+
+    /// Drives the tip card, its scrim and the form's blur as one unit — see
+    /// `syncTipVisibility()` for why this is stored state rather than a computed property.
+    @State private var tipVisible = false
+
+    // .popoverTip() doesn't anchor from the keyboard accessory bar — it lives in
+    // UIRemoteKeyboardWindow, not the app window (verified on-device, issue #31).
+    // Pinned above the accessory bar instead, via the .safeAreaInset below, so it
+    // still reads as pointing at the row it explains rather than a card lost in
+    // the scrolling form.
+    @State private var tips = TipGroup(.ordered) {
+        AddAnotherTip()
+        RepeatTip()
+        MathModeTip()
+    }
+
+    /// iPad shows this form in a persistent inspector column (`IPadInspector`) beside the
+    /// dashboard, not as a sheet that owns the screen. Two things follow: the keyboard bar
+    /// has room to label its buttons there, and the tips explaining those buttons — plus the
+    /// scrim behind them — are skipped entirely. The controls themselves are identical on
+    /// both platforms.
+    ///
+    /// Matches how `AuthenticationWrapper` picks the root view, so the two can't disagree
+    /// about which layout is on screen.
+    private var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -137,9 +185,17 @@ struct TransactionFormView: View {
                         if viewModel.editingItem == nil {
                             Button {
                                 viewModel.addAnother.toggle()
+                                AddAnotherTip().invalidate(reason: .actionPerformed)
                             } label: {
-                                Image(systemName: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle")
+                                // A Label, not a bare Image: the title is what iPad shows beside
+                                // the icon, and it doubles as the VoiceOver label this button was
+                                // missing (it previously announced the raw SF Symbol name).
+                                Label(
+                                    "Keep adding",
+                                    systemImage: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle"
+                                )
                             }
+                            .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
                             .tint(viewModel.addAnother ? Color.accentIndigo : Color.primary)
                             .accessibilityValue(viewModel.addAnother ? String(localized: "On") : String(localized: "Off"))
                         }
@@ -149,9 +205,11 @@ struct TransactionFormView: View {
                         if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
                             Button {
                                 viewModel.isRecurring.toggle()
+                                RepeatTip().invalidate(reason: .actionPerformed)
                             } label: {
                                 Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
                             }
+                            .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
                             // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
                             // read as "active" while recurrence is actually off.
                             .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
@@ -185,6 +243,7 @@ struct TransactionFormView: View {
                             if mathMode {
                                 commitMathExpression()
                             } else {
+                                MathModeTip().invalidate(reason: .actionPerformed)
                                 enterMathMode()
                             }
                         }
@@ -194,15 +253,75 @@ struct TransactionFormView: View {
                             systemImage: mathMode ? "equal" : "plus.forwardslash.minus"
                         )
                     }
+                    .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
+                    // Same on/off convention as the two toggles above: accent only while the
+                    // mode is active. Without an explicit tint this fell through to the app's
+                    // global AccentColor and sat permanently purple, reading as "on" next to
+                    // two neutral siblings that were actually off.
+                    .tint(mathMode ? Color.accentIndigo : Color.primary)
                 }
+                // Scoped to the Form on purpose: the scrim blocks taps on the rows behind the
+                // tip, but the keyboard and its accessory bar render outside the Form, so the
+                // controls the tip is explaining stay reachable.
+                .focusScrim(tipVisible)
+                // Pinned just above the accessory bar — appears exactly while the keyboard
+                // (and the bar it explains) is up, and doesn't scroll away with the form.
+                .safeAreaInset(edge: .bottom) {
+                    if tipVisible, let tip = tips.currentTip {
+                        TipView(tip)
+                            .tipViewStyle(AppTipViewStyle())
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            .padding(.bottom, 52)
+                            .transition(.opacity)
+                    }
+                }
+                // Both inputs to tipVisible have to be watched: focus and TipKit's currentTip
+                // resolve in separate render passes, and syncTipVisibility() folds whichever
+                // lands second into one animated transaction.
+                .onChange(of: focusedField) { _, _ in syncTipVisibility() }
+                .onChange(of: tips.currentTip?.id) { _, _ in syncTipVisibility() }
                 .onChange(of: focusTrigger) { _, _ in
                     // After an "Add another" save the form resets in place; snap back to the top
                     // (blank Amount) so the user isn't left at the bottom of the sheet. Fires on the
                     // same token bump that clears/re-focuses the amount field.
                     withAnimation { proxy.scrollTo("formTop", anchor: .top) }
                 }
+                .onAppear {
+                    updateTipEligibility()
+                    syncTipVisibility()
+                }
+                .onChange(of: viewModel.transactionType) { _, _ in updateTipEligibility() }
             }
         }
+    }
+
+    /// Folds the two independent inputs — keyboard focus and TipKit's async `currentTip` —
+    /// into one animated state change.
+    ///
+    /// A computed property read directly by the blur/overlay/inset was tried first and
+    /// animated badly: focus and `currentTip` land in *separate* render passes, so an
+    /// outer `.animation(_:value:)` caught the blur's radius interpolation but missed the
+    /// structural insertion of the card and scrim — they snapped in at full opacity a
+    /// frame ahead of the blur (confirmed frame-by-frame). Committing one `@State` flip
+    /// inside an explicit `withAnimation` puts all three in the same transaction.
+    private func syncTipVisibility() {
+        // One gate for the card and its scrim both. Nothing to explain on iPad — the keyboard
+        // bar spells each button out there (see `KeyboardBarLabelStyle`), so a tip would be
+        // captioning a control that already says what it does. The scrim was wrong there
+        // independently: it dims this Form, which on iPad is one column of a split layout, so
+        // the untouched columns beside it end up brighter than the tip it was spotlighting.
+        let shouldShow = !isPad && focusedField != nil && tips.currentTip != nil
+        guard shouldShow != tipVisible else { return }
+        withAnimation(.easeInOut(duration: 0.25)) { tipVisible = shouldShow }
+    }
+
+    /// Keeps the two gated tips' eligibility in step with their buttons' own visibility
+    /// conditions, so `TipGroup`'s order can't land on a tip for a control that isn't
+    /// rendered (e.g. opening the sheet in edit mode, or switching to Transfer).
+    private func updateTipEligibility() {
+        AddAnotherTip.isEligible = viewModel.editingItem == nil
+        RepeatTip.isEligible = viewModel.editingItem == nil && viewModel.transactionType != .transfer
     }
 
     /// Live-formatted view of `mathExpression` for the bubble — parens are decorative (this
