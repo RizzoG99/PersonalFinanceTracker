@@ -57,11 +57,9 @@ extension View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
-                // Both, not just the glass: a .toolbar strips glass effects from its contents
-                // (it expects to apply its own around the whole bar), so on the builds where
-                // that happens the .bar material underneath is what actually renders. Without
-                // one of them the buttons would float on bare keyboard.
-                .background(.bar, in: .capsule)
+                // Glass only. A `.bar` background under it was tried as a fallback in case the
+                // toolbar stripped the glass effect — it doesn't, and `.bar` is opaque enough
+                // that it filled in the very translucency the glass is there to provide.
                 .glassEffect(.regular, in: .capsule)
                 .padding(.bottom, 20)
             }
