@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 /// The form's text fields, in tab order. Only the typed ones: pickers, chips and the date wheel are
 /// reached by tapping, and putting them in the chain would mean "Next" sometimes dismisses the
@@ -24,6 +25,21 @@ struct TransactionFormView: View {
     @State private var mathExpression: String = ""
 
     @FocusState private var focusedField: TransactionFormField?
+
+    /// Drives the tip card, its scrim and the form's blur as one unit — see
+    /// `syncTipVisibility()` for why this is stored state rather than a computed property.
+    @State private var tipVisible = false
+
+    // .popoverTip() doesn't anchor from the keyboard accessory bar — it lives in
+    // UIRemoteKeyboardWindow, not the app window (verified on-device, issue #31).
+    // Pinned above the accessory bar instead, via the .safeAreaInset below, so it
+    // still reads as pointing at the row it explains rather than a card lost in
+    // the scrolling form.
+    @State private var tips = TipGroup(.ordered) {
+        AddAnotherTip()
+        RepeatTip()
+        MathModeTip()
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -137,6 +153,7 @@ struct TransactionFormView: View {
                         if viewModel.editingItem == nil {
                             Button {
                                 viewModel.addAnother.toggle()
+                                AddAnotherTip().invalidate(reason: .actionPerformed)
                             } label: {
                                 Image(systemName: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle")
                             }
@@ -149,6 +166,7 @@ struct TransactionFormView: View {
                         if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
                             Button {
                                 viewModel.isRecurring.toggle()
+                                RepeatTip().invalidate(reason: .actionPerformed)
                             } label: {
                                 Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
                             }
@@ -185,6 +203,7 @@ struct TransactionFormView: View {
                             if mathMode {
                                 commitMathExpression()
                             } else {
+                                MathModeTip().invalidate(reason: .actionPerformed)
                                 enterMathMode()
                             }
                         }
@@ -195,14 +214,81 @@ struct TransactionFormView: View {
                         )
                     }
                 }
+                // .ultraThinMaterial was tried first — its blur radius is fixed and system-wide,
+                // way stronger than wanted here (form became unreadable). A direct, small-radius
+                // .blur() on the Form gives control over just how blurred it gets.
+                //
+                // compositingGroup() is load-bearing, not decoration: without it the blur is
+                // recomputed against the Form's whole live hierarchy every frame of the
+                // animation, which is what made the fade-in stutter. Flattening to a single
+                // layer first means each frame blurs one cached texture instead.
+                .compositingGroup()
+                .blur(radius: tipVisible ? 4 : 0)
+                // Tap-blocker + a touch of dimming on top of the blur so the tip still pops.
+                // Hit-testable on purpose (no allowsHitTesting(false)): it sits only over the
+                // Form's own rows, so it blocks fiddling with other fields while a tip is up
+                // without covering the Amount field's keyboard or the accessory bar below —
+                // those render outside the Form this overlay is scoped to, so they stay reachable.
+                .overlay {
+                    if tipVisible {
+                        Color.black.opacity(0.15)
+                            .ignoresSafeArea()
+                            .transition(.opacity)
+                    }
+                }
+                // Pinned just above the accessory bar — appears exactly while the keyboard
+                // (and the bar it explains) is up, and doesn't scroll away with the form.
+                .safeAreaInset(edge: .bottom) {
+                    if tipVisible, let tip = tips.currentTip {
+                        TipView(tip)
+                            .tipViewStyle(AppTipViewStyle())
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            .padding(.bottom, 52)
+                            .transition(.opacity)
+                    }
+                }
+                // Both inputs to tipVisible have to be watched: focus and TipKit's currentTip
+                // resolve in separate render passes, and syncTipVisibility() folds whichever
+                // lands second into one animated transaction.
+                .onChange(of: focusedField) { _, _ in syncTipVisibility() }
+                .onChange(of: tips.currentTip?.id) { _, _ in syncTipVisibility() }
                 .onChange(of: focusTrigger) { _, _ in
                     // After an "Add another" save the form resets in place; snap back to the top
                     // (blank Amount) so the user isn't left at the bottom of the sheet. Fires on the
                     // same token bump that clears/re-focuses the amount field.
                     withAnimation { proxy.scrollTo("formTop", anchor: .top) }
                 }
+                .onAppear {
+                    updateTipEligibility()
+                    syncTipVisibility()
+                }
+                .onChange(of: viewModel.transactionType) { _, _ in updateTipEligibility() }
             }
         }
+    }
+
+    /// Folds the two independent inputs — keyboard focus and TipKit's async `currentTip` —
+    /// into one animated state change.
+    ///
+    /// A computed property read directly by the blur/overlay/inset was tried first and
+    /// animated badly: focus and `currentTip` land in *separate* render passes, so an
+    /// outer `.animation(_:value:)` caught the blur's radius interpolation but missed the
+    /// structural insertion of the card and scrim — they snapped in at full opacity a
+    /// frame ahead of the blur (confirmed frame-by-frame). Committing one `@State` flip
+    /// inside an explicit `withAnimation` puts all three in the same transaction.
+    private func syncTipVisibility() {
+        let shouldShow = focusedField != nil && tips.currentTip != nil
+        guard shouldShow != tipVisible else { return }
+        withAnimation(.easeInOut(duration: 0.25)) { tipVisible = shouldShow }
+    }
+
+    /// Keeps the two gated tips' eligibility in step with their buttons' own visibility
+    /// conditions, so `TipGroup`'s order can't land on a tip for a control that isn't
+    /// rendered (e.g. opening the sheet in edit mode, or switching to Transfer).
+    private func updateTipEligibility() {
+        AddAnotherTip.isEligible = viewModel.editingItem == nil
+        RepeatTip.isEligible = viewModel.editingItem == nil && viewModel.transactionType != .transfer
     }
 
     /// Live-formatted view of `mathExpression` for the bubble — parens are decorative (this
