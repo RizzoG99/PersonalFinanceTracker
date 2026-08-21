@@ -15,6 +15,28 @@ enum TransactionFormField: CaseIterable, Hashable {
     case mathExpression
 }
 
+/// Shows a keyboard-bar button's title beside its icon only where the bar has room for it:
+/// iPad's spans the whole window, iPhone's is cramped enough that dropping those labels is
+/// what created issue #31 in the first place.
+///
+/// One style taking a `Bool`, rather than `.labelStyle(cond ? .titleAndIcon : .iconOnly)` at
+/// each call site — `TitleAndIconLabelStyle` and `IconOnlyLabelStyle` are distinct types, so
+/// that ternary has no common type to resolve to and doesn't compile.
+private struct KeyboardBarLabelStyle: LabelStyle {
+    let showsTitle: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        if showsTitle {
+            HStack(spacing: 6) {
+                configuration.icon
+                configuration.title
+            }
+        } else {
+            configuration.icon
+        }
+    }
+}
+
 struct TransactionFormView: View {
     @Bindable var viewModel: EditAddTransactionViewModel
     var focusTrigger: Int = 0
@@ -40,6 +62,16 @@ struct TransactionFormView: View {
         RepeatTip()
         MathModeTip()
     }
+
+    /// iPad shows this form in a persistent inspector column (`IPadInspector`) beside the
+    /// dashboard, not as a sheet that owns the screen. Two things follow: the keyboard bar
+    /// has room to label its buttons there, and the tips explaining those buttons — plus the
+    /// scrim behind them — are skipped entirely. The controls themselves are identical on
+    /// both platforms.
+    ///
+    /// Matches how `AuthenticationWrapper` picks the root view, so the two can't disagree
+    /// about which layout is on screen.
+    private var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -155,8 +187,15 @@ struct TransactionFormView: View {
                                 viewModel.addAnother.toggle()
                                 AddAnotherTip().invalidate(reason: .actionPerformed)
                             } label: {
-                                Image(systemName: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle")
+                                // A Label, not a bare Image: the title is what iPad shows beside
+                                // the icon, and it doubles as the VoiceOver label this button was
+                                // missing (it previously announced the raw SF Symbol name).
+                                Label(
+                                    "Keep adding",
+                                    systemImage: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle"
+                                )
                             }
+                            .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
                             .tint(viewModel.addAnother ? Color.accentIndigo : Color.primary)
                             .accessibilityValue(viewModel.addAnother ? String(localized: "On") : String(localized: "Off"))
                         }
@@ -170,6 +209,7 @@ struct TransactionFormView: View {
                             } label: {
                                 Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
                             }
+                            .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
                             // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
                             // read as "active" while recurrence is actually off.
                             .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
@@ -213,6 +253,12 @@ struct TransactionFormView: View {
                             systemImage: mathMode ? "equal" : "plus.forwardslash.minus"
                         )
                     }
+                    .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
+                    // Same on/off convention as the two toggles above: accent only while the
+                    // mode is active. Without an explicit tint this fell through to the app's
+                    // global AccentColor and sat permanently purple, reading as "on" next to
+                    // two neutral siblings that were actually off.
+                    .tint(mathMode ? Color.accentIndigo : Color.primary)
                 }
                 // Scoped to the Form on purpose: the scrim blocks taps on the rows behind the
                 // tip, but the keyboard and its accessory bar render outside the Form, so the
@@ -260,7 +306,12 @@ struct TransactionFormView: View {
     /// frame ahead of the blur (confirmed frame-by-frame). Committing one `@State` flip
     /// inside an explicit `withAnimation` puts all three in the same transaction.
     private func syncTipVisibility() {
-        let shouldShow = focusedField != nil && tips.currentTip != nil
+        // One gate for the card and its scrim both. Nothing to explain on iPad — the keyboard
+        // bar spells each button out there (see `KeyboardBarLabelStyle`), so a tip would be
+        // captioning a control that already says what it does. The scrim was wrong there
+        // independently: it dims this Form, which on iPad is one column of a split layout, so
+        // the untouched columns beside it end up brighter than the tip it was spotlighting.
+        let shouldShow = !isPad && focusedField != nil && tips.currentTip != nil
         guard shouldShow != tipVisible else { return }
         withAnimation(.easeInOut(duration: 0.25)) { tipVisible = shouldShow }
     }
