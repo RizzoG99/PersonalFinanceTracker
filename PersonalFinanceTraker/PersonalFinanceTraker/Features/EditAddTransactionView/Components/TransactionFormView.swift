@@ -214,28 +214,10 @@ struct TransactionFormView: View {
                         )
                     }
                 }
-                // .ultraThinMaterial was tried first — its blur radius is fixed and system-wide,
-                // way stronger than wanted here (form became unreadable). A direct, small-radius
-                // .blur() on the Form gives control over just how blurred it gets.
-                //
-                // compositingGroup() is load-bearing, not decoration: without it the blur is
-                // recomputed against the Form's whole live hierarchy every frame of the
-                // animation, which is what made the fade-in stutter. Flattening to a single
-                // layer first means each frame blurs one cached texture instead.
-                .compositingGroup()
-                .blur(radius: tipVisible ? 4 : 0)
-                // Tap-blocker + a touch of dimming on top of the blur so the tip still pops.
-                // Hit-testable on purpose (no allowsHitTesting(false)): it sits only over the
-                // Form's own rows, so it blocks fiddling with other fields while a tip is up
-                // without covering the Amount field's keyboard or the accessory bar below —
-                // those render outside the Form this overlay is scoped to, so they stay reachable.
-                .overlay {
-                    if tipVisible {
-                        Color.black.opacity(0.15)
-                            .ignoresSafeArea()
-                            .transition(.opacity)
-                    }
-                }
+                // Scoped to the Form on purpose: the scrim blocks taps on the rows behind the
+                // tip, but the keyboard and its accessory bar render outside the Form, so the
+                // controls the tip is explaining stay reachable.
+                .focusScrim(tipVisible)
                 // Pinned just above the accessory bar — appears exactly while the keyboard
                 // (and the bar it explains) is up, and doesn't scroll away with the form.
                 .safeAreaInset(edge: .bottom) {
