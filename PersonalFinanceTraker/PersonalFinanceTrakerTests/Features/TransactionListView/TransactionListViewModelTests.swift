@@ -95,6 +95,50 @@ struct TransactionListViewModelTests {
         #expect(vm.transactions.count == 2)
     }
 
+    @Test @MainActor func importedCategoryDraftControlsCreatedCategoryAppearance() async throws {
+        let (vm, _, _, _, _) = await makeRealRepoVM()
+        let csvCategory = "🍿 Movie Night"
+        vm.categoryResolutionSelections = [csvCategory: "__new__"]
+        vm.pendingCategoryDrafts = [
+            csvCategory: ImportCategoryDraft(
+                csvCategory: csvCategory,
+                name: "MovieNight",
+                type: .income,
+                systemImage: "film.fill",
+                colorToken: "categoryPurple"
+            )
+        ]
+
+        let input = TransactionInput(
+            timestamp: Date(timeIntervalSince1970: 1_800_000_000),
+            amount: -12,
+            note: "Ticket",
+            category: csvCategory,
+            currencyCode: "EUR"
+        )
+        vm.confirmImport([input])
+        await vm.importTask?.value
+
+        let categories = try await vm.repo.fetchCategories()
+        let category = try #require(categories.first { $0.name == "MovieNight" })
+        #expect(category.transactionType == .income)
+        #expect(category.systemImage == "film.fill")
+        #expect(category.colorToken == "categoryPurple")
+    }
+
+    @Test @MainActor func reconcilingImportCategoriesDropsObsoleteDrafts() async {
+        let vm = TransactionListViewModel(repo: MockTransactionRepository())
+        vm.categoryResolutionSelections = ["Current": "__new__", "Removed": "__new__"]
+        vm.pendingCategoryDrafts = [
+            "Current": ImportCategoryDraft(csvCategory: "Current", inferredType: .expense),
+            "Removed": ImportCategoryDraft(csvCategory: "Removed", inferredType: .expense)
+        ]
+
+        vm.reconcilePendingCategoryDrafts(validCategories: ["Current"])
+
+        #expect(vm.pendingCategoryDrafts.keys.sorted() == ["Current"])
+    }
+
     @Test @MainActor func addTransactionCallsRepoAndReloads() async throws {
         let mockRepo = MockTransactionRepository()
         let vm = await loadedVM(mockRepo)

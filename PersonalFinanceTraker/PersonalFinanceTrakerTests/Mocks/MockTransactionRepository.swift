@@ -25,6 +25,7 @@ final class MockTransactionRepository: ITransactionRepository {
     var deleteAllTransactionsCalledCount = 0
     var deleteAllRecurrenceRulesCalledCount = 0
     var addRecurrenceRuleCalls: [RecurrenceRuleInput] = []
+    var addCategoryCalls: [CategoryInput] = []
     var updateRecurrenceRuleCalls: [(id: UUID, input: RecurrenceRuleInput)] = []
     var closeRecurrenceRuleCalls: [(id: UUID, endDate: Date)] = []
     var deleteOccurrencesCalls: [(recurrenceRuleId: UUID, cutoffDate: Date)] = []
@@ -83,6 +84,7 @@ final class MockTransactionRepository: ITransactionRepository {
 
     func addCategory(_ input: CategoryInput) async throws {
         if shouldThrow { throw MockError.forced }
+        addCategoryCalls.append(input)
     }
 
     func deleteCategory(id: PersistentIdentifier) async throws {

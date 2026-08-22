@@ -19,6 +19,7 @@ struct ImportResultView: View {
     /// user chose in step 2 lives in `categoryPersistentId` — without this the icon lookup runs on
     /// "Moto"/"Spesa", misses every keyword branch, and every row draws the same default symbol.
     let availableCategories: [CategorySnapshot]
+    let pendingCategoryDrafts: [String: ImportCategoryDraft]
     let isImporting: Bool
     let currentStep: Int
     let totalSteps: Int
@@ -269,8 +270,10 @@ struct ImportResultView: View {
         // Prefer the app category the user mapped this row to; fall back to the CSV name only for
         // rows headed for a brand-new category, where there is nothing else to go on.
         let mapped = t.categoryPersistentId.flatMap { categoryByPersistentId[$0] }
-        let symbol = mapped?.systemImage ?? CategoryInfo.info(for: t.category).symbol
+        let pending = mapped == nil ? pendingCategoryDrafts[t.category] : nil
+        let symbol = mapped?.systemImage ?? pending?.systemImage ?? CategoryInfo.info(for: t.category).symbol
         let tint = mapped.map { Color(categoryToken: $0.colorToken) }
+            ?? pending.map { Color(categoryToken: $0.colorToken) }
             ?? CategoryInfo.info(for: t.category).color
         return HStack(spacing: 12) {
             GlassCard(tint: tint.opacity(0.12), borderRadius: 12) {
@@ -281,7 +284,7 @@ struct ImportResultView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(t.category.removingLeadingEmoji.localizedCategoryDisplay)
+                Text((mapped?.name ?? pending?.name ?? t.category.removingLeadingEmoji).localizedCategoryDisplay)
                     .font(.subheadline)
                 if !t.note.isEmpty {
                     Text(t.note)
@@ -324,6 +327,7 @@ struct ImportResultView: View {
         ImportResultView(
             rows: rows,
             availableCategories: [],
+            pendingCategoryDrafts: [:],
             isImporting: false,
             currentStep: 3,
             totalSteps: 3,

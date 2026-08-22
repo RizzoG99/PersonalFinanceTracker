@@ -18,6 +18,7 @@ struct CSVCategoryMappingView: View {
     var showsStepActions: Bool = true
 
     @Environment(TransactionListViewModel.self) private var viewModel
+    @State private var categoryBeingConfigured: ImportCategoryDraft?
 
     private let newSentinel = "__new__"
 
@@ -115,6 +116,22 @@ struct CSVCategoryMappingView: View {
                 viewModel.hasAutoMappedCategories = true
             }
         }
+        .sheet(item: $categoryBeingConfigured) { draft in
+            ImportCategorySetupSheet(
+                draft: draft,
+                lockedType: categoryTypes[draft.csvCategory],
+                existingNames: Set(availableCategories.map { $0.name.lowercased() }),
+                otherDraftNames: Set(
+                    viewModel.pendingCategoryDrafts
+                        .filter { $0.key != draft.csvCategory }
+                        .map { $0.value.name.trimmingCharacters(in: .whitespaces).lowercased() }
+                ),
+                onSave: { savedDraft in
+                    viewModel.pendingCategoryDrafts[savedDraft.csvCategory] = savedDraft
+                    selections[savedDraft.csvCategory] = newSentinel
+                }
+            )
+        }
     }
 
     // MARK: - Row
@@ -141,7 +158,7 @@ struct CSVCategoryMappingView: View {
                     if !income.isEmpty {
                         Section("Income") {
                             ForEach(income) { cat in
-                                Button { selections[csv] = cat.id.uuidString } label: {
+                                Button { selectExisting(cat, for: csv) } label: {
                                     Label(cat.name.localizedCategoryDisplay, systemImage: cat.systemImage)
                                 }
                             }
@@ -150,7 +167,7 @@ struct CSVCategoryMappingView: View {
                     if !expense.isEmpty {
                         Section("Expense") {
                             ForEach(expense) { cat in
-                                Button { selections[csv] = cat.id.uuidString } label: {
+                                Button { selectExisting(cat, for: csv) } label: {
                                     Label(cat.name.localizedCategoryDisplay, systemImage: cat.systemImage)
                                 }
                             }
@@ -159,24 +176,38 @@ struct CSVCategoryMappingView: View {
                 } else {
                     // Type known — flat sorted list
                     ForEach(filtered) { cat in
-                        Button { selections[csv] = cat.id.uuidString } label: {
+                        Button { selectExisting(cat, for: csv) } label: {
                             Label(cat.name.localizedCategoryDisplay, systemImage: cat.systemImage)
                         }
                     }
                 }
                 Divider()
                 Button {
-                    selections[csv] = newSentinel
+                    configureNewCategory(for: csv)
                 } label: {
-                    Label("Create \"\(createName(for: csv))\"", systemImage: "plus.circle")
+                    Label {
+                        if selections[csv] == newSentinel {
+                            Text("Edit \"\(createName(for: csv))\"")
+                        } else {
+                            Text("Create \"\(createName(for: csv))\"")
+                        }
+                    } icon: {
+                        Image(systemName: selections[csv] == newSentinel ? "pencil" : "plus.circle")
+                    }
                 }
             } label: {
                 HStack(spacing: 4) {
                     if let sel = selections[csv] {
                         if sel == newSentinel {
-                            Text("Create \"\(createName(for: csv))\"")
-                                .font(.subheadline)
-                                .foregroundStyle(.accentIndigo)
+                            Group {
+                                if let draft = viewModel.pendingCategoryDrafts[csv] {
+                                    Text(draft.name)
+                                } else {
+                                    Text("Create \"\(createName(for: csv))\"")
+                                }
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.accentIndigo)
                         } else if let cat = availableCategories.first(where: { $0.id.uuidString == sel }) {
                             Text(cat.name.localizedCategoryDisplay)
                                 .font(.subheadline)
@@ -217,6 +248,16 @@ struct CSVCategoryMappingView: View {
         // Selections already contain the choices (UUID strings or the new-category sentinel).
         // Actual category creation happens in confirmImport; nothing to do here except continue.
         onContinue()
+    }
+
+    private func selectExisting(_ category: CategorySnapshot, for csv: String) {
+        viewModel.pendingCategoryDrafts[csv] = nil
+        selections[csv] = category.id.uuidString
+    }
+
+    private func configureNewCategory(for csv: String) {
+        categoryBeingConfigured = viewModel.pendingCategoryDrafts[csv]
+            ?? ImportCategoryDraft(csvCategory: csv, inferredType: categoryTypes[csv])
     }
 
     private func autoMap() {
