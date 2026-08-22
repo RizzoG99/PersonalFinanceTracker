@@ -134,6 +134,7 @@ struct IPadImportFlowView: View {
             ImportResultView(
                 rows: viewModel.mappedRows,
                 availableCategories: viewModel.availableCategories,
+                pendingCategoryDrafts: viewModel.pendingCategoryDrafts,
                 isImporting: viewModel.isImporting,
                 // 0 suppresses the "Step n of m" subtitle: this pane is not a step here.
                 currentStep: 0,
@@ -163,6 +164,7 @@ struct IPadImportFlowView: View {
             guard !Task.isCancelled else { return }
             viewModel.csvCategories = categories
             viewModel.csvCategoryTypes = types
+            viewModel.reconcilePendingCategoryDrafts(validCategories: categories)
             viewModel.applySavedCategorySelections()
             // Auto-map here rather than waiting for the category tab to appear: the preview is
             // showing these rows now, and unresolved ones would all read as new categories.
@@ -176,6 +178,7 @@ struct IPadImportFlowView: View {
             viewModel.hasAutoMappedCategories = true
         } else {
             viewModel.categoryResolutionSelections = [:]
+            viewModel.pendingCategoryDrafts = [:]
             viewModel.csvCategories = []
             viewModel.csvCategoryTypes = [:]
         }

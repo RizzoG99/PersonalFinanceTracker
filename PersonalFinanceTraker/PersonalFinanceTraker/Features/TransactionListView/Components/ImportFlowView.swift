@@ -44,6 +44,7 @@ struct ImportFlowView: View {
                         ImportResultView(
                             rows: viewModel.mappedRows,
                             availableCategories: viewModel.availableCategories,
+                            pendingCategoryDrafts: viewModel.pendingCategoryDrafts,
                             isImporting: viewModel.isImporting,
                             currentStep: totalSteps,
                             totalSteps: totalSteps,
@@ -84,12 +85,14 @@ struct ImportFlowView: View {
                 await MainActor.run {
                     viewModel.csvCategories = categories
                     viewModel.csvCategoryTypes = types
+                    viewModel.reconcilePendingCategoryDrafts(validCategories: categories)
                     viewModel.applySavedCategorySelections()
                     viewModel.importNavigationPath.append(.categoryMapping)
                 }
             }
         } else {
             viewModel.categoryResolutionSelections = [:]
+            viewModel.pendingCategoryDrafts = [:]
             Task {
                 await viewModel.applyMapping()
                 viewModel.importNavigationPath.append(.results)
