@@ -168,6 +168,12 @@ final class EditAddTransactionViewModel {
             }
     }
 
+    func selectCreatedCategory(_ category: CategorySnapshot) {
+        availableCategories.removeAll { $0.id == category.id }
+        availableCategories.append(category)
+        selectedCategory = category
+    }
+
     func buildInput() -> TransactionInput? {
         guard amount > 0 else { return nil }
         if transactionType == .transfer {

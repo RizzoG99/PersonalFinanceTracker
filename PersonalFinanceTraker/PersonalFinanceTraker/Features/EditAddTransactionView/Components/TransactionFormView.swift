@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import TipKit
 
 /// The form's text fields, in tab order. Only the typed ones: pickers, chips and the date wheel are
@@ -145,7 +146,9 @@ struct TransactionFormView: View {
                         Section {
                             CategoryChipsGrid(
                                 categories: viewModel.filteredCategories,
-                                selectedCategory: $viewModel.selectedCategory
+                                transactionType: viewModel.transactionType,
+                                selectedCategory: $viewModel.selectedCategory,
+                                onCategoryCreated: viewModel.selectCreatedCategory
                             )
                         } header: {
                             Text("Category")
@@ -414,8 +417,13 @@ struct TransactionFormView: View {
 
 struct CategoryChipsGrid: View {
     let categories: [CategorySnapshot]
+    let transactionType: TransactionType
     @Binding var selectedCategory: CategorySnapshot?
+    let onCategoryCreated: (CategorySnapshot) -> Void
+    @Query(sort: \CategoryModel.name) private var existingCategories: [CategoryModel]
     @State private var showAll = false
+    @State private var showAddCategory = false
+    @State private var openAddCategoryAfterPickerDismiss = false
 
     /// How many most-used categories to show inline before the "More…" chip. The rest live behind
     /// the full searchable picker so the strip stays short instead of scrolling the whole list.
@@ -433,13 +441,10 @@ struct CategoryChipsGrid: View {
         return top
     }
 
-    // Only surface "More…" when it actually reveals categories not already shown inline.
-    private var hasMore: Bool { categories.count > inlineCategories.count }
-
     // Compact single-row horizontal scroller instead of a multi-row grid: a required field that
     // must stay reachable above the keyboard shouldn't cost several rows of vertical space. The
     // most-used categories come first (see filteredCategories), the selection auto-scrolls into
-    // view, and the "More…" chip opens the full searchable list.
+    // view, and the "More…" chip opens the full searchable list plus category creation.
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
@@ -454,9 +459,7 @@ struct CategoryChipsGrid: View {
                             selectedCategory = category
                         }
                     }
-                    if hasMore {
-                        MoreChip { showAll = true }
-                    }
+                    MoreChip { showAll = true }
                 }
                 .padding(.vertical, 2)
             }
@@ -469,9 +472,29 @@ struct CategoryChipsGrid: View {
                 }
             }
         }
-        .sheet(isPresented: $showAll) {
-            CategoryPickerSheet(categories: categories, selectedCategory: $selectedCategory)
+        .sheet(isPresented: $showAll, onDismiss: openPendingAddCategorySheet) {
+            CategoryPickerSheet(
+                categories: categories,
+                selectedCategory: $selectedCategory,
+                onAddCategory: {
+                    openAddCategoryAfterPickerDismiss = true
+                    showAll = false
+                }
+            )
         }
+        .sheet(isPresented: $showAddCategory) {
+            AddCategorySheet(existingCategories: existingCategories, initialType: transactionType) { category in
+                let snapshot = CategorySnapshot(category)
+                onCategoryCreated(snapshot)
+                selectedCategory = snapshot
+            }
+        }
+    }
+
+    private func openPendingAddCategorySheet() {
+        guard openAddCategoryAfterPickerDismiss else { return }
+        openAddCategoryAfterPickerDismiss = false
+        showAddCategory = true
     }
 }
 
@@ -510,8 +533,19 @@ struct MoreChip: View {
 struct CategoryPickerSheet: View {
     let categories: [CategorySnapshot]
     @Binding var selectedCategory: CategorySnapshot?
+    let onAddCategory: () -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
+
+    init(
+        categories: [CategorySnapshot],
+        selectedCategory: Binding<CategorySnapshot?>,
+        onAddCategory: @escaping () -> Void = {}
+    ) {
+        self.categories = categories
+        _selectedCategory = selectedCategory
+        self.onAddCategory = onAddCategory
+    }
 
     private var filtered: [CategorySnapshot] {
         guard !search.isEmpty else { return categories }
@@ -541,6 +575,15 @@ struct CategoryPickerSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("New Category", systemImage: "plus") {
+                        dismiss()
+                        onAddCategory()
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.accentIndigo)
+                    .glassEffect(.regular.interactive())
                 }
             }
         }
