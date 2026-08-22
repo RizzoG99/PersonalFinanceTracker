@@ -185,18 +185,29 @@ struct CSVCategoryMappingView: View {
                 Button {
                     configureNewCategory(for: csv)
                 } label: {
-                    Label(
-                        selections[csv] == newSentinel ? "Edit \"\(createName(for: csv))\"" : "Create \"\(createName(for: csv))\"",
-                        systemImage: selections[csv] == newSentinel ? "pencil" : "plus.circle"
-                    )
+                    Label {
+                        if selections[csv] == newSentinel {
+                            Text("Edit \"\(createName(for: csv))\"")
+                        } else {
+                            Text("Create \"\(createName(for: csv))\"")
+                        }
+                    } icon: {
+                        Image(systemName: selections[csv] == newSentinel ? "pencil" : "plus.circle")
+                    }
                 }
             } label: {
                 HStack(spacing: 4) {
                     if let sel = selections[csv] {
                         if sel == newSentinel {
-                            Text(viewModel.pendingCategoryDrafts[csv]?.name ?? "Create \"\(createName(for: csv))\"")
-                                .font(.subheadline)
-                                .foregroundStyle(.accentIndigo)
+                            Group {
+                                if let draft = viewModel.pendingCategoryDrafts[csv] {
+                                    Text(draft.name)
+                                } else {
+                                    Text("Create \"\(createName(for: csv))\"")
+                                }
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.accentIndigo)
                         } else if let cat = availableCategories.first(where: { $0.id.uuidString == sel }) {
                             Text(cat.name.localizedCategoryDisplay)
                                 .font(.subheadline)
