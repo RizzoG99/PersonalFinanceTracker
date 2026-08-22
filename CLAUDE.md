@@ -12,33 +12,31 @@ This repository is configured for both Claude Code and Codex.
 
 ## Build & Development Commands
 
-**CRITICAL — BUILD & TEST RULES:**
-- **NEVER run `xcodebuild` in Bash.** It is banned. Use Xcode MCP tools only.
-- **NEVER call MCP tool names as Bash commands.** `mcp__xcode__BuildProject` is not a shell command.
-- MCP tools are deferred — their schemas must be loaded with `ToolSearch` before they can be called.
+**Use the `xcodebuild` CLI. It is the default for agents.** The Xcode MCP is optional and has three failure modes that cost real time:
 
-**Exact two-step sequence every time:**
+- A **crashed test** leaves the MCP waiting forever — no exit code, no timeout. The agent gets stuck polling.
+- It **requires Xcode open and connected**. The CLI is headless.
+- With **worktrees**, `tabIdentifier` gets reassigned between windows and the MCP silently builds the *wrong worktree*.
 
-Step 1 — load the schema via `ToolSearch`:
-```
-query: "select:mcp__xcode__BuildProject,mcp__xcode__RunAllTests,mcp__xcode__RunSomeTests"
-```
-
-Step 2 — call the tool with `tabIdentifier: "windowtab1"`:
-```
-mcp__xcode__BuildProject(tabIdentifier: "windowtab1")
-mcp__xcode__RunAllTests(tabIdentifier: "windowtab1")
+```bash
+scripts/xcb build
+scripts/xcb test
+scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests
+scripts/xcb which-sim    # print this worktree's simulator name + UDID
+scripts/xcb clean-sims   # delete leftover "Clone N of ..." simulators
+scripts/xcb delete-sim   # drop this worktree's dedicated simulator
 ```
 
-| Task | MCP tool name |
-|------|--------------|
-| Build | `mcp__xcode__BuildProject` |
-| Run all tests | `mcp__xcode__RunAllTests` |
-| Run specific tests | `mcp__xcode__RunSomeTests` |
-| Get build/test log | `mcp__xcode__GetBuildLog` |
-| List available tests | `mcp__xcode__GetTestList` |
+`scripts/xcb test` prints only a JSON summary (counts, failed test names, messages); the full log goes to `.build/test.log`. Read that file only when the summary is not enough.
 
-The active `tabIdentifier` is always `"windowtab1"`.
+**Run builds and tests in the background** (`run_in_background: true`), then wait with a `Monitor` until-loop. A full test run takes several minutes and will otherwise eat a foreground timeout.
+
+Notes:
+- **Everything is per-worktree, no configuration.** `-derivedDataPath .build` is relative, so each worktree gets its own build tree (`.build/` is gitignored), and the script creates its own simulator named `pft-<worktree-dir>` on first use, so concurrent agents never share a device. `PFT_SIM_UDID=<udid>` overrides it.
+- **Never hardcode a simulator OS version.** `simctl`'s runtime *identifier* is rounded (`iOS-26-4`) while its real version is `26.4.1`, and a bare `name=iPhone 17` destination expands to `OS:latest`, which can resolve to a runtime that has no such device. The script targets the device by UDID, which avoids both. If you write a destination by hand, get it from `xcodebuild -showdestinations`, never from `simctl list devices`.
+- **Never call MCP tool names as Bash commands.** `mcp__xcode__BuildProject` is not a shell command.
+
+**If you do use the MCP** (Xcode already open, single checkout): schemas are deferred, so load them with `ToolSearch` first — `query: "select:mcp__xcode__BuildProject,mcp__xcode__RunAllTests"` — then call with `tabIdentifier: "windowtab1"`. Verify the identifier with `mcp__xcode__XcodeListWindows` first; match on `WorkspacePath`, not the first hit.
 
 **Note**: The project is primarily developed in Xcode. Open `PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj` to work in the IDE.
 
