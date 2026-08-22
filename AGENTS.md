@@ -25,16 +25,23 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
 
 ## Build And Test
 
-- Prefer the Xcode MCP connector if it is available in the current Codex session. Load deferred schemas with `tool_search` first, then call the exposed Xcode tools.
-- Current Claude tool names, when available in Claude Code, are:
-  - Build: `mcp__xcode__BuildProject`
-  - Run all tests: `mcp__xcode__RunAllTests`
-  - Run specific tests: `mcp__xcode__RunSomeTests`
-  - Build/test log: `mcp__xcode__GetBuildLog`
-  - Test list: `mcp__xcode__GetTestList`
-- Active Claude tab identifier is `windowtab1`.
+Use the `xcodebuild` CLI by default. The Xcode MCP hangs forever on a crashed test, requires Xcode open and connected, and silently builds the wrong worktree when `tabIdentifier` gets reassigned.
+
+```bash
+scripts/xcb build
+scripts/xcb test
+scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests
+scripts/xcb which-sim    # print this worktree's simulator name + UDID
+scripts/xcb clean-sims   # delete leftover "Clone N of ..." simulators
+scripts/xcb delete-sim   # drop this worktree's dedicated simulator
+```
+
+- `scripts/xcb test` prints only a JSON summary; the full log goes to `.build/test.log`.
+- Run builds and tests in the background and poll for completion; a full run takes several minutes.
+- Everything is per-worktree with no configuration: `-derivedDataPath .build` is relative (`.build/` is gitignored), and the script creates a simulator named `pft-<worktree-dir>` on first use so concurrent agents never share a device. `PFT_SIM_UDID=<udid>` overrides it.
+- Never hardcode a simulator OS version. `simctl`'s runtime identifier is rounded (`iOS-26-4`) while the real version is `26.4.1`, and a bare `name=iPhone 17` destination expands to `OS:latest`, which can resolve to a runtime with no such device. The script targets the device by UDID. Hand-written destinations should come from `xcodebuild -showdestinations`.
+- The Xcode MCP stays available for when Xcode is already open on a single checkout. Claude tool names: `mcp__xcode__BuildProject`, `mcp__xcode__RunAllTests`, `mcp__xcode__RunSomeTests`, `mcp__xcode__GetBuildLog`, `mcp__xcode__GetTestList`; load deferred schemas first and verify the tab identifier with `mcp__xcode__XcodeListWindows`, matching on `WorkspacePath`.
 - Do not invoke MCP tool names as shell commands.
-- Do not run shell `xcodebuild` unless the user explicitly asks for it or approves it for the turn.
 
 ## App Conventions
 
