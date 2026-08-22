@@ -126,6 +126,18 @@ struct EditAddTransactionViewModelTests {
         #expect(vm.isFormValid == true)
     }
 
+    @Test @MainActor func selectCreatedCategoryAddsAndSelectsIt() async throws {
+        let vm = makeVM()
+        let original = expenseCat()
+        let created = CategorySnapshot.test(name: "Books", systemImage: "book.fill", type: .expense)
+        vm.availableCategories = [original]
+
+        vm.selectCreatedCategory(created)
+
+        #expect(vm.availableCategories.contains(created))
+        #expect(vm.selectedCategory == created)
+    }
+
     @Test @MainActor func validWithAllRequiredFieldsSetForTransfer() async throws {
         let vm = makeVM()
         vm.transactionName = "Transfer"

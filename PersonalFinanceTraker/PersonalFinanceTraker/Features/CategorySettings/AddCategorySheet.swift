@@ -6,11 +6,22 @@ struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let existingCategories: [CategoryModel]
+    let onAdd: (CategoryModel) -> Void
 
     @State private var name = ""
     @State private var selectedToken = "categoryIndigo"
     @State private var selectedSymbol = "creditcard.fill"
-    @State private var selectedType: TransactionType = .expense
+    @State private var selectedType: TransactionType
+
+    init(
+        existingCategories: [CategoryModel],
+        initialType: TransactionType = .expense,
+        onAdd: @escaping (CategoryModel) -> Void = { _ in }
+    ) {
+        self.existingCategories = existingCategories
+        self.onAdd = onAdd
+        _selectedType = State(initialValue: initialType)
+    }
 
     private var nameError: String? {
         if name.isEmpty { return nil }
@@ -77,6 +88,8 @@ struct AddCategorySheet: View {
                             colorToken: selectedToken
                         )
                         modelContext.insert(category)
+                        try? modelContext.save()
+                        onAdd(category)
                         dismiss()
                     }
                     .disabled(!canAdd)
