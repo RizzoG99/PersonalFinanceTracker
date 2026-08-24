@@ -8,8 +8,12 @@ import SwiftUI
 struct ImportFlowView: View {
     @Bindable var viewModel: TransactionListViewModel
 
-    private var totalSteps: Int {
+    private var importSteps: Int {
         viewModel.columnMapping.categoryColumn != nil ? 3 : 2
+    }
+
+    private var totalSteps: Int {
+        importSteps + (viewModel.recurrenceSuggestions.isEmpty ? 0 : 1)
     }
 
     var body: some View {
@@ -45,10 +49,15 @@ struct ImportFlowView: View {
                             rows: viewModel.mappedRows,
                             availableCategories: viewModel.availableCategories,
                             isImporting: viewModel.isImporting,
-                            currentStep: totalSteps,
+                            currentStep: importSteps,
                             totalSteps: totalSteps,
                             onConfirm: { viewModel.confirmImport($0) },
                             onDone: { viewModel.cancelImport() }
+                        )
+                    case .recurringSuggestions:
+                        RecurrenceSuggestionsView(
+                            viewModel: viewModel,
+                            mode: .wizardStep(current: totalSteps, total: totalSteps)
                         )
                     }
                 }

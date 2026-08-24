@@ -52,6 +52,7 @@ struct RawMappedRow: Sendable {
 enum ImportStep: Hashable {
     case categoryMapping
     case results
+    case recurringSuggestions
 }
 
 class CSVColumnMapper {

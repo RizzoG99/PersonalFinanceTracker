@@ -16,6 +16,12 @@ struct CSVColumnMappingView: View {
     /// the preview pane updates as you map, so there is nothing to advance to.
     var showsStepActions: Bool = true
 
+    /// See ImportResultView.barTitle — every pane embedded in the iPad sheet's one bar must
+    /// agree on the title.
+    private var barTitle: LocalizedStringKey {
+        showsStepActions ? "Map Columns" : "Import"
+    }
+
     private let noneOption = "(None)"
 
     private let commonDateFormats = [
@@ -103,13 +109,18 @@ struct CSVColumnMappingView: View {
     var body: some View {
         List {
             Section("Preview") {
-                ScrollView(.horizontal, showsIndicators: false) {
+                ScrollView(.horizontal) {
                     previewTable
                         .padding(.vertical, 4)
                         // Zero row insets gave the table the full card width but left the first
                         // column's text flush against the card's edge.
                         .padding(.horizontal, 14)
                 }
+                // A file like the user's has 11 columns and only 3 fit, with nothing on screen
+                // saying so. The flash on appear is the affordance; .visible alone would fade
+                // before anyone looked at it.
+                .scrollIndicators(.visible)
+                .scrollIndicatorsFlash(onAppear: true)
                 // The preview is the reason this step exists, so it gets the full sheet width —
                 // the default row insets were costing it about a column and a half on iPad.
                 .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
@@ -190,7 +201,7 @@ struct CSVColumnMappingView: View {
                 canContinueBanner
             }
         }
-        .navigationTitle("Map Columns")
+        .navigationTitle(barTitle)
         .navigationSubtitle(showsStepActions ? "Step \(currentStep) of \(totalSteps)" : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

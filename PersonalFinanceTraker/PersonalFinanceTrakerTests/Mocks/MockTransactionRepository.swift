@@ -35,6 +35,10 @@ final class MockTransactionRepository: ITransactionRepository {
 
     // MARK: Error injection
     var shouldThrow = false
+    /// Fails only `addBatch`, leaving the fetches that precede it working. `shouldThrow` is
+    /// blanket, so it trips the earlier `fetchAll` and the caller early-returns before ever
+    /// reaching the batch insert — which hides whatever the post-insert code does.
+    var addBatchShouldThrow = false
 
     // MARK: Transactions
     func fetchAll() async throws -> [TransactionSnapshot] {
@@ -51,7 +55,7 @@ final class MockTransactionRepository: ITransactionRepository {
 
     func addBatch(_ inputs: [TransactionInput]) async throws {
         addCalledCount += inputs.count
-        if shouldThrow { throw MockError.forced }
+        if shouldThrow || addBatchShouldThrow { throw MockError.forced }
     }
 
     func delete(id: PersistentIdentifier) async throws {
