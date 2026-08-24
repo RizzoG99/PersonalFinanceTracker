@@ -116,17 +116,13 @@ struct RecurrenceSuggestionsView: View {
     }
 
     private var headerTitle: String {
+        // One key each, pluralised by the catalog. Branching on `count == 1` in Swift needs two
+        // keys and still assumes a language with exactly two plural forms.
         switch mode {
         case .wizardStep:
-            let count = viewModel.importedTransactionCount
-            return count == 1
-                ? String(localized: "Imported \(count) transaction")
-                : String(localized: "Imported \(count) transactions")
+            return String(localized: "Imported \(viewModel.importedTransactionCount) transactions.")
         case .preview:
-            let count = viewModel.recurrenceSuggestions.count
-            return count == 1
-                ? String(localized: "\(count) recurring transaction found")
-                : String(localized: "\(count) recurring transactions found")
+            return String(localized: "\(viewModel.recurrenceSuggestions.count) recurring transactions found")
         }
     }
 

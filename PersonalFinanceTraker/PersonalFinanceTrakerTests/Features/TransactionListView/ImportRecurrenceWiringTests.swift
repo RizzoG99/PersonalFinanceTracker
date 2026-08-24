@@ -50,7 +50,9 @@ struct ImportRecurrenceWiringTests {
         #expect(vm.showingImportFlow == false)
         #expect(vm.importNavigationPath.contains(.recurringSuggestions) == false)
         #expect(vm.importError != nil)
-        #expect(vm.importError?.contains("Failed to save") ?? false)
+        // Resolved through the catalog, not compared to English: these strings are localized
+        // now, and a simulator running Italian would fail a literal match.
+        #expect(vm.importError == String(localized: "Failed to save \(1) of \(1). Check available storage and try again."))
     }
 
     // MARK: - Test 2: Successful import WITH suggestions navigates instead of dismissing
@@ -137,7 +139,7 @@ struct ImportRecurrenceWiringTests {
         #expect(vm.showingImportFlow == false)
         #expect(vm.importNavigationPath.isEmpty || !vm.importNavigationPath.contains(.recurringSuggestions))
         #expect(vm.importError != nil)
-        #expect(vm.importError?.contains("Imported 1 transaction") ?? false)
+        #expect(vm.importError == String(localized: "Imported \(1) transactions."))
     }
 
     // MARK: - Test 4: addSelectedRecurrenceRules creates one rule per SELECTED suggestion
@@ -321,7 +323,8 @@ struct ImportRecurrenceWiringTests {
         #expect(repo.addRecurrenceRuleCalls.map(\.note) == ["Gym"])
         #expect(vm.showingImportFlow == false)
         #expect(vm.importNavigationPath.contains(.recurringSuggestions) == false)
-        #expect(vm.importError?.contains("Added 1 recurring transaction") ?? false)
+        #expect(vm.importError == [String(localized: "Imported \(1) transactions."),
+                                   String(localized: "Added \(1) recurring transactions.")].joined(separator: " "))
     }
 
     // MARK: - Test 8: cancelImport clears all import state

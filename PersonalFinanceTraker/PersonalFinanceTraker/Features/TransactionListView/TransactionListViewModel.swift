@@ -892,23 +892,24 @@ final class TransactionListViewModel {
                 // Build summary message (show for both success and partial failures). A rule-save
                 // failure already put a message here; it is the more specific one, so it wins.
                 if importError == nil, importedCount > 0 || failCount > 0 || skippedDuplicates > 0 {
-                    var summary = ""
+                    // Collected as sentences and joined. The `\(n == 1 ? "" : "s")` this replaces
+                    // built the plural in Swift, which can only ever be right for English —
+                    // Italian needs transazione/transazioni. The catalog's plural variations pick
+                    // the form per language.
+                    var parts: [String] = []
                     if importedCount > 0 {
-                        summary += "Imported \(importedCount) transaction\(importedCount == 1 ? "" : "s")."
+                        parts.append(String(localized: "Imported \(importedCount) transactions."))
                     }
                     if skippedDuplicates > 0 {
-                        if !summary.isEmpty { summary += " " }
-                        summary += "Skipped \(skippedDuplicates) duplicate\(skippedDuplicates == 1 ? "" : "s")."
+                        parts.append(String(localized: "Skipped \(skippedDuplicates) duplicates."))
                     }
                     if failCount > 0 {
-                        if !summary.isEmpty { summary += " " }
-                        summary += "Failed to save \(failCount) of \(toInsert.count). Check available storage and try again."
+                        parts.append(String(localized: "Failed to save \(failCount) of \(toInsert.count). Check available storage and try again."))
                     }
                     if addedRuleCount > 0 {
-                        if !summary.isEmpty { summary += " " }
-                        summary += "Added \(addedRuleCount) recurring transaction\(addedRuleCount == 1 ? "" : "s")."
+                        parts.append(String(localized: "Added \(addedRuleCount) recurring transactions."))
                     }
-                    importError = summary
+                    importError = parts.joined(separator: " ")
                 }
             }
         }
@@ -949,7 +950,7 @@ final class TransactionListViewModel {
                 try await repo.addRecurrenceRule(ruleInput)
                 added += 1
             } catch {
-                importError = "Failed to save recurrence rule: \(error.localizedDescription)"
+                importError = String(localized: "Failed to save recurrence rule: \(error.localizedDescription)")
                 return added
             }
         }

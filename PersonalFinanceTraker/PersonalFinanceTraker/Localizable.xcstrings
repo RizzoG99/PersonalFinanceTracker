@@ -498,11 +498,45 @@
         }
       }
     },
-    "%lld recurring transaction found" : {
-
-    },
     "%lld recurring transactions found" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld recurring transaction found"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld recurring transactions found"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transazione ricorrente trovata"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transazioni ricorrenti trovate"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld selected" : {
       "localizations" : {
@@ -2274,7 +2308,20 @@
       }
     },
     "Checked ones become recurrence rules when you import. Uncheck anything you don't want tracked." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked ones become recurrence rules when you import. Uncheck anything you don't want tracked."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle selezionate diventeranno regole di ricorrenza al momento dell'importazione. Deseleziona quelle che non vuoi tracciare."
+          }
+        }
+      }
     },
     "Choose a Sheet" : {
       "extractionState" : "manual",
@@ -3370,8 +3417,14 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "Every %1$lld %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni %1$lld %2$@"
           }
         }
       }
@@ -4245,40 +4298,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anteprima importazione"
-          }
-        }
-      }
-    },
-    "Imported %lld transaction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imported %lld transaction"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importata %lld transazione"
-          }
-        }
-      }
-    },
-    "Imported %lld transactions" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imported %lld transactions"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importate %lld transazioni"
           }
         }
       }
@@ -6291,7 +6310,20 @@
       }
     },
     "Recurring" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricorrenti"
+          }
+        }
+      }
     },
     "Recurring spending habits" : {
       "extractionState" : "manual",
@@ -8804,6 +8836,158 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La tua spesa varia del %lld%% di mese in mese. Punta a meno del 10%% per il punteggio massimo."
+          }
+        }
+      }
+    },
+    "Imported %lld transactions." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Imported %lld transaction."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Imported %lld transactions."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Importata %lld transazione."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Importate %lld transazioni."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Skipped %lld duplicates." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Skipped %lld duplicate."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Skipped %lld duplicates."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Saltato %lld duplicato."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Saltati %lld duplicati."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Added %lld recurring transactions." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Added %lld recurring transaction."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Added %lld recurring transactions."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aggiunta %lld transazione ricorrente."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aggiunte %lld transazioni ricorrenti."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Failed to save %lld of %lld. Check available storage and try again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to save %1$lld of %2$lld. Check available storage and try again."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare %1$lld di %2$lld. Controlla lo spazio disponibile e riprova."
+          }
+        }
+      }
+    },
+    "Failed to save recurrence rule: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to save recurrence rule: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare la regola di ricorrenza: %@"
           }
         }
       }
