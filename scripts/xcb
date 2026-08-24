@@ -1,0 +1,126 @@
+#!/bin/bash
+# Build/test wrapper for agents, CI, and humans. See CLAUDE.md.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+PROJECT=PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj
+SCHEME=PersonalFinanceTraker
+DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPhone-17
+RESULT=.build/Test.xcresult
+
+# One simulator per worktree, named after the worktree directory, so concurrent
+# agents never share a device. Override with PFT_SIM_UDID to reuse an existing one.
+SIM_NAME="pft-$(basename "$PWD")"
+
+# Never hardcode an OS version: simctl's runtime *identifier* is rounded
+# (iOS-26-4) while its actual version is 26.4.1, and a bare device name resolves
+# to OS:latest, which may be a runtime that has no such device. Targeting the
+# device by UDID sidesteps name and version resolution entirely.
+resolve_sim() {
+  if [ -n "${PFT_SIM_UDID:-}" ]; then echo "$PFT_SIM_UDID"; return; fi
+
+  local udid
+  udid=$(xcrun simctl list devices -j | SIM_NAME="$SIM_NAME" python3 -c '
+import json, os, sys
+want = os.environ["SIM_NAME"]
+for group in json.load(sys.stdin)["devices"].values():
+    for d in group:
+        if d["name"] == want and d.get("isAvailable"):
+            print(d["udid"]); sys.exit(0)
+')
+  if [ -n "$udid" ]; then echo "$udid"; return; fi
+
+  # Newest available iOS runtime that actually supports this device type.
+  local runtime
+  runtime=$(xcrun simctl list runtimes -j | DEVICE_TYPE="$DEVICE_TYPE" python3 -c '
+import json, os, sys
+want = os.environ["DEVICE_TYPE"]
+best = None
+for r in json.load(sys.stdin)["runtimes"]:
+    if not r.get("isAvailable"): continue
+    if not r["identifier"].startswith("com.apple.CoreSimulator.SimRuntime.iOS-"): continue
+    if want not in [d["identifier"] for d in r.get("supportedDeviceTypes", [])]: continue
+    key = tuple(int(p) for p in r["version"].split("."))
+    if best is None or key > best[0]: best = (key, r["identifier"])
+print(best[1] if best else "")
+')
+  if [ -z "$runtime" ]; then
+    echo "xcb: no available iOS runtime supports $DEVICE_TYPE" >&2
+    echo "xcb: check Xcode > Settings > Components" >&2
+    exit 1
+  fi
+  xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" "$runtime"
+}
+
+udids_named() {  # $1 = python expression over the device name `n` (os, SIM_NAME in scope)
+  xcrun simctl list devices -j 2>/dev/null | PRED="$1" SIM_NAME="$SIM_NAME" python3 -c '
+import json, os, sys
+pred = eval("lambda n: " + os.environ["PRED"])
+for group in json.load(sys.stdin)["devices"].values():
+    for d in group:
+        if pred(d["name"]): print(d["udid"])
+' 2>/dev/null || true
+}
+
+# xcodebuild leaves "Clone N of <device>" simulators behind when a parallel test
+# run crashes or is interrupted; it cleans up after itself on a normal exit.
+delete_clones() {
+  udids_named 'n.startswith("Clone ")' | while read -r udid; do
+    xcrun simctl delete "$udid" >/dev/null 2>&1 || true
+  done
+}
+
+case "${1:-}" in
+  build)
+    shift
+    xcodebuild build \
+      -project "$PROJECT" -scheme "$SCHEME" \
+      -destination "id=$(resolve_sim)" \
+      -derivedDataPath .build -quiet "$@"
+    ;;
+
+  test)
+    shift
+    trap delete_clones EXIT
+    rm -rf "$RESULT"   # xcodebuild refuses to overwrite an existing bundle
+    mkdir -p .build    # the log redirect below needs it on a fresh worktree
+    status=0
+    # -quiet still prints a line per test case, so the log goes to a file and only
+    # the summary reaches stdout. Read .build/test.log when you need detail.
+    xcodebuild test \
+      -project "$PROJECT" -scheme "$SCHEME" \
+      -destination "id=$(resolve_sim)" \
+      -derivedDataPath .build \
+      -resultBundlePath "$RESULT" \
+      -test-timeouts-enabled YES \
+      -maximum-test-execution-time-allowance 120 \
+      -quiet "$@" >.build/test.log 2>&1 || status=$?
+    if [ -d "$RESULT" ]; then
+      xcrun xcresulttool get test-results summary --path "$RESULT"
+    else
+      tail -40 .build/test.log   # died before producing a bundle
+    fi
+    exit $status
+    ;;
+
+  clean-sims)
+    delete_clones
+    ;;
+
+  delete-sim)   # drop this worktree's dedicated device
+    udids_named 'n == os.environ["SIM_NAME"]' | while read -r udid; do
+      xcrun simctl delete "$udid"
+    done
+    ;;
+
+  which-sim)
+    echo "$SIM_NAME $(resolve_sim)"
+    ;;
+
+  *)
+    echo "usage: scripts/xcb {build|test|clean-sims|delete-sim|which-sim} [extra xcodebuild args]" >&2
+    echo "  scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests" >&2
+    echo "  PFT_SIM_UDID=<udid> scripts/xcb test   # target a specific simulator" >&2
+    exit 2
+    ;;
+esac

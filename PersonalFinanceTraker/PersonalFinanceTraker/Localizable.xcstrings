@@ -2645,6 +2645,22 @@
         }
       }
     },
+    "CSV Category" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV Category"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoria CSV"
+          }
+        }
+      }
+    },
     "Currency" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3122,6 +3138,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modifica"
+          }
+        }
+      }
+    },
+    "Edit \"%@\"" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit \"%@\""
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica \"%@\""
           }
         }
       }
@@ -7834,6 +7866,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sembrano transazioni ricorrenti. Aggiungi regole di ricorrenza per tracciarle automaticamente."
+          }
+        }
+      }
+    },
+    "The CSV transaction type determines this category's type." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The CSV transaction type determines this category's type."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tipo di transazione nel CSV determina il tipo di questa categoria."
           }
         }
       }

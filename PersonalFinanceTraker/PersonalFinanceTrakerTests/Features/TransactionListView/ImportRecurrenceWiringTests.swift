@@ -42,7 +42,7 @@ struct ImportRecurrenceWiringTests {
 
         // Call confirmImport and await completion
         vm.confirmImport([input])
-        await vm.confirmImportTask?.value
+        await vm.importTask?.value
 
         // Assert: import flow should be dismissed, no navigation to suggestions
         // This pins the `failCount == 0 &&` half of the branch condition,
@@ -94,7 +94,7 @@ struct ImportRecurrenceWiringTests {
 
         // Call confirmImport and await completion
         vm.confirmImport([input])
-        await vm.confirmImportTask?.value
+        await vm.importTask?.value
 
         // Assert: import flow stays open, navigated to suggestions screen
         #expect(vm.showingImportFlow == true)
@@ -133,7 +133,7 @@ struct ImportRecurrenceWiringTests {
 
         // Call confirmImport and await completion
         vm.confirmImport([input])
-        await vm.confirmImportTask?.value
+        await vm.importTask?.value
 
         // Assert: import flow is dismissed, summary message shown (no-regression pin)
         #expect(vm.showingImportFlow == false)
@@ -317,7 +317,7 @@ struct ImportRecurrenceWiringTests {
             TransactionInput(timestamp: Date(), amount: -100, note: "Gym",
                              category: "Fitness", currencyCode: "EUR", categoryPersistentId: nil)
         ], addingRecurrenceRules: true)
-        await vm.confirmImportTask?.value
+        await vm.importTask?.value
 
         // The iPad flow has no follow-up screen: rules land with the transactions and the sheet closes.
         #expect(repo.addRecurrenceRuleCalls.map(\.note) == ["Gym"])

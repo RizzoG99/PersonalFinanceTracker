@@ -423,6 +423,7 @@ final class TransactionListViewModel {
     var xlsxWorkbook: XLSXWorkbook? = nil
     var columnMapping = ColumnMapping()
     var categoryResolutionSelections: [String: String] = [:]  // UUID strings or "__new__" sentinel
+    var pendingCategoryDrafts: [String: ImportCategoryDraft] = [:]
     var csvCategories: [String] = []                          // Unique CSV categories (computed once)
     var csvCategoryTypes: [String: TransactionType] = [:]      // Inferred type per CSV category
     var mappedRows: [MappedRow] = []
@@ -435,6 +436,7 @@ final class TransactionListViewModel {
     var importError: String? = nil
     var isLoadingImportFile = false
     var isImporting = false                                    // UI state during batch insert
+    @ObservationIgnored private(set) var importTask: Task<Void, Never>?
     var hasAutoMappedCategories = false                        // Guard to prevent re-running autoMap on back-nav
 
     @ObservationIgnored var importProfileStore = ImportProfileStore()
@@ -564,6 +566,7 @@ final class TransactionListViewModel {
     /// so a newly loaded file always starts with a clean category-mapping slate.
     private func resetImportSelectionState() {
         categoryResolutionSelections = [:]
+        pendingCategoryDrafts = [:]
         csvCategories = []
         csvCategoryTypes = [:]
         recurrenceSuggestions = []
@@ -575,6 +578,14 @@ final class TransactionListViewModel {
         currentImportSignature = nil
     }
 
+    /// Removes drafts that no longer correspond to a CSV category selected for creation.
+    func reconcilePendingCategoryDrafts(validCategories: [String]) {
+        let valid = Set(validCategories)
+        pendingCategoryDrafts = pendingCategoryDrafts.filter {
+            valid.contains($0.key) && categoryResolutionSelections[$0.key] == "__new__"
+        }
+    }
+
     /// Cancel the import flow and reset state
     func cancelImport() {
         showingImportFlow = false
@@ -582,6 +593,7 @@ final class TransactionListViewModel {
         xlsxWorkbook = nil
         columnMapping = ColumnMapping()
         categoryResolutionSelections = [:]
+        pendingCategoryDrafts = [:]
         csvCategories = []
         csvCategoryTypes = [:]
         mappedRows = []
@@ -743,13 +755,11 @@ final class TransactionListViewModel {
         duplicateKey(timestamp: t.timestamp, amount: t.amount, note: t.note)
     }
 
-    @ObservationIgnored private(set) var confirmImportTask: Task<Void, Never>?
-
     /// - Parameter addingRecurrenceRules: iPad reviews the detected recurrences *before* confirming
     ///   (third segment of the wizard), so the rules are written as part of the same import and
     ///   there is no follow-up step. iPhone leaves this false and reviews them afterwards.
     func confirmImport(_ inputs: [TransactionInput], addingRecurrenceRules: Bool = false) {
-        confirmImportTask = Task {   // exposed so tests await, not sleep
+        importTask = Task {
             importedTransactionCount = 0
             // Cleared up front so the `importError == nil` checks below only ever see a message
             // this run produced.
@@ -759,12 +769,13 @@ final class TransactionListViewModel {
             var newCategoryPersistentIds: [String: PersistentIdentifier] = [:]
             for (csvCatName, selection) in categoryResolutionSelections {
                 guard selection == "__new__" else { continue }
-                let type = csvCategoryTypes[csvCatName] ?? .expense
+                let draft = pendingCategoryDrafts[csvCatName]
+                    ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
                 let categoryInput = CategoryInput(
-                    name: csvCatName.removingLeadingEmoji.trimmingCharacters(in: .whitespaces),
-                    systemImage: "tag",
-                    type: type.rawValue,
-                    colorToken: "categoryIndigo",
+                    name: draft.name,
+                    systemImage: draft.systemImage,
+                    type: draft.type.rawValue,
+                    colorToken: draft.colorToken,
                     monthlyBudget: nil,
                     currencyCode: currencyService.baseCurrency
                 )
@@ -790,7 +801,8 @@ final class TransactionListViewModel {
             // Step 3: Map CSV category names to persistentIds for newly created categories
             for (csvCatName, selection) in categoryResolutionSelections {
                 guard selection == "__new__" else { continue }
-                let createdName = csvCatName.removingLeadingEmoji.trimmingCharacters(in: .whitespaces)
+                let createdName = pendingCategoryDrafts[csvCatName]?.name
+                    ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName]).name
                 if let catSnapshot = updatedCategories.first(where: { $0.name == createdName }) {
                     newCategoryPersistentIds[csvCatName] = catSnapshot.persistentId
                 }
@@ -801,8 +813,8 @@ final class TransactionListViewModel {
             if let signature = currentImportSignature {
                 var resolvedSelections = categoryResolutionSelections
                 for (csvCatName, selection) in resolvedSelections where selection == "__new__" {
-                    let createdName = csvCatName.removingLeadingEmoji
-                        .trimmingCharacters(in: .whitespaces)
+                    let createdName = pendingCategoryDrafts[csvCatName]?.name
+                        ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName]).name
                     if let created = updatedCategories.first(where: { $0.name == createdName }) {
                         resolvedSelections[csvCatName] = created.id.uuidString
                     }
