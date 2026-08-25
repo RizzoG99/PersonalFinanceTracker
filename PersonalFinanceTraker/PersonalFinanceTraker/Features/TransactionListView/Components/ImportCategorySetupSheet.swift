@@ -41,8 +41,8 @@ struct ImportCategorySetupSheet: View {
 
     private var nameError: String? {
         guard !trimmedName.isEmpty else { return nil }
-        if trimmedName.range(of: #"^[a-zA-Z0-9 ]+$"#, options: .regularExpression) == nil {
-            return "Only letters, numbers and spaces allowed"
+        if !CategoryNameValidator.isValid(trimmedName) {
+            return "Use letters, numbers, spaces, and common punctuation"
         }
         let normalizedName = trimmedName.lowercased()
         if existingNames.contains(normalizedName) || otherDraftNames.contains(normalizedName) {

@@ -15,8 +15,8 @@ struct EditCategorySheet: View {
     private var nameError: String? {
         let trimmed = editedName.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty { return "Name cannot be empty" }
-        if trimmed.range(of: #"^[a-zA-Z0-9 ]+$"#, options: .regularExpression) == nil {
-            return "Only letters, numbers and spaces allowed"
+        if !CategoryNameValidator.isValid(trimmed) {
+            return "Use letters, numbers, spaces, and common punctuation"
         }
         if existingCategories.contains(where: {
             $0.id != category.id && $0.name.lowercased() == trimmed.lowercased()
