@@ -427,6 +427,9 @@ final class TransactionListViewModel {
     var csvCategories: [String] = []                          // Unique CSV categories (computed once)
     var csvCategoryTypes: [String: TransactionType] = [:]      // Inferred type per CSV category
     var mappedRows: [MappedRow] = []
+    var recurrenceSuggestions: [RecurrenceSuggestion] = []
+    var selectedSuggestionIds: Set<UUID> = []
+    var importedTransactionCount = 0
     var availableCategories: [CategorySnapshot] = []
     var showingImportFlow = false
     var importNavigationPath: [ImportStep] = []
@@ -566,6 +569,9 @@ final class TransactionListViewModel {
         pendingCategoryDrafts = [:]
         csvCategories = []
         csvCategoryTypes = [:]
+        recurrenceSuggestions = []
+        selectedSuggestionIds = []
+        importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
         savedCategorySelections = nil
@@ -591,6 +597,9 @@ final class TransactionListViewModel {
         csvCategories = []
         csvCategoryTypes = [:]
         mappedRows = []
+        recurrenceSuggestions = []
+        selectedSuggestionIds = []
+        importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
         importError = nil
@@ -686,7 +695,8 @@ final class TransactionListViewModel {
     }
 
     /// Offloads per-row work (date parsing, Decimal conversion) to a background thread.
-    /// CategorySnapshot re-resolution happens back on the MainActor after the task completes.
+    /// CategorySnapshot re-resolution and recurrence detection happen back on the MainActor after
+    /// the task completes, so every import surface works from the same mapped preview.
     func applyMapping() async {
         guard let file = csvFile else { return }
         // Build UUID resolution only for existing categories; "__new__" entries will have nil UUID
@@ -728,6 +738,13 @@ final class TransactionListViewModel {
             )
             return MappedRow(input: input, error: nil, rowIndex: raw.rowIndex, isDuplicate: isDuplicate)
         }
+
+        let existingRules = (try? await repo.fetchActiveRecurrenceRules()) ?? []
+        recurrenceSuggestions = RecurrenceDetector.detect(
+            in: mappedRows.compactMap(\.input),
+            existingRules: existingRules
+        )
+        selectedSuggestionIds = Set(recurrenceSuggestions.map(\.id))
     }
 
     private static func duplicateKey(timestamp: Date, amount: Decimal, note: String) -> String {
@@ -738,8 +755,16 @@ final class TransactionListViewModel {
         duplicateKey(timestamp: t.timestamp, amount: t.amount, note: t.note)
     }
 
-    func confirmImport(_ inputs: [TransactionInput]) {
+    /// - Parameter addingRecurrenceRules: iPad reviews the detected recurrences *before* confirming
+    ///   (third segment of the wizard), so the rules are written as part of the same import and
+    ///   there is no follow-up step. iPhone leaves this false and reviews them afterwards.
+    func confirmImport(_ inputs: [TransactionInput], addingRecurrenceRules: Bool = false) {
         importTask = Task {
+            importedTransactionCount = 0
+            // Cleared up front so the `importError == nil` checks below only ever see a message
+            // this run produced.
+            importError = nil
+
             // Step 1: Create any new categories that need to be created
             var newCategoryPersistentIds: [String: PersistentIdentifier] = [:]
             for (csvCatName, selection) in categoryResolutionSelections {
@@ -851,27 +876,96 @@ final class TransactionListViewModel {
                 failCount = toInsert.count  // All failed in batch
             }
 
-            showingImportFlow = false
-            onDataChanged?()
-            reload()
-
-            // Build summary message (show for both success and partial failures)
+            // Step 8: Continue to the candidates detected from this mapped import. Detection has
+            // already happened before confirmation, so iPhone and iPad review the same rows.
             let importedCount = toInsert.count - failCount
-            if importedCount > 0 || failCount > 0 || skippedDuplicates > 0 {
-                var summary = ""
-                if importedCount > 0 {
-                    summary += "Imported \(importedCount) transaction\(importedCount == 1 ? "" : "s")."
+            importedTransactionCount = importedCount
+
+            // The rules the user left checked in the preview step are written here, before the
+            // teardown below clears the suggestions.
+            var addedRuleCount = 0
+            if addingRecurrenceRules && failCount == 0 {
+                addedRuleCount = await persistSelectedRecurrenceRules()
+            }
+
+            // If import succeeded and there are recurrence suggestions, keep the sheet open and navigate to suggestions screen
+            // Otherwise, dismiss the import flow with the standard summary message
+            if !addingRecurrenceRules && failCount == 0 && !recurrenceSuggestions.isEmpty {
+                // Recurrence suggestions available: navigate to suggestion screen without dismissing sheet
+                onDataChanged?()
+                reload()
+                importNavigationPath.append(.recurringSuggestions)
+            } else {
+                // No suggestions: dismiss the import flow with summary (existing behavior)
+                showingImportFlow = false
+                onDataChanged?()
+                reload()
+
+                // Build summary message (show for both success and partial failures). A rule-save
+                // failure already put a message here; it is the more specific one, so it wins.
+                if importError == nil, importedCount > 0 || failCount > 0 || skippedDuplicates > 0 {
+                    // Collected as sentences and joined. The `\(n == 1 ? "" : "s")` this replaces
+                    // built the plural in Swift, which can only ever be right for English —
+                    // Italian needs transazione/transazioni. The catalog's plural variations pick
+                    // the form per language.
+                    var parts: [String] = []
+                    if importedCount > 0 {
+                        parts.append(String(localized: "Imported \(importedCount) transactions."))
+                    }
+                    if skippedDuplicates > 0 {
+                        parts.append(String(localized: "Skipped \(skippedDuplicates) duplicates."))
+                    }
+                    if failCount > 0 {
+                        parts.append(String(localized: "Failed to save \(failCount) of \(toInsert.count). Check available storage and try again."))
+                    }
+                    if addedRuleCount > 0 {
+                        parts.append(String(localized: "Added \(addedRuleCount) recurring transactions."))
+                    }
+                    importError = parts.joined(separator: " ")
                 }
-                if skippedDuplicates > 0 {
-                    if !summary.isEmpty { summary += " " }
-                    summary += "Skipped \(skippedDuplicates) duplicate\(skippedDuplicates == 1 ? "" : "s")."
-                }
-                if failCount > 0 {
-                    if !summary.isEmpty { summary += " " }
-                    summary += "Failed to save \(failCount) of \(toInsert.count). Check available storage and try again."
-                }
-                importError = summary
             }
         }
+    }
+
+    /// Create and persist recurrence rules for all selected suggestions.
+    /// The transactions from the import already exist; nextDate is in the future,
+    /// so RecurrenceMaterializationService will pick them up naturally at the next launch.
+    /// Do NOT materialize occurrences here — that would create a duplicate of the first
+    /// occurrence, which is already in the database from the import.
+    func addSelectedRecurrenceRules() async {
+        await persistSelectedRecurrenceRules()
+        // A save failure leaves importError set, and cancelImport() clears it — the flow would
+        // vanish with no explanation. Stay put so the alert has something to show.
+        guard importError == nil else { return }
+        cancelImport()
+    }
+
+    /// Writes the checked suggestions and returns how many were created. Does not dismiss anything —
+    /// `confirmImport` calls it mid-flight and still needs the flow state afterwards.
+    @discardableResult
+    private func persistSelectedRecurrenceRules() async -> Int {
+        var added = 0
+        for suggestion in recurrenceSuggestions where selectedSuggestionIds.contains(suggestion.id) {
+            let ruleInput = RecurrenceRuleInput(
+                frequency: suggestion.frequency,
+                interval: suggestion.interval,
+                startDate: suggestion.nextDate,
+                endDate: nil,
+                lastMaterializedDate: nil,
+                amount: suggestion.amount,
+                note: suggestion.note,
+                category: suggestion.category,
+                currencyCode: suggestion.currencyCode,
+                categoryPersistentId: suggestion.categoryPersistentId
+            )
+            do {
+                try await repo.addRecurrenceRule(ruleInput)
+                added += 1
+            } catch {
+                importError = String(localized: "Failed to save recurrence rule: \(error.localizedDescription)")
+                return added
+            }
+        }
+        return added
     }
 }

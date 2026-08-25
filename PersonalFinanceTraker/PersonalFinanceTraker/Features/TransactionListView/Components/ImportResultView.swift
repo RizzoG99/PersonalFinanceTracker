@@ -26,8 +26,21 @@ struct ImportResultView: View {
     let onConfirm: ([TransactionInput]) -> Void
     let onDone: () -> Void
 
+    /// Typed LocalizedStringKey so the ternary keeps using the localizing overload. "Import" is
+    /// what the iPad two-pane sheet's single bar shows: both panes live in one NavigationStack
+    /// there, so whichever sibling sets the title last would otherwise win at random.
+    private var barTitle: LocalizedStringKey {
+        totalSteps > 0 ? "Import Preview" : "Import"
+    }
+
     private var validTransactions: [TransactionInput] {
         rows.filter { !$0.isDuplicate }.compactMap(\.input)
+    }
+
+    /// True when the wizard has a step after this one — today that only happens when recurrence
+    /// suggestions were detected. `totalSteps == 0` is the iPad pane, which is never a step.
+    private var isFollowedByAnotherStep: Bool {
+        totalSteps > 0 && currentStep < totalSteps && !validTransactions.isEmpty
     }
 
     private var duplicateCount: Int {
@@ -152,7 +165,7 @@ struct ImportResultView: View {
         .scrollContentBackground(.hidden)
         // As in step 2: a pushed destination doesn't inherit the sheet's presentationBackground.
         .appBackground()
-        .navigationTitle("Import Preview")
+        .navigationTitle(barTitle)
         // Empty in the iPad two-pane layout, where this pane isn't a step you arrive at.
         .navigationSubtitle(totalSteps > 0 ? "Step \(currentStep) of \(totalSteps)" : "")
         .navigationBarTitleDisplayMode(.inline)
@@ -175,7 +188,14 @@ struct ImportResultView: View {
                             onConfirm(validTransactions)
                         }
                     } label: {
-                        Image(systemName: "checkmark")
+                        // The checkmark means "this ends the wizard". When recurrence suggestions
+                        // added a step after this one, it doesn't — so this reads as Continue and
+                        // the checkmark moves to whatever screen is genuinely last.
+                        if isFollowedByAnotherStep {
+                            Text("Continue").bold()
+                        } else {
+                            Image(systemName: "checkmark")
+                        }
                     }
                     .accessibilityLabel(
                         validTransactions.isEmpty

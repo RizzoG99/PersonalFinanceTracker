@@ -11,13 +11,15 @@ import SwiftUI
 /// at a time. On iPad that sequencing is the problem, not the solution — you make mapping choices on
 /// one screen and only learn what they did to your data two screens later. Here the preview is
 /// always the same pane, always showing mapped output, so the third step stops existing: the
-/// confirmation *is* what you have been looking at the whole time.
+/// confirmation *is* what you have been looking at the whole time. Detected recurrences get a tab
+/// of their own rather than iPhone's post-import screen, for the same reason: review before, not after.
 struct IPadImportFlowView: View {
     @Bindable var viewModel: TransactionListViewModel
 
     private enum Step: Hashable {
         case columns
         case categories
+        case recurring
     }
 
     @State private var step: Step = .columns
@@ -38,16 +40,30 @@ struct IPadImportFlowView: View {
     }
 
     private var hasCategoryStep: Bool { viewModel.columnMapping.categoryColumn != nil }
+    private var hasRecurringStep: Bool { !viewModel.recurrenceSuggestions.isEmpty }
 
     var body: some View {
-        HStack(spacing: 0) {
-            controls
-                // Ranged, not fixed: a hard width plus a squeezed sibling is how the preview ended
-                // up ~180pt wide and wrapping one character per line.
-                .frame(minWidth: 360, idealWidth: 460, maxWidth: 520)
-            Divider()
-            preview
-                .frame(minWidth: 420)
+        // One NavigationStack for the whole sheet, not one per pane. A pane's own stack measures
+        // its bar's margins from the pane, whose outer edge is the sheet's rounded corner — which
+        // is how Cancel and the checkmark ended up sitting on the curve. The sheet's root bar gets
+        // margins that account for the presentation inset, the same as every other sheet here.
+        NavigationStack {
+            HStack(spacing: 0) {
+                controls
+                    // Ranged, not fixed: a hard width plus a squeezed sibling is how the preview
+                    // ended up ~180pt wide and wrapping one character per line.
+                    .frame(minWidth: 360, idealWidth: 460, maxWidth: 520)
+                Divider()
+                preview
+                    .frame(minWidth: 420)
+            }
+            .navigationTitle("Import")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { viewModel.cancelImport() }
+                }
+            }
         }
         .background { AppBackground() }
         // Without this the sheet is form-width, and two panes don't fit in a form.
@@ -59,24 +75,21 @@ struct IPadImportFlowView: View {
         .task(id: mappingSignature) {
             await remap()
         }
+        // Remapping can wipe the suggestions out from under a selected Recurring tab.
+        .onChange(of: hasRecurringStep) { _, stillThere in
+            if !stillThere && step == .recurring { step = .columns }
+        }
     }
 
     // MARK: - Left: the mapping controls
 
     private var controls: some View {
-        NavigationStack {
-            // A VStack, not a .safeAreaInset overlay: an inset floats above the scroll view, so the
-            // list still travels underneath it and needs a background to hide behind. Giving the
-            // picker its own row in the layout means there is nothing to hide.
-            VStack(spacing: 0) {
-                stepPicker
-                stepContent
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { viewModel.cancelImport() }
-                }
-            }
+        // A VStack, not a .safeAreaInset overlay: an inset floats above the scroll view, so the
+        // list still travels underneath it and needs a background to hide behind. Giving the
+        // picker its own row in the layout means there is nothing to hide.
+        VStack(spacing: 0) {
+            stepPicker
+            stepContent
         }
     }
 
@@ -107,18 +120,24 @@ struct IPadImportFlowView: View {
                         onContinue: {},
                         showsStepActions: false
                     )
+                case .recurring:
+                    RecurrenceSuggestionsView(viewModel: viewModel, mode: .preview)
                 }
         }
     }
 
     @ViewBuilder
     private var stepPicker: some View {
-        // Only offered when the file actually has a category column — otherwise there is nothing
-        // to map and a second tab would lead to an empty screen.
-        if hasCategoryStep {
+        // Only offered when there is a second decision to make — otherwise a lone tab leads nowhere.
+        if hasCategoryStep || hasRecurringStep {
             Picker("Step", selection: $step) {
                 Text("Columns").tag(Step.columns)
-                Text("Categories").tag(Step.categories)
+                if hasCategoryStep {
+                    Text("Categories").tag(Step.categories)
+                }
+                if hasRecurringStep {
+                    Text("Recurring").tag(Step.recurring)
+                }
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, 16)
@@ -129,20 +148,21 @@ struct IPadImportFlowView: View {
 
     // MARK: - Right: the live result
 
+    /// No NavigationStack of its own — its confirm action rises into the sheet's single bar.
     private var preview: some View {
-        NavigationStack {
-            ImportResultView(
-                rows: viewModel.mappedRows,
-                availableCategories: viewModel.availableCategories,
-                pendingCategoryDrafts: viewModel.pendingCategoryDrafts,
-                isImporting: viewModel.isImporting,
-                // 0 suppresses the "Step n of m" subtitle: this pane is not a step here.
-                currentStep: 0,
-                totalSteps: 0,
-                onConfirm: { viewModel.confirmImport($0) },
-                onDone: { viewModel.cancelImport() }
-            )
-        }
+        ImportResultView(
+            rows: viewModel.mappedRows,
+            availableCategories: viewModel.availableCategories,
+            pendingCategoryDrafts: viewModel.pendingCategoryDrafts,
+            isImporting: viewModel.isImporting,
+            // 0 suppresses the "Step n of m" subtitle: this pane is not a step here.
+            currentStep: 0,
+            totalSteps: 0,
+            // Confirming here also writes whatever is still checked under Recurring. Not
+            // visiting that tab means accepting all of it, which is the pre-checked default.
+            onConfirm: { viewModel.confirmImport($0, addingRecurrenceRules: true) },
+            onDone: { viewModel.cancelImport() }
+        )
     }
 
     // MARK: - Live mapping

@@ -20,6 +20,12 @@ struct CSVCategoryMappingView: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     @State private var categoryBeingConfigured: ImportCategoryDraft?
 
+    /// See ImportResultView.barTitle — every pane embedded in the iPad sheet's one bar must
+    /// agree on the title.
+    private var barTitle: LocalizedStringKey {
+        showsStepActions ? "Map Categories" : "Import"
+    }
+
     private let newSentinel = "__new__"
 
     private var allMapped: Bool {
@@ -89,7 +95,7 @@ struct CSVCategoryMappingView: View {
         // The sheet's presentationBackground only reaches the NavigationStack's root (step 1);
         // pushed destinations get their own opaque host, so each one paints the gradient itself.
         .appBackground()
-        .navigationTitle("Map Categories")
+        .navigationTitle(barTitle)
         .navigationSubtitle(showsStepActions ? "Step \(currentStep) of \(totalSteps)" : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
