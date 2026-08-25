@@ -18,9 +18,10 @@ struct EditCategorySheet: View {
         if !CategoryNameValidator.isValid(trimmed) {
             return "Use letters, numbers, spaces, and common punctuation"
         }
-        if existingCategories.contains(where: {
-            $0.id != category.id && $0.name.lowercased() == trimmed.lowercased()
-        }) {
+        let sameTypeNames = existingCategories
+            .filter { $0.id != category.id && $0.transactionType == category.transactionType }
+            .map { $0.name }
+        if CategoryNameValidator.isDuplicate(trimmed, among: sameTypeNames) {
             return "A category with this name already exists"
         }
         return nil

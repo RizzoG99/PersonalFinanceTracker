@@ -27,6 +27,7 @@ struct TransactionCategory: Identifiable, Hashable, Codable {
         TransactionCategory(systemImage: "star.circle", label: "Bonus"),
         TransactionCategory(systemImage: "trophy", label: "Prize"),
         TransactionCategory(systemImage: "arrow.uturn.backward", label: "Refund"),
+        TransactionCategory(systemImage: "ellipsis.circle", label: "Other"),
     ]
 
     static let expenseCategories: [TransactionCategory] = [
