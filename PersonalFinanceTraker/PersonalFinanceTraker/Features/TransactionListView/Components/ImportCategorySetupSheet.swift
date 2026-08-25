@@ -10,8 +10,8 @@ struct ImportCategorySetupSheet: View {
 
     let csvCategory: String
     let lockedType: TransactionType?
-    let existingNames: Set<String>
-    let otherDraftNames: Set<String>
+    let existingCategories: [CategorySnapshot]
+    let otherDrafts: [ImportCategoryDraft]
     let onSave: (ImportCategoryDraft) -> Void
 
     @State private var draft: ImportCategoryDraft
@@ -19,14 +19,14 @@ struct ImportCategorySetupSheet: View {
     init(
         draft: ImportCategoryDraft,
         lockedType: TransactionType?,
-        existingNames: Set<String>,
-        otherDraftNames: Set<String>,
+        existingCategories: [CategorySnapshot],
+        otherDrafts: [ImportCategoryDraft],
         onSave: @escaping (ImportCategoryDraft) -> Void
     ) {
         self.csvCategory = draft.csvCategory
         self.lockedType = lockedType
-        self.existingNames = existingNames
-        self.otherDraftNames = otherDraftNames
+        self.existingCategories = existingCategories
+        self.otherDrafts = otherDrafts
         self.onSave = onSave
         var initialDraft = draft
         if let lockedType {
@@ -44,8 +44,14 @@ struct ImportCategorySetupSheet: View {
         if !CategoryNameValidator.isValid(trimmedName) {
             return "Use letters, numbers, spaces, and common punctuation"
         }
-        let normalizedName = trimmedName.lowercased()
-        if existingNames.contains(normalizedName) || otherDraftNames.contains(normalizedName) {
+        let sameTypeExistingNames = existingCategories
+            .filter { $0.transactionType == draft.type }
+            .map { $0.name }
+        let sameTypeDraftNames = otherDrafts
+            .filter { $0.type == draft.type }
+            .map { $0.name }
+        if CategoryNameValidator.isDuplicate(trimmedName, among: sameTypeExistingNames)
+            || CategoryNameValidator.isDuplicate(trimmedName, among: sameTypeDraftNames) {
             return "A category with this name already exists"
         }
         return nil

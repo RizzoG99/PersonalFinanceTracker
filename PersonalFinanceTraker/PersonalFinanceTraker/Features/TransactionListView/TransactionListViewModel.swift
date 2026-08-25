@@ -799,11 +799,15 @@ final class TransactionListViewModel {
             }
 
             // Step 3: Map CSV category names to persistentIds for newly created categories
+            // Matched on name AND type: "Other" can now exist for both Expense and Income,
+            // so name alone could bind an Income row to the Expense category.
             for (csvCatName, selection) in categoryResolutionSelections {
                 guard selection == "__new__" else { continue }
-                let createdName = pendingCategoryDrafts[csvCatName]?.name
-                    ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName]).name
-                if let catSnapshot = updatedCategories.first(where: { $0.name == createdName }) {
+                let createdDraft = pendingCategoryDrafts[csvCatName]
+                    ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
+                if let catSnapshot = updatedCategories.first(where: {
+                    $0.name == createdDraft.name && $0.transactionType == createdDraft.type
+                }) {
                     newCategoryPersistentIds[csvCatName] = catSnapshot.persistentId
                 }
             }
@@ -813,9 +817,11 @@ final class TransactionListViewModel {
             if let signature = currentImportSignature {
                 var resolvedSelections = categoryResolutionSelections
                 for (csvCatName, selection) in resolvedSelections where selection == "__new__" {
-                    let createdName = pendingCategoryDrafts[csvCatName]?.name
-                        ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName]).name
-                    if let created = updatedCategories.first(where: { $0.name == createdName }) {
+                    let createdDraft = pendingCategoryDrafts[csvCatName]
+                        ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
+                    if let created = updatedCategories.first(where: {
+                        $0.name == createdDraft.name && $0.transactionType == createdDraft.type
+                    }) {
                         resolvedSelections[csvCatName] = created.id.uuidString
                     }
                 }

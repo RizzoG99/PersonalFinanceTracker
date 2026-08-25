@@ -17,4 +17,11 @@ enum CategoryNameValidator {
     static func isValid(_ name: String) -> Bool {
         name.unicodeScalars.allSatisfy(allowedCharacters.contains)
     }
+
+    /// Names are unique **per type** — Expense and Income can each own an "Other".
+    /// Callers pass the names already filtered to the relevant transaction type.
+    static func isDuplicate(_ name: String, among names: some Sequence<String>) -> Bool {
+        let normalized = name.trimmingCharacters(in: .whitespaces).lowercased()
+        return names.contains { $0.trimmingCharacters(in: .whitespaces).lowercased() == normalized }
+    }
 }

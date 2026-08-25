@@ -126,12 +126,10 @@ struct CSVCategoryMappingView: View {
             ImportCategorySetupSheet(
                 draft: draft,
                 lockedType: categoryTypes[draft.csvCategory],
-                existingNames: Set(availableCategories.map { $0.name.lowercased() }),
-                otherDraftNames: Set(
-                    viewModel.pendingCategoryDrafts
-                        .filter { $0.key != draft.csvCategory }
-                        .map { $0.value.name.trimmingCharacters(in: .whitespaces).lowercased() }
-                ),
+                existingCategories: availableCategories,
+                otherDrafts: viewModel.pendingCategoryDrafts
+                    .filter { $0.key != draft.csvCategory }
+                    .map { $0.value },
                 onSave: { savedDraft in
                     viewModel.pendingCategoryDrafts[savedDraft.csvCategory] = savedDraft
                     selections[savedDraft.csvCategory] = newSentinel

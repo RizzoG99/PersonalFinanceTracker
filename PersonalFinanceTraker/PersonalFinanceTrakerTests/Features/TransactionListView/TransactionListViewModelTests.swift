@@ -126,6 +126,55 @@ struct TransactionListViewModelTests {
         #expect(category.colorToken == "categoryPurple")
     }
 
+    // Regression for #47: Expense and Income can each have their own "Other" category, so
+    // resolving a "__new__" selection must match on name AND type, not name alone.
+    @Test @MainActor func importedCategoryResolvesToMatchingTypeWhenNameIsShared() async throws {
+        let schema = Schema([TransactionModel.self, CategoryModel.self, GoalModel.self, RecurrenceRule.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        let container = try! ModelContainer(for: schema, configurations: [config])
+        let actor = TransactionActor(modelContainer: container)
+
+        // An expense "Other" already exists before the import creates the income one.
+        try! await actor.addCategory(CategoryInput(
+            name: "Other", systemImage: "ellipsis.circle", type: "expense",
+            colorToken: "categoryGray", monthlyBudget: nil, currencyCode: "EUR"
+        ))
+
+        let vm = TransactionListViewModel(repo: actor)
+        vm.load()
+        await vm.loadTask?.value
+
+        let csvCategory = "Altro"
+        vm.categoryResolutionSelections = [csvCategory: "__new__"]
+        vm.pendingCategoryDrafts = [
+            csvCategory: ImportCategoryDraft(
+                csvCategory: csvCategory,
+                name: "Other",
+                type: .income,
+                systemImage: "ellipsis.circle",
+                colorToken: "categoryGray"
+            )
+        ]
+
+        let input = TransactionInput(
+            timestamp: Date(), amount: 42, note: "Rimborso",
+            category: csvCategory, currencyCode: "EUR"
+        )
+        vm.confirmImport([input])
+        await vm.importTask?.value
+
+        // importError doubles as the success-summary field ("Imported 1 transaction."); only
+        // fail-shaped messages ("Failed to...") indicate a real problem here.
+        #expect(vm.importError?.hasPrefix("Failed") != true)
+        let categories = try await vm.repo.fetchCategories()
+        #expect(categories.filter { $0.name == "Other" }.count == 2)
+
+        let transactions = try await vm.repo.fetchAll()
+        let imported = try #require(transactions.first { $0.note == "Rimborso" })
+        let boundCategory = try #require(categories.first { $0.persistentId == imported.categoryId })
+        #expect(boundCategory.transactionType == TransactionType.income)
+    }
+
     @Test @MainActor func reconcilingImportCategoriesDropsObsoleteDrafts() async {
         let vm = TransactionListViewModel(repo: MockTransactionRepository())
         vm.categoryResolutionSelections = ["Current": "__new__", "Removed": "__new__"]
