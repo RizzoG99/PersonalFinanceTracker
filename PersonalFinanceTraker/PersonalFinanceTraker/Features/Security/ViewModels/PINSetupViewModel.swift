@@ -2,7 +2,7 @@ import SwiftUI
 
 @Observable @MainActor
 final class PINSetupViewModel {
-    enum SetupStep { case verifyCurrentPin, enterPin, confirmPin, success, biometricPrompt, nameEntry }
+    enum SetupStep { case verifyCurrentPin, enterPin, confirmPin, success, biometricPrompt, nameEntry, restorePrompt }
 
     var currentStep: SetupStep = .enterPin
     var pinInput: String = ""
@@ -13,11 +13,17 @@ final class PINSetupViewModel {
     var isBouncing: Bool = false
     var eyesOpen: Bool = true
     var isComplete: Bool = false
+    var isRestoring: Bool = false
+    var restoreErrorMessage: String = ""
 
     let isChangeMode: Bool
     let showsOnboardingExtras: Bool
     private let pinService: PINService
     private let authService: BiometricAuthenticating
+    private let backupService: BackupService
+    /// nil when this instance isn't wired up for onboarding restore (e.g. PIN change/reset),
+    /// so the restore-prompt step is never entered even if a backup happens to exist.
+    private let restoreRepo: ITransactionRepository?
     private var firstPin: String = ""
 
     var biometricLabel: String { authService.biometricLabel }
@@ -26,12 +32,16 @@ final class PINSetupViewModel {
         pinService: PINService,
         authService: BiometricAuthenticating,
         isChangeMode: Bool = false,
-        showsOnboardingExtras: Bool = false
+        showsOnboardingExtras: Bool = false,
+        restoreRepo: ITransactionRepository? = nil,
+        backupService: BackupService = BackupService()
     ) {
         self.pinService = pinService
         self.authService = authService
         self.isChangeMode = isChangeMode
         self.showsOnboardingExtras = showsOnboardingExtras
+        self.restoreRepo = restoreRepo
+        self.backupService = backupService
         currentStep = isChangeMode ? .verifyCurrentPin : .enterPin
     }
 
@@ -58,7 +68,7 @@ final class PINSetupViewModel {
             if confirmInput.count == 4 {
                 Task { try? await Task.sleep(for: .seconds(0.15)); self.validateAndSave() }
             }
-        case .success, .biometricPrompt, .nameEntry:
+        case .success, .biometricPrompt, .nameEntry, .restorePrompt:
             break
         }
     }
@@ -71,7 +81,7 @@ final class PINSetupViewModel {
         case .confirmPin:
             if !confirmInput.isEmpty { confirmInput.removeLast() }
             eyesOpen = confirmInput.isEmpty
-        case .success, .biometricPrompt, .nameEntry:
+        case .success, .biometricPrompt, .nameEntry, .restorePrompt:
             break
         }
     }
@@ -186,6 +196,39 @@ final class PINSetupViewModel {
         if !trimmed.isEmpty {
             UserDefaults.standard.set(trimmed, forKey: "user_full_name")
         }
+        // Only a fresh onboarding flow that's wired to a repo checks for an existing iCloud
+        // backup — PIN change/reset never reaches this step (see the switch in appendDigit/
+        // validateAndSave), but guard explicitly rather than relying on that.
+        guard restoreRepo != nil, backupService.newestBackup() != nil else {
+            finishOnboarding()
+            return
+        }
+        withAnimation { currentStep = .restorePrompt }
+    }
+
+    /// Restores the newest iCloud backup, then finishes onboarding into the just-restored data.
+    /// Errors surface inline on `.restorePrompt` (via `restoreErrorMessage`) rather than blocking
+    /// onboarding — the user can retry or skip and restore later from Settings.
+    func restoreFromBackup() {
+        guard let repo = restoreRepo else { return }
+        restoreErrorMessage = ""
+        isRestoring = true
+        Task {
+            do {
+                try await RestoreService.restoreLatest(repo: repo, backupService: backupService)
+                isRestoring = false
+                finishOnboarding()
+            } catch BackupService.BackupError.decryptionFailed {
+                isRestoring = false
+                restoreErrorMessage = "Backup can't be decrypted. Make sure iCloud Keychain is enabled on this device."
+            } catch {
+                isRestoring = false
+                restoreErrorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    func skipRestore() {
         finishOnboarding()
     }
 

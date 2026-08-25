@@ -40,6 +40,8 @@ struct PINSetupView: View {
             biometricPromptContent
         case .nameEntry:
             nameEntryContent
+        case .restorePrompt:
+            restorePromptContent
         case .verifyCurrentPin, .enterPin, .confirmPin:
             PINPadView(
                 onDigit: { viewModel.appendDigit($0) },
@@ -52,7 +54,7 @@ struct PINSetupView: View {
     private var showsPINDots: Bool {
         switch viewModel.currentStep {
         case .verifyCurrentPin, .enterPin, .confirmPin, .success: return true
-        case .biometricPrompt, .nameEntry: return false
+        case .biometricPrompt, .nameEntry, .restorePrompt: return false
         }
     }
 
@@ -64,6 +66,7 @@ struct PINSetupView: View {
         case .success:          return "PIN successfully set"
         case .biometricPrompt:  return "Unlock with \(viewModel.biometricLabel)"
         case .nameEntry:        return "What should we call you?"
+        case .restorePrompt:    return "Restore your data?"
         }
     }
 
@@ -71,7 +74,7 @@ struct PINSetupView: View {
         switch viewModel.currentStep {
         case .verifyCurrentPin, .enterPin: return viewModel.pinInput.count
         case .confirmPin:                  return viewModel.confirmInput.count
-        case .success, .biometricPrompt, .nameEntry: return 4
+        case .success, .biometricPrompt, .nameEntry, .restorePrompt: return 4
         }
     }
 
@@ -100,6 +103,53 @@ struct PINSetupView: View {
                 .foregroundStyle(.textDim)
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())
+        }
+        .transition(.opacity)
+    }
+
+    private var restorePromptContent: some View {
+        VStack(spacing: 16) {
+            Text("We found a backup in iCloud. Restore it to bring back your transactions and categories on this device.")
+                .font(.subheadline)
+                .foregroundStyle(.textDim)
+                .multilineTextAlignment(.center)
+
+            if !viewModel.restoreErrorMessage.isEmpty {
+                Text(viewModel.restoreErrorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.negative)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button {
+                viewModel.restoreFromBackup()
+            } label: {
+                if viewModel.isRestoring {
+                    HStack {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Restoring…")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.accentIndigo, in: RoundedRectangle(cornerRadius: 14))
+                } else {
+                    Text("Restore from Backup")
+                        .font(.headline)
+                        .foregroundStyle(.primaryActionForeground)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.accentIndigo, in: RoundedRectangle(cornerRadius: 14))
+                }
+            }
+            .disabled(viewModel.isRestoring)
+
+            Button("Skip") { viewModel.skipRestore() }
+                .font(.subheadline)
+                .foregroundStyle(.textDim)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+                .disabled(viewModel.isRestoring)
         }
         .transition(.opacity)
     }
