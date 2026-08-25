@@ -25,8 +25,8 @@ struct AddCategorySheet: View {
 
     private var nameError: String? {
         if name.isEmpty { return nil }
-        if name.range(of: #"^[a-zA-Z0-9 ]+$"#, options: .regularExpression) == nil {
-            return "Only letters, numbers and spaces allowed"
+        if !CategoryNameValidator.isValid(name) {
+            return "Use letters, numbers, spaces, and common punctuation"
         }
         if existingCategories.contains(where: { $0.name.lowercased() == name.lowercased() }) {
             return "A category with this name already exists"
