@@ -151,4 +151,34 @@ struct TransactionActorRecurrenceTests {
 
         #expect(try await actor.fetchActiveRecurrenceRules().isEmpty)
     }
+
+    @Test func linkTransactionsToRecurrenceRuleStampsMatchingSameDayAmountOnly() async throws {
+        let actor = makeActor()
+        let ruleId = UUID()
+        try await actor.addBatch([
+            // Matches: same amount, same calendar day as an occurrence date (different time-of-day)
+            TransactionInput(timestamp: date(2026, 1, 1).addingTimeInterval(3600 * 9), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
+            TransactionInput(timestamp: date(2026, 2, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
+            // Wrong amount, same day
+            TransactionInput(timestamp: date(2026, 1, 1), amount: -50, note: "Groceries", category: "Food", currencyCode: "EUR"),
+            // Right amount, unrelated day
+            TransactionInput(timestamp: date(2026, 3, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
+            // Already linked to a different rule — must stay untouched
+            TransactionInput(timestamp: date(2026, 1, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR", recurrenceRuleId: UUID())
+        ])
+
+        try await actor.linkTransactionsToRecurrenceRule(
+            id: ruleId,
+            amount: -1200,
+            occurrenceDates: [date(2026, 1, 1), date(2026, 2, 1)]
+        )
+
+        let all = try await actor.fetchAll()
+        let linked = all.filter { $0.recurrenceRuleId == ruleId }
+        #expect(linked.count == 2)
+        #expect(linked.allSatisfy { $0.amount == -1200 })
+
+        let untouched = all.filter { $0.recurrenceRuleId != ruleId }
+        #expect(untouched.count == 3)
+    }
 }

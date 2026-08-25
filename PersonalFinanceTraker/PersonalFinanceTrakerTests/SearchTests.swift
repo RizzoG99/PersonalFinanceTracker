@@ -77,6 +77,28 @@ struct SearchTests {
         #expect(filters.matches(transactionBeforeStart) == false)
     }
 
+    @Test func recurringOnlyFilterKeepsOnlyLinkedTransactions() {
+        var filters = SearchFilters()
+        filters.recurringOnly = true
+
+        let recurring = TransactionSnapshot.test(timestamp: .now, amount: -12, category: "Subscriptions", recurrenceRuleId: UUID())
+        let oneOff = TransactionSnapshot.test(timestamp: .now, amount: -12, category: "Subscriptions")
+
+        #expect(filters.matches(recurring) == true)
+        #expect(filters.matches(oneOff) == false)
+    }
+
+    @Test func recurringOnlyComposesWithTypeFilter() {
+        var filters = SearchFilters(type: .income)
+        filters.recurringOnly = true
+
+        let recurringIncome = TransactionSnapshot.test(timestamp: .now, amount: 2500, category: "Salary", recurrenceRuleId: UUID())
+        let recurringExpense = TransactionSnapshot.test(timestamp: .now, amount: -12, category: "Subscriptions", recurrenceRuleId: UUID())
+
+        #expect(filters.matches(recurringIncome) == true)
+        #expect(filters.matches(recurringExpense) == false)
+    }
+
     @Test func amountBoundsFilterOnAbsoluteValue() {
         var filters = SearchFilters()
         filters.amountMin = 50

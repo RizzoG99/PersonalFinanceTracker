@@ -14,6 +14,7 @@ enum IPadSection: String, Hashable, Identifiable, CaseIterable {
     case home
     case activity
     case goals
+    case recurring
     case insights
     case healthScore
     case settings
@@ -25,6 +26,7 @@ enum IPadSection: String, Hashable, Identifiable, CaseIterable {
         case .home: String(localized: "Home")
         case .activity: String(localized: "Activity")
         case .goals: String(localized: "Goals")
+        case .recurring: String(localized: "Recurring")
         case .insights: String(localized: "Insights")
         case .healthScore: String(localized: "Health Score")
         case .settings: String(localized: "Settings")
@@ -36,6 +38,7 @@ enum IPadSection: String, Hashable, Identifiable, CaseIterable {
         case .home: "house"
         case .activity: "list.bullet.rectangle"
         case .goals: "flag"
+        case .recurring: "repeat"
         case .insights: "chart.line.uptrend.xyaxis"
         case .healthScore: "gauge.medium"
         case .settings: "gear"
@@ -58,7 +61,7 @@ enum IPadSection: String, Hashable, Identifiable, CaseIterable {
         var sections: [IPadSection] {
             switch self {
             case .overview: [.home]
-            case .money: [.activity, .goals]
+            case .money: [.activity, .goals, .recurring]
             case .analyse: [.insights, .healthScore]
             }
         }

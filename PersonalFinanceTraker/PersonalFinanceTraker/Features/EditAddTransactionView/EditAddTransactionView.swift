@@ -34,9 +34,15 @@ struct EditAddTransactionView: View {
         _ snapshot: TransactionSnapshot? = nil,
         draft: TransactionDraft? = nil,
         repo: any ITransactionRepository,
-        materializationService: RecurrenceMaterializationService
+        materializationService: RecurrenceMaterializationService,
+        // Lets RecurringView's "+" open this sheet with Repeat already on, matching the
+        // context the user tapped it from. Add-mode only in practice — nothing sets this
+        // alongside `snapshot`.
+        presetRecurring: Bool = false
     ) {
-        _viewModel = State(wrappedValue: EditAddTransactionViewModel(editingItem: snapshot, draft: draft, repo: repo))
+        let vm = EditAddTransactionViewModel(editingItem: snapshot, draft: draft, repo: repo)
+        if presetRecurring { vm.isRecurring = true }
+        _viewModel = State(wrappedValue: vm)
         self.materializationService = materializationService
     }
 

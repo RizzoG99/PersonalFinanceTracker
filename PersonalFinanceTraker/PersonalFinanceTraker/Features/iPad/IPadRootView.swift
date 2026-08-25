@@ -155,6 +155,8 @@ struct IPadRootView: View {
             IPadLedgerTable(showingAddItemView: $showingAddItemView)
         case .goals:
             IPadGoalsView(viewModel: models.compass)
+        case .recurring:
+            IPadRecurringSection(materializationService: models.materializationService)
         case .insights:
             CompassView(viewModel: models.compass, showingAddItemView: $showingAddItemView)
         case .healthScore:

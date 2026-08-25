@@ -165,6 +165,12 @@ final class MockTransactionRepository: ITransactionRepository {
         stubbedRecurrenceRules.removeAll()
     }
 
+    var linkTransactionsToRecurrenceRuleCalls: [(id: UUID, amount: Decimal, occurrenceDates: [Date])] = []
+    func linkTransactionsToRecurrenceRule(id: UUID, amount: Decimal, occurrenceDates: [Date]) async throws {
+        if shouldThrow { throw MockError.forced }
+        linkTransactionsToRecurrenceRuleCalls.append((id, amount, occurrenceDates))
+    }
+
     // MARK: Health snapshots
     func saveSnapshot(_ data: HealthScoreSnapshotData) async throws {
         saveSnapshotCalledCount += 1
