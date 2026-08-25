@@ -31,11 +31,15 @@ struct IPadInspector: View {
                 materializationService: models.materializationService
             )
         } else if let item = models.transactions.transactionToEdit {
+            // .id(item.id): without it, tapping a different row while the inspector is already
+            // open reuses the existing EditAddTransactionView's identity, so its @State view
+            // model — built once from the *first* item — never re-initializes from the new one.
             EditAddTransactionView(
                 item,
                 repo: models.repo,
                 materializationService: models.materializationService
             )
+            .id(item.id)
         } else if models.compass.showingAddGoal {
             AddGoalSheet { models.compass.addGoal($0) }
         } else if let draft = models.compass.goalEditDraft {

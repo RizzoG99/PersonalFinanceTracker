@@ -152,9 +152,11 @@ struct IPadRootView: View {
         case .home:
             IPadDashboardGrid(showingAddItemView: $showingAddItemView)
         case .activity:
-            IPadLedgerTable(showingAddItemView: $showingAddItemView, materializationService: models.materializationService)
+            IPadLedgerTable(showingAddItemView: $showingAddItemView)
         case .goals:
             IPadGoalsView(viewModel: models.compass)
+        case .recurring:
+            IPadRecurringSection(materializationService: models.materializationService)
         case .insights:
             CompassView(viewModel: models.compass, showingAddItemView: $showingAddItemView)
         case .healthScore:

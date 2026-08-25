@@ -10,6 +10,10 @@ import SwiftData
 /// am I committed to", the same job as the reference app's own recurring list: tap a rule to
 /// edit its definition, swipe to stop it. Finding the transactions a rule already produced is
 /// the Activity tab's job (the Recurring filter chip), not this screen's — see issue #58.
+///
+/// Presented as a sheet that owns its own nested edit/add sheets (iPhone, and iPad's Activity
+/// toolbar entry) — see `IPadRecurringSection` for the iPad sidebar destination, which is the
+/// same list wired to the shared inspector instead.
 struct RecurringView: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
@@ -22,6 +26,111 @@ struct RecurringView: View {
     // dismissing it first — this screen is itself presented as a sheet, and a sheet can present a
     // child sheet of its own.
     @State private var editingItem: TransactionSnapshot?
+
+    private func reloadRules() async {
+        rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
+    }
+
+    /// Stops future occurrences only — deliberately does NOT touch any already-materialized
+    /// transaction. "Delete" here means "I'm done with this commitment", not "erase its history".
+    private func stopRecurrence(_ rule: RecurrenceRuleSnapshot) {
+        Task {
+            try? await viewModel.repo.closeRecurrenceRule(id: rule.id, endDate: .now)
+            rules.removeAll { $0.id == rule.id }
+        }
+    }
+
+    var body: some View {
+        RecurringRulesContent(rules: rules, onSelect: { editingItem = $0 }, onDelete: stopRecurrence)
+            .navigationTitle("Recurring")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                // Now that this screen is always a sheet (iPhone included — see the two call
+                // sites), there's no back button to fall back on; give it an explicit close like
+                // the Add sheet.
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingAddSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel(String(localized: "Add Recurring Transaction"))
+                }
+            }
+            .sheet(isPresented: $showingAddSheet) {
+                NavigationStack {
+                    EditAddTransactionView(repo: viewModel.repo, materializationService: materializationService, presetRecurring: true)
+                }
+                .presentationBackground { AppBackground() }
+            }
+            .sheet(item: $editingItem) { item in
+                NavigationStack {
+                    EditAddTransactionView(item, repo: viewModel.repo, materializationService: materializationService)
+                }
+                .presentationBackground { AppBackground() }
+            }
+            .onChange(of: showingAddSheet) { _, isPresented in
+                if !isPresented { Task { await reloadRules() } }
+            }
+            .onChange(of: editingItem) { _, item in
+                if item == nil { Task { await reloadRules() } }
+            }
+            .task { await reloadRules() }
+    }
+}
+
+/// The iPad sidebar destination for the same list — a permanent content pane like Health Score,
+/// rather than a sheet. Tapping a rule opens its most recent occurrence in the shared inspector
+/// on the right (the same detail surface Activity's rows use), instead of a nested sheet.
+///
+/// ponytail: "+" still opens the shared add sheet plain (no Repeat pre-enabled, unlike
+/// RecurringView's own) — presetting it here would mean threading a flag through
+/// IPadRootView/IPadInspector for one button; add it if that turns out to matter.
+struct IPadRecurringSection: View {
+    @Environment(TransactionListViewModel.self) private var viewModel
+    let materializationService: RecurrenceMaterializationService
+
+    @State private var rules: [RecurrenceRuleSnapshot] = []
+
+    private func reloadRules() async {
+        rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
+    }
+
+    private func stopRecurrence(_ rule: RecurrenceRuleSnapshot) {
+        Task {
+            try? await viewModel.repo.closeRecurrenceRule(id: rule.id, endDate: .now)
+            rules.removeAll { $0.id == rule.id }
+        }
+    }
+
+    var body: some View {
+        RecurringRulesContent(
+            rules: rules,
+            onSelect: { viewModel.transactionToEdit = $0 },
+            onDelete: stopRecurrence
+        )
+        .navigationTitle("Recurring")
+        .task { await reloadRules() }
+        // The inspector's edit sheet closing is the only thing that can change a rule's
+        // note/amount/cadence here (there's no local add/edit sheet to key off), so refresh
+        // whenever it clears.
+        .onChange(of: viewModel.transactionToEdit) { _, item in
+            if item == nil { Task { await reloadRules() } }
+        }
+    }
+}
+
+/// The rule list itself — stat header, rows, swipe-to-delete, empty state. Shared by both hosts
+/// above, which differ only in how "tap a rule" and "delete a rule" are wired up: purely
+/// presentational, so it owns no navigation of its own.
+private struct RecurringRulesContent: View {
+    @Environment(TransactionListViewModel.self) private var viewModel
+    let rules: [RecurrenceRuleSnapshot]
+    let onSelect: (TransactionSnapshot) -> Void
+    let onDelete: (RecurrenceRuleSnapshot) -> Void
 
     private var categoryByPersistentId: [PersistentIdentifier: CategorySnapshot] {
         Dictionary(uniqueKeysWithValues: viewModel.availableCategories.map { ($0.persistentId, $0) })
@@ -68,25 +177,20 @@ struct RecurringView: View {
             .max { $0.timestamp < $1.timestamp }
     }
 
-    private func reloadRules() async {
-        rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
-    }
-
-    /// Stops future occurrences only — deliberately does NOT touch any already-materialized
-    /// transaction. "Delete" here means "I'm done with this commitment", not "erase its history".
-    private func stopRecurrence(_ rule: RecurrenceRuleSnapshot) async {
-        try? await viewModel.repo.closeRecurrenceRule(id: rule.id, endDate: .now)
-        rules.removeAll { $0.id == rule.id }
-    }
-
     var body: some View {
         Group {
             if rules.isEmpty {
+                // EmptyStateView is a compact card — without an explicit fill, this Group (and the
+                // .appBackground() below) only paints behind the card itself, leaving the rest of
+                // the canvas as the system's default white on iPad's form-sheet style.
                 EmptyStateView(
                     icon: "repeat",
                     message: "No recurring transactions yet",
                     subtitle: "Rules you add manually, or accept from an import, show up here."
                 )
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(.top, 24)
             } else {
                 List {
                     Section {
@@ -104,7 +208,7 @@ struct RecurringView: View {
                         let anchor = latestOccurrence(for: rule)
                         Button {
                             guard let anchor else { return }
-                            editingItem = anchor
+                            onSelect(anchor)
                         } label: {
                             ruleRow(rule, isEditable: anchor != nil)
                         }
@@ -113,7 +217,7 @@ struct RecurringView: View {
                         .listRowBackground(Color.clear)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
-                                Task { await stopRecurrence(rule) }
+                                onDelete(rule)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -128,42 +232,6 @@ struct RecurringView: View {
             }
         }
         .appBackground()
-        .navigationTitle("Recurring")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            // Now that this screen is always a sheet (iPhone included — see the two call sites),
-            // there's no back button to fall back on; give it an explicit close like the Add sheet.
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Close") { dismiss() }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showingAddSheet = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel(String(localized: "Add Recurring Transaction"))
-            }
-        }
-        .sheet(isPresented: $showingAddSheet) {
-            NavigationStack {
-                EditAddTransactionView(repo: viewModel.repo, materializationService: materializationService, presetRecurring: true)
-            }
-            .presentationBackground { AppBackground() }
-        }
-        .sheet(item: $editingItem) { item in
-            NavigationStack {
-                EditAddTransactionView(item, repo: viewModel.repo, materializationService: materializationService)
-            }
-            .presentationBackground { AppBackground() }
-        }
-        .onChange(of: showingAddSheet) { _, isPresented in
-            if !isPresented { Task { await reloadRules() } }
-        }
-        .onChange(of: editingItem) { _, item in
-            if item == nil { Task { await reloadRules() } }
-        }
-        .task { await reloadRules() }
     }
 
     private func ruleRow(_ rule: RecurrenceRuleSnapshot, isEditable: Bool) -> some View {
