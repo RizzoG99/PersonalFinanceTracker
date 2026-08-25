@@ -28,18 +28,35 @@ struct ProfileView: View {
     @State private var deleteErrorMessage: String?
     @State private var backupErrorMessage: String?
     @State private var restoreErrorMessage: String?
+    @State private var isRestoring = false
+    @State private var showingRestoreSuccess = false
     @State private var route: ProfileRoute?
     @State private var showingRestoreConfirmation = false
     private let pinService = PINService()
     private let authService = BiometricAuthService()
     private let backupService = BackupService()
 
-    private var backupStatusTitle: String {
-        guard let lastBackupDate = appSettings.lastBackupDate else {
-            return "Not backed up"
+    /// `newestBackup()` (not `appSettings.lastBackupDate`, which is a device-local
+    /// UserDefaults value) is the source of truth for whether a backup exists — it reads the
+    /// shared iCloud container, so a backup made on another device is recognized here too.
+    private var hasAnyBackup: Bool {
+        backupService.newestBackup() != nil
+    }
+
+    @ViewBuilder
+    private var backupStatusLabel: some View {
+        if let lastBackupDate = appSettings.lastBackupDate {
+            let formatter = RelativeDateTimeFormatter()
+            Label {
+                Text("Last backup: \(formatter.localizedString(for: lastBackupDate, relativeTo: .now))")
+            } icon: {
+                Image(systemName: "checkmark.icloud")
+            }
+        } else if hasAnyBackup {
+            Label("Backed up to iCloud", systemImage: "checkmark.icloud")
+        } else {
+            Label("Not backed up", systemImage: "exclamationmark.icloud")
         }
-        let formatter = RelativeDateTimeFormatter()
-        return "Last backup: \(formatter.localizedString(for: lastBackupDate, relativeTo: .now))"
     }
 
     private func runManualBackup() async {
@@ -57,6 +74,184 @@ struct ProfileView: View {
         }
     }
 
+    private var personalInfoSection: some View {
+        Section {
+            ProfilePersonalInfoSection(fullName: $viewModel.fullName)
+        }
+        .appFormSectionBackground()
+    }
+
+    private var currencySection: some View {
+        Section {
+            ProfileCurrencySection()
+        }
+        .appFormSectionBackground()
+    }
+
+    private var appearanceSection: some View {
+        Section {
+            ProfileAppearanceSection()
+        }
+        .appFormSectionBackground()
+    }
+
+    private var payCycleSection: some View {
+        Section {
+            ProfilePayCycleSection()
+        }
+        .appFormSectionBackground()
+    }
+
+    private var reminderSection: some View {
+        Section {
+            ProfileReminderSection()
+        }
+        .appFormSectionBackground()
+    }
+
+    private var categoriesSection: some View {
+        Section {
+            ProfileCategoriesSection(selectedDetent: $selectedDetent, route: $route)
+        }
+        .appFormSectionBackground()
+    }
+
+    private var budgetsSection: some View {
+        Section {
+            ProfileBudgetsSection(selectedDetent: $selectedDetent, route: $route)
+        }
+        .appFormSectionBackground()
+    }
+
+    private var securitySection: some View {
+        Section {
+            ProfileSecuritySection(viewModel: viewModel, selectedDetent: $selectedDetent, route: $route)
+        }
+        .appFormSectionBackground()
+    }
+
+    private func sectionHeader(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.textDim)
+            .padding(.horizontal, 4)
+    }
+
+    private var dataSection: some View {
+        Section {
+            dataSectionContent
+        } header: {
+            sectionHeader("DATA")
+        }
+        .appFormSectionBackground()
+    }
+
+    private var discoverSection: some View {
+        Section {
+            Button {
+                featureDiscovery.showTour()
+            } label: {
+                Label("Explore the App", systemImage: "sparkles")
+            }
+
+            Button {
+                let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+                featureDiscovery.showWhatsNew(appVersion: appVersion)
+            } label: {
+                Label("What's New", systemImage: "gift")
+            }
+        } header: {
+            sectionHeader("DISCOVER")
+        }
+        .appFormSectionBackground()
+    }
+
+    @ViewBuilder
+    private var dataSectionContent: some View {
+        Button {
+            showingFileImporter = true
+        } label: {
+            importButtonLabel
+        }
+        .disabled(transactionViewModel.isLoadingImportFile)
+
+        Menu {
+            ShareLink(
+                item: TransactionsExport(format: .csv, repo: transactionViewModel.repo),
+                preview: SharePreview("Transactions CSV")
+            ) {
+                Label("CSV", systemImage: "tablecells")
+            }
+
+            ShareLink(
+                item: TransactionsExport(format: .xlsx, repo: transactionViewModel.repo),
+                preview: SharePreview("Transactions Excel")
+            ) {
+                Label("Excel", systemImage: "tablecells.badge.ellipsis")
+            }
+        } label: {
+            Label("Export Data", systemImage: "square.and.arrow.up")
+        }
+
+        VStack(alignment: .leading, spacing: 6) {
+            backupStatusLabel
+                .foregroundStyle(hasAnyBackup ? .textDim : .negative)
+
+            if !hasAnyBackup {
+                Text("Enable iCloud Drive to protect your data if the app is deleted.")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
+
+            Button("Back Up Now") {
+                Task { await runManualBackup() }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+        .padding(.vertical, 4)
+
+        Button {
+            showingRestoreConfirmation = true
+        } label: {
+            restoreButtonLabel
+        }
+        .disabled(!hasAnyBackup || isRestoring)
+
+        Button(role: .destructive) {
+            showingDeleteConfirmation = true
+        } label: {
+            Label("Delete All Data", systemImage: "trash")
+                .foregroundStyle(.negative)
+        }
+    }
+
+    @ViewBuilder
+    private var importButtonLabel: some View {
+        if transactionViewModel.isLoadingImportFile {
+            HStack {
+                ProgressView()
+                    .controlSize(.small)
+                Text("Reading file…")
+            }
+        } else {
+            Label("Import CSV or Excel", systemImage: "square.and.arrow.down")
+        }
+    }
+
+    @ViewBuilder
+    private var restoreButtonLabel: some View {
+        if isRestoring {
+            HStack {
+                ProgressView()
+                    .controlSize(.small)
+                Text("Restoring…")
+            }
+        } else {
+            Label("Restore from Backup", systemImage: "arrow.clockwise.icloud")
+        }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
@@ -68,130 +263,16 @@ struct ProfileView: View {
                 // ponytail: readableWidth caps form width on iPad to improve scanability (HIG
                 // readable-content guidance). iPhone portrait is ~390pt, well under 640.
                 Form {
-                    Section {
-                        ProfilePersonalInfoSection(fullName: $viewModel.fullName)
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        ProfileCurrencySection()
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        ProfileAppearanceSection()
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        ProfilePayCycleSection()
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        ProfileReminderSection()
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        ProfileCategoriesSection(selectedDetent: $selectedDetent, route: $route)
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        ProfileBudgetsSection(selectedDetent: $selectedDetent, route: $route)
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        Button {
-                            showingFileImporter = true
-                        } label: {
-                            if transactionViewModel.isLoadingImportFile {
-                                HStack {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                    Text("Reading file…")
-                                }
-                            } else {
-                                Label("Import CSV or Excel", systemImage: "square.and.arrow.down")
-                            }
-                        }
-                        .disabled(transactionViewModel.isLoadingImportFile)
-
-                        Menu {
-                            ShareLink(
-                                item: TransactionsExport(format: .csv, repo: transactionViewModel.repo),
-                                preview: SharePreview("Transactions CSV")
-                            ) {
-                                Label("CSV", systemImage: "tablecells")
-                            }
-
-                            ShareLink(
-                                item: TransactionsExport(format: .xlsx, repo: transactionViewModel.repo),
-                                preview: SharePreview("Transactions Excel")
-                            ) {
-                                Label("Excel", systemImage: "tablecells.badge.ellipsis")
-                            }
-                        } label: {
-                            Label("Export Data", systemImage: "square.and.arrow.up")
-                        }
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            Label(backupStatusTitle, systemImage: appSettings.lastBackupDate != nil ? "checkmark.icloud" : "exclamationmark.icloud")
-                                .foregroundStyle(appSettings.lastBackupDate != nil ? .textDim : .negative)
-
-                            if appSettings.lastBackupDate == nil {
-                                Text("Enable iCloud Drive to protect your data if the app is deleted.")
-                                    .font(.caption)
-                                    .foregroundStyle(.textDim)
-                            }
-
-                            Button("Back Up Now") {
-                                Task { await runManualBackup() }
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                        }
-                        .padding(.vertical, 4)
-
-                        Button {
-                            showingRestoreConfirmation = true
-                        } label: {
-                            Label("Restore from Backup", systemImage: "arrow.clockwise.icloud")
-                        }
-                        .disabled(backupService.newestBackup() == nil)
-
-                        Button(role: .destructive) {
-                            showingDeleteConfirmation = true
-                        } label: {
-                            Label("Delete All Data", systemImage: "trash")
-                                .foregroundStyle(.negative)
-                        }
-                    } header: {
-                        Text("DATA")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.textDim)
-                            .padding(.horizontal, 4)
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        ProfileSecuritySection(viewModel: viewModel, selectedDetent: $selectedDetent, route: $route)
-                    }
-                    .appFormSectionBackground()
-                    Section {
-                        Button {
-                            featureDiscovery.showTour()
-                        } label: {
-                            Label("Explore the App", systemImage: "sparkles")
-                        }
-
-                        Button {
-                            let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
-                            featureDiscovery.showWhatsNew(appVersion: appVersion)
-                        } label: {
-                            Label("What's New", systemImage: "gift")
-                        }
-                    } header: {
-                        Text("DISCOVER")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.textDim)
-                            .padding(.horizontal, 4)
-                    }
-                    .appFormSectionBackground()
+                    personalInfoSection
+                    currencySection
+                    appearanceSection
+                    payCycleSection
+                    reminderSection
+                    categoriesSection
+                    budgetsSection
+                    dataSection
+                    securitySection
+                    discoverSection
                 }
                 .appFormBackground()
                 .navigationDestination(item: $route) { route in
@@ -249,9 +330,12 @@ struct ProfileView: View {
                 Button("Cancel", role: .cancel) {}
                 Button("Restore", role: .destructive) {
                     Task {
+                        isRestoring = true
+                        defer { isRestoring = false }
                         do {
                             try await RestoreService.restoreLatest(repo: transactionViewModel.repo, backupService: backupService)
                             dataChanged.bump()
+                            showingRestoreSuccess = true
                         } catch BackupService.BackupError.decryptionFailed {
                             restoreErrorMessage = "Backup can't be decrypted. Make sure iCloud Keychain is enabled on this device."
                         } catch {
@@ -307,6 +391,11 @@ struct ProfileView: View {
                 Button("OK") { backupErrorMessage = nil }
             } message: {
                 Text(backupErrorMessage ?? "")
+            }
+            .alert("Restore Complete", isPresented: $showingRestoreSuccess) {
+                Button("OK") {}
+            } message: {
+                Text("Your data has been restored from the last backup.")
             }
             .alert(
                 "Restore Failed",

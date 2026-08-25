@@ -114,7 +114,9 @@ struct AuthenticationWrapper: View {
                     viewModel: PINSetupViewModel(
                         pinService: pinService,
                         authService: authService,
-                        showsOnboardingExtras: true
+                        showsOnboardingExtras: true,
+                        restoreRepo: TransactionActor.make(modelContainer),
+                        backupService: backupService
                     )
                 )
                 .transition(.opacity)
