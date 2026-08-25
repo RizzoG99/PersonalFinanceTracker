@@ -1,0 +1,7 @@
+interface:
+  display_name: "Feature Brainstorm"
+  short_description: "Explore ideas and shape a validated feature."
+  default_prompt: "Use $feature-brainstorm to challenge and develop this feature idea with me."
+
+policy:
+  allow_implicit_invocation: true

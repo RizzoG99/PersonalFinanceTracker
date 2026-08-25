@@ -1,7 +1,0 @@
-interface:
-  display_name: "iOS Feature Brainstorm"
-  short_description: "Scopes feature ideas into handoff docs."
-  default_prompt: "Use $ios-feature-brainstorm to think through this app feature."
-
-policy:
-  allow_implicit_invocation: true
