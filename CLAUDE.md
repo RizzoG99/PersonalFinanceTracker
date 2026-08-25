@@ -6,9 +6,11 @@ This repository is configured for both Claude Code and Codex.
 
 - Claude Code reads this `CLAUDE.md`.
 - Codex reads `AGENTS.md`.
-- Claude project skills live in `.claude/skills`.
-- Codex project-local skills live in `.codex/skills`.
+- Shared project skills live canonically in `.agents/skills`.
+- `.claude/skills` and `.codex/skills` contain relative symlinks for native discovery. Edit only `.agents/skills`; when adding a shared skill, add a symlink for each supported agent.
 - Keep shared project facts aligned between this file and `AGENTS.md`; keep tool-specific instructions in the file for that tool.
+
+For every new or materially changed user-facing view, use `$swiftui-pro` before implementation. Inspect the two closest existing screens/components and follow its `references/design.md` preflight and quality gate. Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
 
 ## Build & Development Commands
 
