@@ -10,10 +10,12 @@ struct ActivityView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
+    let materializationService: RecurrenceMaterializationService
 
     @State private var showCategorySheet = false
     @State private var showAmountSheet = false
     @State private var showNoteSheet = false
+    @State private var showRecurringView = false
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -181,7 +183,24 @@ struct ActivityView: View {
                             if viewModel.allVisibleSelected { viewModel.deselectAll() } else { viewModel.selectAllVisible() }
                         }
                     }
+                } else {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showRecurringView = true
+                        } label: {
+                            Image(systemName: "repeat")
+                        }
+                        .accessibilityLabel(String(localized: "Recurring"))
+                    }
                 }
+            }
+            // A sheet, not a push: RecurringView owns its own nested edit sheet, so tapping a
+            // row there stacks the edit surface on top instead of popping back to Activity first.
+            .sheet(isPresented: $showRecurringView) {
+                NavigationStack {
+                    RecurringView(materializationService: materializationService)
+                }
+                .presentationBackground { AppBackground() }
             }
             .appBackground()
             .sensoryFeedback(.selection, trigger: viewModel.isSelecting)
@@ -401,7 +420,9 @@ struct DescriptionBulkEditSheet: View {
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
     let vm = TransactionListViewModel(repo: TransactionActor.make(container))
-    return ActivityView(showingAddItemView: .constant(false))
+    let materializationService: RecurrenceMaterializationService = .init()
+    let base: ActivityView = ActivityView(showingAddItemView: .constant(false), materializationService: materializationService)
+    return base
         .environment(vm)
         .environment(ProfileViewModel())
         .modelContainer(container)

@@ -10,9 +10,10 @@ struct SearchFilters: Equatable, Sendable {
     var dateRange: SearchDateRange? = nil
     var amountMin: Decimal? = nil
     var amountMax: Decimal? = nil
+    var recurringOnly: Bool = false
 
     var isActive: Bool {
-        type != .all || !categories.isEmpty || dateRange != nil || amountMin != nil || amountMax != nil
+        type != .all || !categories.isEmpty || dateRange != nil || amountMin != nil || amountMax != nil || recurringOnly
     }
 }
 
@@ -83,6 +84,7 @@ protocol ITransactionRepository {
     func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws
     func deleteAllRecurrenceRules() async throws
+    func linkTransactionsToRecurrenceRule(id: UUID, amount: Decimal, occurrenceDates: [Date]) async throws
 
     // Health snapshots
     func saveSnapshot(_ data: HealthScoreSnapshotData) async throws
@@ -125,6 +127,9 @@ extension SearchFilters {
         // Amount bounds filter: check absolute value against min/max
         if let min = amountMin, abs(tx.amount) < min { return false }
         if let max = amountMax, abs(tx.amount) > max { return false }
+
+        // Recurring filter: transaction must belong to a recurrence series
+        if recurringOnly, tx.recurrenceRuleId == nil { return false }
 
         return true
     }

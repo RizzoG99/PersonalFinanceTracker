@@ -96,7 +96,7 @@ struct MainTabView: View {
                         .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
-                    ActivityView(showingAddItemView: $showingAddItemView)
+                    ActivityView(showingAddItemView: $showingAddItemView, materializationService: materializationService)
                         .payCycleAware { viewModel.load() }
                 }
                 Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {

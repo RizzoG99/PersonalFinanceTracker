@@ -21,6 +21,12 @@ enum RecurrenceFrequency: String, CaseIterable, Sendable, Codable {
         }
     }
 
+    /// "Monthly" for interval 1, "Every 3 months" otherwise. Shared by every screen that
+    /// displays a rule/suggestion's cadence so the phrasing stays identical everywhere.
+    func cadenceLabel(interval: Int) -> String {
+        interval == 1 ? label : String(localized: "Every \(interval) \(unitLabel(for: interval))")
+    }
+
     /// Upper bound for the interval Stepper — keeps "every N <unit>" in a sane range per
     /// frequency (e.g. not "every 52 years"). The calculator itself has no such limit.
     var maxInterval: Int {

@@ -152,7 +152,7 @@ struct IPadRootView: View {
         case .home:
             IPadDashboardGrid(showingAddItemView: $showingAddItemView)
         case .activity:
-            IPadLedgerTable(showingAddItemView: $showingAddItemView)
+            IPadLedgerTable(showingAddItemView: $showingAddItemView, materializationService: models.materializationService)
         case .goals:
             IPadGoalsView(viewModel: models.compass)
         case .insights:

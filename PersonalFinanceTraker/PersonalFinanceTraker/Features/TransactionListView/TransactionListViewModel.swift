@@ -937,6 +937,11 @@ final class TransactionListViewModel {
         // A save failure leaves importError set, and cancelImport() clears it — the flow would
         // vanish with no explanation. Stay put so the alert has something to show.
         guard importError == nil else { return }
+        // persistSelectedRecurrenceRules() just stamped recurrenceRuleId onto rows already sitting
+        // in `transactions` (from the earlier reload() in confirmImport) — without this, the ⟳
+        // badge and the Recurring screen keep showing the pre-link snapshot until the next reload.
+        onDataChanged?()
+        reload()
         cancelImport()
     }
 
@@ -965,6 +970,13 @@ final class TransactionListViewModel {
                 importError = String(localized: "Failed to save recurrence rule: \(error.localizedDescription)")
                 return added
             }
+            // Best-effort: the rule is the important write, so a link failure shouldn't
+            // surface an error or undo it — the badge is cosmetic.
+            try? await repo.linkTransactionsToRecurrenceRule(
+                id: ruleInput.id,
+                amount: suggestion.amount,
+                occurrenceDates: suggestion.occurrenceDates
+            )
         }
         return added
     }

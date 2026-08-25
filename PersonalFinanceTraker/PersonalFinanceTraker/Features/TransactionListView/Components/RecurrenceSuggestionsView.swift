@@ -180,9 +180,7 @@ struct RecurrenceSuggestionsView: View {
     }
 
     private func cadenceLabel(for suggestion: RecurrenceSuggestion) -> String {
-        suggestion.interval == 1
-            ? suggestion.frequency.label
-            : String(localized: "Every \(suggestion.interval) \(suggestion.frequency.unitLabel(for: suggestion.interval))")
+        suggestion.frequency.cadenceLabel(interval: suggestion.interval)
     }
 
     private func formattedSignedAmount(_ amount: Decimal, currencyCode: String) -> String {

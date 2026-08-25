@@ -18,11 +18,13 @@ import SwiftData
 struct IPadLedgerTable: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     @Binding var showingAddItemView: Bool
+    let materializationService: RecurrenceMaterializationService
 
     @State private var sortOrder = [KeyPathComparator(\TransactionSnapshot.timestamp, order: .reverse)]
     @State private var showCategorySheet = false
     @State private var showAmountSheet = false
     @State private var showNoteSheet = false
+    @State private var showRecurringView = false
     @FocusState private var searchFocused: Bool
 
     private var rows: [TransactionSnapshot] {
@@ -76,6 +78,21 @@ struct IPadLedgerTable: View {
         .keyboardAction("f", title: "Find") { searchFocused = true }
         // ⌘↵ rather than bare ↵: an unmodified Return would be stolen from the search field.
         .keyboardAction(.return, title: "Open") { openSelected() }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showRecurringView = true
+                } label: {
+                    Image(systemName: "repeat")
+                }
+                .accessibilityLabel(String(localized: "Recurring"))
+            }
+        }
+        // A sheet, not a push: editing here opens in the shared inspector rather than a modal, so
+        // there's no sheet-over-sheet conflict like iPhone's edit sheet has with the wizard.
+        .sheet(isPresented: $showRecurringView) {
+            NavigationStack { RecurringView(materializationService: materializationService) }
+        }
         .appBackground()
         .overlay {
             if rows.isEmpty {

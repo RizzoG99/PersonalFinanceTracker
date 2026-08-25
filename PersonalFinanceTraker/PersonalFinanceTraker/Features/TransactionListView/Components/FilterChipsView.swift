@@ -17,6 +17,7 @@ struct FilterChipsView: View {
                 categoryChip
                 dateChip
                 amountChip
+                recurringChip
             }
             .padding(.vertical, 8)
         }
@@ -151,6 +152,15 @@ struct FilterChipsView: View {
         )
     }
 
+    private var recurringChip: some View {
+        Button {
+            vm.filters.recurringOnly.toggle()
+        } label: {
+            chip(String(localized: "Recurring"), isActive: vm.filters.recurringOnly, inactiveSymbol: "repeat")
+        }
+        .buttonStyle(.plain)
+    }
+
     private var amountLabel: String {
         switch (vm.filters.amountMin, vm.filters.amountMax) {
         case (.some(let min), .some(let max)): return "€\(min)–€\(max)"
@@ -160,12 +170,12 @@ struct FilterChipsView: View {
         }
     }
 
-    private func chip(_ label: String, isActive: Bool) -> some View {
+    private func chip(_ label: String, isActive: Bool, inactiveSymbol: String = "chevron.down") -> some View {
         HStack(spacing: 4) {
             Text(label)
                 .font(.caption)
                 .fontWeight(.medium)
-            Image(systemName: isActive ? "xmark" : "chevron.down")
+            Image(systemName: isActive ? "xmark" : inactiveSymbol)
                 .font(isActive ? .caption2.weight(.bold) : .caption2)
         }
         .padding(.horizontal, 14)

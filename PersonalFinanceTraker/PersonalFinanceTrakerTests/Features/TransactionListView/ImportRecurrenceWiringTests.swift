@@ -77,7 +77,8 @@ struct ImportRecurrenceWiringTests {
             currencyCode: "EUR",
             categoryPersistentId: nil,
             occurrenceCount: 3,
-            nextDate: Date().addingTimeInterval(86400)
+            nextDate: Date().addingTimeInterval(86400),
+            occurrenceDates: [Date()]
         )
         vm.recurrenceSuggestions = [suggestion]
         vm.selectedSuggestionIds = [suggestion.id]
@@ -165,7 +166,8 @@ struct ImportRecurrenceWiringTests {
             currencyCode: "EUR",
             categoryPersistentId: repo.stubbedCategories[0].persistentId,
             occurrenceCount: 3,
-            nextDate: Date().addingTimeInterval(86400)
+            nextDate: Date().addingTimeInterval(86400),
+            occurrenceDates: [Date()]
         )
         let utilitiesSuggestion = RecurrenceSuggestion(
             frequency: .monthly,
@@ -176,7 +178,8 @@ struct ImportRecurrenceWiringTests {
             currencyCode: "EUR",
             categoryPersistentId: repo.stubbedCategories[1].persistentId,
             occurrenceCount: 4,
-            nextDate: Date().addingTimeInterval(86400 * 7)
+            nextDate: Date().addingTimeInterval(86400 * 7),
+            occurrenceDates: [Date()]
         )
         let rentSuggestion = RecurrenceSuggestion(
             frequency: .monthly,
@@ -187,7 +190,8 @@ struct ImportRecurrenceWiringTests {
             currencyCode: "EUR",
             categoryPersistentId: repo.stubbedCategories[2].persistentId,
             occurrenceCount: 5,
-            nextDate: Date().addingTimeInterval(86400 * 14)
+            nextDate: Date().addingTimeInterval(86400 * 14),
+            occurrenceDates: [Date()]
         )
 
         vm.recurrenceSuggestions = [fitnessSuggestion, utilitiesSuggestion, rentSuggestion]
@@ -228,7 +232,8 @@ struct ImportRecurrenceWiringTests {
             currencyCode: "EUR",
             categoryPersistentId: repo.stubbedCategories[0].persistentId,
             occurrenceCount: 3,
-            nextDate: Date().addingTimeInterval(86400)
+            nextDate: Date().addingTimeInterval(86400),
+            occurrenceDates: [Date()]
         )
 
         vm.recurrenceSuggestions = [suggestion]
@@ -268,7 +273,8 @@ struct ImportRecurrenceWiringTests {
             currencyCode: "EUR",
             categoryPersistentId: repo.stubbedCategories[0].persistentId,
             occurrenceCount: 3,
-            nextDate: nextDate
+            nextDate: nextDate,
+            occurrenceDates: [Date()]
         )
 
         vm.recurrenceSuggestions = [suggestion]
@@ -302,12 +308,12 @@ struct ImportRecurrenceWiringTests {
         let kept = RecurrenceSuggestion(
             frequency: .monthly, interval: 1, amount: -100, note: "Gym",
             category: "Fitness", currencyCode: "EUR", categoryPersistentId: nil,
-            occurrenceCount: 3, nextDate: Date().addingTimeInterval(86400)
+            occurrenceCount: 3, nextDate: Date().addingTimeInterval(86400), occurrenceDates: [Date()]
         )
         let unchecked = RecurrenceSuggestion(
             frequency: .monthly, interval: 1, amount: -9, note: "Coffee",
             category: "Fitness", currencyCode: "EUR", categoryPersistentId: nil,
-            occurrenceCount: 3, nextDate: Date().addingTimeInterval(86400)
+            occurrenceCount: 3, nextDate: Date().addingTimeInterval(86400), occurrenceDates: [Date()]
         )
         vm.recurrenceSuggestions = [kept, unchecked]
         vm.selectedSuggestionIds = [kept.id]   // the user unchecked "Coffee" on the Recurring tab
@@ -325,6 +331,41 @@ struct ImportRecurrenceWiringTests {
         #expect(vm.importNavigationPath.contains(.recurringSuggestions) == false)
         #expect(vm.importError == [String(localized: "Imported \(1) transactions."),
                                    String(localized: "Added \(1) recurring transactions.")].joined(separator: " "))
+    }
+
+    // MARK: - Test 8b: addSelectedRecurrenceRules backfills recurrenceRuleId onto the source rows
+
+    @Test @MainActor
+    func addSelectedRecurrenceRulesLinksBackToOccurrences() async {
+        let repo = MockTransactionRepository()
+        repo.stubbedCategories = [.test(name: "Fitness", type: .expense)]
+
+        let vm = await makeVM(repo)
+
+        let occurrenceDates = [Date(), Date().addingTimeInterval(-86400 * 30)]
+        let suggestion = RecurrenceSuggestion(
+            frequency: .monthly,
+            interval: 1,
+            amount: -100,
+            note: "Gym",
+            category: "Fitness",
+            currencyCode: "EUR",
+            categoryPersistentId: repo.stubbedCategories[0].persistentId,
+            occurrenceCount: 2,
+            nextDate: Date().addingTimeInterval(86400),
+            occurrenceDates: occurrenceDates
+        )
+        vm.recurrenceSuggestions = [suggestion]
+        vm.selectedSuggestionIds = [suggestion.id]
+
+        await vm.addSelectedRecurrenceRules()
+
+        #expect(repo.addRecurrenceRuleCalls.count == 1)
+        #expect(repo.linkTransactionsToRecurrenceRuleCalls.count == 1)
+        let call = repo.linkTransactionsToRecurrenceRuleCalls[0]
+        #expect(call.id == repo.addRecurrenceRuleCalls[0].id)
+        #expect(call.amount == -100)
+        #expect(call.occurrenceDates == occurrenceDates)
     }
 
     // MARK: - Test 8: cancelImport clears all import state
@@ -345,7 +386,8 @@ struct ImportRecurrenceWiringTests {
                 currencyCode: "EUR",
                 categoryPersistentId: nil,
                 occurrenceCount: 3,
-                nextDate: Date()
+                nextDate: Date(),
+                occurrenceDates: [Date()]
             )
         ]
         vm.selectedSuggestionIds = Set(vm.recurrenceSuggestions.map(\.id))

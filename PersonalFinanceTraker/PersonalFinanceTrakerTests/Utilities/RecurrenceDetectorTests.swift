@@ -97,6 +97,8 @@ struct RecurrenceDetectorTests {
         #expect(suggestion.interval == 1)
         #expect(suggestion.amount == -10)
         #expect(suggestion.occurrenceCount == 12)
+        #expect(suggestion.occurrenceDates.count == 12)
+        #expect(suggestion.occurrenceDates == inputs.map(\.timestamp).sorted())
 
         // nextDate should be one month after the last row
         let expectedNextDate = calendar.date(byAdding: .month, value: 12, to: baseDate)!

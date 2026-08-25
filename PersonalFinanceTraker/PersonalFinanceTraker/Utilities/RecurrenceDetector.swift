@@ -15,6 +15,7 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
     let categoryPersistentId: PersistentIdentifier?
     let occurrenceCount: Int
     let nextDate: Date               // becomes RecurrenceRuleInput.startDate
+    let occurrenceDates: [Date]      // rows that formed this group, so import can backfill recurrenceRuleId
 }
 
 enum RecurrenceDetector {
@@ -74,7 +75,8 @@ enum RecurrenceDetector {
                 currencyCode: group.first!.currencyCode,
                 categoryPersistentId: group.first!.categoryPersistentId,
                 occurrenceCount: group.count,
-                nextDate: nextDate
+                nextDate: nextDate,
+                occurrenceDates: dates
             )
 
             suggestions.append(suggestion)

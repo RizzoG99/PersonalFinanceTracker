@@ -116,6 +116,24 @@ actor TransactionActor: ITransactionRepository {
         await refreshSafeToSpendWidgetSnapshot()
     }
 
+    /// Stamps `recurrenceRuleId` onto the unlinked transactions that produced a detected
+    /// suggestion, so the rows that triggered detection also show the recurring badge.
+    /// Matches on same amount + same calendar day (not exact `Date`) since a suggestion's
+    /// dates come from the same grouping the detector used, not the transactions' raw timestamps.
+    func linkTransactionsToRecurrenceRule(id: UUID, amount: Decimal, occurrenceDates: [Date]) async throws {
+        let calendar = Calendar.current
+        let days = Set(occurrenceDates.map { calendar.startOfDay(for: $0) })
+        guard !days.isEmpty else { return }
+
+        let candidates = try modelContext.fetch(FetchDescriptor<TransactionModel>(
+            predicate: #Predicate { $0.recurrenceRuleId == nil && $0.amount == amount }
+        ))
+        for tx in candidates where days.contains(calendar.startOfDay(for: tx.timestamp)) {
+            tx.recurrenceRuleId = id
+        }
+        try modelContext.save()
+    }
+
     func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
         let today = Calendar.current.startOfDay(for: .now)
         let all = try modelContext.fetch(FetchDescriptor<RecurrenceRule>())
