@@ -7,6 +7,7 @@ import SwiftUI
 
 struct AddGoalSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("app_base_currency") private var currencyCode = "EUR"
     /// Landscape iPhone gives this sheet ~370pt, and the keyboard takes ~250 of it. An 80pt icon
     /// block plus a pinned 70pt button left the form itself with nothing, so in compact height both
     /// move out of the vertical flow: the icon into a form row, the save action into the toolbar
@@ -28,17 +29,58 @@ struct AddGoalSheet: View {
         case amount
     }
 
-    private static let amountFormatter: NumberFormatter = {
+    private static func amountFormatter(for currencyCode: String) -> NumberFormatter {
+        let currencyFormatter = NumberFormatter()
+        currencyFormatter.numberStyle = .currency
+        currencyFormatter.currencyCode = currencyCode
+
         let f = NumberFormatter()
+        f.locale = .current
         f.numberStyle = .decimal
-        f.minimumFractionDigits = 2
-        f.maximumFractionDigits = 2
+        f.minimumFractionDigits = currencyFormatter.minimumFractionDigits
+        f.maximumFractionDigits = currencyFormatter.maximumFractionDigits
         return f
-    }()
+    }
+
+    private static func editingFormatter(for currencyCode: String) -> NumberFormatter {
+        let f = amountFormatter(for: currencyCode)
+        f.groupingSeparator = ""
+        f.usesGroupingSeparator = false
+        f.minimumFractionDigits = 0
+        return f
+    }
+
+    private var amountFormatter: NumberFormatter { Self.amountFormatter(for: currencyCode) }
+    private var editingAmountFormatter: NumberFormatter { Self.editingFormatter(for: currencyCode) }
+    private var maximumFractionDigits: Int { amountFormatter.maximumFractionDigits }
+    private var amountPlaceholder: String { amountFormatter.string(for: 0) ?? "0" }
+
+    private var currencySymbol: String {
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        return formatter.currencySymbol ?? currencyCode
+    }
 
     private var parsedAmount: Decimal? {
-        let parts = targetAmountText.replacingOccurrences(of: ",", with: "").components(separatedBy: ".")
-        return Decimal(string: parts.count > 2 ? parts.joined() : parts.joined(separator: "."))
+        AmountParser.parse(targetAmountText)
+    }
+
+    /// User edits are sanitized at the binding boundary. Programmatic updates
+    /// (the localized grouped display value on focus loss) write directly to
+    /// `targetAmountText`, so their grouping separator is never mistaken for
+    /// another decimal key.
+    private var targetAmountBinding: Binding<String> {
+        Binding(
+            get: { targetAmountText },
+            set: { newValue in
+                targetAmountText = AmountParser.sanitizedInput(
+                    newValue,
+                    maximumFractionDigits: maximumFractionDigits
+                )
+            }
+        )
     }
 
     private let initialGoalInput: GoalInput?
@@ -48,8 +90,9 @@ struct AddGoalSheet: View {
         self.initialGoalInput = initialGoalInput
         self.onSave = onSave
         _name = State(initialValue: initialGoalInput?.name ?? "")
+        let currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
         _targetAmountText = State(initialValue: initialGoalInput.map {
-            AddGoalSheet.amountFormatter.string(for: $0.targetAmount as NSDecimalNumber) ?? "\($0.targetAmount)"
+            AddGoalSheet.amountFormatter(for: currencyCode).string(for: $0.targetAmount as NSDecimalNumber) ?? "\($0.targetAmount)"
         } ?? "")
         _deadline = State(initialValue: initialGoalInput?.deadline ?? Calendar.current.date(byAdding: .month, value: 6, to: Date())!)
         _includeDeadline = State(initialValue: initialGoalInput?.deadline != nil)
@@ -95,22 +138,22 @@ struct AddGoalSheet: View {
                     HStack {
                         Text("Amount")
                             .foregroundStyle(.textMid)
-                        Spacer()
-                        TextField("0.00", text: $targetAmountText)
+                        TextField(amountPlaceholder, text: targetAmountBinding)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .foregroundStyle(.textPrimary)
-                            .frame(maxWidth: 120)
+                            .monospacedDigit()
+                            .frame(width: 200)
                             .focused($focusedField, equals: .amount)
                             .onChange(of: focusedField) { _, field in
                                 let isFocused = field == .amount
-                                if isFocused {
-                                    targetAmountText = targetAmountText.replacingOccurrences(of: ",", with: "")
+                                if isFocused, let value = parsedAmount {
+                                    targetAmountText = editingAmountFormatter.string(for: value as NSDecimalNumber) ?? targetAmountText
                                 } else if let value = parsedAmount, !targetAmountText.isEmpty {
-                                    targetAmountText = Self.amountFormatter.string(for: value as NSDecimalNumber) ?? targetAmountText
+                                    targetAmountText = amountFormatter.string(for: value as NSDecimalNumber) ?? targetAmountText
                                 }
                             }
-                        Text("€")
+                        Text(currencySymbol)
                             .foregroundStyle(.textMid)
                     }
                 }
