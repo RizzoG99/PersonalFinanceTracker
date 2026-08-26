@@ -135,16 +135,17 @@ struct AddGoalSheet: View {
                 .appFormSectionBackground()
 
                 Section("Target") {
-                    HStack(spacing: 4) {
+                    HStack() {
                         Text("Amount")
                             .foregroundStyle(.textMid)
+                        Spacer(minLength: 8)
                         TextField(amountPlaceholder, text: targetAmountBinding)
                             .textFieldStyle(.plain)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .foregroundStyle(.textPrimary)
                             .monospacedDigit()
-                            .frame(width: 200)
+                            .frame(minWidth: 120)
                             .focused($focusedField, equals: .amount)
                             .onChange(of: focusedField) { _, field in
                                 let isFocused = field == .amount
