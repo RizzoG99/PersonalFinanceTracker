@@ -101,5 +101,18 @@ extension View {
             // into a real gap — and obliges us to bring our own background.
             .sharedBackgroundVisibility(.hidden)
         }
+        // Scroll-avoidance (both the system's automatic kind and a manual
+        // `ScrollViewReader.scrollTo(anchor: .top)`) only knows about that reserved ~48pt
+        // slot — this bar's real height (padding + glass capsule + the 20pt bottom margin
+        // above) is taller than that and isn't reflected back into the layout, so a field
+        // scrolled to the top of the "avoided" area still ends up right behind this bar.
+        // Reserving the difference here as extra safe area, only while the bar is actually
+        // showing, is what makes `anchor: .top` land above the bar instead of above just
+        // the raw keyboard.
+        .safeAreaInset(edge: .bottom) {
+            if focus.wrappedValue != nil {
+                Color.clear.frame(height: 60)
+            }
+        }
     }
 }
