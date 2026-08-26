@@ -135,10 +135,11 @@ struct AddGoalSheet: View {
                 .appFormSectionBackground()
 
                 Section("Target") {
-                    HStack {
+                    HStack(spacing: 4) {
                         Text("Amount")
                             .foregroundStyle(.textMid)
                         TextField(amountPlaceholder, text: targetAmountBinding)
+                            .textFieldStyle(.plain)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .foregroundStyle(.textPrimary)
