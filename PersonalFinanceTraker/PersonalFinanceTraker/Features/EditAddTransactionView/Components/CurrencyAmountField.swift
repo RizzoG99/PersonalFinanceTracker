@@ -14,6 +14,12 @@ struct CurrencyAmountField: View {
     @Binding var currencyCode: String
     @FocusState private var isFocused: Bool
     @State private var displayText: String = ""
+    // `shouldAutoFocus` stays true for the sheet's whole lifetime (it's `editingItem == nil`,
+    // not a one-shot flag), and Form/List can dequeue+remount this row's identity as it scrolls
+    // off/back on screen (e.g. focusing Name scrolls Amount far away, then dismissing the
+    // keyboard grows the visible area and brings it back) — each remount re-runs onAppear.
+    // Without this guard that silently steals focus back to Amount well after the user moved on.
+    @State private var hasAutoFocused = false
 
     /// Parent-owned focus, so a form can chain Amount → Name from the keyboard bar. This field uses
     /// a decimalPad, which has no Return key, so without an external handle on its focus there is no
@@ -139,7 +145,8 @@ struct CurrencyAmountField: View {
                         // Skip auto-focus while amounts are hidden: focusing immediately would
                         // unblur the field before the user ever chose to look at it, defeating
                         // the privacy toggle the moment the sheet opens.
-                        if shouldAutoFocus && !(settings?.hideAmounts ?? false) {
+                        if shouldAutoFocus && !hasAutoFocused && !(settings?.hideAmounts ?? false) {
+                            hasAutoFocused = true
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 setFocus(true)
                             }

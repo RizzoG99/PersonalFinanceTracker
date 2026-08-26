@@ -90,7 +90,7 @@ struct TransactionFormView: View {
                         )
                     }
                     .appFormSectionBackground()
-                    .id("formTop")
+                    .id(TransactionFormField.amount)
 
                     Section {
                         Picker("Type", selection: $viewModel.transactionType) {
@@ -166,6 +166,7 @@ struct TransactionFormView: View {
                             .onSubmit { focusedField = nil }
                     }
                     .appFormSectionBackground()
+                    .id(TransactionFormField.name)
 
                     Section {
                         DatePicker(
@@ -179,89 +180,115 @@ struct TransactionFormView: View {
 
                 }
                 .appFormBackground()
-                .keyboardFieldNavigation($focusedField, order: [.amount, .name], hideDone: mathMode, hideFocusButtons: mathMode) {
-                    // Save-time mode, not a form field — lives on the keyboard accessory bar
-                    // instead, visible exactly while the keyboard the Add button used to sit
-                    // above is open. Add mode only.
-                    Spacer()
-                    if !mathMode {
-                        if viewModel.editingItem == nil {
+                // Chevron taps go through `navigate` (scroll target into view, wait for the scroll
+                // to actually settle, only then request focus) instead of setting focus directly —
+                // same fix as AddGoalSheet's chevrons: a field currently scrolled out of the Form
+                // doesn't reliably take focus from a bare FocusState assignment.
+                .keyboardFieldNavigation($focusedField, order: [.amount, .name], hideDone: mathMode, hideFocusButtons: mathMode, navigate: { field in
+                    withAnimation {
+                        proxy.scrollTo(field, anchor: .center)
+                    } completion: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            focusedField = field
+                        }
+                    }
+                }) {
+                    // Everything below is Amount-specific (Keep adding/Repeat only make sense at
+                    // save time while entering the first field; the calculator only ever operates
+                    // on the amount). Hidden (not removed) while Name is focused so it doesn't
+                    // leak into the bar (#50) — removing it via `if` instead of `.opacity` made
+                    // the whole capsule visibly narrow every time Name took focus, since a
+                    // keyboard toolbar item sizes to its content's ideal width, not to whatever's
+                    // available. Keeping the content structurally present and only toggling its
+                    // visibility/interactivity keeps that ideal width constant.
+                    let showsAmountContent = focusedField == .amount || mathMode
+                    let isAddMode = viewModel.editingItem == nil
+                    
+                    if showsAmountContent {
+                        Group {
+                            // Save-time mode, not a form field — lives on the keyboard accessory bar
+                            // instead, visible exactly while the keyboard the Add button used to sit
+                            // above is open. Add mode only.
+                            if !mathMode && isAddMode {
+                                Button {
+                                    viewModel.addAnother.toggle()
+                                    AddAnotherTip().invalidate(reason: .actionPerformed)
+                                } label: {
+                                    // A Label, not a bare Image: the title is what iPad shows beside
+                                    // the icon, and it doubles as the VoiceOver label this button was
+                                    // missing (it previously announced the raw SF Symbol name).
+                                    Label(
+                                        "Keep adding",
+                                        systemImage: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle"
+                                    )
+                                }
+                                .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
+                                .tint(viewModel.addAnother ? Color.accentIndigo : Color.primary)
+                                .accessibilityValue(viewModel.addAnother ? String(localized: "On") : String(localized: "Off"))
+                                
+                                // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
+                                // inline form space. Add mode only, and not for transfers (recurring transfers are
+                                // deferred — matches the type-change guard that also clears isRecurring).
+                                if viewModel.transactionType != .transfer {
+                                    Button {
+                                        viewModel.isRecurring.toggle()
+                                        RepeatTip().invalidate(reason: .actionPerformed)
+                                    } label: {
+                                        Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
+                                    }
+                                    .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
+                                    // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
+                                    // read as "active" while recurrence is actually off.
+                                    .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
+                                    .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
+                                }
+                            }
+
+                            if mathMode {
+                                // The expression bubble is a real (small, borderless) TextField, not a
+                                // label: digits always go wherever the system keyboard's current focus
+                                // is, so this — not viewModel.amount — has to be the focused control
+                                // while calculating, or typed digits would have nowhere to land.
+                                TextField("0", text: expressionDisplayBinding)
+                                    .keyboardType(.decimalPad)
+                                    .focused($focusedField, equals: .mathExpression)
+                                    .font(.system(.callout, design: .monospaced))
+                                    .lineLimit(1)
+                                    .frame(minWidth: 60, maxWidth: 140)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.surfaceRaised, in: Capsule())
+
+                                operatorButton("+", systemImage: "plus", accessibilityLabel: "Add")
+                                operatorButton("-", systemImage: "minus", accessibilityLabel: "Subtract")
+                                operatorButton("×", systemImage: "multiply", accessibilityLabel: "Multiply")
+                                operatorButton("÷", systemImage: "divide", accessibilityLabel: "Divide")
+                            }
+
                             Button {
-                                viewModel.addAnother.toggle()
-                                AddAnotherTip().invalidate(reason: .actionPerformed)
+                                withAnimation {
+                                    if mathMode {
+                                        commitMathExpression()
+                                    } else {
+                                        MathModeTip().invalidate(reason: .actionPerformed)
+                                        enterMathMode()
+                                    }
+                                }
                             } label: {
-                                // A Label, not a bare Image: the title is what iPad shows beside
-                                // the icon, and it doubles as the VoiceOver label this button was
-                                // missing (it previously announced the raw SF Symbol name).
                                 Label(
-                                    "Keep adding",
-                                    systemImage: viewModel.addAnother ? "plus.rectangle.fill.on.rectangle.fill" : "plus.rectangle.on.rectangle"
+                                    mathMode ? String(localized: "Equal") : String(localized: "Math operation"),
+                                    systemImage: mathMode ? "equal" : "plus.forwardslash.minus"
                                 )
                             }
                             .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
-                            .tint(viewModel.addAnother ? Color.accentIndigo : Color.primary)
-                            .accessibilityValue(viewModel.addAnother ? String(localized: "On") : String(localized: "Off"))
+                            // Same on/off convention as the two toggles above: accent only while the
+                            // mode is active. Without an explicit tint this fell through to the app's
+                            // global AccentColor and sat permanently purple, reading as "on" next to
+                            // two neutral siblings that were actually off.
+                            .tint(mathMode ? Color.accentIndigo : Color.primary)
                         }
-                        // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
-                        // inline form space. Add mode only, and not for transfers (recurring transfers are
-                        // deferred — matches the type-change guard that also clears isRecurring).
-                        if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
-                            Button {
-                                viewModel.isRecurring.toggle()
-                                RepeatTip().invalidate(reason: .actionPerformed)
-                            } label: {
-                                Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
-                            }
-                            .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
-                            // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
-                            // read as "active" while recurrence is actually off.
-                            .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
-                            .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
-                        }
+                        .frame(maxWidth: .infinity)
                     }
-                    
-                    if mathMode {
-                        // The expression bubble is a real (small, borderless) TextField, not a
-                        // label: digits always go wherever the system keyboard's current focus
-                        // is, so this — not viewModel.amount — has to be the focused control
-                        // while calculating, or typed digits would have nowhere to land.
-                        TextField("0", text: expressionDisplayBinding)
-                            .keyboardType(.decimalPad)
-                            .focused($focusedField, equals: .mathExpression)
-                            .font(.system(.callout, design: .monospaced))
-                            .lineLimit(1)
-                            .frame(minWidth: 60, maxWidth: 140)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color.surfaceRaised, in: Capsule())
-
-                        operatorButton("+", systemImage: "plus", accessibilityLabel: "Add")
-                        operatorButton("-", systemImage: "minus", accessibilityLabel: "Subtract")
-                        operatorButton("×", systemImage: "multiply", accessibilityLabel: "Multiply")
-                        operatorButton("÷", systemImage: "divide", accessibilityLabel: "Divide")
-                    }
-
-                    Button {
-                        withAnimation {
-                            if mathMode {
-                                commitMathExpression()
-                            } else {
-                                MathModeTip().invalidate(reason: .actionPerformed)
-                                enterMathMode()
-                            }
-                        }
-                    } label: {
-                        Label(
-                            mathMode ? String(localized: "Equal") : String(localized: "Math operation"),
-                            systemImage: mathMode ? "equal" : "plus.forwardslash.minus"
-                        )
-                    }
-                    .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
-                    // Same on/off convention as the two toggles above: accent only while the
-                    // mode is active. Without an explicit tint this fell through to the app's
-                    // global AccentColor and sat permanently purple, reading as "on" next to
-                    // two neutral siblings that were actually off.
-                    .tint(mathMode ? Color.accentIndigo : Color.primary)
                 }
                 // Scoped to the Form on purpose: the scrim blocks taps on the rows behind the
                 // tip, but the keyboard and its accessory bar render outside the Form, so the
@@ -282,13 +309,34 @@ struct TransactionFormView: View {
                 // Both inputs to tipVisible have to be watched: focus and TipKit's currentTip
                 // resolve in separate render passes, and syncTipVisibility() folds whichever
                 // lands second into one animated transaction.
-                .onChange(of: focusedField) { _, _ in syncTipVisibility() }
+                .onChange(of: focusedField) { _, field in
+                    syncTipVisibility()
+                    // Tapping straight onto another field (Name) while the calculator's up
+                    // bypasses the chevrons/Done entirely — those are hidden in math mode — so
+                    // nothing else ever told math mode to end. Without this, showsAmountContent
+                    // (gated on `mathMode`, not on focus) kept the bubble/operator row showing
+                    // long after Amount lost focus. Commits whatever's typed, same as "=".
+                    if mathMode, field != .mathExpression, field != .amount {
+                        commitMathExpression(restoringFocus: false)
+                    }
+                    // Scrolls whichever field just took focus above the keyboard — without this
+                    // the Name row, several sections down, stayed hidden behind it (#54). Skipped
+                    // for .mathExpression: that bubble lives inline in the keyboard bar itself,
+                    // not a row in the Form, so there's nothing to scroll to.
+                    guard let field, field != .mathExpression else { return }
+                    // .top, not .center: centering only leaves room for the raw keyboard, not the
+                    // extra ~40-70pt the custom accessory bar (chevrons/Done, plus the Amount-only
+                    // row) adds above it — a field centered in what Form thinks is the visible
+                    // area can still end up right behind that bar. Anchoring to the row's top edge
+                    // leaves the whole remaining viewport height below it as clearance instead.
+                    withAnimation { proxy.scrollTo(field, anchor: .top) }
+                }
                 .onChange(of: tips.currentTip?.id) { _, _ in syncTipVisibility() }
                 .onChange(of: focusTrigger) { _, _ in
                     // After an "Add another" save the form resets in place; snap back to the top
                     // (blank Amount) so the user isn't left at the bottom of the sheet. Fires on the
                     // same token bump that clears/re-focuses the amount field.
-                    withAnimation { proxy.scrollTo("formTop", anchor: .top) }
+                    withAnimation { proxy.scrollTo(TransactionFormField.amount, anchor: .top) }
                 }
                 .onAppear {
                     updateTipEligibility()
@@ -381,22 +429,26 @@ struct TransactionFormView: View {
     /// compute, so treat that tap as "never mind" and just exit rather than no-op silently.
     /// A non-empty but unparseable expression is left alone (stays in math mode) so the user
     /// can fix it — `MathExpressionEvaluator` never throws, so there's nothing to catch here.
-    private func commitMathExpression() {
+    /// - Parameter restoringFocus: true for the "=" button, which needs to hand focus back to
+    ///   Amount itself. False when called because focus already moved elsewhere (tapping
+    ///   straight onto another field while the calculator's up) — forcing it back to Amount
+    ///   there would fight whatever the user just tapped.
+    private func commitMathExpression(restoringFocus: Bool = true) {
         guard !mathExpression.isEmpty else {
-            exitMathMode()
+            exitMathMode(restoringFocus: restoringFocus)
             return
         }
         guard let result = MathExpressionEvaluator.evaluate(mathExpression) else { return }
         // `amount` is a magnitude (CurrencyAmountField itself only ever accepts >= 0); the
         // expense/income sign lives in the Type picker, not here.
         viewModel.amount = abs(result)
-        exitMathMode()
+        exitMathMode(restoringFocus: restoringFocus)
     }
 
-    private func exitMathMode() {
+    private func exitMathMode(restoringFocus: Bool = true) {
         mathMode = false
         mathExpression = ""
-        focusedField = .amount
+        if restoringFocus { focusedField = .amount }
     }
 
     /// Plain (non-currency) decimal string for seeding the bubble — same convention
