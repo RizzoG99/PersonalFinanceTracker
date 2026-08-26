@@ -59,8 +59,8 @@ struct AmountFilterSheet: View {
                 }
             }
             .onAppear {
-                if let min = vm.filters.amountMin { minText = "\(min)" }
-                if let max = vm.filters.amountMax { maxText = "\(max)" }
+                if let min = vm.filters.amountMin { minText = AmountParser.editingText(min) }
+                if let max = vm.filters.amountMax { maxText = AmountParser.editingText(max) }
             }
         }
     }

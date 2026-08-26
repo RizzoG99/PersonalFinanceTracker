@@ -66,7 +66,7 @@ struct BudgetRow: View {
     /// Unformatted digits for editing — what `commit()` can parse back.
     private func rawText(for budget: Decimal?) -> String {
         guard let budget, budget > 0 else { return "" }
-        return NSDecimalNumber(decimal: budget).stringValue
+        return AmountParser.editingText(budget)
     }
 
     private func commit() {

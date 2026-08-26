@@ -112,8 +112,8 @@ struct AddEditCreditCardSheet: View {
             if let card = cardToEdit {
                 name = card.name
                 lastFour = card.lastFour
-                balanceText = "\(card.balance)"
-                limitText = "\(card.limit)"
+                balanceText = AmountParser.editingText(card.balance)
+                limitText = AmountParser.editingText(card.limit)
                 selectedColorName = card.colorName
             }
         }

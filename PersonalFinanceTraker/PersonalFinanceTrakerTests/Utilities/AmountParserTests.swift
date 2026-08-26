@@ -9,8 +9,46 @@ struct AmountParserTests {
         #expect(AmountParser.parse("350") == 350)
     }
 
-    @Test func normalizesCommaToPeriod() {
-        #expect(AmountParser.parse("5,50") == 5.5)
+    @Test func parsesItalianDecimalAndGroupingSeparators() {
+        #expect(AmountParser.parse("1.234,56", locale: Locale(identifier: "it_IT")) == 1234.56)
+    }
+
+    @Test func parsesUSDecimalAndGroupingSeparators() {
+        #expect(AmountParser.parse("1,234.56", locale: Locale(identifier: "en_US")) == 1234.56)
+    }
+
+    @Test func parsesPeriodDecimalFromExternalKeyboardInItalianLocale() {
+        #expect(AmountParser.parse("1100.45", locale: Locale(identifier: "it_IT")) == 1100.45)
+    }
+
+    @Test func parsesCommaDecimalFromExternalKeyboardInUSLocale() {
+        #expect(AmountParser.parse("1100,45", locale: Locale(identifier: "en_US")) == 1100.45)
+    }
+
+    @Test func localizedEditingTextRoundTripsItalianFractions() {
+        let locale = Locale(identifier: "it_IT")
+        let text = AmountParser.editingText(1.234, locale: locale)
+        #expect(text == "1,234")
+        #expect(AmountParser.parse(text, locale: locale) == 1.234)
+    }
+
+    @Test func localizedEditingTextRoundTripsUSFractions() {
+        let locale = Locale(identifier: "en_US")
+        let text = AmountParser.editingText(1.234, locale: locale)
+        #expect(text == "1.234")
+        #expect(AmountParser.parse(text, locale: locale) == 1.234)
+    }
+
+    @Test func normalizesExternalKeyboardDecimalKeyWhileTyping() {
+        #expect(AmountParser.sanitizedInput("1100.45", locale: Locale(identifier: "it_IT")) == "1100,45")
+    }
+
+    @Test func stripsInvalidCharactersExtraSeparatorsAndExcessFractionDigits() {
+        #expect(AmountParser.sanitizedInput("1.100&10", locale: Locale(identifier: "it_IT")) == "1,10")
+    }
+
+    @Test func preservesValidLocalizedGroupingDuringFocusChanges() {
+        #expect(AmountParser.sanitizedInput("2.000.000,00", locale: Locale(identifier: "it_IT")) == "2.000.000,00")
     }
 
     @Test func trimsWhitespace() {
