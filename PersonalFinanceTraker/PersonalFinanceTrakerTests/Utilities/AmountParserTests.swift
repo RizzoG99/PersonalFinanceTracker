@@ -25,6 +25,20 @@ struct AmountParserTests {
         #expect(AmountParser.parse("1100,45", locale: Locale(identifier: "en_US")) == 1100.45)
     }
 
+    @Test func localizedEditingTextRoundTripsItalianFractions() {
+        let locale = Locale(identifier: "it_IT")
+        let text = AmountParser.editingText(1.234, locale: locale)
+        #expect(text == "1,234")
+        #expect(AmountParser.parse(text, locale: locale) == 1.234)
+    }
+
+    @Test func localizedEditingTextRoundTripsUSFractions() {
+        let locale = Locale(identifier: "en_US")
+        let text = AmountParser.editingText(1.234, locale: locale)
+        #expect(text == "1.234")
+        #expect(AmountParser.parse(text, locale: locale) == 1.234)
+    }
+
     @Test func normalizesExternalKeyboardDecimalKeyWhileTyping() {
         #expect(AmountParser.sanitizedInput("1100.45", locale: Locale(identifier: "it_IT")) == "1100,45")
     }

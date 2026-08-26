@@ -118,6 +118,23 @@ enum AmountParser {
         return text.replacingOccurrences(of: alternateDecimal, with: localeDecimal)
     }
 
+    /// Produces an ungrouped, locale-aware decimal string suitable for editing.
+    /// This is intentionally separate from the currency display format: fields
+    /// must round-trip persisted `Decimal` values without making `1.234` look
+    /// like Italian thousands grouping when the user saves unchanged.
+    static func editingText(_ value: Decimal, locale: Locale = .current) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = locale
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 38
+
+        let fallback = NSDecimalNumber(decimal: value).stringValue
+            .replacingOccurrences(of: ".", with: locale.decimalSeparator ?? ".")
+        return formatter.string(from: NSDecimalNumber(decimal: value)) ?? fallback
+    }
+
     /// Currency display matching the convention already used by Budgets
     /// (`.formatted(.currency(code:))`).
     static func format(_ value: Decimal, currencyCode: String = "EUR") -> String {
