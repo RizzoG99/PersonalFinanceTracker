@@ -23,6 +23,7 @@ struct EditAddTransactionView: View {
     @Environment(DataChangedSignal.self) private var dataChanged
     @State private var viewModel: EditAddTransactionViewModel
     @State private var pendingRecurrenceAction: PendingRecurrenceAction?
+    @State private var showingDeleteConfirmation = false
     @State private var refocusToken = 0
     @State private var savedCount = 0
     @State private var showSavedToast = false
@@ -88,9 +89,25 @@ struct EditAddTransactionView: View {
             if viewModel.editingItem != nil {
                 ToolbarItem(placement: .destructiveAction) {
                     Button(role: .destructive) {
-                        deleteTransaction()
+                        requestDeleteTransaction()
                     } label: {
                         Label("Delete", systemImage: "trash")
+                    }
+                    // A non-recurring transaction used to be removed immediately from the
+                    // toolbar, beside Save. Keep deletion one deliberate step away from the
+                    // primary edit action; recurring transactions present their scope chooser
+                    // instead.
+                    .confirmationDialog(
+                        "Delete this transaction?",
+                        isPresented: $showingDeleteConfirmation,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Delete", role: .destructive) {
+                            deleteTransaction()
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    } message: {
+                        Text("This action cannot be undone.")
                     }
                     .confirmationDialog(
                         "This is part of a recurring series",
@@ -164,6 +181,15 @@ struct EditAddTransactionView: View {
                 dataChanged.bump()
                 dismiss()
             }
+        }
+    }
+
+    private func requestDeleteTransaction() {
+        guard let existing = viewModel.editingItem else { return }
+        if existing.recurrenceRuleId != nil {
+            deleteTransaction()
+        } else {
+            showingDeleteConfirmation = true
         }
     }
 
