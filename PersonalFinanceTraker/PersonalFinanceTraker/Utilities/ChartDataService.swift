@@ -78,7 +78,7 @@ class ChartDataService {
             let income = calculateIncome(from: weekItems)
             let expenses = calculateExpenses(from: weekItems)
 
-            data.append(ChartDataPoint(period: "Week \(weekNumber)", income: income, expenses: expenses, date: weekStart))
+            data.append(ChartDataPoint(period: String(localized: "Week \(weekNumber)"), income: income, expenses: expenses, date: weekStart))
             weekStart = weekEnd
             weekNumber += 1
         }

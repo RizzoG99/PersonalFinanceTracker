@@ -26,6 +26,14 @@ public enum TimePeriod: String, CaseIterable {
     var description: String {
         return rawValue
     }
+
+    var localizedLabel: LocalizedStringKey {
+        switch self {
+        case .week: "Week"
+        case .month: "Month"
+        case .year: "Year"
+        }
+    }
 }
 
 /// A reusable segmented picker component for selecting time periods in financial views
@@ -57,7 +65,7 @@ public struct TimePeriodPicker: View {
     public var body: some View {
         Picker("Time Period", selection: $selection) {
             ForEach(TimePeriod.allCases, id: \.self) { period in
-                Text(period.rawValue).tag(period)
+                Text(period.localizedLabel).tag(period)
             }
         }
         .pickerStyle(SegmentedPickerStyle())
