@@ -24,8 +24,6 @@ struct MainTabView: View {
     @State private var compassViewModel: CompassViewModel
     @State private var profileViewModel: ProfileViewModel
     @State private var dataChanged: DataChangedSignal
-    @State private var showPrivacyToast = false
-    @State private var privacyToastTask: Task<Void, Never>?
     private let repo: TransactionActor
     private let materializationService: RecurrenceMaterializationService
     // Owned by AuthenticationWrapper (not MainTabView) so hideAmounts survives the
@@ -150,20 +148,8 @@ struct MainTabView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .overlay(alignment: .top) {
-            if showPrivacyToast {
-                ToastBanner(
-                    icon: appSettings.hideAmounts ? "eye.slash.fill" : "eye.fill",
-                    message: appSettings.hideAmounts ? String(localized: "Amounts hidden") : String(localized: "Amounts shown")
-                ) { EmptyView() }
-                    .accessibilityElement(children: .combine)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-        }
         .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
-        .animation(.spring(duration: 0.3), value: showPrivacyToast)
+        .hideAmountsShortcut(appSettings)
         .onChange(of: selectedTab) { _, newTab in
             shellModels.selectedTab = newTab
         }
@@ -229,17 +215,6 @@ struct MainTabView: View {
             consumePendingAdd()
             consumePendingHabitTemplate()
             consumePendingWidgetDestination()
-        }
-        .onShake {
-            appSettings.toggleHideAmounts()
-        }
-        .onChange(of: appSettings.hideAmounts) { _, _ in
-            privacyToastTask?.cancel()
-            showPrivacyToast = true
-            privacyToastTask = Task {
-                try? await Task.sleep(for: .seconds(1.5))
-                if !Task.isCancelled { showPrivacyToast = false }
-            }
         }
         .onChange(of: PendingTransactionIntent.shared.shouldPresentAdd) { _, pending in
             if pending { consumePendingAdd() }

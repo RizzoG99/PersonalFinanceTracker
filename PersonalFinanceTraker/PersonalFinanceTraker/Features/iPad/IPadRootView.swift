@@ -33,6 +33,9 @@ struct IPadRootView: View {
             content
         }
         .navigationSplitViewStyle(.balanced)
+        // Shake never reached this shell before (only MainTabView had .onShake attached), and
+        // shaking an iPad isn't a comfortable gesture anyway — issue #52.
+        .hideAmountsShortcut(appSettings)
         .inspector(isPresented: inspectorPresented) {
             IPadInspector(models: models, showingAddItemView: $showingAddItemView)
                 .inspectorColumnWidth(min: 320, ideal: 400, max: 560)
@@ -132,6 +135,7 @@ struct IPadRootView: View {
             }
         }
         .navigationTitle("Finance")
+        .navigationSplitViewColumnWidth(min: 200, ideal: 260, max: 320)
         .scrollContentBackground(.hidden)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -148,24 +152,33 @@ struct IPadRootView: View {
 
     @ViewBuilder
     private var content: some View {
-        switch section ?? .home {
-        case .home:
-            IPadDashboardGrid(showingAddItemView: $showingAddItemView)
-        case .activity:
-            IPadLedgerTable(showingAddItemView: $showingAddItemView)
-        case .goals:
-            IPadGoalsView(viewModel: models.compass)
-        case .recurring:
-            IPadRecurringSection(materializationService: models.materializationService)
-        case .insights:
-            CompassView(viewModel: models.compass, showingAddItemView: $showingAddItemView)
-        case .healthScore:
-            IPadHealthScoreView(viewModel: models.compass)
-        case .settings:
-            NavigationStack {
-                ProfileView(viewModel: models.profile, selectedDetent: $profileDetent, isHostedAsSheet: false)
-                    .navigationTitle("Settings")
-                    .appBackground()
+        Group {
+            switch section ?? .home {
+            case .home:
+                IPadDashboardGrid(showingAddItemView: $showingAddItemView)
+            case .activity:
+                IPadLedgerTable(showingAddItemView: $showingAddItemView)
+            case .goals:
+                IPadGoalsView(viewModel: models.compass)
+            case .recurring:
+                IPadRecurringSection(materializationService: models.materializationService)
+            case .insights:
+                CompassView(viewModel: models.compass, showingAddItemView: $showingAddItemView)
+            case .healthScore:
+                IPadHealthScoreView(viewModel: models.compass)
+            case .settings:
+                NavigationStack {
+                    ProfileView(viewModel: models.profile, selectedDetent: $profileDetent, isHostedAsSheet: false)
+                        .navigationTitle("Settings")
+                        .appBackground()
+                }
+            }
+        }
+        // On the detail column, not the sidebar, so it stays reachable even when the sidebar is
+        // collapsed (compact width / user-collapsed) — issue #52's "always-visible CTA" ask.
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                HideAmountsButton()
             }
         }
     }
