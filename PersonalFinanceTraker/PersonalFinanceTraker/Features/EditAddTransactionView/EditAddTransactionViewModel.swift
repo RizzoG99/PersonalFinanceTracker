@@ -34,6 +34,32 @@ final class EditAddTransactionViewModel {
     /// touched by resetForm() — it must survive across the sequential saves.
     var addAnother: Bool = false
 
+    // MARK: - Receipt scan
+
+    /// What the last scan filled/couldn't read, shown as a one-line status under the form.
+    /// nil when nothing has been scanned yet.
+    var receiptStatusMessage: String?
+    /// Populated only when the parser found several disagreeing total candidates — the form shows
+    /// these as chips instead of guessing. Cleared once one is picked.
+    var receiptTotalCandidates: [Decimal] = []
+    /// The merchant string from the most recent scan, kept as the learning key even if the user
+    /// later edits the Name field — a correction should still teach next time's category guess.
+    private(set) var receiptMerchant: String?
+
+    // A scanned field is "still showing what the scan set" — tracked by value equality against
+    // what was written, not by intercepting edits. This means a rescan can safely overwrite its own
+    // prior guess (the field still equals it) while never touching a value the user changed away
+    // from it (equality breaks the moment they edit it). See applyReceiptScan().
+    private var scanAppliedAmount: Double?
+    private var scanAppliedDate: Date?
+    private var scanAppliedCategoryId: PersistentIdentifier?
+    private var scanAppliedName: String?
+
+    var isAmountFromScan: Bool { scanAppliedAmount != nil && scanAppliedAmount == amount }
+    var isDateFromScan: Bool { scanAppliedDate != nil && scanAppliedDate == date }
+    var isCategoryFromScan: Bool { scanAppliedCategoryId != nil && scanAppliedCategoryId == selectedCategory?.persistentId }
+    var isNameFromScan: Bool { scanAppliedName != nil && scanAppliedName == transactionName }
+
     let editingItem: TransactionSnapshot?
     let repo: any ITransactionRepository
     private let draft: TransactionDraft?
@@ -174,6 +200,101 @@ final class EditAddTransactionViewModel {
         selectedCategory = category
     }
 
+    /// Fills the form from a receipt scan. Only overwrites a field that's still at its default
+    /// *or* still equal to what an earlier scan set — see the `scanApplied*`/`is*FromScan`
+    /// properties above for why that single equality check covers both "untouched" and "rescan
+    /// replaces its own prior guess" without ever touching a hand-typed value.
+    func applyReceiptScan(_ scan: ReceiptScan, learnedMerchants: [String: UUID]) {
+        var filled: [String] = []
+        var notes: [String] = []
+        receiptTotalCandidates = []
+
+        let amountEditable = amount == 0 || isAmountFromScan
+        if amountEditable {
+            if let total = scan.total {
+                amount = Double(truncating: total as NSDecimalNumber)
+                scanAppliedAmount = amount
+                filled.append(String(localized: "amount"))
+            } else if !scan.totalCandidates.isEmpty {
+                receiptTotalCandidates = scan.totalCandidates
+            } else {
+                notes.append(String(localized: "Couldn't read the amount"))
+            }
+        }
+
+        let dateEditable = Calendar.current.isDateInToday(date) || isDateFromScan
+        if dateEditable, !scan.dateWasClamped, let scannedDate = scan.date {
+            date = scannedDate
+            scanAppliedDate = scannedDate
+            filled.append(String(localized: "date"))
+        }
+        if scan.dateWasClamped {
+            notes.append(String(localized: "Couldn't read the date, using today"))
+        }
+
+        // Refund receipts flip the type to Income, but only while no category is picked yet —
+        // TransactionFormView clears category/goal on type change, so flipping under an existing
+        // pick would silently wipe it.
+        if scan.isRefund, selectedCategory == nil, transactionType != .transfer {
+            transactionType = .income
+        }
+
+        if let merchant = scan.merchant { receiptMerchant = merchant }
+
+        let categoryEditable = selectedCategory == nil || isCategoryFromScan
+        if categoryEditable, transactionType != .transfer {
+            let inferred = ReceiptCategoryInferrer.infer(
+                merchant: scan.merchant,
+                transactionType: transactionType,
+                categories: availableCategories,
+                learnedMerchants: learnedMerchants,
+                usage: categoryUsage
+            )
+            if let inferred {
+                selectedCategory = inferred
+                scanAppliedCategoryId = inferred.persistentId
+                filled.append(String(localized: "category"))
+            }
+        }
+
+        let nameEditable = transactionName.isEmpty || isNameFromScan
+        if nameEditable, let merchant = scan.merchant {
+            transactionName = merchant
+            scanAppliedName = merchant
+            filled.append(String(localized: "merchant"))
+        }
+
+        if filled.isEmpty && notes.isEmpty && receiptTotalCandidates.isEmpty {
+            receiptStatusMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
+        } else {
+            var parts: [String] = []
+            if !filled.isEmpty {
+                parts.append(String(localized: "Filled \(filled.joined(separator: ", "))"))
+            }
+            parts.append(contentsOf: notes)
+            receiptStatusMessage = parts.joined(separator: ". ")
+        }
+    }
+
+    /// Called when the user taps a candidate chip to resolve an ambiguous total.
+    func selectReceiptTotalCandidate(_ candidate: Decimal) {
+        amount = Double(truncating: candidate as NSDecimalNumber)
+        scanAppliedAmount = amount
+        receiptTotalCandidates = []
+    }
+
+    /// Whenever a scan happened on this transaction, teach the merchant → category pairing from
+    /// whatever category ends up selected at save time — including a user's correction, which is
+    /// exactly the signal the learned tier needs. Never fires for a typed-only transaction (no
+    /// `receiptMerchant`), since a hand-typed name is too inconsistent to learn from.
+    func recordReceiptLearningIfNeeded() async {
+        guard let receiptMerchant, let categoryId = selectedCategory?.id else { return }
+        try? await repo.saveMerchantCategoryMapping(
+            merchant: ReceiptCategoryInferrer.normalize(receiptMerchant),
+            categoryId: categoryId
+        )
+    }
+
     func buildInput() -> TransactionInput? {
         guard amount > 0 else { return nil }
         if transactionType == .transfer {
@@ -297,6 +418,13 @@ final class EditAddTransactionViewModel {
         isRecurring = false
         recurrenceFrequency = .monthly
         recurrenceInterval = 1
+        receiptStatusMessage = nil
+        receiptTotalCandidates = []
+        receiptMerchant = nil
+        scanAppliedAmount = nil
+        scanAppliedDate = nil
+        scanAppliedCategoryId = nil
+        scanAppliedName = nil
     }
 
 }

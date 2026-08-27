@@ -88,6 +88,20 @@ struct TransactionFormView: View {
                             focusTrigger: focusTrigger,
                             focus: $focusedField
                         )
+                        if viewModel.isAmountFromScan {
+                            ScannedValueCaption()
+                        }
+                        if !viewModel.receiptTotalCandidates.isEmpty {
+                            ReceiptTotalCandidatesRow(
+                                candidates: viewModel.receiptTotalCandidates,
+                                currencyCode: viewModel.currencyCode,
+                                onSelect: viewModel.selectReceiptTotalCandidate
+                            )
+                        }
+                    } footer: {
+                        if let status = viewModel.receiptStatusMessage {
+                            Text(status)
+                        }
                     }
                     .appFormSectionBackground()
                     .id(TransactionFormField.amount)
@@ -150,6 +164,13 @@ struct TransactionFormView: View {
                                 selectedCategory: $viewModel.selectedCategory,
                                 onCategoryCreated: viewModel.selectCreatedCategory
                             )
+                            // Category is always filled by a scan (even when guessed), so this is
+                            // the one marker that's less "here's a value, check it" and more "this
+                            // is a guess, please check it" — same caption either way, but it earns
+                            // its keep most here.
+                            if viewModel.isCategoryFromScan {
+                                ScannedValueCaption()
+                            }
                         } header: {
                             Text("Category")
                         }
@@ -164,6 +185,9 @@ struct TransactionFormView: View {
                             // one in the chain.
                             .submitLabel(.done)
                             .onSubmit { focusedField = nil }
+                        if viewModel.isNameFromScan {
+                            ScannedValueCaption()
+                        }
                     }
                     .appFormSectionBackground()
                     .id(TransactionFormField.name)
@@ -175,6 +199,9 @@ struct TransactionFormView: View {
                             displayedComponents: [.date]
                         )
                         .tint(.accentIndigo)
+                        if viewModel.isDateFromScan {
+                            ScannedValueCaption()
+                        }
                     }
                     .appFormSectionBackground()
 
@@ -462,6 +489,47 @@ struct TransactionFormView: View {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         return formatter.string(from: NSNumber(value: value)) ?? ""
+    }
+}
+
+// MARK: - Receipt scan
+
+/// The "this came from a scan, check it" marker — same caption under Amount, Category, Name, and
+/// Date. Icon + text (never color alone) so it still reads under Differentiate Without Color, and
+/// it disappears on its own the moment the bound value changes: the view models' `is*FromScan`
+/// flags are equality checks against what the scan wrote, not a manually-cleared touched flag.
+private struct ScannedValueCaption: View {
+    var body: some View {
+        Label("Scanned — check before saving", systemImage: "sparkles")
+            .font(.caption)
+            .foregroundStyle(.textMid)
+    }
+}
+
+/// Shown under Amount only when the parser found several disagreeing total-keyword lines (the
+/// CONTANTI-style ambiguity) — picking one clears the row and fills Amount, marked as scanned.
+private struct ReceiptTotalCandidatesRow: View {
+    let candidates: [Decimal]
+    let currencyCode: String
+    let onSelect: (Decimal) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Which total is right?")
+                .font(.subheadline)
+                .foregroundStyle(.textMid)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(candidates, id: \.self) { candidate in
+                        Button(AmountParser.format(candidate, currencyCode: currencyCode)) {
+                            onSelect(candidate)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
     }
 }
 

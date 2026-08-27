@@ -7,6 +7,8 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
+import UIKit
 
 private enum PendingRecurrenceAction {
     case save(TransactionInput)
@@ -30,6 +32,14 @@ struct EditAddTransactionView: View {
     @State private var didFocusOnAmount = false
     @State private var toastTask: Task<Void, Never>?
     private let materializationService: RecurrenceMaterializationService
+
+    // MARK: - Receipt scan
+    @State private var showingReceiptSourceDialog = false
+    @State private var showingDocumentScanner = false
+    @State private var showingPhotoPicker = false
+    @State private var photoPickerItem: PhotosPickerItem?
+    @State private var isProcessingReceiptScan = false
+    @State private var receiptScanErrorMessage: String?
 
     init(
         _ snapshot: TransactionSnapshot? = nil,
@@ -75,6 +85,29 @@ struct EditAddTransactionView: View {
             // Notes/Reminders. Used to be landscape-only; the portrait pinned-bar alternative was
             // tried and rejected (kept getting covered by, or visually clashing with, the
             // keyboard toolbar), so this is now unconditional.
+            // Add mode only — scanning a receipt into an existing transaction's already-populated
+            // form has murkier overwrite semantics, so it's out of scope for v1. Hidden for
+            // Transfer too: a receipt is never a transfer between the user's own goals.
+            if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingReceiptSourceDialog = true
+                    } label: {
+                        Image(systemName: "camera.viewfinder")
+                    }
+                    .accessibilityLabel("Scan receipt")
+                    .accessibilityHint("Fill this transaction from a photo of a receipt")
+                    .confirmationDialog(
+                        "Scan Receipt",
+                        isPresented: $showingReceiptSourceDialog,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Take Photo") { showingDocumentScanner = true }
+                        Button("Choose Photo") { showingPhotoPicker = true }
+                        Button("Cancel", role: .cancel) {}
+                    }
+                }
+            }
             ToolbarItem(placement: .confirmationAction) {
                 Button {
                     saveTransaction()
@@ -127,6 +160,73 @@ struct EditAddTransactionView: View {
         .onAppear {
             viewModel.setTransactionViewModel()
         }
+        // Full-screen, not a sheet: VisionKit's own scanner UI is designed edge-to-edge like the
+        // system Camera app — a sheet's rounded corners/grabber would fight its chrome.
+        .fullScreenCover(isPresented: $showingDocumentScanner) {
+            ReceiptDocumentScanner { result in
+                showingDocumentScanner = false
+                switch result {
+                case .success(let images):
+                    guard !images.isEmpty else { return } // user cancelled — leave the form alone
+                    processReceiptImages(images)
+                case .failure(let error):
+                    receiptScanErrorMessage = error.localizedDescription
+                }
+            }
+            .ignoresSafeArea()
+        }
+        .photosPicker(isPresented: $showingPhotoPicker, selection: $photoPickerItem, matching: .images)
+        .onChange(of: photoPickerItem) { _, item in
+            guard let item else { return }
+            Task {
+                defer { photoPickerItem = nil }
+                guard let data = try? await item.loadTransferable(type: Data.self),
+                      let image = UIImage(data: data) else {
+                    receiptScanErrorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
+                    return
+                }
+                processReceiptImages([image])
+            }
+        }
+        .overlay {
+            if isProcessingReceiptScan {
+                ProgressView("Reading receipt…")
+                    .padding(24)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            }
+        }
+        .alert(
+            "Couldn't read this receipt",
+            isPresented: Binding(
+                get: { receiptScanErrorMessage != nil },
+                set: { if !$0 { receiptScanErrorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(receiptScanErrorMessage ?? "")
+        }
+    }
+
+    /// Runs Vision recognition + parsing off the main actor, then applies the result on it — the
+    /// form's own values are never touched while `isProcessingReceiptScan` is true.
+    private func processReceiptImages(_ images: [UIImage]) {
+        isProcessingReceiptScan = true
+        Task {
+            defer { isProcessingReceiptScan = false }
+            do {
+                let lines = try await ReceiptTextRecognizer.recognizeLines(in: images)
+                guard !lines.isEmpty else {
+                    receiptScanErrorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
+                    return
+                }
+                let scan = ReceiptParser.parse(lines)
+                let learnedMerchants = (try? await viewModel.repo.fetchMerchantCategoryMappings()) ?? [:]
+                viewModel.applyReceiptScan(scan, learnedMerchants: learnedMerchants)
+            } catch {
+                receiptScanErrorMessage = error.localizedDescription
+            }
+        }
     }
 
     private func saveTransaction() {
@@ -143,6 +243,10 @@ struct EditAddTransactionView: View {
                         try await viewModel.repo.add(input)
                     }
                     dataChanged.bump()
+                    // Must run before resetForm() clears receiptMerchant, and regardless of
+                    // whether the user accepted the guessed category or corrected it — the
+                    // correction is exactly what the learned tier needs.
+                    await viewModel.recordReceiptLearningIfNeeded()
                     if viewModel.addAnother {
                         viewModel.resetForm()
                         savedCount += 1     // fires .sensoryFeedback(.success)

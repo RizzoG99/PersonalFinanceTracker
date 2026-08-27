@@ -194,5 +194,18 @@ final class MockTransactionRepository: ITransactionRepository {
         stubbedForecastCache = data
     }
 
+    // MARK: Receipt scan — learned merchant → category
+    var stubbedMerchantCategoryMappings: [String: UUID] = [:]
+
+    func fetchMerchantCategoryMappings() async throws -> [String: UUID] {
+        if shouldThrow { throw MockError.forced }
+        return stubbedMerchantCategoryMappings
+    }
+
+    func saveMerchantCategoryMapping(merchant: String, categoryId: UUID) async throws {
+        if shouldThrow { throw MockError.forced }
+        stubbedMerchantCategoryMappings[merchant] = categoryId
+    }
+
     enum MockError: Error { case forced }
 }
