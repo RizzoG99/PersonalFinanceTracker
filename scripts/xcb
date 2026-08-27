@@ -3,6 +3,18 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# .env.default is checked in; .env is gitignored, for local overrides. Both
+# ship with empty placeholders, so stash anything the caller already exported
+# and restore it after — otherwise sourcing an empty ASC_KEY_ID= would clobber it.
+_ASC_KEY_ID="${ASC_KEY_ID:-}"
+_ASC_ISSUER_ID="${ASC_ISSUER_ID:-}"
+set -a
+[ -f .env.default ] && source .env.default
+[ -f .env ] && source .env
+set +a
+[ -n "$_ASC_KEY_ID" ] && ASC_KEY_ID="$_ASC_KEY_ID"
+[ -n "$_ASC_ISSUER_ID" ] && ASC_ISSUER_ID="$_ASC_ISSUER_ID"
+
 PROJECT=PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj
 SCHEME=PersonalFinanceTraker
 DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPhone-17
@@ -103,6 +115,110 @@ case "${1:-}" in
     exit $status
     ;;
 
+  analyze)
+    shift
+    xcodebuild analyze \
+      -project "$PROJECT" -scheme "$SCHEME" \
+      -destination "id=$(resolve_sim)" \
+      -derivedDataPath .build -quiet "$@"
+    ;;
+
+  archive)
+    shift
+    # CURRENT_PROJECT_VERSION must strictly increase for every App Store Connect
+    # upload. scripts/BUILD_NUMBER picks up where Xcode Cloud's counter left off
+    # (75) and increments by one per archive, same as it did. Commit the bump so
+    # it's shared across machines/worktrees. Override with CURRENT_PROJECT_VERSION=N
+    # if you ever need to.
+    if [ -z "${CURRENT_PROJECT_VERSION:-}" ]; then
+      CURRENT_PROJECT_VERSION=$(($(cat scripts/BUILD_NUMBER) + 1))
+      echo "$CURRENT_PROJECT_VERSION" > scripts/BUILD_NUMBER
+    fi
+    xcodebuild archive \
+      -project "$PROJECT" -scheme "$SCHEME" \
+      -archivePath .build/PersonalFinanceTraker.xcarchive \
+      -destination "generic/platform=iOS" \
+      -derivedDataPath .build \
+      CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION" \
+      -allowProvisioningUpdates -quiet "$@"
+    ;;
+
+  export)   # archives straight to TestFlight via an App Store Connect API key
+    shift
+    : "${ASC_KEY_ID:?set to the API Key ID (App Store Connect > Users and Access > Integrations)}"
+    : "${ASC_ISSUER_ID:?set to the Issuer ID shown on the same page}"
+    # xcodebuild finds the .p8 itself if it's named AuthKey_<ASC_KEY_ID>.p8 in
+    # ~/.appstoreconnect/private_keys or ./private_keys; no path flag needed.
+    xcodebuild -exportArchive \
+      -archivePath .build/PersonalFinanceTraker.xcarchive \
+      -exportOptionsPlist scripts/ExportOptions.plist \
+      -exportPath .build/export \
+      -authenticationKeyID "$ASC_KEY_ID" \
+      -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+      -allowProvisioningUpdates "$@"
+    ;;
+
+  bundle-id)   # internal helper: print PRODUCT_BUNDLE_IDENTIFIER, used by release-notes/assign-testers
+    xcodebuild -showBuildSettings -project "$PROJECT" -scheme "$SCHEME" 2>/dev/null \
+      | awk -F' = ' '/^ *PRODUCT_BUNDLE_IDENTIFIER =/{print $2; exit}'
+    ;;
+
+  marketing-version)   # internal helper: print MARKETING_VERSION
+    xcodebuild -showBuildSettings -project "$PROJECT" -scheme "$SCHEME" 2>/dev/null \
+      | awk -F' = ' '/^ *MARKETING_VERSION =/{print $2; exit}'
+    ;;
+
+  release-notes)   # send CHANGELOG.md's Unreleased section as TestFlight "What to Test", then archive it
+    shift
+    : "${ASC_KEY_ID:?set in .env / .env.default}"
+    : "${ASC_ISSUER_ID:?set in .env / .env.default}"
+    notes=$(awk '/^## Unreleased/{flag=1; next} /^## /{flag=0} flag' CHANGELOG.md | sed '/^$/d')
+    if [ -z "$notes" ]; then
+      echo "xcb: CHANGELOG.md has no Unreleased entries, skipping release notes" >&2
+    else
+      mkdir -p .build
+      printf '%s\n' "$notes" > .build/release_notes.txt
+      python3 scripts/asc_api.py release-notes \
+        "$("$0" bundle-id)" "$("$0" marketing-version)" "$(cat scripts/BUILD_NUMBER)" \
+        < .build/release_notes.txt
+      # Move the Unreleased bullets under a dated heading for this build, leave Unreleased empty.
+      # Passed via env var/file, never interpolated into the python source — a changelog
+      # bullet containing a quote character must not be able to break this.
+      BUILD_NUM="$(cat scripts/BUILD_NUMBER)" python3 - <<'PYEOF'
+import os
+from datetime import date
+
+build = os.environ["BUILD_NUM"]
+notes = open(".build/release_notes.txt").read().rstrip("\n")
+path = "CHANGELOG.md"
+text = open(path).read()
+old_block = "## Unreleased\n" + notes + "\n"
+new_block = f"## Unreleased\n\n## {build} — {date.today().isoformat()}\n{notes}\n"
+if old_block in text:
+    text = text.replace(old_block, new_block, 1)
+    open(path, "w").write(text)
+else:
+    print("xcb: could not locate the exact Unreleased block to archive; CHANGELOG.md left unchanged")
+PYEOF
+    fi
+    ;;
+
+  assign-testers)   # add the last-exported build to a TestFlight beta group
+    shift
+    group="${1:?usage: scripts/xcb assign-testers <beta-group-name>}"
+    : "${ASC_KEY_ID:?set in .env / .env.default}"
+    : "${ASC_ISSUER_ID:?set in .env / .env.default}"
+    python3 scripts/asc_api.py assign-testers \
+      "$("$0" bundle-id)" "$("$0" marketing-version)" "$(cat scripts/BUILD_NUMBER)" "$group"
+    ;;
+
+  release)   # test -> analyze -> archive -> export -> release-notes -> (optional) assign-testers <group>
+    shift
+    group="${1:-}"
+    "$0" test && "$0" analyze && "$0" archive && "$0" export && "$0" release-notes
+    [ -n "$group" ] && "$0" assign-testers "$group"
+    ;;
+
   clean-sims)
     delete_clones
     ;;
@@ -118,9 +234,12 @@ case "${1:-}" in
     ;;
 
   *)
-    echo "usage: scripts/xcb {build|test|clean-sims|delete-sim|which-sim} [extra xcodebuild args]" >&2
+    echo "usage: scripts/xcb {build|test|analyze|archive|export|release-notes|assign-testers|release|clean-sims|delete-sim|which-sim} [extra xcodebuild args]" >&2
     echo "  scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests" >&2
-    echo "  PFT_SIM_UDID=<udid> scripts/xcb test   # target a specific simulator" >&2
+    echo "  PFT_SIM_UDID=<udid> scripts/xcb test    # target a specific simulator" >&2
+    echo "  scripts/xcb release [beta-group]         # test + analyze + archive + export + release-notes, optionally assign-testers" >&2
+    echo "  scripts/xcb release-notes                # send CHANGELOG.md's Unreleased section as TestFlight notes" >&2
+    echo "  scripts/xcb assign-testers <beta-group>  # add the last export to a TestFlight group" >&2
     exit 2
     ;;
 esac

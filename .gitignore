@@ -68,3 +68,9 @@ graphify-out/**/cost.json
 graphify-out/cache/
 .claude/worktrees/
 .worktrees/
+
+# App Store Connect API key (see scripts/xcb export)
+private_keys/
+*.p8
+.env
+__pycache__/
