@@ -132,6 +132,7 @@ struct IPadRootView: View {
             }
         }
         .navigationTitle("Finance")
+        .navigationSplitViewColumnWidth(min: 200, ideal: 260, max: 320)
         .scrollContentBackground(.hidden)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

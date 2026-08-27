@@ -61,6 +61,8 @@ struct IPadLedgerTable: View {
     private var ledger: some View {
         table
             .tableStyle(.inset)
+        .frame(maxWidth: .infinity)
+        .clipped()
         .scrollContentBackground(.hidden)
         .contextMenu(forSelectionType: TransactionSnapshot.ID.self) { ids in
             contextMenu(for: ids)
@@ -143,17 +145,22 @@ struct IPadLedgerTable: View {
     /// Split out from `body`, and every cell extracted into its own small view, because the
     /// combined `Table` + four columns + modifier chain repeatedly blew the type-checker's
     /// time budget as one expression.
+    /// Column minimums have to stay small enough that their sum — plus the selection column and
+    /// the inset style's padding — fits the detail column of a *portrait* iPad with the sidebar
+    /// shown (~420pt on the smaller devices). When they don't, the Table lays out wider than its
+    /// column and paints leftward underneath the sidebar instead of compressing (issue #51).
+    /// Current sum is ~344pt; keep it under ~380 if a column is ever added.
     private var table: some View {
         Table(rows, selection: selection, sortOrder: $sortOrder) {
             TableColumn("Date", value: \.timestamp) { item in
                 DateCell(date: item.timestamp)
             }
-            .width(min: 80, ideal: 110, max: 150)
+            .width(min: 64, ideal: 100, max: 150)
 
             TableColumn("Description", value: \.note) { item in
                 DescriptionCell(note: item.note, category: item.category)
             }
-            .width(min: 160)
+            .width(min: 100)
 
             TableColumn("Category", value: \.category) { item in
                 CategoryCell(
@@ -162,12 +169,12 @@ struct IPadLedgerTable: View {
                     colorToken: item.categoryColorToken
                 )
             }
-            .width(min: 140, ideal: 180)
+            .width(min: 90, ideal: 160)
 
             TableColumn("Amount", value: \.amount) { item in
                 AmountCell(amount: item.amount, currencyCode: item.currencyCode)
             }
-            .width(min: 110, ideal: 140, max: 200)
+            .width(min: 90, ideal: 130, max: 200)
         }
     }
 
