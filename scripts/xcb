@@ -3,13 +3,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# .env.default is checked in; .env is gitignored, for local overrides. Both
-# ship with empty placeholders, so stash anything the caller already exported
-# and restore it after — otherwise sourcing an empty ASC_KEY_ID= would clobber it.
+# .env is gitignored, local-only — set ASC_KEY_ID/ASC_ISSUER_ID there. Stash
+# anything the caller already exported and restore it after, so sourcing an
+# empty value from .env can't clobber it.
 _ASC_KEY_ID="${ASC_KEY_ID:-}"
 _ASC_ISSUER_ID="${ASC_ISSUER_ID:-}"
 set -a
-[ -f .env.default ] && source .env.default
 [ -f .env ] && source .env
 set +a
 [ -n "$_ASC_KEY_ID" ] && ASC_KEY_ID="$_ASC_KEY_ID"
