@@ -26,6 +26,17 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
 - For every new or materially changed user-facing view, use `$swiftui-pro` before implementation, inspect the two closest existing screens/components, and follow its `references/design.md` preflight and quality gate.
 - Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
 
+## Changelog
+
+Before opening a PR for a user-facing feature or fix, append one bullet to the
+`## Unreleased` section of `CHANGELOG.md`, in plain language a tester would
+understand (what changed for them, not implementation detail). Skip it only
+for changes with no visible effect (refactors, tooling, tests).
+
+`scripts/xcb release-notes` sends that section to TestFlight as "What to
+Test" and archives it under the shipped build number — the changelog is the
+only source for that, so a skipped bullet means testers get no notes.
+
 ## Build And Test
 
 Use the `xcodebuild` CLI by default. The Xcode MCP hangs forever on a crashed test, requires Xcode open and connected, and silently builds the wrong worktree when `tabIdentifier` gets reassigned.

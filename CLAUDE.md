@@ -12,6 +12,17 @@ This repository is configured for both Claude Code and Codex.
 
 For every new or materially changed user-facing view, use `$swiftui-pro` before implementation. Inspect the two closest existing screens/components and follow its `references/design.md` preflight and quality gate. Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
 
+## Changelog
+
+Before opening a PR for a user-facing feature or fix, append one bullet to the
+`## Unreleased` section of `CHANGELOG.md`, in plain language a tester would
+understand (what changed for them, not implementation detail). Skip it only
+for changes with no visible effect (refactors, tooling, tests).
+
+`scripts/xcb release-notes` sends that section to TestFlight as "What to
+Test" and archives it under the shipped build number — the changelog is the
+only source for that, so a skipped bullet means testers get no notes.
+
 ## Build & Development Commands
 
 **Use the `xcodebuild` CLI. It is the default for agents.** The Xcode MCP is optional and has three failure modes that cost real time:
