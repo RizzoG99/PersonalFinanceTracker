@@ -294,7 +294,7 @@ struct EditAddTransactionView: View {
                 }
                 let scan = ReceiptParser.parse(lines)
                 let learnedMerchants = (try? await viewModel.repo.fetchMerchantCategoryMappings()) ?? [:]
-                viewModel.applyReceiptScan(scan, learnedMerchants: learnedMerchants)
+                await viewModel.applyReceiptScan(scan, learnedMerchants: learnedMerchants)
             } catch {
                 // Same reasoning as the capture-failure case above: a raw Vision/AVFoundation
                 // error isn't something a user reading an alert can act on.

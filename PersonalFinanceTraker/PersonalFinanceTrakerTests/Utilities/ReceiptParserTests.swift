@@ -241,6 +241,67 @@ struct ReceiptParserTests {
         "27/08/26 20:34",
     ]
 
+    /// BARRUECO S.R.L. — the *actual* Vision console output captured off a real device (2026-08-28),
+    /// not a hand-transcribed guess (an earlier guess at this same receipt's text happened to already
+    /// pass, which taught nothing about the real miss). Vision returned the whole label column first,
+    /// then the whole price column, six lines apart — worse than the 1-2-line split
+    /// `camillaBarReceipt` covers, and the reason `amountsByColumnReconstruction` exists. Amounts also
+    /// use "." as the decimal mark here (an OCR/font read, not "," as printed) — already handled by
+    /// `AmountParser`'s existing single-alternate-separator normalization, not something added for
+    /// this fixture.
+    private static let barruecoReceipt = [
+        "BARRUECO S.R.L.",
+        "VIA CANTU'. 46",
+        "73050 SANTA CATERINA",
+        "NARDO•",
+        "LE:",
+        "P. IVA 0338706//53",
+        "DOCUMENTO COMMERCIALE",
+        "di vendita o prestazione",
+        "DESCRIZIONE",
+        "P.F. ICONICA",
+        "SUBTOTALE",
+        "TOTALE COMPLESSIVO",
+        "DI CUI IVA",
+        "PAGAMENTO ELETTRONICO",
+        "IMPORTO PAGATO",
+        "PREZZO(€) IVA",
+        "13.00 A",
+        "13.00",
+        "13.00",
+        "1.18",
+        "13.00",
+        "13.00",
+        "A: IVA 10.00%",
+        "25/08/26 19:25",
+        "DOC. 0983-0009",
+        "RT",
+        "96MKR005958",
+        "RIF N.9",
+        "ASPORTO",
+        "42",
+    ]
+
+    @Test func columnSplitBarruecoReceiptFindsTheTotal() {
+        let scan = ReceiptParser.parse(Self.barruecoReceipt, now: Self.now)
+        #expect(scan.total == 13.00)
+        #expect(scan.totalCandidates.isEmpty)
+        #expect(scan.merchant == "Barrueco S.R.L")
+    }
+
+    @Test func columnSplitBarruecoReceiptExtractsAnAddressForCategoryLookup() {
+        // Feeds MerchantCategoryLookup's MapKit search — never the device's own location.
+        let scan = ReceiptParser.parse(Self.barruecoReceipt, now: Self.now)
+        #expect(scan.merchantAddress == "VIA CANTU'. 46, 73050 SANTA CATERINA")
+    }
+
+    @Test func columnSplitBarruecoReceiptFindsTheRecentDate() {
+        let scan = ReceiptParser.parse(Self.barruecoReceipt, now: Self.now)
+        let expected = DateComponents(calendar: .init(identifier: .gregorian), year: 2026, month: 8, day: 25).date!
+        #expect(scan.date == expected)
+        #expect(scan.dateWasClamped == false)
+    }
+
     @Test func extractsTotalWhenAllAmountsAgree() {
         let scan = ReceiptParser.parse(Self.motorradReceipt, now: Self.now)
         #expect(scan.total == 935.00)

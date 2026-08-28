@@ -12,6 +12,10 @@ number that shipped it.
 - Add Transaction: the first time you open this screen, a tooltip now points out the new "Scan receipt" button.
 - Scan receipt: if camera access was previously denied, tapping "Take Photo" now shows a clear alert with a Settings link instead of a cryptic error after the fact.
 - Scan receipt: capture/recognition failures now always show the plain "couldn't read this receipt" message instead of a raw technical error code.
+- Scan receipt: replaced the repeated "Scanned — check before saving" note under every filled-in field with a single dismissible banner at the top of the form.
+- Scan receipt: fixed another split-column layout where the amount was missed (the label and price columns came back as two whole separate blocks rather than one line apart).
+- Scan receipt: category guessing now also checks Apple Maps for the merchant's business type (using the address printed on the receipt, not your location) when its name alone doesn't give it away — e.g. a restaurant with no obvious food word in its name.
+- Scan receipt: fixed sideways/rotated photos (e.g. picked from your library in landscape) reading as unreadable — they're now straightened before recognition, same as an upright photo.
 
 ## 77 — 2026-08-28
 - iPad: Activity's filter chips and transaction table now resize to fit alongside the sidebar instead of being hidden behind it.

@@ -23,6 +23,10 @@ struct ReceiptScan: Equatable {
     /// unparseable, or outside the sane window.
     var dateWasClamped: Bool = false
     var merchant: String?
+    /// The merchant's street + postal/city line, when the receipt printed both — used only to
+    /// narrow a `MerchantCategoryLookup` MapKit search to the right branch/city (never the
+    /// device's own location, so no location permission is involved). Never shown to the user.
+    var merchantAddress: String?
     /// RESO / RIMBORSO / STORNO detected — a refund, not a purchase.
     var isRefund: Bool = false
 }
@@ -50,6 +54,12 @@ enum ReceiptParser {
         // processor printed it, so this covers issuers beyond the ones named explicitly above.
         "N.VERDE", "NUMERO VERDE",
     ]
+    /// Street-line prefixes — reused to spot the address for `merchantAddress(in:)`, not just to
+    /// exclude those lines from the merchant name above.
+    private static let streetPrefixes = ["VIA ", "VIALE ", "CORSO ", "PIAZZA ", "PIAZZETTA ", "LUNGOMARE "]
+    // Italian postal codes (CAP) are always 5 digits, typically opening the city line, e.g.
+    // "73050 SANTA CATERINA".
+    private static let postalCodeRegex = try! NSRegularExpression(pattern: #"^\d{5}\b"#)
 
     // Year alternative order matters: NSRegularExpression tries alternatives left-to-right, not
     // longest-match, so `\d{4}` must come first or "25-07-2026" would match "20" as the year.
@@ -63,7 +73,19 @@ enum ReceiptParser {
     static func parse(_ lines: [String], now: Date = .now) -> ReceiptScan {
         var scan = ReceiptScan()
 
-        let totalMatches = amounts(in: lines, matching: totalKeywords, excluding: decoyKeywords)
+        var totalMatches = amounts(in: lines, matching: totalKeywords, excluding: decoyKeywords)
+        // Last resort, confirmed against a real receipt's actual Vision output (2026-08-28,
+        // Barrueco S.R.L.): sometimes the whole label column comes back first, then the whole
+        // price column, as two separate blocks — not just one line apart, which the lookahead in
+        // `amounts(in:)` already covers. Only tried when direct/lookahead matching found nothing.
+        if totalMatches.isEmpty {
+            totalMatches = amountsByColumnReconstruction(in: lines).compactMap { row in
+                let upper = row.label.uppercased()
+                guard totalKeywords.contains(where: { upper.contains($0) }) else { return nil }
+                guard !decoyKeywords.contains(where: { upper.contains($0) }) else { return nil }
+                return row.amount
+            }
+        }
         let distinctTotals = Set(totalMatches)
         if distinctTotals.count == 1 {
             scan.total = totalMatches.first
@@ -80,6 +102,7 @@ enum ReceiptParser {
         scan.dateWasClamped = clamped
 
         scan.merchant = merchantName(in: lines)
+        scan.merchantAddress = merchantAddress(in: lines)
 
         return scan
     }
@@ -113,16 +136,52 @@ enum ReceiptParser {
         return AmountParser.parse(String(line[matchRange]), locale: itLocale)
     }
 
-    /// A line that, once trimmed, is nothing but a currency amount (an optional leading "€" and
-    /// no other label text) — the shape a split price column takes on its own line.
+    /// A line that, once trimmed, is nothing but a currency amount (an optional leading "€", and an
+    /// optional trailing single-letter VAT class code like "13.00 A" — printed beside itemized
+    /// prices on real receipts) — the shape a split price column takes on its own line.
     private static func bareAmount(in line: String) -> Decimal? {
-        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        var trimmed = line.trimmingCharacters(in: .whitespaces)
             .trimmingCharacters(in: CharacterSet(charactersIn: "€$"))
             .trimmingCharacters(in: .whitespaces)
+        if let last = trimmed.last, last.isLetter {
+            let withoutSuffix = trimmed.dropLast().trimmingCharacters(in: .whitespaces)
+            if !withoutSuffix.isEmpty { trimmed = withoutSuffix }
+        }
         let range = NSRange(trimmed.startIndex..., in: trimmed)
         guard let match = amountRegex.firstMatch(in: trimmed, range: range),
               match.range(at: 1) == NSRange(trimmed.startIndex..., in: trimmed) else { return nil }
         return firstAmount(in: trimmed)
+    }
+
+    /// Recovers row/price pairs when Vision returns the entire label column, then the entire price
+    /// column, as two separate blocks (confirmed on a real receipt, 2026-08-28) — the label lines
+    /// right after the "DESCRIZIONE" header (skipping the "PREZZO(€) IVA" column-header noise that
+    /// tends to land among them) are zipped, by position, against the contiguous run of bare-amount
+    /// lines that follows. Only trustworthy when both sides have the exact same count — anything
+    /// else means the assumption doesn't hold for this receipt, so it's dropped rather than guessed.
+    private static func amountsByColumnReconstruction(in lines: [String]) -> [(label: String, amount: Decimal)] {
+        guard let headerIndex = lines.firstIndex(where: { $0.uppercased().contains("DESCRIZIONE") }) else {
+            return []
+        }
+
+        var index = lines.index(after: headerIndex)
+        var labels: [String] = []
+        while index < lines.count, bareAmount(in: lines[index]) == nil {
+            let trimmed = lines[index].trimmingCharacters(in: .whitespaces)
+            if !trimmed.isEmpty, !trimmed.uppercased().contains("PREZZO") {
+                labels.append(lines[index])
+            }
+            index += 1
+        }
+
+        var amounts: [Decimal] = []
+        while index < lines.count, let amount = bareAmount(in: lines[index]) {
+            amounts.append(amount)
+            index += 1
+        }
+
+        guard !labels.isEmpty, labels.count == amounts.count else { return [] }
+        return Array(zip(labels, amounts))
     }
 
     /// Accepts only dates within a sane window (not in the future, not absurdly old); anything else
@@ -163,6 +222,23 @@ enum ReceiptParser {
             return clean(merchantLine: trimmed)
         }
         return nil
+    }
+
+    /// The street line and postal/city line, joined, when both are present — e.g. "VIA CANTU'. 46,
+    /// 73050 SANTA CATERINA". Either alone (or neither) is common too; a street with no city, or a
+    /// city with no street, still geocodes reasonably, so this is best-effort, not all-or-nothing.
+    private static func merchantAddress(in lines: [String]) -> String? {
+        let street = lines.first { line in
+            let upper = line.uppercased()
+            return streetPrefixes.contains { upper.contains($0) }
+        }
+        let cityLine = lines.first { line in
+            let range = NSRange(line.startIndex..., in: line)
+            return postalCodeRegex.firstMatch(in: line, range: range) != nil
+        }
+        let parts = [street, cityLine].compactMap { $0?.trimmingCharacters(in: .whitespaces) }
+        guard !parts.isEmpty else { return nil }
+        return parts.joined(separator: ", ")
     }
 
     private static func clean(merchantLine line: String) -> String {

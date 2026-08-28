@@ -3,8 +3,10 @@
 //  PersonalFinanceTraker
 //
 //  Category is a required field, so a scan must always produce one — even a wrong one the user
-//  corrects, since correction is exactly what teaches the learned tier. Three tiers, cheapest and
-//  most-trusted first. See docs/features/2026-08-27-scan-receipt-autofill.md.
+//  corrects, since correction is exactly what teaches the learned tier. Four tiers, cheapest and
+//  most-trusted first — the MapKit lookup only runs when the first two find nothing, so a scan
+//  with an obvious merchant (a supermarket chain, say) never pays for a network round trip.
+//  See docs/features/2026-08-27-scan-receipt-autofill.md.
 //
 
 import Foundation
@@ -29,16 +31,19 @@ enum ReceiptCategoryInferrer {
 
     /// - Parameters:
     ///   - merchant: the parser's cleaned merchant guess, if any.
+    ///   - merchantAddress: the receipt's own printed street/city line, if present — passed through
+    ///     to `MerchantCategoryLookup` to narrow its MapKit search; never the device's location.
     ///   - learnedMerchants: normalized-merchant → category, built once from `MerchantCategoryMapping` rows.
     ///   - usage: transaction count per category, already computed by the view model for the chip picker —
     ///     reused here as the last-resort "most used" fallback.
     static func infer(
         merchant: String?,
+        merchantAddress: String?,
         transactionType: TransactionType,
         categories: [CategorySnapshot],
         learnedMerchants: [String: UUID],
         usage: [PersistentIdentifier: Int]
-    ) -> CategorySnapshot? {
+    ) async -> CategorySnapshot? {
         let pool = CategoryAutoMapper.pool(for: transactionType, in: categories)
         guard !pool.isEmpty else { return nil }
 
@@ -55,6 +60,14 @@ enum ReceiptCategoryInferrer {
                let matched = CategoryAutoMapper.bestMatch(for: hit.keyword, in: pool) {
                 return matched
             }
+        }
+
+        // A network round trip, only reached when the merchant's name alone gave nothing to go
+        // on (e.g. "Barrueco S.R.L." — a real restaurant with no generic word in its name).
+        if let merchant,
+           let hint = await MerchantCategoryLookup.lookupKeyword(merchant: merchant, address: merchantAddress),
+           let matched = CategoryAutoMapper.bestMatch(for: hint, in: pool) {
+            return matched
         }
 
         // Last resort: most-used category for this type, so the required field is never empty.

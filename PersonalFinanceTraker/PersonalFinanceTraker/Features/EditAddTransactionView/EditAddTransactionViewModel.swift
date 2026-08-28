@@ -59,6 +59,9 @@ final class EditAddTransactionViewModel {
     var isDateFromScan: Bool { scanAppliedDate != nil && scanAppliedDate == date }
     var isCategoryFromScan: Bool { scanAppliedCategoryId != nil && scanAppliedCategoryId == selectedCategory?.persistentId }
     var isNameFromScan: Bool { scanAppliedName != nil && scanAppliedName == transactionName }
+    /// True while any field still shows what the last scan wrote — drives the one-time "review
+    /// before saving" banner instead of repeating that caption under every affected field.
+    var hasScannedFields: Bool { isAmountFromScan || isDateFromScan || isCategoryFromScan || isNameFromScan }
 
     let editingItem: TransactionSnapshot?
     let repo: any ITransactionRepository
@@ -204,7 +207,7 @@ final class EditAddTransactionViewModel {
     /// *or* still equal to what an earlier scan set — see the `scanApplied*`/`is*FromScan`
     /// properties above for why that single equality check covers both "untouched" and "rescan
     /// replaces its own prior guess" without ever touching a hand-typed value.
-    func applyReceiptScan(_ scan: ReceiptScan, learnedMerchants: [String: UUID]) {
+    func applyReceiptScan(_ scan: ReceiptScan, learnedMerchants: [String: UUID]) async {
         var filled: [String] = []
         var notes: [String] = []
         receiptTotalCandidates = []
@@ -243,8 +246,9 @@ final class EditAddTransactionViewModel {
 
         let categoryEditable = selectedCategory == nil || isCategoryFromScan
         if categoryEditable, transactionType != .transfer {
-            let inferred = ReceiptCategoryInferrer.infer(
+            let inferred = await ReceiptCategoryInferrer.infer(
                 merchant: scan.merchant,
+                merchantAddress: scan.merchantAddress,
                 transactionType: transactionType,
                 categories: availableCategories,
                 learnedMerchants: learnedMerchants,

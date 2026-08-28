@@ -7908,6 +7908,9 @@
         }
       }
     },
+    "Some fields were filled from your receipt — review before saving." : {
+
+    },
     "Specify how to interpret amount signs when no Type column is mapped." : {
       "extractionState" : "manual",
       "localizations" : {
