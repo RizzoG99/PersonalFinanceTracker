@@ -81,9 +81,22 @@ delete_clones() {
   done
 }
 
+# release-notes/assign-testers poll ASC for scripts/BUILD_NUMBER by build number
+# alone — if `export` never actually uploaded it (auth hiccup, dropped network,
+# never run this session), that poll can't tell "still processing" from "will
+# never show up" and just burns the full 30min timeout. Fail fast instead.
+require_exported() {
+  local build; build=$(cat scripts/BUILD_NUMBER)
+  if [ "$(cat .build/last_export_build 2>/dev/null)" != "$build" ]; then
+    echo "xcb: build $build has no recorded successful 'scripts/xcb export' in this worktree — run export first" >&2
+    exit 1
+  fi
+}
+
 case "${1:-}" in
   build)
     shift
+    echo "xcb: building..." >&2
     xcodebuild build \
       -project "$PROJECT" -scheme "$SCHEME" \
       -destination "id=$(resolve_sim)" \
@@ -92,6 +105,7 @@ case "${1:-}" in
 
   test)
     shift
+    echo "xcb: running tests (this can take a few minutes)..." >&2
     trap delete_clones EXIT
     rm -rf "$RESULT"   # xcodebuild refuses to overwrite an existing bundle
     mkdir -p .build    # the log redirect below needs it on a fresh worktree
@@ -116,6 +130,7 @@ case "${1:-}" in
 
   analyze)
     shift
+    echo "xcb: static analysis..." >&2
     xcodebuild analyze \
       -project "$PROJECT" -scheme "$SCHEME" \
       -destination "id=$(resolve_sim)" \
@@ -133,6 +148,7 @@ case "${1:-}" in
       CURRENT_PROJECT_VERSION=$(($(cat scripts/BUILD_NUMBER) + 1))
       echo "$CURRENT_PROJECT_VERSION" > scripts/BUILD_NUMBER
     fi
+    echo "xcb: archiving build $CURRENT_PROJECT_VERSION (silent, can take several minutes)..." >&2
     xcodebuild archive \
       -project "$PROJECT" -scheme "$SCHEME" \
       -archivePath .build/PersonalFinanceTraker.xcarchive \
@@ -140,12 +156,14 @@ case "${1:-}" in
       -derivedDataPath .build \
       CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION" \
       -allowProvisioningUpdates -quiet "$@"
+    echo "xcb: archive done" >&2
     ;;
 
   export)   # archives straight to TestFlight via an App Store Connect API key
     shift
     : "${ASC_KEY_ID:?set to the API Key ID (App Store Connect > Users and Access > Integrations)}"
     : "${ASC_ISSUER_ID:?set to the Issuer ID shown on the same page}"
+    echo "xcb: exporting + uploading to App Store Connect..." >&2
     # xcodebuild finds the .p8 itself if it's named AuthKey_<ASC_KEY_ID>.p8 in
     # ~/.appstoreconnect/private_keys or ./private_keys; no path flag needed.
     xcodebuild -exportArchive \
@@ -155,6 +173,12 @@ case "${1:-}" in
       -authenticationKeyID "$ASC_KEY_ID" \
       -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
       -allowProvisioningUpdates "$@"
+    # destination=upload leaves nothing under .build/export to check afterwards
+    # (xcodebuild uploads straight from a temp dir), so record the build number
+    # this export actually reported success for. release-notes/assign-testers
+    # check it before polling ASC, instead of waiting 30min for a build that
+    # was never sent.
+    cat scripts/BUILD_NUMBER > .build/last_export_build
     ;;
 
   bundle-id)   # internal helper: print PRODUCT_BUNDLE_IDENTIFIER, used by release-notes/assign-testers
@@ -171,6 +195,8 @@ case "${1:-}" in
     shift
     : "${ASC_KEY_ID:?set in .env / .env.default}"
     : "${ASC_ISSUER_ID:?set in .env / .env.default}"
+    require_exported
+    echo "xcb: waiting for App Store Connect to finish processing the build, then setting release notes..." >&2
     notes=$(awk '/^## Unreleased/{flag=1; next} /^## /{flag=0} flag' CHANGELOG.md | sed '/^$/d')
     if [ -z "$notes" ]; then
       echo "xcb: CHANGELOG.md has no Unreleased entries, skipping release notes" >&2
@@ -207,6 +233,8 @@ PYEOF
     group="${1:?usage: scripts/xcb assign-testers <beta-group-name>}"
     : "${ASC_KEY_ID:?set in .env / .env.default}"
     : "${ASC_ISSUER_ID:?set in .env / .env.default}"
+    require_exported
+    echo "xcb: assigning build to beta group '$group'..." >&2
     python3 scripts/asc_api.py assign-testers \
       "$("$0" bundle-id)" "$("$0" marketing-version)" "$(cat scripts/BUILD_NUMBER)" "$group"
     ;;
@@ -214,8 +242,10 @@ PYEOF
   release)   # test -> analyze -> archive -> export -> release-notes -> (optional) assign-testers <group>
     shift
     group="${1:-}"
+    echo "xcb: release starting — test, analyze, archive, export, release-notes$( [ -n "$group" ] && echo ", assign-testers")" >&2
     "$0" test && "$0" analyze && "$0" archive && "$0" export && "$0" release-notes
     [ -n "$group" ] && "$0" assign-testers "$group"
+    echo "xcb: release done" >&2
     ;;
 
   clean-sims)
