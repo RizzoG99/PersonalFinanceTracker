@@ -302,6 +302,112 @@ struct ReceiptParserTests {
         #expect(scan.dateWasClamped == false)
     }
 
+    // Real Vision output (2026-08-28) — column-split like Barrueco, but with two extra wrinkles
+    // that receipt didn't have: the boilerplate "DOCUMENTO COMMERCIALE"/"di vendita o prestazione"
+    // lines land AFTER the label column instead of before it, and a discount row ("- 1.28", with
+    // the space Vision inserts after the dash) and an item-count row ("NUMERO PEZZI" / "2", a
+    // count rather than a price) both sit in the mix.
+    private static let lAutenticaReceipt = [
+        "L'AUTENTICA",
+        "di MICHALI GIOVANNI",
+        "Via P. Togliatti. 29 - Tel. 0836/315585",
+        "73040 ARADEO (LE)",
+        "C.F.: HGHCNN74E30A350X",
+        "P. IVA 04951370750",
+        "DESCRIZIONE",
+        "REP. SALUMERIA",
+        "VIRTUAL",
+        "SUBTOTALE",
+        "SCONTO 15 DIPENDENTI",
+        "SUBTOTALE",
+        "TOTALE COMPLESSIVO",
+        "DI CUI IVA",
+        "PAGAMENTO CONTANTE",
+        "IMPORTO PAGATO",
+        "NUMERO PEZZI",
+        "DOCUMENTO COMMERCIALE",
+        "di vendita o prestazione",
+        "PREZZO(E) IVA",
+        "7.00 L",
+        "1.50 L",
+        "8,50",
+        "- 1.28",
+        "7.22",
+        "7.22",
+        "0,00",
+        "7,22",
+        "7.22",
+        "2",
+        "L: *V! Ventilazione IVA",
+        "NUMERO PEZZI",
+        "CASSA #1",
+        "28/08/26 13:27",
+        "RT",
+        "2",
+        "CASSA",
+        "96IP3000885",
+        "DOC. 0554-0067",
+    ]
+
+    @Test func columnSplitLAutenticaReceiptFindsTheTotalDespiteADiscountRowAndTrailingBoilerplate() {
+        let scan = ReceiptParser.parse(Self.lAutenticaReceipt, now: Self.now)
+        #expect(scan.total == 7.22)
+        #expect(scan.totalCandidates.isEmpty)
+    }
+
+    // Real Vision output (2026-08-28) — a second scan of the *same physical receipt* as
+    // `lAutenticaReceipt`, but Vision returned the two columns in the opposite order this time:
+    // the price column prints entirely BEFORE "DESCRIZIONE" (right after "PREZZO(E) IVA"), and the
+    // label column follows the header instead of preceding it. Also carries a new OCR misread not
+    // seen on the first scan: "1.50!" — a VAT class letter recognized as punctuation, not a letter.
+    private static let lAutenticaReceiptReversedColumns = [
+        "L'AUTENTICH",
+        "di MICHALI GIOVANNI",
+        "Via P. Togliatti. 29 - Tel. 0836/315585",
+        "73040 ARADEO (LE)",
+        "C.F.: HGHGNN74E30A350X",
+        "P. IVA 04951370750",
+        "DOCUMENTO COMMERCIALE",
+        "di vendita o prestazione",
+        "PREZZO(E) IVA",
+        "7.00 L",
+        "1.50!",
+        "8.50",
+        "-1.28",
+        "7.22",
+        "7.22",
+        "0,00",
+        "7,22",
+        "7.22",
+        "2",
+        "DESCRIZIONE",
+        "REP. SALUMERIA",
+        "VIRTUAL",
+        "SUBTOTALE",
+        "SCONTO 15 DIPENDENTI",
+        "SUBTOTALE",
+        "TOTALE COMPLESSIVO",
+        "DI CUI IVA",
+        "PAGAMENTO CONTANTE",
+        "IMPORTO PAGATO",
+        "NUMERO PEZZI",
+        "L: *VI Ventilazione IVA",
+        "NUMERO PEZZI",
+        "CASSA #1",
+        "23/08/26 13:27",
+        "RT",
+        "2",
+        "CASSA",
+        "DOC. 0554-0067",
+        "96IP3000885",
+    ]
+
+    @Test func columnSplitLAutenticaReceiptFindsTheTotalEvenWhenThePriceColumnPrintsBeforeTheHeader() {
+        let scan = ReceiptParser.parse(Self.lAutenticaReceiptReversedColumns, now: Self.now)
+        #expect(scan.total == 7.22)
+        #expect(scan.totalCandidates.isEmpty)
+    }
+
     @Test func extractsTotalWhenAllAmountsAgree() {
         let scan = ReceiptParser.parse(Self.motorradReceipt, now: Self.now)
         #expect(scan.total == 935.00)
@@ -461,6 +567,157 @@ struct ReceiptParserTests {
         #expect(scan.total == 15.80)
         #expect(scan.totalCandidates.isEmpty)
         #expect(scan.merchant == "Camilla-Nu Bar")
+    }
+
+    // MARK: - Vision table rows (RecognizeDocumentsRequest)
+
+    @Test func visionTableRowsWinOverTheLineHeuristics() {
+        // Flat lines alone leave this ambiguous (two bare amounts, split from their labels), but
+        // the rows Vision's own layout analysis paired up resolve it with no column guessing.
+        let document = ReceiptDocument(
+            lines: ["BAR CENTRALE", "TOTALE COMPLESSIVO", "CONTANTI", "20,00", "13,00"],
+            rows: [
+                ReceiptRow(label: "CAFFE", amount: 1.20),
+                ReceiptRow(label: "TOTALE COMPLESSIVO", amount: 13.00),
+                ReceiptRow(label: "CONTANTI", amount: 20.00),
+            ]
+        )
+        let scan = ReceiptParser.parse(document, now: Self.now)
+        #expect(scan.total == 13.00)
+        #expect(scan.totalCandidates.isEmpty)
+    }
+
+    @Test func fallsBackToLineHeuristicsWhenVisionFoundNoTable() {
+        let document = ReceiptDocument(lines: Self.barruecoReceipt)
+        #expect(ReceiptParser.parse(document, now: Self.now).total == 13.00)
+    }
+
+    // MARK: - Data detector results (moneyAmount / calendarEvent)
+
+    @Test func detectedAmountRescuesATotalTheRegexCannotRead() {
+        // "TOTALE 13.-" isn't the `d,dd` shape the amount regex requires, but the data detector
+        // reads it as money and reports it against that line.
+        let document = ReceiptDocument(
+            lines: ["NEGOZIO", "TOTALE COMPLESSIVO 13.-"],
+            detectedAmounts: [1: 13.00]
+        )
+        let scan = ReceiptParser.parse(document, now: Self.now)
+        #expect(scan.total == 13.00)
+    }
+
+    @Test func regexStillWinsOverTheDetectorOnTheSameLine() {
+        let document = ReceiptDocument(
+            lines: ["NEGOZIO", "TOTALE COMPLESSIVO 13,00"],
+            detectedAmounts: [1: 99.00]
+        )
+        #expect(ReceiptParser.parse(document, now: Self.now).total == 13.00)
+    }
+
+    @Test func detectedDateIsUsedOnlyWhenTheRegexFindsNothing() {
+        let calendar = Calendar(identifier: .gregorian)
+        let detected = DateComponents(calendar: calendar, year: 2026, month: 8, day: 20).date!
+        let document = ReceiptDocument(lines: ["NEGOZIO", "TOTALE 5,00"], detectedDates: [detected])
+        let scan = ReceiptParser.parse(document, now: Self.now)
+        #expect(scan.date == detected)
+        #expect(scan.dateWasClamped == false)
+    }
+
+    @Test func printedDateOutranksTheDetectedOne() {
+        let calendar = Calendar(identifier: .gregorian)
+        let printed = DateComponents(calendar: calendar, year: 2026, month: 8, day: 25).date!
+        let detectedToday = Self.now
+        let document = ReceiptDocument(
+            lines: ["NEGOZIO", "25/08/26 19:25", "TOTALE 5,00"],
+            detectedDates: [detectedToday]
+        )
+        #expect(ReceiptParser.parse(document, now: Self.now).date == printed)
+    }
+
+    @Test func detectedDateOutsideTheSaneWindowStillClamps() {
+        let future = Self.now.addingTimeInterval(60 * 60 * 24 * 30)
+        let document = ReceiptDocument(lines: ["NEGOZIO", "TOTALE 5,00"], detectedDates: [future])
+        let scan = ReceiptParser.parse(document, now: Self.now)
+        #expect(scan.dateWasClamped)
+        #expect(scan.date == Self.now)
+    }
+
+    // MARK: - Refund detection
+
+    @Test func detectsARefundFromTheDocumentHeader() {
+        let lines = ["NEGOZIO", "DOCUMENTO COMMERCIALE di RESO", "TOTALE COMPLESSIVO 12,00"]
+        #expect(ReceiptParser.parse(lines, now: Self.now).isRefund)
+    }
+
+    @Test func merchantNameContainingTheLettersIsNotARefund() {
+        let lines = ["HOTEL RESORT MARINA", "TOTALE COMPLESSIVO 120,00"]
+        let scan = ReceiptParser.parse(lines, now: Self.now)
+        #expect(scan.isRefund == false)
+        #expect(scan.total == 120.00)
+    }
+
+    @Test func changeDueIsNotARefund() {
+        // "Resto" (change) sits one letter away from "Reso" and prints on every cash receipt.
+        let lines = ["NEGOZIO", "Pagamento contante 50,50", "Resto 35,30", "TOTALE COMPLESSIVO 15,20"]
+        #expect(ReceiptParser.parse(lines, now: Self.now).isRefund == false)
+    }
+
+    // MARK: - Ranked total keywords (documento commerciale)
+
+    @Test func mandatedWordingWinsWhenOCRCorruptsTheCorroboratingField() {
+        // The failure this ranking exists for: TOTALE COMPLESSIVO and IMPORTO PAGATO print the same
+        // amount, and OCR misread one digit of the second. As equal peers that was two disagreeing
+        // totals and a "pick one" prompt; the standard says the first field decides.
+        let lines = [
+            "SUPERMERCATO",
+            "TOTALE COMPLESSIVO   15,20",
+            "DI CUI IVA            0,00",
+            "Importo pagato       16,20",
+        ]
+        let scan = ReceiptParser.parse(lines, now: Self.now)
+        #expect(scan.total == 15.20)
+        #expect(scan.totalCandidates.isEmpty)
+    }
+
+    @Test func looseKeywordsStillCoverSlipsWithoutTheMandatedWording() {
+        // A bank POS slip prints neither TOTALE COMPLESSIVO nor IMPORTO PAGATO — the bottom tier
+        // has to keep working for it.
+        let scan = ReceiptParser.parse(Self.sellaCardSlipReceipt, now: Self.now)
+        #expect(scan.total == 41.00)
+    }
+
+    @Test func genuinelyDisagreeingTotalsInOneTierStillAskTheUser() {
+        // Ranking must not paper over a real conflict: two TOTALE COMPLESSIVO readings that differ
+        // are still ambiguous, and the form should show chips rather than pick one.
+        let lines = ["NEGOZIO", "TOTALE COMPLESSIVO 15,20", "TOTALE COMPLESSIVO 16,20"]
+        let scan = ReceiptParser.parse(lines, now: Self.now)
+        #expect(scan.total == nil)
+        #expect(scan.totalCandidates == [15.20, 16.20])
+    }
+
+    // MARK: - Merchant name by text height
+
+    @Test func tallestLineWinsOverUnlistedBoilerplatePrintedAboveTheName() {
+        // "SCONTRINO FISCALE" is not in merchantNoisePatterns and would win on "topmost"; the store
+        // name below it is printed twice as big, so height settles it with no new list entry.
+        let document = ReceiptDocument(
+            lines: ["SCONTRINO FISCALE", "PASTICCERIA ROSSI", "VIA ROMA 1", "TOTALE 8,00"],
+            lineHeights: [0: 0.010, 1: 0.024, 2: 0.010, 3: 0.012]
+        )
+        #expect(ReceiptParser.parse(document, now: Self.now).merchant == "Pasticceria Rossi")
+    }
+
+    @Test func blocklistStillFiltersEvenWhenTheNoiseIsTheBiggestText() {
+        // A card slip carries no merchant name — only the processor's own branding, printed large.
+        let document = ReceiptDocument(
+            lines: ["MASTERCARD", "PAGAMENTO ELETTRONICO", "TOTALE 8,00"],
+            lineHeights: [0: 0.030, 1: 0.010, 2: 0.010]
+        )
+        #expect(ReceiptParser.parse(document, now: Self.now).merchant == "Pagamento Elettronico")
+    }
+
+    @Test func fallsBackToTopmostCandidateWithoutHeights() {
+        let document = ReceiptDocument(lines: ["SCONTRINO FISCALE", "PASTICCERIA ROSSI"])
+        #expect(ReceiptParser.parse(document, now: Self.now).merchant == "Scontrino Fiscale")
     }
 
     @Test func returnsNoTotalWhenNothingMatchesAKeyword() {

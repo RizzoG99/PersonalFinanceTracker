@@ -66,6 +66,11 @@ final class EditAddTransactionViewModel {
     let editingItem: TransactionSnapshot?
     let repo: any ITransactionRepository
     private let draft: TransactionDraft?
+    /// True when the shell-level "Scan receipt" shortcut already has a result waiting to be
+    /// applied — same reasoning as `draft` in `shouldAutoFocusAmount`: the keyboard grabbing
+    /// Amount here would win the race against the scan's own fill and hide it (CurrencyAmountField
+    /// only refreshes its visible text while unfocused).
+    private let hasPendingReceiptScan: Bool
 
     /// The user-editable fields, snapshotted once loading finishes — lets `hasChanges` tell "the
     /// user actually touched something" apart from "the async category/goal load just hasn't
@@ -96,11 +101,13 @@ final class EditAddTransactionViewModel {
     init(
         editingItem: TransactionSnapshot? = nil,
         draft: TransactionDraft? = nil,
-        repo: any ITransactionRepository
+        repo: any ITransactionRepository,
+        hasPendingReceiptScan: Bool = false
     ) {
         self.editingItem = editingItem
         self.draft = draft
         self.repo = repo
+        self.hasPendingReceiptScan = hasPendingReceiptScan
         if let item = editingItem {
             populateForm(from: item)
         } else if let draft {
@@ -164,10 +171,12 @@ final class EditAddTransactionViewModel {
         (transactionType == .transfer ? selectedGoal != nil : selectedCategory != nil)
     }
 
-    /// Widget reviews arrive with a complete draft. Keeping the keyboard closed lets
-    /// the user inspect the populated transaction before deciding to save it.
+    /// Widget reviews arrive with a complete draft, and the scan shortcut arrives with a receipt
+    /// already parsed — both cases keep the keyboard closed so the user inspects the populated
+    /// transaction before deciding to save it, rather than the keyboard grabbing Amount and racing
+    /// (and winning against) the fill that's about to land.
     var shouldAutoFocusAmount: Bool {
-        editingItem == nil && draft == nil
+        editingItem == nil && draft == nil && !hasPendingReceiptScan
     }
 
     private static let mediumDateFormatter: DateFormatter = {

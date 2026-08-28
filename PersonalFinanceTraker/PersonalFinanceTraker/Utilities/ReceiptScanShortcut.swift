@@ -129,12 +129,23 @@ private struct ReceiptScanShortcut: ViewModifier {
         Task {
             defer { isProcessing = false }
             do {
-                let lines = try await ReceiptTextRecognizer.recognizeLines(in: images)
-                guard !lines.isEmpty else {
+                let document = try await ReceiptTextRecognizer.recognize(in: images)
+                guard !document.lines.isEmpty else {
                     errorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
                     return
                 }
-                onScanned(ReceiptParser.parse(lines))
+                let scan = ReceiptParser.parse(document)
+                // ponytail: temporary — a real miss (2026-08-28, "L'Autentica" receipt) needs
+                // ground-truth Vision output to diagnose, not a guess at what the photo shows.
+                // Remove once total accuracy is trusted enough to drop this (see
+                // ReceiptParser's earlier debug-print precedent in this file's git history).
+                if scan.total == nil && scan.totalCandidates.isEmpty {
+                    print("ReceiptParser found no total. Recognized lines:")
+                    for line in document.lines { print("  \"\(line)\"") }
+                    print("Vision table rows:")
+                    for row in document.rows { print("  \"\(row.label)\" -> \(row.amount)") }
+                }
+                onScanned(scan)
             } catch {
                 errorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
             }

@@ -63,7 +63,7 @@ struct EditAddTransactionView: View {
         // this sheet's own toolbar button.
         initialReceiptScan: ReceiptScan? = nil
     ) {
-        let vm = EditAddTransactionViewModel(editingItem: snapshot, draft: draft, repo: repo)
+        let vm = EditAddTransactionViewModel(editingItem: snapshot, draft: draft, repo: repo, hasPendingReceiptScan: initialReceiptScan != nil)
         if presetRecurring { vm.isRecurring = true }
         _viewModel = State(wrappedValue: vm)
         self.materializationService = materializationService
@@ -310,12 +310,12 @@ struct EditAddTransactionView: View {
         Task {
             defer { isProcessingReceiptScan = false }
             do {
-                let lines = try await ReceiptTextRecognizer.recognizeLines(in: images)
-                guard !lines.isEmpty else {
+                let document = try await ReceiptTextRecognizer.recognize(in: images)
+                guard !document.lines.isEmpty else {
                     receiptScanErrorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
                     return
                 }
-                let scan = ReceiptParser.parse(lines)
+                let scan = ReceiptParser.parse(document)
                 let learnedMerchants = (try? await viewModel.repo.fetchMerchantCategoryMappings()) ?? [:]
                 await viewModel.applyReceiptScan(scan, learnedMerchants: learnedMerchants)
             } catch {

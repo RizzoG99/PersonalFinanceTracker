@@ -17,12 +17,41 @@ struct MainTabView: View {
     // Seeded from `AppShellModels.selectedTab` and written back on change (below), so the tab
     // the user was on survives the shell being torn down and rebuilt on lock/unlock.
     @State private var selectedTab: TabItem
-    @State private var showingAddItemView: Bool = false
-    @State private var pendingTransactionDraft: TransactionDraft?
-    /// Set once AppToolbarModifier's "Scan receipt" button finishes its own capture+recognition
-    /// flow (see ReceiptScanShortcut) — carried into the Add Transaction sheet, which then opens
-    /// already filled in.
-    @State private var pendingReceiptScan: ReceiptScan?
+    /// The Add Transaction sheet's presentation *and* everything it opens with, in one value.
+    ///
+    /// This used to be a `Bool` plus separate `@State` for the draft and the scan, presented with
+    /// `.sheet(isPresented:)`. That loses the payload on the first presentation: the scan and the
+    /// bool are written in the same update, and the sheet's content closure is built from a view
+    /// snapshot that doesn't have the scan yet, so `initialReceiptScan` arrives nil and the form
+    /// opens blank. It works on every later attempt, which is exactly what "the first scan doesn't
+    /// prefill" looked like. `.sheet(item:)` can't have that gap — the value that triggers the
+    /// presentation is the value the content is built with.
+    @State private var addSheet: AddSheetContext?
+
+    /// One Add Transaction presentation, with whatever opened it.
+    private struct AddSheetContext: Identifiable {
+        let id = UUID()
+        var draft: TransactionDraft?
+        /// Set once AppToolbarModifier's "Scan receipt" button finishes its own capture+recognition
+        /// flow (see ReceiptScanShortcut) — the sheet then opens already filled in.
+        var scan: ReceiptScan?
+    }
+
+    /// Bool facade over `addSheet`, for the screens that just want to open an empty form.
+    /// Setting it true when the sheet is already up is a no-op rather than a payload-clearing
+    /// reset.
+    private var showingAddItemView: Binding<Bool> {
+        Binding(
+            get: { addSheet != nil },
+            set: { isPresented in
+                if isPresented {
+                    if addSheet == nil { addSheet = AddSheetContext() }
+                } else {
+                    addSheet = nil
+                }
+            }
+        )
+    }
     @State private var viewModel: TransactionListViewModel
     @State private var dashboardViewModel: DashboardViewModel
     @State private var compassViewModel: CompassViewModel
@@ -54,14 +83,13 @@ struct MainTabView: View {
     }
 
     private func applyScan(_ scan: ReceiptScan) {
-        pendingReceiptScan = scan
-        showingAddItemView = true
+        addSheet = AddSheetContext(scan: scan)
     }
 
     private func consumePendingAdd() {
         if PendingTransactionIntent.shared.consume(isEditSheetOpen: viewModel.transactionToEdit != nil)
             || PendingHabitAddStore.consume() {
-            showingAddItemView = true
+            addSheet = AddSheetContext()
         }
     }
 
@@ -76,17 +104,16 @@ struct MainTabView: View {
             selectedTab = .home
         case .addTransaction:
             selectedTab = .home
-            showingAddItemView = true
+            addSheet = AddSheetContext()
         }
     }
 
     private func consumePendingHabitTemplate() {
-        guard !showingAddItemView, viewModel.transactionToEdit == nil else { return }
+        guard addSheet == nil, viewModel.transactionToEdit == nil else { return }
         guard let request = PendingHabitTemplateStore.consume() else { return }
         PendingTransactionIntent.shared.shouldReviewHabitTemplate = false
         selectedTab = .home
-        pendingTransactionDraft = request.transactionDraft
-        showingAddItemView = true
+        addSheet = AddSheetContext(draft: request.transactionDraft)
     }
 
     private func consumePendingWidgetDestination() {
@@ -99,18 +126,18 @@ struct MainTabView: View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: selectedTab == .home ? "house.fill" : "house", value: .home) {
-                    DashboardView(showingAddItemView: $showingAddItemView, selectedTab: $selectedTab, onScanned: applyScan)
+                    DashboardView(showingAddItemView: showingAddItemView, selectedTab: $selectedTab, onScanned: applyScan)
                         .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
-                    ActivityView(showingAddItemView: $showingAddItemView, materializationService: materializationService, onScanned: applyScan)
+                    ActivityView(showingAddItemView: showingAddItemView, materializationService: materializationService, onScanned: applyScan)
                         .payCycleAware { viewModel.load() }
                 }
                 Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {
-                    CompassView(viewModel: compassViewModel, showingAddItemView: $showingAddItemView, onScanned: applyScan)
+                    CompassView(viewModel: compassViewModel, showingAddItemView: showingAddItemView, onScanned: applyScan)
                 }
 // Tab("Credit", systemImage: selectedTab == .credit ? "creditcard.fill" : "creditcard", value: .credit) {
-//     CreditView(context: modelContext, showingAddItemView: $showingAddItemView)
+//     CreditView(context: modelContext, showingAddItemView: showingAddItemView)
 // }
             }
             .environment(\.symbolVariants, .none)
@@ -120,21 +147,21 @@ struct MainTabView: View {
             .environment(profileViewModel)
             .environment(appSettings)
             .environment(dataChanged)
-            .sheet(isPresented: $showingAddItemView) {
+            .sheet(item: $addSheet) { context in
                 NavigationStack {
                     EditAddTransactionView(
-                        draft: pendingTransactionDraft,
+                        draft: context.draft,
                         repo: repo,
                         materializationService: materializationService,
-                        initialReceiptScan: pendingReceiptScan
+                        initialReceiptScan: context.scan
                     )
                         .environment(dataChanged)
                         .environment(appSettings)
                 }
                 .presentationBackground { AppBackground() }
                 .onDisappear {
-                    pendingTransactionDraft = nil
-                    pendingReceiptScan = nil
+                    // The draft and scan are the context's own, so dismissal clears them with it —
+                    // no separate reset to keep in sync.
                     consumePendingHabitTemplate()
                 }
             }
@@ -234,7 +261,7 @@ struct MainTabView: View {
             if destination != nil { consumeFeatureDiscoveryDestination() }
         }
         .onChange(of: PendingTransactionIntent.shared.shouldReviewHabitTemplate) { _, pending in
-            if PendingTransactionIntent.shared.consumeHabitTemplate(isSheetOpen: showingAddItemView), pending {
+            if PendingTransactionIntent.shared.consumeHabitTemplate(isSheetOpen: addSheet != nil), pending {
                 consumePendingHabitTemplate()
             }
         }
