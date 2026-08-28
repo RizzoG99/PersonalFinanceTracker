@@ -209,6 +209,38 @@ struct ReceiptParserTests {
         "12/03/26",
     ]
 
+    /// CAMILLA-NU BAR — a real two-column thermal receipt where Vision returned the label and its
+    /// price as separate lines ("TOTALE COMPLESSIVO" then "15,80" right after) rather than merged
+    /// into one. This is the split that let a scan through with no amount at all: the keyword line
+    /// itself had no digits on it.
+    private static let camillaBarReceipt = [
+        "CAMILLA-NU BAR",
+        "DIREZIONE 12 SRL",
+        "Lungomare C. Colombo - CAPILUNGO",
+        "73040 ALLISTE (LE)",
+        "Part. IVA 04996160752",
+        "DOCUMENTO COMMERCIALE",
+        "di vendita o prestazione",
+        "DESCRIZIONE",
+        "PREZZO(€) IVA",
+        "PASTO COMPLETO",
+        "7,90 B",
+        "PASTO COMPLETO",
+        "7,90 B",
+        "SUBTOTALE",
+        "15,80",
+        "Tavolo 29",
+        "TOTALE COMPLESSIVO",
+        "15,80",
+        "DI CUI IVA",
+        "1,44",
+        "PAGAMENTO ELETTRONICO",
+        "15,80",
+        "IMPORTO PAGATO",
+        "15,80",
+        "27/08/26 20:34",
+    ]
+
     @Test func extractsTotalWhenAllAmountsAgree() {
         let scan = ReceiptParser.parse(Self.motorradReceipt, now: Self.now)
         #expect(scan.total == 935.00)
@@ -361,6 +393,13 @@ struct ReceiptParserTests {
         let expected = DateComponents(calendar: .init(identifier: .gregorian), year: 2026, month: 8, day: 21).date!
         #expect(scan.date == expected)
         #expect(scan.dateWasClamped == false)
+    }
+
+    @Test func realBarReceiptFindsTheTotalWhenLabelAndPriceAreSplitAcrossLines() {
+        let scan = ReceiptParser.parse(Self.camillaBarReceipt, now: Self.now)
+        #expect(scan.total == 15.80)
+        #expect(scan.totalCandidates.isEmpty)
+        #expect(scan.merchant == "Camilla-Nu Bar")
     }
 
     @Test func returnsNoTotalWhenNothingMatchesAKeyword() {

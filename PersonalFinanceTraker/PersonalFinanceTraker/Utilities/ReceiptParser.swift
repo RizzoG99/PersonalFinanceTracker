@@ -87,12 +87,22 @@ enum ReceiptParser {
     /// Finds amounts on lines containing any of `keywords`, skipping lines that also (or instead)
     /// match `excluding` — e.g. "TOTALE COMPLESSIVO 90,00" is kept, "CONTANTI 25,00" is dropped even
     /// if a total keyword happened to share a line with it.
+    ///
+    /// A two-column receipt (label left, price right) sometimes comes back from Vision as two
+    /// separate lines — "TOTALE COMPLESSIVO" with no digits, then "15,80" on its own right after —
+    /// rather than one merged line. When the keyword line itself has no amount, check the next
+    /// couple of lines for one that's *just* a bare amount before giving up on that match.
     private static func amounts(in lines: [String], matching keywords: [String], excluding: [String]) -> [Decimal] {
-        lines.compactMap { line in
+        lines.indices.compactMap { index in
+            let line = lines[index]
             let upper = line.uppercased()
             guard keywords.contains(where: { upper.contains($0) }) else { return nil }
             guard !excluding.contains(where: { upper.contains($0) }) else { return nil }
-            return firstAmount(in: line)
+            if let amount = firstAmount(in: line) { return amount }
+            for lookahead in lines[(index + 1)...].prefix(2) {
+                if let amount = bareAmount(in: lookahead) { return amount }
+            }
+            return nil
         }
     }
 
@@ -101,6 +111,18 @@ enum ReceiptParser {
         guard let match = amountRegex.firstMatch(in: line, range: range),
               let matchRange = Range(match.range(at: 1), in: line) else { return nil }
         return AmountParser.parse(String(line[matchRange]), locale: itLocale)
+    }
+
+    /// A line that, once trimmed, is nothing but a currency amount (an optional leading "€" and
+    /// no other label text) — the shape a split price column takes on its own line.
+    private static func bareAmount(in line: String) -> Decimal? {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "€$"))
+            .trimmingCharacters(in: .whitespaces)
+        let range = NSRange(trimmed.startIndex..., in: trimmed)
+        guard let match = amountRegex.firstMatch(in: trimmed, range: range),
+              match.range(at: 1) == NSRange(trimmed.startIndex..., in: trimmed) else { return nil }
+        return firstAmount(in: trimmed)
     }
 
     /// Accepts only dates within a sane window (not in the future, not absurdly old); anything else

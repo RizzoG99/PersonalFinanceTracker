@@ -8,7 +8,9 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
+import TipKit
 import UIKit
+import AVFoundation
 
 private enum PendingRecurrenceAction {
     case save(TransactionInput)
@@ -40,6 +42,7 @@ struct EditAddTransactionView: View {
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var isProcessingReceiptScan = false
     @State private var receiptScanErrorMessage: String?
+    @State private var showingCameraPermissionAlert = false
 
     init(
         _ snapshot: TransactionSnapshot? = nil,
@@ -91,20 +94,53 @@ struct EditAddTransactionView: View {
             if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        // Amount auto-focuses on sheet open, and CurrencyAmountField only syncs
+                        // its visible text from `amount` while unfocused — so if the keyboard is
+                        // still up when a scan lands, the amount updates internally but never
+                        // renders. Drop focus now, before the scan even starts.
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        ScanReceiptTip().invalidate(reason: .actionPerformed)
                         showingReceiptSourceDialog = true
                     } label: {
-                        Image(systemName: "camera.viewfinder")
+                        // `camera.viewfinder` is a wide, asymmetric glyph that reads as squeezed
+                        // inside a lone .topBarTrailing item's glass capsule — every other icon-only
+                        // nav button in the app (eye, checkmark, trash) is roughly square. This is
+                        // the same symbol Notes/Files use for their own document-scan button.
+                        Image(systemName: "doc.text.viewfinder")
                     }
                     .accessibilityLabel("Scan receipt")
                     .accessibilityHint("Fill this transaction from a photo of a receipt")
+                    // A real nav-bar button, unlike the keyboard-bar controls in
+                    // TransactionFormTips.swift — .popoverTip() anchors from it directly, no
+                    // pinned-card workaround needed.
+                    .popoverTip(ScanReceiptTip())
+                    .tipViewStyle(AppTipViewStyle())
                     .confirmationDialog(
                         "Scan Receipt",
                         isPresented: $showingReceiptSourceDialog,
                         titleVisibility: .visible
                     ) {
-                        Button("Take Photo") { showingDocumentScanner = true }
+                        // Camera access is checked before presenting the scanner, not left to
+                        // fail inside it — VNDocumentCameraViewController doesn't surface a denied
+                        // permission as anything a user could act on (an AVFoundationErrorDomain
+                        // -11852 alert, e.g.), it just fails to show a live feed.
+                        Button("Take Photo") { requestCameraAccessThenScan() }
+                        // No permission needed: PhotosPicker runs out-of-process.
                         Button("Choose Photo") { showingPhotoPicker = true }
                         Button("Cancel", role: .cancel) {}
+                    }
+                    .alert(
+                        "Camera Access Needed",
+                        isPresented: $showingCameraPermissionAlert
+                    ) {
+                        Button("Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("Allow camera access in Settings to scan a receipt, or choose a photo from your library instead.")
                     }
                 }
             }
@@ -159,7 +195,9 @@ struct EditAddTransactionView: View {
         }
         .onAppear {
             viewModel.setTransactionViewModel()
+            updateScanTipEligibility()
         }
+        .onChange(of: viewModel.transactionType) { _, _ in updateScanTipEligibility() }
         // Full-screen, not a sheet: VisionKit's own scanner UI is designed edge-to-edge like the
         // system Camera app — a sheet's rounded corners/grabber would fight its chrome.
         .fullScreenCover(isPresented: $showingDocumentScanner) {
@@ -169,8 +207,11 @@ struct EditAddTransactionView: View {
                 case .success(let images):
                     guard !images.isEmpty else { return } // user cancelled — leave the form alone
                     processReceiptImages(images)
-                case .failure(let error):
-                    receiptScanErrorMessage = error.localizedDescription
+                case .failure:
+                    // Not `error.localizedDescription`: VisionKit's own capture failure is a raw
+                    // AVFoundationErrorDomain code (e.g. -11800, "Unable to capture media" — the
+                    // simulator has no camera at all) that means nothing to a user reading it.
+                    receiptScanErrorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
                 }
             }
             .ignoresSafeArea()
@@ -208,6 +249,37 @@ struct EditAddTransactionView: View {
         }
     }
 
+    /// Mirrors the scan button's own visibility guard so `ScanReceiptTip` never targets a control
+    /// that isn't on screen (opening the sheet in edit mode, or switching to Transfer).
+    private func updateScanTipEligibility() {
+        ScanReceiptTip.isEligible = viewModel.editingItem == nil && viewModel.transactionType != .transfer
+    }
+
+    /// Checks camera access before presenting `VNDocumentCameraViewController` rather than after:
+    /// a denied permission doesn't stop that controller from being presented, it just fails to show
+    /// a live feed and surfaces as an opaque `AVFoundationErrorDomain -11852` alert once capture is
+    /// attempted — not something a user could act on.
+    private func requestCameraAccessThenScan() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            showingDocumentScanner = true
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        showingDocumentScanner = true
+                    } else {
+                        showingCameraPermissionAlert = true
+                    }
+                }
+            }
+        case .denied, .restricted:
+            showingCameraPermissionAlert = true
+        @unknown default:
+            showingCameraPermissionAlert = true
+        }
+    }
+
     /// Runs Vision recognition + parsing off the main actor, then applies the result on it — the
     /// form's own values are never touched while `isProcessingReceiptScan` is true.
     private func processReceiptImages(_ images: [UIImage]) {
@@ -224,7 +296,9 @@ struct EditAddTransactionView: View {
                 let learnedMerchants = (try? await viewModel.repo.fetchMerchantCategoryMappings()) ?? [:]
                 viewModel.applyReceiptScan(scan, learnedMerchants: learnedMerchants)
             } catch {
-                receiptScanErrorMessage = error.localizedDescription
+                // Same reasoning as the capture-failure case above: a raw Vision/AVFoundation
+                // error isn't something a user reading an alert can act on.
+                receiptScanErrorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
             }
         }
     }

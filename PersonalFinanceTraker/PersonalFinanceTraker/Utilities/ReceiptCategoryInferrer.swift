@@ -48,7 +48,9 @@ enum ReceiptCategoryInferrer {
         }
 
         if let merchant {
-            let lower = merchant.lowercased()
+            // Padded so a trailing-space keyword like "bar " still matches a merchant that
+            // *ends* with it, e.g. "Camilla-Nu Bar" — contains() alone never sees that space.
+            let lower = " " + merchant.lowercased() + " "
             if let hit = merchantKeywords.first(where: { lower.contains($0.match) }),
                let matched = CategoryAutoMapper.bestMatch(for: hit.keyword, in: pool) {
                 return matched

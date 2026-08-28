@@ -99,6 +99,24 @@ struct ReceiptCategoryInferrerTests {
         #expect(result == nil)
     }
 
+    @Test func keywordMatchesAMerchantThatEndsExactlyWithTheKeyword() {
+        // Real-world miss: "Camilla-Nu Bar" ends with "bar" with nothing after it, so a naive
+        // `contains("bar ")` (trailing-space keyword) never matches — this merchant fell through
+        // to the most-used fallback instead of the correct "bar" category.
+        let bar = CategorySnapshot.test(name: "Bar", type: .expense)
+        let other = CategorySnapshot.test(name: "Other", type: .expense)
+
+        let result = ReceiptCategoryInferrer.infer(
+            merchant: "Camilla-Nu Bar",
+            transactionType: .expense,
+            categories: [bar, other],
+            learnedMerchants: [:],
+            usage: [other.persistentId: 5]
+        )
+
+        #expect(result?.id == bar.id)
+    }
+
     @Test func keywordFallbackRespectsTransactionType() {
         // Two categories share a matchable name across types; only the Expense one should be
         // eligible when scanning an expense.
