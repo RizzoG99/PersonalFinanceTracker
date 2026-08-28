@@ -16,6 +16,7 @@ number that shipped it.
 - Scan receipt: fixed another split-column layout where the amount was missed (the label and price columns came back as two whole separate blocks rather than one line apart).
 - Scan receipt: category guessing now also checks Apple Maps for the merchant's business type (using the address printed on the receipt, not your location) when its name alone doesn't give it away — e.g. a restaurant with no obvious food word in its name.
 - Scan receipt: fixed sideways/rotated photos (e.g. picked from your library in landscape) reading as unreadable — they're now straightened before recognition, same as an upright photo.
+- Added a "Scan receipt" shortcut next to "+ Add" (iPhone nav bar and iPad sidebar) that jumps straight to the camera/photo-library choice, scans, and opens Add Transaction already filled in — one tap instead of opening Add Transaction first.
 
 ## 77 — 2026-08-28
 - iPad: Activity's filter chips and transaction table now resize to fit alongside the sidebar instead of being hidden behind it.

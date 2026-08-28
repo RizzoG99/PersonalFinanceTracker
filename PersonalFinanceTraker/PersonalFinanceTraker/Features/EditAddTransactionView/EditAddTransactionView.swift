@@ -43,6 +43,11 @@ struct EditAddTransactionView: View {
     @State private var isProcessingReceiptScan = false
     @State private var receiptScanErrorMessage: String?
     @State private var showingCameraPermissionAlert = false
+    /// Set from `initialReceiptScan` and consumed once in `.onAppear` — lets the shell-level
+    /// "Scan receipt" shortcut (ReceiptScanShortcut, run from Dashboard/Activity/Insights before
+    /// this sheet even opens) hand off an already-parsed scan instead of this view driving its
+    /// own capture. See ReceiptScanShortcut's header comment for why capture never starts here.
+    @State private var pendingInitialScan: ReceiptScan?
 
     init(
         _ snapshot: TransactionSnapshot? = nil,
@@ -52,12 +57,17 @@ struct EditAddTransactionView: View {
         // Lets RecurringView's "+" open this sheet with Repeat already on, matching the
         // context the user tapped it from. Add-mode only in practice — nothing sets this
         // alongside `snapshot`.
-        presetRecurring: Bool = false
+        presetRecurring: Bool = false,
+        // Set when the "Scan receipt" shortcut next to "+ Add" already ran capture + recognition
+        // before this sheet opened. Applied once in .onAppear, same tail as a scan started from
+        // this sheet's own toolbar button.
+        initialReceiptScan: ReceiptScan? = nil
     ) {
         let vm = EditAddTransactionViewModel(editingItem: snapshot, draft: draft, repo: repo)
         if presetRecurring { vm.isRecurring = true }
         _viewModel = State(wrappedValue: vm)
         self.materializationService = materializationService
+        _pendingInitialScan = State(wrappedValue: initialReceiptScan)
     }
 
     var body: some View {
@@ -94,13 +104,7 @@ struct EditAddTransactionView: View {
             if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // Amount auto-focuses on sheet open, and CurrencyAmountField only syncs
-                        // its visible text from `amount` while unfocused — so if the keyboard is
-                        // still up when a scan lands, the amount updates internally but never
-                        // renders. Drop focus now, before the scan even starts.
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        ScanReceiptTip().invalidate(reason: .actionPerformed)
-                        showingReceiptSourceDialog = true
+                        openReceiptSourceDialog()
                     } label: {
                         // `camera.viewfinder` is a wide, asymmetric glyph that reads as squeezed
                         // inside a lone .topBarTrailing item's glass capsule — every other icon-only
@@ -196,6 +200,13 @@ struct EditAddTransactionView: View {
         .onAppear {
             viewModel.setTransactionViewModel()
             updateScanTipEligibility()
+            if let scan = pendingInitialScan {
+                pendingInitialScan = nil
+                Task {
+                    let learnedMerchants = (try? await viewModel.repo.fetchMerchantCategoryMappings()) ?? [:]
+                    await viewModel.applyReceiptScan(scan, learnedMerchants: learnedMerchants)
+                }
+            }
         }
         .onChange(of: viewModel.transactionType) { _, _ in updateScanTipEligibility() }
         // Full-screen, not a sheet: VisionKit's own scanner UI is designed edge-to-edge like the
@@ -253,6 +264,18 @@ struct EditAddTransactionView: View {
     /// that isn't on screen (opening the sheet in edit mode, or switching to Transfer).
     private func updateScanTipEligibility() {
         ScanReceiptTip.isEligible = viewModel.editingItem == nil && viewModel.transactionType != .transfer
+    }
+
+    /// This sheet's own in-form "Scan receipt" toolbar button. The shell-level shortcut next to
+    /// "+ Add" has its own separate flow (ReceiptScanShortcut) — it never calls this, since it
+    /// runs capture before this sheet even opens.
+    private func openReceiptSourceDialog() {
+        // Amount auto-focuses on sheet open, and CurrencyAmountField only syncs its visible
+        // text from `amount` while unfocused — so if the keyboard is still up when a scan
+        // lands, the amount updates internally but never renders. Drop focus now.
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        ScanReceiptTip().invalidate(reason: .actionPerformed)
+        showingReceiptSourceDialog = true
     }
 
     /// Checks camera access before presenting `VNDocumentCameraViewController` rather than after:

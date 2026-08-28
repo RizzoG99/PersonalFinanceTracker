@@ -11,6 +11,7 @@ struct ActivityView: View {
     @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
     let materializationService: RecurrenceMaterializationService
+    var onScanned: ((ReceiptScan) -> Void)? = nil
 
     @State private var showCategorySheet = false
     @State private var showAmountSheet = false
@@ -166,7 +167,7 @@ struct ActivityView: View {
                 prompt: "Search transactions..."
             ))
             // Hide the gear/＋ while selecting — the selection toolbar takes over.
-            .appToolbar(showingAddItemView: $showingAddItemView, enabled: !viewModel.isSelecting)
+            .appToolbar(showingAddItemView: $showingAddItemView, enabled: !viewModel.isSelecting, onScanned: onScanned)
             // Hide the floating tab bar while selecting so the action bar owns the bottom
             // and a stray tab tap can't navigate away and drop the selection.
             .toolbar(viewModel.isSelecting ? .hidden : .visible, for: .tabBar)

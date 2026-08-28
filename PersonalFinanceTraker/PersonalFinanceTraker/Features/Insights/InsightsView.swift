@@ -11,10 +11,12 @@ import UIKit
 struct CompassView: View {
     @State private var viewModel: CompassViewModel
     @Binding var showingAddItemView: Bool
+    var onScanned: ((ReceiptScan) -> Void)? = nil
 
-    init(viewModel: CompassViewModel, showingAddItemView: Binding<Bool>) {
+    init(viewModel: CompassViewModel, showingAddItemView: Binding<Bool>, onScanned: ((ReceiptScan) -> Void)? = nil) {
         _viewModel = State(wrappedValue: viewModel)
         _showingAddItemView = showingAddItemView
+        self.onScanned = onScanned
     }
 
     var body: some View {
@@ -58,7 +60,7 @@ struct CompassView: View {
             }
             .navigationTitle("Insights")
             .navigationBarTitleDisplayMode(.large)
-            .appToolbar(showingAddItemView: $showingAddItemView)
+            .appToolbar(showingAddItemView: $showingAddItemView, onScanned: onScanned)
             .appBackground()
         }
         .payCycleAware { viewModel.load() }

@@ -14,6 +14,7 @@ import SwiftUI
 struct IPadInspector: View {
     let models: AppShellModels
     @Binding var showingAddItemView: Bool
+    let pendingReceiptScan: ReceiptScan?
 
     var body: some View {
         NavigationStack {
@@ -28,7 +29,8 @@ struct IPadInspector: View {
             EditAddTransactionView(
                 draft: nil,
                 repo: models.repo,
-                materializationService: models.materializationService
+                materializationService: models.materializationService,
+                initialReceiptScan: pendingReceiptScan
             )
         } else if let item = models.transactions.transactionToEdit {
             // .id(item.id): without it, tapping a different row while the inspector is already

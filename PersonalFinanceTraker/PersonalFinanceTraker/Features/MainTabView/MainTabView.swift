@@ -19,6 +19,10 @@ struct MainTabView: View {
     @State private var selectedTab: TabItem
     @State private var showingAddItemView: Bool = false
     @State private var pendingTransactionDraft: TransactionDraft?
+    /// Set once AppToolbarModifier's "Scan receipt" button finishes its own capture+recognition
+    /// flow (see ReceiptScanShortcut) — carried into the Add Transaction sheet, which then opens
+    /// already filled in.
+    @State private var pendingReceiptScan: ReceiptScan?
     @State private var viewModel: TransactionListViewModel
     @State private var dashboardViewModel: DashboardViewModel
     @State private var compassViewModel: CompassViewModel
@@ -47,6 +51,11 @@ struct MainTabView: View {
         _compassViewModel = State(wrappedValue: models.compass)
         _profileViewModel = State(wrappedValue: models.profile)
         _dataChanged = State(wrappedValue: models.dataChanged)
+    }
+
+    private func applyScan(_ scan: ReceiptScan) {
+        pendingReceiptScan = scan
+        showingAddItemView = true
     }
 
     private func consumePendingAdd() {
@@ -90,15 +99,15 @@ struct MainTabView: View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: selectedTab == .home ? "house.fill" : "house", value: .home) {
-                    DashboardView(showingAddItemView: $showingAddItemView, selectedTab: $selectedTab)
+                    DashboardView(showingAddItemView: $showingAddItemView, selectedTab: $selectedTab, onScanned: applyScan)
                         .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
-                    ActivityView(showingAddItemView: $showingAddItemView, materializationService: materializationService)
+                    ActivityView(showingAddItemView: $showingAddItemView, materializationService: materializationService, onScanned: applyScan)
                         .payCycleAware { viewModel.load() }
                 }
                 Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {
-                    CompassView(viewModel: compassViewModel, showingAddItemView: $showingAddItemView)
+                    CompassView(viewModel: compassViewModel, showingAddItemView: $showingAddItemView, onScanned: applyScan)
                 }
 // Tab("Credit", systemImage: selectedTab == .credit ? "creditcard.fill" : "creditcard", value: .credit) {
 //     CreditView(context: modelContext, showingAddItemView: $showingAddItemView)
@@ -116,7 +125,8 @@ struct MainTabView: View {
                     EditAddTransactionView(
                         draft: pendingTransactionDraft,
                         repo: repo,
-                        materializationService: materializationService
+                        materializationService: materializationService,
+                        initialReceiptScan: pendingReceiptScan
                     )
                         .environment(dataChanged)
                         .environment(appSettings)
@@ -124,6 +134,7 @@ struct MainTabView: View {
                 .presentationBackground { AppBackground() }
                 .onDisappear {
                     pendingTransactionDraft = nil
+                    pendingReceiptScan = nil
                     consumePendingHabitTemplate()
                 }
             }
