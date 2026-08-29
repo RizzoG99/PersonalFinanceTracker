@@ -57,9 +57,21 @@ struct ReceiptDocument: Equatable {
     /// store name is the largest text on a receipt, which is what `merchantName` uses it for.
     /// `Double` rather than `CGFloat` to keep this file free of CoreGraphics.
     var lineHeights: [Int: Double] = [:]
+    /// Mean of Vision's per-line recognition confidence, 0…1. Not used for parsing — it exists so
+    /// two OCR passes over the *same* photo can be compared, which is how the low-light retry in
+    /// `ReceiptTextRecognizer` decides whether boosting contrast actually helped.
+    var meanConfidence: Double = 0
 }
 
 enum ReceiptParser {
+
+    /// Uppercased *and* stripped of diacritics, which is the form every keyword list here is
+    /// written in. Vision decorates letters it is unsure of — the Cremeria receipt came back with
+    /// "TỌT. COMPLESSIVO" (U+1ECC), which matched neither "TOT." nor "TOTALE", so the total block's
+    /// own heading was not recognized as structure and became the merchant name.
+    static func normalized(_ text: String) -> String {
+        text.folding(options: [.diacriticInsensitive, .widthInsensitive], locale: enLocale).uppercased()
+    }
 
     private static let itLocale = Locale(identifier: "it_IT")
     private static let enLocale = Locale(identifier: "en_US")
@@ -135,7 +147,7 @@ enum ReceiptParser {
             // "DESCRIZI", not "DESCRIZIONE": Vision returned "DESCRIZIOHE" on Puce Motorrad, and an
             // unmatched column header then beat the shop name in the size vote. Same reasoning as
             // "DOCUMENTO" above — match the stem OCR gets right, not the ending it garbles.
-            "DESCRIZI", "PREZZO", "DOCUMENTO", "VENDITA O PRESTAZIONE",
+            "DESCRIZ", "PREZZO", "DOCUMENTO", "VENDITA O PRESTAZIONE",
             "NUMERO PEZZI", "PAGAMENTO", "PAGAMENTI", "CUI IVA",
         ]
 
@@ -213,7 +225,7 @@ enum ReceiptParser {
         }
 
         scan.isRefund = lines.contains { line in
-            let upper = line.uppercased()
+            let upper = normalized(line)
             return refundRegex.firstMatch(in: upper, range: NSRange(upper.startIndex..., in: upper)) != nil
         }
 
@@ -234,7 +246,7 @@ enum ReceiptParser {
     /// the same label/amount shape.
     private static func totals(in rows: [ReceiptRow], matching keywords: [String]) -> [Decimal] {
         rows.compactMap { row in
-            let upper = row.label.uppercased()
+            let upper = normalized(row.label)
             guard keywords.contains(where: { upper.contains($0) }) else { return nil }
             guard !decoyKeywords.contains(where: { upper.contains($0) }) else { return nil }
             return row.amount
@@ -257,7 +269,7 @@ enum ReceiptParser {
     ) -> [Decimal] {
         lines.indices.compactMap { index in
             let line = lines[index]
-            let upper = line.uppercased()
+            let upper = normalized(line)
             guard keywords.contains(where: { upper.contains($0) }) else { return nil }
             guard !excluding.contains(where: { upper.contains($0) }) else { return nil }
             if let amount = firstAmount(in: line) { return amount }
@@ -272,8 +284,16 @@ enum ReceiptParser {
                     // the first entry is the first item's price, not this label's. That is exactly
                     // how "IMPORTO PAGATO" came back as 7,90 on a 15,80 receipt (Camilla-Nu Bar,
                     // 2026-08-29): confidently wrong, with no candidates to warn anyone.
-                    let next = lines.index(after: lookahead)
-                    guard next >= lines.count || bareAmount(in: lines[next]) == nil else { return nil }
+                    // ...unless the run of amounts all carries the *same* value, which is a total
+                    // printed more than once, not a column of different item prices. The Cremeria
+                    // receipt prints "TOT. COMPLESSIVO" above "5,00 / 5,00" and the stricter rule
+                    // rejected it outright, reporting no total at all (device log, 2026-08-29).
+                    // Ambiguity only exists when the amounts disagree.
+                    var next = lines.index(after: lookahead)
+                    while next < lines.count, let following = bareAmount(in: lines[next]) {
+                        guard following == amount else { return nil }
+                        next = lines.index(after: next)
+                    }
                     return amount
                 }
                 if let detected = detectedAmounts[lookahead] { return detected }
@@ -375,7 +395,7 @@ enum ReceiptParser {
     /// per-row. Only trustworthy when both sides have the exact same count — anything else means
     /// the assumption doesn't hold for this receipt, so it's dropped rather than guessed.
     private static func amountsByColumnReconstruction(in lines: [String]) -> [ReceiptRow] {
-        guard let headerIndex = lines.firstIndex(where: { $0.uppercased().contains("DESCRIZIONE") }) else {
+        guard let headerIndex = lines.firstIndex(where: { normalized($0).contains("DESCRIZ") }) else {
             return []
         }
 
@@ -393,7 +413,7 @@ enum ReceiptParser {
         var labelIndex = lines.index(after: headerIndex)
         while labelIndex < lines.count, bareAmount(in: lines[labelIndex]) == nil {
             let trimmed = lines[labelIndex].trimmingCharacters(in: .whitespaces)
-            let upper = trimmed.uppercased()
+            let upper = normalized(trimmed)
             if upper.contains("NUMERO PEZZI") { break }
             if !trimmed.isEmpty, !nonItemLabelKeywords.contains(where: { upper.contains($0) }) {
                 labels.append(lines[labelIndex])
@@ -422,7 +442,7 @@ enum ReceiptParser {
         // a boundary, since it has no counterpart on the label side either.
         var backwardAmounts: [Decimal] = []
         var backwardIndex = headerIndex - 1
-        while backwardIndex >= 0, !lines[backwardIndex].uppercased().contains("PREZZO") {
+        while backwardIndex >= 0, !normalized(lines[backwardIndex]).contains("PREZZO") {
             if let amount = bareAmount(in: lines[backwardIndex]) {
                 backwardAmounts.append(amount)
             }
@@ -442,7 +462,7 @@ enum ReceiptParser {
     private static func prefersMonthFirst(in lines: [String]) -> Bool {
         var sawEnglish = false
         for line in lines {
-            let upper = line.uppercased()
+            let upper = normalized(line)
             if italianMarkers.contains(where: { upper.contains($0) }) { return false }
             if !sawEnglish, englishMarkers.contains(where: { upper.contains($0) }) { sawEnglish = true }
         }
@@ -519,13 +539,13 @@ enum ReceiptParser {
         // The merchant block is whatever prints *above* the item table, so the item-table header is
         // a far better bound than a fixed line count. Falls back to the old 15-line cap when the
         // header is missing or is itself line 0 (Vision sometimes emits the table first).
-        let headerIndex = lines.firstIndex { $0.uppercased().contains("DESCRIZI") } ?? 0
+        let headerIndex = lines.firstIndex { normalized($0).contains("DESCRIZ") } ?? 0
         let searchLimit = headerIndex > 0 ? headerIndex : min(15, lines.count)
 
         let candidates = lines.indices.prefix(searchLimit).filter { index in
             let trimmed = lines[index].trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { return false }
-            let upper = trimmed.uppercased()
+            let upper = normalized(trimmed)
             if merchantNoisePatterns.contains(where: { upper.contains($0) }) { return false }
             if structuralKeywords.contains(where: { upper.contains($0) }) { return false }
             // The address is already recognized for `merchantAddress(in:)`; reuse those same two
@@ -552,7 +572,7 @@ enum ReceiptParser {
     /// city with no street, still geocodes reasonably, so this is best-effort, not all-or-nothing.
     private static func merchantAddress(in lines: [String]) -> String? {
         let street = lines.first { line in
-            let upper = line.uppercased()
+            let upper = normalized(line)
             return streetPrefixes.contains { upper.contains($0) }
         }
         let cityLine = lines.first { line in

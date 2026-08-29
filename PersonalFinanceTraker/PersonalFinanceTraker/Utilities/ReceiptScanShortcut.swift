@@ -58,7 +58,7 @@ private struct ReceiptScanShortcut: ViewModifier {
                 Text("Allow camera access in Settings to scan a receipt, or choose a photo from your library instead.")
             }
             .fullScreenCover(isPresented: $showingDocumentScanner) {
-                ReceiptDocumentScanner { result in
+                ReceiptCameraView { result in
                     showingDocumentScanner = false
                     switch result {
                     case .success(let images):
@@ -68,7 +68,6 @@ private struct ReceiptScanShortcut: ViewModifier {
                         errorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
                     }
                 }
-                .ignoresSafeArea()
             }
             .photosPicker(isPresented: $showingPhotoPicker, selection: $photoPickerItem, matching: .images)
             .onChange(of: photoPickerItem) { _, item in
@@ -129,12 +128,28 @@ private struct ReceiptScanShortcut: ViewModifier {
         Task {
             defer { isProcessing = false }
             do {
+                ReceiptScanDebug.beginScan("shortcut")
+                for image in images {
+                    ReceiptScanDebug.log(step: "input", ReceiptScanDebug.describe(image))
+                }
                 let document = try await ReceiptTextRecognizer.recognize(in: images)
+                ReceiptScanDebug.log(
+                    step: "ocr",
+                    "\(document.lines.count) lines, confidence \(document.meanConfidence), "
+                    + "rows \(document.rows.count)"
+                )
                 guard !document.lines.isEmpty else {
                     errorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
                     return
                 }
                 let scan = ReceiptParser.parse(document)
+                ReceiptScanDebug.log(
+                    step: "parsed",
+                    "total=\(String(describing: scan.total)) "
+                    + "candidates=\(scan.totalCandidates) "
+                    + "merchant=\(scan.merchant ?? "nil") "
+                    + "date=\(String(describing: scan.date)) clamped=\(scan.dateWasClamped)"
+                )
                 // ponytail: temporary — a real miss (2026-08-28, "L'Autentica" receipt) needs
                 // ground-truth Vision output to diagnose, not a guess at what the photo shows.
                 // Remove once total accuracy is trusted enough to drop this (see

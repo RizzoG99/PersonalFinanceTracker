@@ -124,10 +124,9 @@ struct EditAddTransactionView: View {
                         isPresented: $showingReceiptSourceDialog,
                         titleVisibility: .visible
                     ) {
-                        // Camera access is checked before presenting the scanner, not left to
-                        // fail inside it — VNDocumentCameraViewController doesn't surface a denied
-                        // permission as anything a user could act on (an AVFoundationErrorDomain
-                        // -11852 alert, e.g.), it just fails to show a live feed.
+                        // Camera access is checked before presenting the viewfinder, so a denied
+                        // permission produces an alert the user can act on rather than a screen
+                        // that simply never shows a live feed.
                         Button("Take Photo") { requestCameraAccessThenScan() }
                         // No permission needed: PhotosPicker runs out-of-process.
                         Button("Choose Photo") { showingPhotoPicker = true }
@@ -209,23 +208,22 @@ struct EditAddTransactionView: View {
             }
         }
         .onChange(of: viewModel.transactionType) { _, _ in updateScanTipEligibility() }
-        // Full-screen, not a sheet: VisionKit's own scanner UI is designed edge-to-edge like the
-        // system Camera app — a sheet's rounded corners/grabber would fight its chrome.
+        // Full-screen, not a sheet: a viewfinder is edge-to-edge like the system Camera app, and a
+        // sheet's rounded corners and grabber would fight that.
         .fullScreenCover(isPresented: $showingDocumentScanner) {
-            ReceiptDocumentScanner { result in
+            ReceiptCameraView { result in
                 showingDocumentScanner = false
                 switch result {
                 case .success(let images):
                     guard !images.isEmpty else { return } // user cancelled — leave the form alone
                     processReceiptImages(images)
                 case .failure:
-                    // Not `error.localizedDescription`: VisionKit's own capture failure is a raw
+                    // Not `error.localizedDescription`: a capture failure is a raw
                     // AVFoundationErrorDomain code (e.g. -11800, "Unable to capture media" — the
                     // simulator has no camera at all) that means nothing to a user reading it.
                     receiptScanErrorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
                 }
             }
-            .ignoresSafeArea()
         }
         .photosPicker(isPresented: $showingPhotoPicker, selection: $photoPickerItem, matching: .images)
         .onChange(of: photoPickerItem) { _, item in
@@ -310,12 +308,28 @@ struct EditAddTransactionView: View {
         Task {
             defer { isProcessingReceiptScan = false }
             do {
+                ReceiptScanDebug.beginScan("form")
+                for image in images {
+                    ReceiptScanDebug.log(step: "input", ReceiptScanDebug.describe(image))
+                }
                 let document = try await ReceiptTextRecognizer.recognize(in: images)
+                ReceiptScanDebug.log(
+                    step: "ocr",
+                    "\(document.lines.count) lines, confidence \(document.meanConfidence), "
+                    + "rows \(document.rows.count)"
+                )
                 guard !document.lines.isEmpty else {
                     receiptScanErrorMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
                     return
                 }
                 let scan = ReceiptParser.parse(document)
+                ReceiptScanDebug.log(
+                    step: "parsed",
+                    "total=\(String(describing: scan.total)) "
+                    + "candidates=\(scan.totalCandidates) "
+                    + "merchant=\(scan.merchant ?? "nil") "
+                    + "date=\(String(describing: scan.date)) clamped=\(scan.dateWasClamped)"
+                )
                 let learnedMerchants = (try? await viewModel.repo.fetchMerchantCategoryMappings()) ?? [:]
                 await viewModel.applyReceiptScan(scan, learnedMerchants: learnedMerchants)
             } catch {

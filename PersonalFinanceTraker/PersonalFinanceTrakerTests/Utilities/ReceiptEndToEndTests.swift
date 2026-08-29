@@ -37,7 +37,9 @@ struct ReceiptEndToEndTests {
     struct Expectation: CustomStringConvertible {
         let image: String
         let total: Decimal
-        let date: DateComponents
+        /// nil where OCR cannot read the printed date correctly under any pass, so asserting a
+        /// value would only lock in a misreading as if it were intended.
+        let date: DateComponents?
         /// nil where the receipt genuinely prints no merchant name — the Galatina card slip carries
         /// only processor boilerplate, so whatever the parser picks there is a guess, not a fact.
         let merchant: String?
@@ -61,6 +63,26 @@ struct ReceiptEndToEndTests {
               date: .init(year: 2025, month: 5, day: 27), merchant: "Puce Motorrad"),
         .init(image: "galatina", total: 219.80,
               date: .init(year: 2025, month: 11, day: 24), merchant: nil),
+        // Deliberately dim, added to exercise the low-light path. Date unasserted: the receipt is
+        // dated 23-08-2026 and Vision reads "3-08-2026" — the leading digit is absent from the
+        // recognized text in both the plain and the contrast-boosted pass, so it is unrecoverable
+        // by parsing. The user reviews the date in the form before saving, which is the mitigation.
+        // Total and merchant are only correct here because of the enhanced pass; both were wrong
+        // ("Lucumento Commerctale") when the plain pass was used unconditionally.
+        .init(image: "scontrino - 1", total: 5.00, date: nil, merchant: "Cremeria"),
+        // The same receipt shot from further back, lying sideways on a patterned tablecloth — it
+        // fills about a tenth of the frame. Caught three separate defects that the tight crop above
+        // does not (device report, 2026-08-29), and all three were silent:
+        //   - no total at all, because "TOT. COMPLESSIVO" is followed by "5,00 / 5,00" and the
+        //     column-run guard treated a twice-printed total as an item price column;
+        //   - the merchant read as "Tọt. Complessivo", because Vision decorated the O (U+1ECC) and
+        //     no keyword list matched it, so the total heading was never seen as structure;
+        //   - "DESCRIZ." split onto its own line, so the table header was never found and the
+        //     merchant search ran past it into the totals block.
+        // Unlike the tight crop, the date *is* asserted here: at this framing the full "23-08-2026"
+        // is recognized, which is what makes the pair worth keeping — same receipt, different miss.
+        .init(image: "cremeria-wide", total: 5.00,
+              date: .init(year: 2026, month: 8, day: 23), merchant: "Cremeria"),
     ]
 
     /// True only on a machine that actually has the private photos, which is what the whole suite
@@ -78,16 +100,27 @@ struct ReceiptEndToEndTests {
         // picking the wrong line out of text it did receive.
         #expect(!document.lines.isEmpty, "\(expected.image): Vision recognized no text at all")
 
+        // Guards a failure mode that hides completely: `meanConfidence` decides whether the
+        // contrast-boosted pass is used, by `>` comparison. Left at zero it never wins, the
+        // low-light path silently does nothing, and every test here still passes because the plain
+        // pass is good enough on these six. Only a device log exposed it.
+        #expect(
+            document.meanConfidence > 0,
+            Comment(rawValue: "\(expected.image): meanConfidence is \(document.meanConfidence) "
+                + "— the OCR-pass comparison is inoperative and the enhanced pass can never be chosen")
+        )
+
         let scan = ReceiptParser.parse(document, now: Self.now)
 
         #expect(
             scan.total == expected.total,
             "got \(String(describing: scan.total)), candidates \(scan.totalCandidates)\n\(dump)"
         )
-        var components = expected.date
-        components.calendar = Calendar(identifier: .gregorian)
-        #expect(scan.date == components.date, "\(expected.image): date")
-        #expect(scan.dateWasClamped == false, "\(expected.image): date was clamped")
+        if var components = expected.date {
+            components.calendar = Calendar(identifier: .gregorian)
+            #expect(scan.date == components.date, "\(expected.image): date")
+            #expect(scan.dateWasClamped == false, "\(expected.image): date was clamped")
+        }
         #expect(scan.isRefund == false, "\(expected.image): read as a refund")
         if let merchant = expected.merchant {
             #expect(scan.merchant == merchant, "got \(scan.merchant ?? "nil")\n\(dump)")

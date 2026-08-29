@@ -7,6 +7,20 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Scan receipt: the photo is now trimmed to the receipt the camera outlined, so a second receipt lying on the same table can no longer contribute its total. Previously a €5 receipt could come back with the amount of the one next to it, or ask you to choose between the two.
+- Scan receipt: when the category could not be worked out from the receipt, the scan now says "Guessed the category — check it" instead of reporting it as filled in. The category is a required field so something is always chosen, but a guess no longer looks like a reading.
+- Scan receipt: the camera now outlines the receipt on screen as it finds it, and the caption changes to "Receipt detected", so you can tell it is framed before you tap. It is guidance only — the shutter always works, whether or not an outline is showing.
+- Scan receipt: new **Settings > Categories > Scan Categories** screen. Pair each kind of receipt (eating out, groceries, fuel, pharmacy…) with one of your own categories, once, and scans use it from then on. This matters if you renamed a category or created your own: until now the scan had to guess the category from its *name*, so a category called something the app didn't recognise was never picked. Anything you leave on "Automatic" keeps working exactly as before.
+- Scan receipt: many more kinds of shop are now recognised from Apple Maps — cinemas, gyms, hotels, parking, car repair, museums, schools, pet services and more. Previously only nine kinds were, and an unrecognised one fell back to whichever category you use most.
+- Scan receipt: ice cream shops, patisseries and similar are now recognised as eating out. Previously a gelateria matched none of the known merchant types and the scan fell back to whichever category you use most, which could be something as unrelated as bank fees.
+- Scan receipt: fixed a scan filling in the amount, date and shop name but leaving the category empty. The category was being chosen before the category list had finished loading, so it had nothing to choose from.
+- Scan receipt: fixed a receipt whose total is printed twice in a row (for example "TOT. COMPLESSIVO" above two identical amounts) being reported as unreadable, with no amount filled in at all.
+- Scan receipt: the shop name, date and category are now read correctly when the receipt is photographed from further back or lying at an angle, instead of the name coming out as part of the total line.
+- Scan receipt: taking a photo is now one tap. The camera opens straight into a viewfinder with a shutter button, instead of waiting to find the receipt's edges, asking you to adjust the corners, and then offering more pages and a review screen before it read anything.
+- Scan receipt: added a light you can switch on in the camera, which stays on for framing rather than firing at the moment of the shot. Your choice is remembered for next time.
+- Scan receipt: receipts photographed in poor light are read noticeably better. Each photo is now read twice — once as shot and once with contrast boosted — and whichever the camera is more confident about is used. On a dim receipt this was the difference between the shop name coming out as "Lucumento Commerctale" and as "Cremeria", and between the year reading 2021 and 2026.
+
+## 79 — 2026-08-29
 - Scan receipt: fixed a scan occasionally filling in the wrong amount — on some receipts the first item's price was picked instead of the total, with no warning that it was a guess.
 - Scan receipt: receipts whose total line the camera misreads (for example "TOTALE COHPLESSIVO") are now still read correctly, because the amount is confirmed against the rest of the receipt instead of relying on that one line.
 - Scan receipt: the shop name is picked more reliably — VAT lines, addresses, column headings and till serial numbers are no longer mistaken for it, including on receipts photographed sideways.

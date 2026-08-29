@@ -7,6 +7,7 @@
 //  See docs/features/2026-08-27-scan-receipt-autofill.md.
 //
 
+import CoreImage.CIFilterBuiltins
 import DataDetection
 import UIKit
 import Vision
@@ -26,7 +27,36 @@ enum ReceiptTextRecognizer {
         // (confirmed real miss, 2026-08-28: a receipt shot in landscape via "Choose Photo") reads
         // as sideways text to Vision and returns nothing. The document scanner's own captures are
         // already upright, so this is a no-op there; it only matters for the photo-library path.
-        guard let cgImage = image.normalizedOrientation().cgImage else { return ReceiptDocument() }
+        // No perspective correction. `VNDetectDocumentSegmentationRequest` + `CIPerspectiveCorrection`
+        // was tried here, to replace the straightening the old VisionKit scanner made the user
+        // confirm by hand. It cost us a receipt: on the `autentica` fixture the segmentation passed
+        // a 0.5 confidence gate and then cropped the right-hand side away, taking the price column
+        // with it — every line came back truncated ("TOTAL", "IMPOR", "28/08/") and the total read
+        // as nil with no candidates, a silent miss. Raising the gate was not the fix, because the
+        // damage is invisible to any cheap quality signal: the line *count* was normal, only the
+        // content was cut. Vision reads handheld, moderately angled receipts perfectly well on its
+        // own — all six well-lit fixtures pass on the uncorrected frame — so the correction was pure
+        // downside. Revisit only with a fixture that actually fails without it.
+        guard let cgImage = image.preparedForRecognition() else { return ReceiptDocument() }
+        let plain = try await recognize(cgImage)
+
+        // Low light does not produce *fewer* lines, it produces wrong characters, which is why an
+        // earlier version of this that retried only when the page looked empty never once fired.
+        // On the `scontrino` fixture the dim photo read a full 28 lines and still turned
+        // "DOCUMENTO COMMERCIALE" into "LUCUMENTO COMMERCTALE" (which then won the merchant vote)
+        // and the year 2026 into 2021. So both passes always run and Vision's own mean confidence
+        // picks the winner — the parser has no way to tell a confident misreading from a good one,
+        // but the recognizer does.
+        //
+        // ponytail: this doubles OCR time on every scan, roughly a second, behind a progress
+        // indicator the user already sees. Gate it on the plain pass's confidence if that ever
+        // becomes the complaint.
+        guard let boosted = Self.enhanced(cgImage) else { return plain }
+        let enhanced = try await recognize(boosted)
+        return enhanced.meanConfidence > plain.meanConfidence ? enhanced : plain
+    }
+
+    private static func recognize(_ cgImage: CGImage) async throws -> ReceiptDocument {
         var request = RecognizeDocumentsRequest()
         request.textRecognitionOptions.recognitionLanguages = [Locale.Language(identifier: "it-IT")]
         request.textRecognitionOptions.useLanguageCorrection = true
@@ -38,6 +68,18 @@ enum ReceiptTextRecognizer {
             document.rows.append(contentsOf: observation.document.tables.flatMap(rows(in:)))
         }
         return document
+    }
+
+    /// Boosts contrast and flattens the background the way the document scanner's black-and-white
+    /// filter does. `CIDocumentEnhancer` is built for exactly this input, so no hand-rolled
+    /// thresholding is needed.
+    private static let ciContext = CIContext(options: [.cacheIntermediates: false])
+    private static func enhanced(_ cgImage: CGImage) -> CGImage? {
+        let filter = CIFilter.documentEnhancer()
+        filter.inputImage = CIImage(cgImage: cgImage)
+        filter.amount = 1
+        guard let output = filter.outputImage else { return nil }
+        return ciContext.createCGImage(output, from: output.extent)
     }
 
     /// Multi-page capture (e.g. an itemized receipt plus its separate card-authorization slip,
@@ -82,6 +124,16 @@ enum ReceiptTextRecognizer {
         }
         document.lines.append(contentsOf: recognized)
         document.detectedDates.append(contentsOf: detectedDates(in: text))
+        // The *observation's* confidence, not the candidate's. `RecognizedText.confidence` exists
+        // but `RecognizeDocumentsRequest` leaves it at zero, which made `meanConfidence` zero for
+        // every scan — and since the plain/enhanced choice is a `>` comparison, the enhanced pass
+        // could never win and the low-light path was dead from the day it was written (device log,
+        // 2026-08-29). A metric that is silently zero is worse than no metric: it looks like a
+        // working decision. `ReceiptEndToEndTests` now asserts this is populated.
+        let confidences = observations.map(\.confidence)
+        if !confidences.isEmpty {
+            document.meanConfidence = Double(confidences.reduce(0, +)) / Double(confidences.count)
+        }
         for (index, observation) in observations.enumerated() {
             // The box's **short side**, not its height. `boundingBox` is axis-aligned in page
             // coordinates, so for a receipt lying sideways in an otherwise upright photo (both
@@ -134,12 +186,38 @@ enum ReceiptTextRecognizer {
 }
 
 private extension UIImage {
-    /// Redraws into a fresh bitmap so the pixel buffer itself is upright, rather than relying on
-    /// callers (Vision included) to honor `imageOrientation` — the one property a raw `cgImage`
-    /// strips away. A no-op cost-wise when already `.up` (every document-scanner capture).
-    func normalizedOrientation() -> UIImage {
-        guard imageOrientation != .up else { return self }
-        let renderer = UIGraphicsImageRenderer(size: size)
-        return renderer.image { _ in draw(in: CGRect(origin: .zero, size: size)) }
+    /// The longest side Vision is given. A modern camera's full 12MP is far more than receipt text
+    /// needs, and every pixel is paid for three times over: this bitmap, then each of the two OCR
+    /// passes.
+    ///
+    /// 2000 is measured, not guessed. At 1200 the fixtures fail with a *wrong amount*, not a missing
+    /// one: Vision reads Puce Motorrad's "935,00" as "935,000", which parses as no amount at all, so
+    /// the total falls through to the VAT line and 168,61 is returned confidently with no candidates
+    /// flagged. 1600 passes, but it is one step above that cliff, and the memory argument for going
+    /// lower is already spent — the 440MB blowup was the renderer scale, not the pixel count, and
+    /// 2000px is a ~12MB bitmap. The extra margin is cheaper than a silently wrong total.
+    static let recognitionMaxDimension: CGFloat = 2000
+
+    /// Uprights and downscales in a single redraw, returning pixel data Vision can use directly.
+    ///
+    /// The scale of `1` is load-bearing, not tidiness. `UIGraphicsImageRendererFormat.default()`
+    /// uses the *device* scale — 3 on a Pro Max — and a camera `UIImage` already reports its size in
+    /// pixels with `scale == 1`. Rendering a 4032x3024 frame through the default format therefore
+    /// produced a 12096x9072 bitmap, ~440MB, and the OS killed the app on device (2026-08-29). The
+    /// old VisionKit scanner hid this: its output was already `.up`, so the rotation redraw that
+    /// triggers it never ran.
+    func preparedForRecognition() -> CGImage? {
+        let longest = max(size.width, size.height)
+        let ratio = longest > Self.recognitionMaxDimension ? Self.recognitionMaxDimension / longest : 1
+        // Already upright and already small enough: hand back the pixels untouched.
+        guard ratio < 1 || imageOrientation != .up else { return cgImage }
+
+        let target = CGSize(width: (size.width * ratio).rounded(), height: (size.height * ratio).rounded())
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        format.opaque = true
+        return UIGraphicsImageRenderer(size: target, format: format).image { _ in
+            draw(in: CGRect(origin: .zero, size: target))
+        }.cgImage
     }
 }

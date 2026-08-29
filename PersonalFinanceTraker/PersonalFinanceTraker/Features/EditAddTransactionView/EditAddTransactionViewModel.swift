@@ -115,8 +115,17 @@ final class EditAddTransactionViewModel {
         }
     }
 
+    /// The open-time load, kept so work that *needs* it can wait rather than race it. Category
+    /// inference on a scan is the case that made this necessary: it ran from its own `Task` started
+    /// in the same `onAppear`, and since this one fetches three times (categories, goals, and every
+    /// transaction for the usage tally) while the scan path fetches once, the scan reliably won and
+    /// inferred against an empty category list. Amount, date and merchant filled normally, so the
+    /// symptom was a scan that got everything *except* the category (device report, 2026-08-29).
+    @ObservationIgnored
+    private var loadTask: Task<Void, Never>?
+
     func setTransactionViewModel() {
-        Task {
+        loadTask = Task {
             availableCategories = (try? await repo.fetchCategories()) ?? []
             availableGoals = (try? await repo.fetchGoals()) ?? []
 
@@ -222,6 +231,12 @@ final class EditAddTransactionViewModel {
         receiptTotalCandidates = []
 
         let amountEditable = amount == 0 || isAmountFromScan
+        ReceiptScanDebug.log(
+            step: "apply",
+            "form amount before=\(amount) editable=\(amountEditable) "
+            + "scanAppliedAmount=\(String(describing: scanAppliedAmount)) "
+            + "incoming total=\(String(describing: scan.total)) candidates=\(scan.totalCandidates)"
+        )
         if amountEditable {
             if let total = scan.total {
                 amount = Double(truncating: total as NSDecimalNumber)
@@ -253,6 +268,10 @@ final class EditAddTransactionViewModel {
 
         if let merchant = scan.merchant { receiptMerchant = merchant }
 
+        // Categories are loaded asynchronously when the form opens; without this the inference
+        // below can run against an empty pool and silently produce no category at all.
+        await loadTask?.value
+
         let categoryEditable = selectedCategory == nil || isCategoryFromScan
         if categoryEditable, transactionType != .transfer {
             let inferred = await ReceiptCategoryInferrer.infer(
@@ -264,9 +283,16 @@ final class EditAddTransactionViewModel {
                 usage: categoryUsage
             )
             if let inferred {
-                selectedCategory = inferred
-                scanAppliedCategoryId = inferred.persistentId
-                filled.append(String(localized: "category"))
+                selectedCategory = inferred.category
+                scanAppliedCategoryId = inferred.category.persistentId
+                if inferred.isGuess {
+                    // Deliberately *not* added to `filled`. Claiming to have filled the category
+                    // from a receipt that said nothing about it is what made a wrong guess read as
+                    // a confident answer, and the user had no cue to check it.
+                    notes.append(String(localized: "Guessed the category — check it"))
+                } else {
+                    filled.append(String(localized: "category"))
+                }
             }
         }
 
@@ -276,6 +302,12 @@ final class EditAddTransactionViewModel {
             scanAppliedName = merchant
             filled.append(String(localized: "merchant"))
         }
+
+        ReceiptScanDebug.log(
+            step: "done",
+            "amount=\(amount) category=\(selectedCategory?.name ?? "nil") "
+            + "name=\(transactionName) candidatesShown=\(receiptTotalCandidates)"
+        )
 
         if filled.isEmpty && notes.isEmpty && receiptTotalCandidates.isEmpty {
             receiptStatusMessage = String(localized: "Couldn't read this receipt — try better light, or enter it manually")
