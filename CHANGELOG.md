@@ -7,6 +7,9 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Scan receipt: either volume button now takes the shot, like in the Camera app, so you can hold the phone steady over the receipt instead of reaching for the on-screen shutter.
+
+## 80 — 2026-08-29
 - New "Scan Receipt" home-screen widget (small, plus a Lock Screen circular one): tapping it opens the app straight into the receipt camera — no menu, no choosing between photo and camera.
 - Scan receipt: the photo is now trimmed to the receipt the camera outlined, so a second receipt lying on the same table can no longer contribute its total. Previously a €5 receipt could come back with the amount of the one next to it, or ask you to choose between the two.
 - Scan receipt: when the category could not be worked out from the receipt, the scan now says "Guessed the category — check it" instead of reporting it as filled in. The category is a required field so something is always chosen, but a guess no longer looks like a reading.

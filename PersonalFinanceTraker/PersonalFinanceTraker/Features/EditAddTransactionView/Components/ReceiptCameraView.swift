@@ -21,6 +21,7 @@
 //
 
 import AVFoundation
+import AVKit
 import SwiftUI
 import UIKit
 import Vision
@@ -66,6 +67,12 @@ struct ReceiptCameraView: View {
         // view paints its own black ground and white controls, so neither bought anything.
         .task { await model.start() }
         .onDisappear { model.stop() }
+        // Volume buttons (and any other hardware capture button) fire the shutter, same as the
+        // system Camera app. `.ended` only: `.began` would shoot on press-down, so a long press
+        // would fire twice.
+        .onCameraCaptureEvent { event in
+            if event.phase == .ended { capture() }
+        }
     }
 
     /// The live outline. Purely informational — it never gates the shutter, and nothing about the
@@ -149,6 +156,9 @@ struct ReceiptCameraView: View {
     }
 
     private func capture() {
+        // The shutter button is disabled while capturing; a hardware button is not, so a second
+        // press would otherwise land on the model's own guard and report a bogus failure.
+        guard !model.isCapturing, model.isAuthorized else { return }
         Task {
             guard let image = await model.capture() else {
                 finish(with: .failure(ReceiptCameraError.captureFailed))
@@ -220,6 +230,15 @@ final class ReceiptCameraModel {
     private var frameDelegate: FrameDelegate?
     @ObservationIgnored
     private let frameQueue = DispatchQueue(label: "receipt.camera.frames")
+    /// Apple's rule for `AVCaptureSession`: configuration and `startRunning`/`stopRunning` are
+    /// blocking calls, and they belong on one serial queue of your own — never the main one.
+    ///
+    /// Breaking it is invisible on a device and near-fatal on the simulator, which has no camera:
+    /// the fake session fails immediately with -12782, and *every* graph rebuild after that sits
+    /// out a nine-second timeout on whatever thread asked for it. Three of those landing on the
+    /// main thread froze the app on its splash screen for half a minute.
+    @ObservationIgnored
+    private let sessionQueue = DispatchQueue(label: "receipt.camera.session")
     /// Weak: the layer belongs to the view, which outlives nothing here and is torn down first.
     @ObservationIgnored
     private weak var previewLayer: AVCaptureVideoPreviewLayer?
@@ -240,11 +259,15 @@ final class ReceiptCameraModel {
         isAuthorized = await AVCaptureDevice.requestAccess(for: .video)
         guard isAuthorized else { return }
         if !isConfigured {
-            configure()
             isConfigured = true
+            let delegate = FrameDelegate { [weak self] quad in
+                Task { @MainActor in self?.updateQuad(quad) }
+            }
+            frameDelegate = delegate
+            device = await configure(frameDelegate: delegate)
+            hasTorch = device?.hasTorch ?? false
         }
-        let session = session
-        await Task.detached { session.startRunning() }.value
+        await onSessionQueue { [session] in session.startRunning() }
 
         // *After* startRunning, deliberately. Device focus/exposure set inside the
         // beginConfiguration/commitConfiguration transaction is applied to a session that is not
@@ -281,8 +304,7 @@ final class ReceiptCameraModel {
             device.torchMode = .off
             device.unlockForConfiguration()
         }
-        let session = session
-        Task.detached { session.stopRunning() }
+        stopSession()
     }
 
     func toggleTorch() {
@@ -406,32 +428,45 @@ final class ReceiptCameraModel {
         }
     }
 
-    private func configure() {
-        session.beginConfiguration()
-        session.sessionPreset = .photo
-        // Wide angle only. The ultra-wide and telephoto lenses of a `.builtInDualCamera` virtual
-        // device switch by subject distance, and a receipt held close is exactly the range where
-        // that switch happens mid-aim.
-        let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
-        self.device = device
-        if let device, let input = try? AVCaptureDeviceInput(device: device), session.canAddInput(input) {
-            session.addInput(input)
-            hasTorch = device.hasTorch
-        }
-        if session.canAddOutput(output) { session.addOutput(output) }
+    /// Fire-and-forget counterpart to `onSessionQueue`, for a teardown nobody waits on.
+    private nonisolated func stopSession() {
+        sessionQueue.async { [session] in session.stopRunning() }
+    }
 
-        // A second, cheap output purely to drive the on-screen outline. Late frames are discarded
-        // rather than queued: falling behind the live feed would draw the outline where the receipt
-        // *was*, which is worse than not drawing it.
-        videoOutput.alwaysDiscardsLateVideoFrames = true
-        let delegate = FrameDelegate { [weak self] quad in
-            Task { @MainActor in self?.updateQuad(quad) }
+    /// Runs blocking session work on `sessionQueue` and suspends until it is done.
+    private nonisolated func onSessionQueue<T: Sendable>(
+        _ work: @escaping @Sendable () -> T
+    ) async -> T {
+        await withCheckedContinuation { continuation in
+            sessionQueue.async { continuation.resume(returning: work()) }
         }
-        frameDelegate = delegate
-        videoOutput.setSampleBufferDelegate(delegate, queue: frameQueue)
-        if session.canAddOutput(videoOutput) { session.addOutput(videoOutput) }
+    }
 
-        session.commitConfiguration()
+    /// Returns the capture device rather than assigning it, so nothing here touches main-actor
+    /// state from the session queue.
+    private nonisolated func configure(frameDelegate: FrameDelegate) async -> AVCaptureDevice? {
+        await onSessionQueue { [session, output, videoOutput, frameQueue] in
+            session.beginConfiguration()
+            session.sessionPreset = .photo
+            // Wide angle only. The ultra-wide and telephoto lenses of a `.builtInDualCamera` virtual
+            // device switch by subject distance, and a receipt held close is exactly the range where
+            // that switch happens mid-aim.
+            let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+            if let device, let input = try? AVCaptureDeviceInput(device: device), session.canAddInput(input) {
+                session.addInput(input)
+            }
+            if session.canAddOutput(output) { session.addOutput(output) }
+
+            // A second, cheap output purely to drive the on-screen outline. Late frames are discarded
+            // rather than queued: falling behind the live feed would draw the outline where the receipt
+            // *was*, which is worse than not drawing it.
+            videoOutput.alwaysDiscardsLateVideoFrames = true
+            videoOutput.setSampleBufferDelegate(frameDelegate, queue: frameQueue)
+            if session.canAddOutput(videoOutput) { session.addOutput(videoOutput) }
+
+            session.commitConfiguration()
+            return device
+        }
     }
 
     /// Converts Vision's normalized corners into points the outline can be drawn with.
