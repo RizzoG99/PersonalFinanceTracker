@@ -12,7 +12,6 @@ struct AuthenticationWrapper: View {
 
     @State private var isPINSetup: Bool = UserDefaults.standard.bool(forKey: "pin_setup_complete")
     @State private var showSplash = true
-    @State private var isCaptured = Self.isScreenCaptured()
     // Owned here (not by MainTabView) since AuthenticationWrapper is never torn down
     // while the app is running, and neither is the shell below anymore (see `overlay`) —
     // but keeping ownership here still protects against a future shell rebuild resetting it.
@@ -46,15 +45,14 @@ struct AuthenticationWrapper: View {
 
     private enum Overlay: Equatable {
         case none
-        /// Task-switcher snapshot / screen-capture cover. Wins over `.pin` so an `.inactive`
-        /// relock never flashes the PIN pad mid-transition.
+        /// Task-switcher snapshot cover. Wins over `.pin` so an `.inactive` relock never
+        /// flashes the PIN pad mid-transition.
         case cover
         case pin
     }
 
     private var overlay: Overlay {
         if showSplash { return .none } // splash is already shown in-window
-        if isCaptured { return .cover }
         if scenePhase != .active {
             // Face ID's own evaluatePolicy call causes a brief scenePhase
             // inactive→active blip while it presents the system HUD — that's not a
@@ -243,9 +241,6 @@ struct AuthenticationWrapper: View {
             isPINSetup = true
             authService.unlock()
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIScreen.capturedDidChangeNotification)) { _ in
-            isCaptured = Self.isScreenCaptured()
-        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background && isPINSetup {
                 authService.lock()
@@ -263,12 +258,5 @@ struct AuthenticationWrapper: View {
                 }
             }
         }
-    }
-
-    // ponytail: single-window app, so "any captured scene" is the scene.
-    private static func isScreenCaptured() -> Bool {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .contains { $0.screen.isCaptured }
     }
 }

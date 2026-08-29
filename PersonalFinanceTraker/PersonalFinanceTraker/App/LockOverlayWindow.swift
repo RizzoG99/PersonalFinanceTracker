@@ -25,14 +25,19 @@ final class LockOverlayWindow {
     ///   screen. A rebuilt hosting controller on every call is deliberate: a fresh view (and, for
     ///   the PIN screen, a fresh view model) means no stale state carried over from the last lock.
     func show(interactive: Bool, @ViewBuilder content: () -> some View) {
-        // ponytail: single-window app (matches AuthenticationWrapper.isScreenCaptured()'s
-        // same assumption) — first connected scene is always the right one.
+        // ponytail: single-window app — first connected scene is always the right one.
         guard let scene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first
         else { return }
 
         let window = self.window ?? UIWindow(windowScene: scene)
+        // Matches PersonalFinanceTrakerApp's UIWindow.appearance() base color: without it, a
+        // freshly created UIWindow has no explicit background, so the first frame or two — before
+        // the hosted SwiftUI content has actually laid out — shows through as a plain white/black
+        // flash instead of the app's base color. Belt-and-suspenders with the appearance proxy
+        // since this window is recreated on every cold launch, not just app startup.
+        window.backgroundColor = UIColor(named: "LaunchBackground")
         let hosting = UIHostingController(rootView: content())
         hosting.view.backgroundColor = .clear
         window.rootViewController = hosting
@@ -50,7 +55,10 @@ final class LockOverlayWindow {
     }
 
     func hide() {
+        // Kept alive (not nil'd out): show() always builds a fresh hosting controller anyway
+        // (see its doc comment), so there's nothing stale to worry about — but discarding the
+        // window here meant *every* lock/unlock cycle, not just cold launch, paid the first-frame
+        // window-creation race that caused the flash this file's other comment describes.
         window?.isHidden = true
-        window = nil
     }
 }
