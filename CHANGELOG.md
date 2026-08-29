@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 - Scan receipt: either volume button now takes the shot, like in the Camera app, so you can hold the phone steady over the receipt instead of reaching for the on-screen shutter.
+- Italian now covers Settings discovery and Analysis labels, and the Settings close button immediately follows a theme change.
 
 ## 80 — 2026-08-29
 - New "Scan Receipt" home-screen widget (small, plus a Lock Screen circular one): tapping it opens the app straight into the receipt camera — no menu, no choosing between photo and camera.

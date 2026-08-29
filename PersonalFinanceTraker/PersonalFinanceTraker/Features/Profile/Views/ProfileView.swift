@@ -21,6 +21,7 @@ struct ProfileView: View {
     @Environment(DataChangedSignal.self) private var dataChanged
     @Environment(AppSettings.self) private var appSettings
     @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showingFileImporter = false
     @State private var showingDeleteConfirmation = false
     @State private var showingPINConfirmation = false
@@ -308,6 +309,10 @@ struct ProfileView: View {
                                 .padding(8)
                         }
                         .accessibilityLabel("Close")
+                        // SwiftUI can retain toolbar content across an appearance change. Give
+                        // this color-sensitive control a new identity so its semantic color is
+                        // resolved again as soon as Settings switches themes.
+                        .id(colorScheme)
                     }
                 }
             }

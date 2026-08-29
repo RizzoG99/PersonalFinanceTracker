@@ -34,7 +34,11 @@ struct CategoryTrendRow: View {
                         .font(.body)
                         .foregroundStyle(.textPrimary)
                         .lineLimit(1)
-                    Text(String(format: "%.1f%% of total", trend.category.percentage))
+                    Text(String(
+                        format: String(localized: "%.1f%% of total"),
+                        locale: .current,
+                        trend.category.percentage
+                    ))
                         .font(.caption)
                         .foregroundStyle(.textDim)
                 }
@@ -67,7 +71,7 @@ struct CategoryTrendRow: View {
     private var trendBadge: some View {
         if trend.isNew {
             return AnyView(
-                Text("new")
+                Text(String(localized: "new"))
                     .font(.caption.bold())
                     .foregroundStyle(.textDim)
                     .padding(.horizontal, 6)
