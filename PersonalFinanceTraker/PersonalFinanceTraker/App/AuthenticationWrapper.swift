@@ -55,12 +55,20 @@ struct AuthenticationWrapper: View {
         if showSplash { return .none } // splash is already shown in-window
         if scenePhase != .active {
             // Face ID's own evaluatePolicy call causes a brief scenePhase
-            // inactive→active blip while it presents the system HUD — that's not a
-            // real backgrounding/task-switcher event, so don't let it flash the
-            // (non-interactive) splash cover in on top of the PIN screen, which is
-            // already an adequate cover for the moment.
+            // inactive→active blip while it presents (and dismisses) the system HUD —
+            // that's not a real backgrounding/task-switcher event, so don't let it
+            // flash the (non-interactive) splash cover in. `isUnlocked` is checked
+            // separately from `isAuthenticating` (not just `!isAuthenticating &&
+            // isUnlocked`): the completion handler sets them in two separate
+            // `@Published` writes, so there's a real intermediate render where
+            // isAuthenticating has already gone false but isUnlocked hasn't gone true
+            // yet — during that gap this used to fall through to `.cover` and show a
+            // second splash right after a successful unlock, before scenePhase caught up.
+            if authService.isUnlocked {
+                return .none
+            }
             if authService.isAuthenticating {
-                return isPINSetup && !authService.isUnlocked ? .pin : .none
+                return isPINSetup ? .pin : .none
             }
             return .cover
         }

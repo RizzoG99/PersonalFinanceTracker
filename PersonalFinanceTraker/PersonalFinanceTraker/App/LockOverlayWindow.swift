@@ -19,11 +19,20 @@ import UIKit
 @MainActor
 final class LockOverlayWindow {
     private var window: UIWindow?
+    // Kept alive and reused across calls — see `show()`'s comment on why swapping `rootView` in
+    // place (instead of replacing `window.rootViewController`) is what actually removed the flash.
+    private var hosting: UIHostingController<AnyView>?
 
     /// Presents `content` full-screen above everything else, including UIKit modals.
     /// - Parameter interactive: `false` for the privacy cover (nothing to tap), `true` for the PIN
-    ///   screen. A rebuilt hosting controller on every call is deliberate: a fresh view (and, for
-    ///   the PIN screen, a fresh view model) means no stale state carried over from the last lock.
+    ///   screen. `content()` is still called fresh every time — a fresh view (and, for the PIN
+    ///   screen, a fresh view model) means no stale state carried over from the last lock — but it
+    ///   now replaces the *existing* hosting controller's `rootView` instead of swapping in a brand
+    ///   new `UIViewController` via `window.rootViewController`. Re-parenting the root view
+    ///   controller forces a full view-controller-lifecycle + first-layout pass on every call,
+    ///   which is what produced ~600ms of blank window (just the window's plain background color,
+    ///   no content yet) on every lock/unlock cycle — reusing the hosting controller and letting
+    ///   SwiftUI diff the new `rootView` in is effectively instant instead.
     func show(interactive: Bool, @ViewBuilder content: () -> some View) {
         // ponytail: single-window app — first connected scene is always the right one.
         guard let scene = UIApplication.shared.connectedScenes
@@ -38,9 +47,15 @@ final class LockOverlayWindow {
         // flash instead of the app's base color. Belt-and-suspenders with the appearance proxy
         // since this window is recreated on every cold launch, not just app startup.
         window.backgroundColor = UIColor(named: "LaunchBackground")
-        let hosting = UIHostingController(rootView: content())
-        hosting.view.backgroundColor = .clear
-        window.rootViewController = hosting
+
+        if let hosting {
+            hosting.rootView = AnyView(content())
+        } else {
+            let hosting = UIHostingController(rootView: AnyView(content()))
+            hosting.view.backgroundColor = .clear
+            window.rootViewController = hosting
+            self.hosting = hosting
+        }
         window.windowLevel = .alert + 1
         // Opaque content already blocks visual leakage; this additionally stops VoiceOver
         // from reaching the shell underneath while the overlay is up. Must be set on the
