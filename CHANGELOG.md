@@ -7,6 +7,8 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+
+## 81 — 2026-08-29
 - Scan receipt: either volume button now takes the shot, like in the Camera app, so you can hold the phone steady over the receipt instead of reaching for the on-screen shutter.
 - Italian now covers Settings discovery and Analysis labels, and the Settings close button immediately follows a theme change.
 
