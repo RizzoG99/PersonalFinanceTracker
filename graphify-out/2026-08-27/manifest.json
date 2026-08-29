@@ -225,18 +225,18 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift": {
-    "mtime": 1787911262.5290856,
-    "ast_hash": "e5c88b6b41cbf5ade8b76053aa7dbdb8",
+    "mtime": 1787837724.0608952,
+    "ast_hash": "11263f567823eaea3dcee7147cf7a118",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift": {
-    "mtime": 1787914086.7256463,
-    "ast_hash": "54093037219a535de7fede0bca2f0dd0",
+    "mtime": 1787837602.2244508,
+    "ast_hash": "1dc2de0bb2b7f009591d349086d98cf3",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionViewModel.swift": {
-    "mtime": 1787912891.6447098,
-    "ast_hash": "9d442e25c8be29fe592ef31256e6396e",
+    "mtime": 1787837495.0785112,
+    "ast_hash": "552a0430561ef3125c2427239c1d4bcb",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Insights/Components/AddGoalSheet.swift": {
@@ -2130,8 +2130,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/TransactionFormTips.swift": {
-    "mtime": 1787910294.7890058,
-    "ast_hash": "5165afc8c53070cdab8436a39d21bb6f",
+    "mtime": 1787830995.0432332,
+    "ast_hash": "6e719481ebd1e12930687a2c5fd1db89",
     "semantic_hash": ""
   },
   "docs/features/2026-08-06-transaction-flow-ideas.md": {
@@ -2175,8 +2175,8 @@
     "semantic_hash": ""
   },
   "scripts/xcb": {
-    "mtime": 1787882572.4349935,
-    "ast_hash": "b10a3bb598bd74ad35daa47b8269c472",
+    "mtime": 1787830995.589136,
+    "ast_hash": "fffe2b580532cd7a6339ae7800e7c318",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/RecurringView.swift": {
@@ -2350,8 +2350,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1787913350.2171452,
-    "ast_hash": "25473583ba6087050822a72e725913af",
+    "mtime": 1787842997.5853307,
+    "ast_hash": "69ba824dec8df32b2477f1bcf9ac7e77",
     "semantic_hash": ""
   },
   ".agents/skills/swiftui-pro/assets/swiftui-pro-icon.png": {
@@ -2375,38 +2375,33 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ReceiptCategoryInferrer.swift": {
-    "mtime": 1787912868.3161142,
-    "ast_hash": "c793499d969910a89b8e96bfdc56ed0e",
+    "mtime": 1787833659.5295653,
+    "ast_hash": "2bb7c492b219bc7c714aa9d0245c5182",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ReceiptParser.swift": {
-    "mtime": 1787912725.9762836,
-    "ast_hash": "d257b521b9d397ec43de69cc18c894ae",
+    "mtime": 1787837146.4613466,
+    "ast_hash": "5ff8c6cedce74c144fdd2824d994c170",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ReceiptTextRecognizer.swift": {
-    "mtime": 1787913316.5460067,
-    "ast_hash": "154c99bbe60dfb3e4f48db2286bbb123",
+    "mtime": 1787837665.7653997,
+    "ast_hash": "27f8424d3c81b51d9f6164f179664cf0",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift": {
-    "mtime": 1787912946.572085,
-    "ast_hash": "6a7aa5cc1e2088b0cf351d81a6e49497",
+    "mtime": 1787836912.1881773,
+    "ast_hash": "2f8f0a5b1389d7f15479ffd573a1d52b",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptParserTests.swift": {
-    "mtime": 1787912964.5035212,
-    "ast_hash": "e2cb114001957ece9091de60b6d14e15",
+    "mtime": 1787837174.5250142,
+    "ast_hash": "11c007288fc22e36d950db6e5690545e",
     "semantic_hash": ""
   },
   "docs/features/2026-08-27-scan-receipt-autofill.md": {
     "mtime": 1787832810.2636654,
     "ast_hash": "d1b786e478606864898f287647fdfca9",
-    "semantic_hash": ""
-  },
-  "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/MerchantCategoryLookup.swift": {
-    "mtime": 1787913602.1442173,
-    "ast_hash": "961ffd354ba9bb8d71ca51f27864af10",
     "semantic_hash": ""
   }
 }

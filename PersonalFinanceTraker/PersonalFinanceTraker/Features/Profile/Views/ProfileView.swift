@@ -4,7 +4,7 @@ import SwiftData
 import CoreTransferable
 
 enum ProfileRoute: Hashable {
-    case categories, budgets, changePIN
+    case categories, scanCategories, budgets, changePIN
 }
 
 struct ProfileView: View {
@@ -279,6 +279,7 @@ struct ProfileView: View {
                 .navigationDestination(item: $route) { route in
                     switch route {
                     case .categories: CategorySettingsView()
+                    case .scanCategories: ReceiptCategoryMappingView()
                     case .budgets: BudgetsView()
                     case .changePIN:
                         PINSetupView(

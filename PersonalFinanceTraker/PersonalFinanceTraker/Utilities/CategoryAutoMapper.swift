@@ -74,6 +74,14 @@ enum CategoryAutoMapper {
         return map
     }()
 
+    /// The single canonical concept a keyword belongs to, e.g. "ristorante" → "restaurant".
+    /// Filtered to real canonical keys: `canonicalKeywords` also returns the raw tokens it was
+    /// given, so "bar" would otherwise answer "bar" (it sorts before "restaurant") instead of the
+    /// concept it belongs to. Sorted rather than `.first` on the set so the answer is stable.
+    static func canonicalConcept(for text: String) -> String? {
+        canonicalKeywords(for: text).filter { synonyms.keys.contains($0) }.sorted().first
+    }
+
     /// Returns the canonical keyword set for a given string (CSV category or app category name).
     private static func canonicalKeywords(for text: String) -> Set<String> {
         let tokens = text.lowercased()

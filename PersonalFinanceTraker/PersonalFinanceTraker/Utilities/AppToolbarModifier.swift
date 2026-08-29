@@ -14,8 +14,14 @@ struct AppToolbarModifier: ViewModifier {
     /// When false, the gear/＋ items are hidden (e.g. while the Activity list is in
     /// multi-select mode and shows its own Cancel / count / Select All toolbar instead).
     var enabled: Bool = true
+    /// When set, a second "Scan receipt" button appears next to "+ Add" that jumps straight to
+    /// the scan-source dialog and runs capture right from here — see ReceiptScanShortcut's header
+    /// comment for why the whole flow lives on this button rather than inside Add Transaction.
+    /// Fires with the parsed result once scanning succeeds. Nil hides the button (e.g. previews).
+    var onScanned: ((ReceiptScan) -> Void)? = nil
     @State private var showingProfile = false
     @State private var selectedDetent: PresentationDetent = .large
+    @State private var showingScanDialog = false
 
     /// The iPad shell owns these actions itself — Settings is a sidebar destination and Add
     /// lives in the shell's toolbar — so showing them again per screen would duplicate both.
@@ -36,6 +42,22 @@ struct AppToolbarModifier: ViewModifier {
                         }
                         .font(.headline)
                         .foregroundStyle(.textPrimary)
+                    }
+                    if onScanned != nil {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Scan receipt", systemImage: "doc.text.viewfinder") {
+                                showingScanDialog = true
+                            }
+                            .font(.headline)
+                            .foregroundStyle(.textPrimary)
+                            .accessibilityHint("Fill a new transaction from a photo of a receipt")
+                            // Attached directly to this button (not up at the shell/TabView level)
+                            // so the confirmationDialog anchors to it — anchoring it further up
+                            // the tree floated the dialog to a wrong, off-center position on iOS 26.
+                            .receiptScanShortcut(isPresented: $showingScanDialog) { scan in
+                                onScanned?(scan)
+                            }
+                        }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Add transaction", systemImage: "plus") {
@@ -76,7 +98,7 @@ struct AppToolbarModifier: ViewModifier {
 }
 
 extension View {
-    func appToolbar(showingAddItemView: Binding<Bool>, enabled: Bool = true) -> some View {
-        modifier(AppToolbarModifier(showingAddItemView: showingAddItemView, enabled: enabled))
+    func appToolbar(showingAddItemView: Binding<Bool>, enabled: Bool = true, onScanned: ((ReceiptScan) -> Void)? = nil) -> some View {
+        modifier(AppToolbarModifier(showingAddItemView: showingAddItemView, enabled: enabled, onScanned: onScanned))
     }
 }

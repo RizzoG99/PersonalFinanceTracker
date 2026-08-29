@@ -29,6 +29,7 @@ enum AppContainer {
             HealthScoreSnapshot.self,
             DailyForecastCache.self,
             RecurrenceRule.self,
+            MerchantCategoryMapping.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
@@ -63,6 +64,7 @@ enum AppContainer {
                 HealthScoreSnapshot.self,
                 DailyForecastCache.self,
                 RecurrenceRule.self,
+                MerchantCategoryMapping.self,
             ])
             let fallbackConfig = ModelConfiguration(
                 schema: fallbackSchema,

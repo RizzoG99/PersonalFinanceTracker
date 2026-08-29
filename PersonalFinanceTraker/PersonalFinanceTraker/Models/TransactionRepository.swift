@@ -93,6 +93,10 @@ protocol ITransactionRepository {
     // Forecast cache
     func fetchForecastCache() async throws -> DailyForecastCacheData?
     func saveForecastCache(_ data: DailyForecastCacheData) async throws
+
+    // Receipt scan: learned merchant → category, keyed by ReceiptCategoryInferrer.normalize(merchant)
+    func fetchMerchantCategoryMappings() async throws -> [String: UUID]
+    func saveMerchantCategoryMapping(merchant: String, categoryId: UUID) async throws
 }
 
 extension SearchFilters {

@@ -22,6 +22,11 @@ struct IPadRootView: View {
     /// Home rather than as an empty content column.
     @State private var section: IPadSection? = .home
     @State private var showingAddItemView = false
+    /// Set once the sidebar's "Scan receipt" button finishes its own capture+recognition flow
+    /// (see ReceiptScanShortcut) — carried into the inspector's Add Transaction, which then
+    /// opens already filled in.
+    @State private var pendingReceiptScan: ReceiptScan?
+    @State private var showingScanDialog = false
     /// ProfileView takes this binding to drive its own sheet detents on iPhone. As a sidebar
     /// destination there is no sheet to size, so nothing observes it — it just satisfies the API.
     @State private var profileDetent: PresentationDetent = .large
@@ -37,7 +42,7 @@ struct IPadRootView: View {
         // shaking an iPad isn't a comfortable gesture anyway — issue #52.
         .hideAmountsShortcut(appSettings)
         .inspector(isPresented: inspectorPresented) {
-            IPadInspector(models: models, showingAddItemView: $showingAddItemView)
+            IPadInspector(models: models, showingAddItemView: $showingAddItemView, pendingReceiptScan: pendingReceiptScan)
                 .inspectorColumnWidth(min: 320, ideal: 400, max: 560)
         }
         .background { AppBackground() }
@@ -139,6 +144,19 @@ struct IPadRootView: View {
         .scrollContentBackground(.hidden)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                Button("Scan receipt", systemImage: "doc.text.viewfinder") {
+                    showingScanDialog = true
+                }
+                .accessibilityHint("Fill a new transaction from a photo of a receipt")
+                // Attached directly to this button, not further up the shell — anchoring the
+                // confirmationDialog higher up floated it to a wrong, off-center position on
+                // iOS 26 (same fix as AppToolbarModifier's iPhone button).
+                .receiptScanShortcut(isPresented: $showingScanDialog) { scan in
+                    pendingReceiptScan = scan
+                    showingAddItemView = true
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
                 Button("Add transaction", systemImage: "plus") {
                     showingAddItemView = true
                 }
@@ -200,6 +218,7 @@ struct IPadRootView: View {
             set: { presented in
                 guard !presented else { return }
                 showingAddItemView = false
+                pendingReceiptScan = nil
                 models.transactions.transactionToEdit = nil
                 models.compass.showingAddGoal = false
                 models.compass.goalEditDraft = nil

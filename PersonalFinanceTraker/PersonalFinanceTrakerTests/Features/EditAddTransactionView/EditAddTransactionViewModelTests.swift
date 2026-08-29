@@ -33,6 +33,28 @@ struct EditAddTransactionViewModelTests {
         #expect(vm.shouldAutoFocusAmount == false)
     }
 
+    // MARK: - Receipt scan
+
+    /// Reproduces the category race: `setTransactionViewModel()` loads the categories in its own
+    /// `Task`, and a scan applied straight afterwards — which is exactly what the Home/Activity
+    /// shortcut does on `onAppear` — used to infer against an empty pool and fill everything except
+    /// the category. Fails without the `await loadTask?.value` in `applyReceiptScan`.
+    @Test @MainActor func scanAppliedRightAfterOpeningStillGetsACategory() async {
+        let repo = MockTransactionRepository()
+        repo.stubbedCategories = [expenseCat(), incomeCat()]
+        let vm = EditAddTransactionViewModel(editingItem: nil, repo: repo)
+
+        // No `await` between these two on purpose — the bug only appears when the scan does not
+        // give the loader a chance to finish first.
+        vm.setTransactionViewModel()
+        var scan = ReceiptScan()
+        scan.total = 5.00
+        scan.merchant = "Cremeria"
+        await vm.applyReceiptScan(scan, learnedMerchants: [:])
+
+        #expect(vm.selectedCategory != nil, "a scan must always leave the required category filled")
+    }
+
     // MARK: isFormValid
 
     // Name is optional: a blank/whitespace name is valid as long as amount + category are set

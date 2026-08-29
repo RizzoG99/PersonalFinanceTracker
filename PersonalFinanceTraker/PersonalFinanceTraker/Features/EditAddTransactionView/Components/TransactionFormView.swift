@@ -53,6 +53,12 @@ struct TransactionFormView: View {
     /// `syncTipVisibility()` for why this is stored state rather than a computed property.
     @State private var tipVisible = false
 
+    /// Manual dismissal for `ScannedFieldsBanner`, separate from `viewModel.hasScannedFields` so
+    /// closing it doesn't require touching every scanned field. Reset on the `onChange` below
+    /// whenever a new scan runs, so the banner comes back for that scan even if a previous one
+    /// was dismissed.
+    @State private var dismissedScanBanner = false
+
     // .popoverTip() doesn't anchor from the keyboard accessory bar — it lives in
     // UIRemoteKeyboardWindow, not the app window (verified on-device, issue #31).
     // Pinned above the accessory bar instead, via the .safeAreaInset below, so it
@@ -78,6 +84,19 @@ struct TransactionFormView: View {
         VStack(alignment: .leading, spacing: 16) {
             ScrollViewReader { proxy in
                 Form {
+                    // One dismissible banner instead of repeating "Scanned — check before saving"
+                    // under every affected field (up to 4 identical sentences on screen at once,
+                    // on top of the more specific per-scan summary already in the Amount section's
+                    // footer below). Reappears on a fresh scan via the onChange below; individual
+                    // fields carry no visual marker, but keep an accessibility hint for VoiceOver.
+                    if viewModel.hasScannedFields, !dismissedScanBanner {
+                        Section {
+                            ScannedFieldsBanner { dismissedScanBanner = true }
+                        }
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                    }
+
                     Section {
                         CurrencyAmountField(
                             label: "Amount",
@@ -88,6 +107,18 @@ struct TransactionFormView: View {
                             focusTrigger: focusTrigger,
                             focus: $focusedField
                         )
+                        .accessibilityHint(viewModel.isAmountFromScan ? String(localized: "Scanned — check before saving") : "")
+                        if !viewModel.receiptTotalCandidates.isEmpty {
+                            ReceiptTotalCandidatesRow(
+                                candidates: viewModel.receiptTotalCandidates,
+                                currencyCode: viewModel.currencyCode,
+                                onSelect: viewModel.selectReceiptTotalCandidate
+                            )
+                        }
+                    } footer: {
+                        if let status = viewModel.receiptStatusMessage {
+                            Text(status)
+                        }
                     }
                     .appFormSectionBackground()
                     .id(TransactionFormField.amount)
@@ -150,6 +181,9 @@ struct TransactionFormView: View {
                                 selectedCategory: $viewModel.selectedCategory,
                                 onCategoryCreated: viewModel.selectCreatedCategory
                             )
+                            // Category is always filled by a scan (even when guessed) — the banner
+                            // above covers the "check this" nudge, so no per-field caption here.
+                            .accessibilityHint(viewModel.isCategoryFromScan ? String(localized: "Scanned — check before saving") : "")
                         } header: {
                             Text("Category")
                         }
@@ -164,6 +198,7 @@ struct TransactionFormView: View {
                             // one in the chain.
                             .submitLabel(.done)
                             .onSubmit { focusedField = nil }
+                            .accessibilityHint(viewModel.isNameFromScan ? String(localized: "Scanned — check before saving") : "")
                     }
                     .appFormSectionBackground()
                     .id(TransactionFormField.name)
@@ -175,6 +210,7 @@ struct TransactionFormView: View {
                             displayedComponents: [.date]
                         )
                         .tint(.accentIndigo)
+                        .accessibilityHint(viewModel.isDateFromScan ? String(localized: "Scanned — check before saving") : "")
                     }
                     .appFormSectionBackground()
 
@@ -343,6 +379,7 @@ struct TransactionFormView: View {
                     syncTipVisibility()
                 }
                 .onChange(of: viewModel.transactionType) { _, _ in updateTipEligibility() }
+                .onChange(of: viewModel.receiptStatusMessage) { _, _ in dismissedScanBanner = false }
             }
         }
     }
@@ -462,6 +499,67 @@ struct TransactionFormView: View {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         return formatter.string(from: NSNumber(value: value)) ?? ""
+    }
+}
+
+// MARK: - Receipt scan
+
+/// The "this came from a scan, check it" notice — one dismissible banner at the top of the form
+/// instead of repeating the same caption under every affected field (up to 4 identical sentences
+/// on screen at once, a UX pass on 2026-08-28 cut). Icon + text (never color alone) so it still
+/// reads under Differentiate Without Color. Reappears on a fresh scan since `dismissedScanBanner`
+/// resets whenever `receiptStatusMessage` changes; individual fields keep an accessibility hint
+/// (see the `.accessibilityHint` calls above) so VoiceOver users still get the per-field signal
+/// this banner doesn't carry.
+private struct ScannedFieldsBanner: View {
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "sparkles")
+                .foregroundStyle(Color.accentIndigo)
+            Text("Some fields were filled from your receipt — review before saving.")
+                .font(.subheadline)
+                .foregroundStyle(.textMid)
+            Spacer(minLength: 0)
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.textDim)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.surfaceRaised, in: RoundedRectangle(cornerRadius: 16))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Shown under Amount only when the parser found several disagreeing total-keyword lines (the
+/// CONTANTI-style ambiguity) — picking one clears the row and fills Amount, marked as scanned.
+private struct ReceiptTotalCandidatesRow: View {
+    let candidates: [Decimal]
+    let currencyCode: String
+    let onSelect: (Decimal) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Which total is right?")
+                .font(.subheadline)
+                .foregroundStyle(.textMid)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(candidates, id: \.self) { candidate in
+                        Button(AmountParser.format(candidate, currencyCode: currencyCode)) {
+                            onSelect(candidate)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
     }
 }
 

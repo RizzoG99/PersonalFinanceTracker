@@ -25,6 +25,24 @@ struct ProfileCategoriesSection: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+
+            Divider().overlay(Color.hairline)
+
+            Button {
+                selectedDetent = .large
+                route = .scanCategories
+            } label: {
+                HStack {
+                    Text("Scan Categories")
+                        .foregroundStyle(.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.textDim)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 }

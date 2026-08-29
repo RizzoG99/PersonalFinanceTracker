@@ -10,11 +10,14 @@ struct AmountParserTests {
     }
 
     @Test func parsesItalianDecimalAndGroupingSeparators() {
-        #expect(AmountParser.parse("1.234,56", locale: Locale(identifier: "it_IT")) == 1234.56)
+        // Decimal(floatLiteral:) round-trips through Double, so a bare `1234.56` literal here is
+        // itself imprecise (1234.5599999999997952) — not a symptom of AmountParser. Decimal(string:)
+        // parses the digits directly, giving an exact value to compare against.
+        #expect(AmountParser.parse("1.234,56", locale: Locale(identifier: "it_IT")) == Decimal(string: "1234.56"))
     }
 
     @Test func parsesUSDecimalAndGroupingSeparators() {
-        #expect(AmountParser.parse("1,234.56", locale: Locale(identifier: "en_US")) == 1234.56)
+        #expect(AmountParser.parse("1,234.56", locale: Locale(identifier: "en_US")) == Decimal(string: "1234.56"))
     }
 
     @Test func parsesPeriodDecimalFromExternalKeyboardInItalianLocale() {

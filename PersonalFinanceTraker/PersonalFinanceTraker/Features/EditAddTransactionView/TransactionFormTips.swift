@@ -55,6 +55,22 @@ struct MathModeTip: Tip {
     var image: Image? { Image(systemName: "plus.forwardslash.minus") }
 }
 
+/// Nav-bar "Scan receipt" button. Unlike the three tips above, this button lives in the sheet's
+/// actual navigation bar rather than the keyboard accessory bar, so a plain `.popoverTip()`
+/// anchors from it correctly (the accessory-bar buttons can't use that — see the note above) and
+/// none of the `TipGroup`/pinned-card machinery built for those is needed here.
+///
+/// `isEligible` mirrors the button's own visibility guard (add-mode, not a transfer) — set from
+/// `EditAddTransactionView`, which owns that condition, not from this file.
+struct ScanReceiptTip: Tip {
+    @Parameter static var isEligible: Bool = true
+
+    var title: Text { Text("Scan a receipt") }
+    var message: Text? { Text("Fill amount, date, merchant, and category from a photo of a receipt.") }
+    var image: Image? { Image(systemName: "doc.text.viewfinder") }
+    var rules: [Rule] { #Rule(Self.$isEligible) { $0 } }
+}
+
 /// Restyles TipKit's default system-gray card with the app's own palette, so the tip
 /// reads as this app's help rather than a generic system popover — same tokens the rest
 /// of the form already uses (`surfaceRaised` for the math-expression bubble background,

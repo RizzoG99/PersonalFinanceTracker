@@ -19,6 +19,8 @@
 	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authentication is required to unlock your financial data.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Used to scan receipts and fill in transaction details. Photos are processed on your device and are never saved or uploaded.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>

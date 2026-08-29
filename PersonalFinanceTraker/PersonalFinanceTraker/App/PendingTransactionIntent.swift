@@ -13,6 +13,8 @@ final class PendingTransactionIntent {
 
     var shouldPresentAdd = false
     var shouldReviewHabitTemplate = false
+    /// Set by the "Scan Receipt" widget deep link; MainTabView opens the camera directly.
+    var shouldScanReceipt = false
 
     /// Returns true (and clears the flag) when the Add sheet should present now.
     /// When an edit sheet is already open the flag is left set — SwiftUI presents one

@@ -343,6 +343,28 @@ actor TransactionActor: ITransactionRepository {
         try modelContext.save()
     }
 
+    // MARK: Receipt scan — learned merchant → category
+
+    func fetchMerchantCategoryMappings() async throws -> [String: UUID] {
+        let rows = try modelContext.fetch(FetchDescriptor<MerchantCategoryMapping>())
+        return Dictionary(uniqueKeysWithValues: rows.map { ($0.merchant, $0.categoryId) })
+    }
+
+    /// Upserts by the unique `merchant` key — a correction on a merchant already learned overwrites
+    /// it rather than accumulating a duplicate row.
+    func saveMerchantCategoryMapping(merchant: String, categoryId: UUID) async throws {
+        var descriptor = FetchDescriptor<MerchantCategoryMapping>(
+            predicate: #Predicate { $0.merchant == merchant }
+        )
+        descriptor.fetchLimit = 1
+        if let existing = try modelContext.fetch(descriptor).first {
+            existing.categoryId = categoryId
+        } else {
+            modelContext.insert(MerchantCategoryMapping(merchant: merchant, categoryId: categoryId))
+        }
+        try modelContext.save()
+    }
+
     // MARK: Seven-day forecast widget
 
     /// Recomputes the lightweight app-group snapshot after every mutation that affects

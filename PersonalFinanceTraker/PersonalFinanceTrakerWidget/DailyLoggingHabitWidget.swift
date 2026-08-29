@@ -322,5 +322,6 @@ struct DailyLoggingHabitWidget: Widget {
 struct PersonalFinanceTrakerWidgetBundle: WidgetBundle {
     var body: some Widget {
         DailyLoggingHabitWidget()
+        ScanReceiptWidget()
     }
 }
