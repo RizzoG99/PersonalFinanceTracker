@@ -712,12 +712,83 @@ struct ReceiptParserTests {
             lines: ["MASTERCARD", "PAGAMENTO ELETTRONICO", "TOTALE 8,00"],
             lineHeights: [0: 0.030, 1: 0.010, 2: 0.010]
         )
-        #expect(ReceiptParser.parse(document, now: Self.now).merchant == "Pagamento Elettronico")
+        // nil, not "Pagamento Elettronico": a payment-method line is receipt structure, not a shop
+        // name, so it is filtered along with the card branding and this slip correctly yields no
+        // merchant at all. Naming the merchant after the processor was worse than leaving it empty
+        // — it also poisoned the learned merchant→category mapping with a label every card slip
+        // shares.
+        #expect(ReceiptParser.parse(document, now: Self.now).merchant == nil)
     }
 
     @Test func fallsBackToTopmostCandidateWithoutHeights() {
         let document = ReceiptDocument(lines: ["SCONTRINO FISCALE", "PASTICCERIA ROSSI"])
         #expect(ReceiptParser.parse(document, now: Self.now).merchant == "Scontrino Fiscale")
+    }
+
+    // MARK: - English receipts
+
+    @Test func englishReceiptRejectsSubTotalAndTaxAndFindsTheTotal() {
+        let lines = [
+            "GREEN FIELD", "Server: Francis", "1 Coffee 3.00", "2 Lunch 45.90",
+            "SUB TOTAL: 51.90", "Tax 1: 4.68", "TOTAL: $56.58",
+        ]
+        let scan = ReceiptParser.parse(lines, now: Self.now)
+        #expect(scan.total == 56.58)
+        #expect(scan.totalCandidates.isEmpty)
+    }
+
+    @Test func englishCashTenderedAndChangeAreNotTheTotal() {
+        // The CONTANTI trap in English: both decoys print larger than what was owed.
+        let lines = ["DINER", "TOTAL 18.40", "CASH 20.00", "CHANGE 1.60"]
+        #expect(ReceiptParser.parse(lines, now: Self.now).total == 18.40)
+    }
+
+    @Test func suggestedGratuityIsNeverTheTotal() {
+        let lines = ["CAFE", "TOTAL 69.25", "Suggested Gratuity:", "20% 13.85", "18% 12.47"]
+        #expect(ReceiptParser.parse(lines, now: Self.now).total == 69.25)
+    }
+
+    @Test func qualifiedEnglishWordingOutranksABareTotalLine() {
+        // GRAND TOTAL sits in a higher tier than a bare TOTAL, so it decides outright.
+        let lines = ["SHOP", "TOTAL TAX 4.00", "GRAND TOTAL 54.00"]
+        #expect(ReceiptParser.parse(lines, now: Self.now).total == 54.00)
+    }
+
+    @Test func americanDateIsReadMonthFirstOnAnEnglishReceipt() {
+        // 5/6 is ambiguous in the digits alone; the receipt's wording settles it as 6 May.
+        let lines = ["GREEN FIELD", "Server: Francis", "TOTAL: 12.00", "5/6/2026 12:53:10 PM"]
+        let scan = ReceiptParser.parse(lines, now: Self.now)
+        let expected = DateComponents(calendar: .init(identifier: .gregorian), year: 2026, month: 5, day: 6).date!
+        #expect(scan.date == expected)
+        #expect(scan.dateWasClamped == false)
+    }
+
+    @Test func italianDateStaysDayFirstEvenThoughTotaleContainsTotal() {
+        // "TOTALE" contains the substring "TOTAL", so an Italian receipt must not be mistaken for
+        // an English one and have its date flipped.
+        let lines = ["NEGOZIO", "TOTALE 12,00", "5/6/2026"]
+        let scan = ReceiptParser.parse(lines, now: Self.now)
+        let expected = DateComponents(calendar: .init(identifier: .gregorian), year: 2026, month: 6, day: 5).date!
+        #expect(scan.date == expected)
+    }
+
+    @Test func unambiguousDayFirstDateSurvivesOnAnEnglishReceipt() {
+        // 24 cannot be a month, so the preferred month-first reading is impossible and the other
+        // order is taken rather than the date being thrown away.
+        let lines = ["CAFE", "Server: Ann", "TOTAL 9.00", "24/11/2025"]
+        let scan = ReceiptParser.parse(lines, now: Self.now)
+        let expected = DateComponents(calendar: .init(identifier: .gregorian), year: 2025, month: 11, day: 24).date!
+        #expect(scan.date == expected)
+        #expect(scan.dateWasClamped == false)
+    }
+
+    @Test func thousandsSeparatorIsDecidedByTheTextNotTheLocale() {
+        // Built with Decimal(string:), not the literal 1234.56: a Decimal float literal is routed
+        // through Double, which cannot represent that value and yields 1234.5599999999997952. The
+        // parser returns the exact Decimal, so the literal would fail a correct implementation.
+        let expected = Decimal(string: "1234.56")
+        #expect(ReceiptParser.parse(["SHOP", "TOTAL 1,234.56"], now: Self.now).total == expected)
+        #expect(ReceiptParser.parse(["NEGOZIO", "TOTALE 1.234,56"], now: Self.now).total == expected)
     }
 
     @Test func returnsNoTotalWhenNothingMatchesAKeyword() {

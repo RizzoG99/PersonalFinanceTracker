@@ -83,7 +83,17 @@ enum ReceiptTextRecognizer {
         document.lines.append(contentsOf: recognized)
         document.detectedDates.append(contentsOf: detectedDates(in: text))
         for (index, observation) in observations.enumerated() {
-            document.lineHeights[index + offset] = Double(observation.boundingRegion.boundingBox.height)
+            // The box's **short side**, not its height. `boundingBox` is axis-aligned in page
+            // coordinates, so for a receipt lying sideways in an otherwise upright photo (both
+            // rotated fixtures, 2026-08-29) a line's `height` is really its *length* — which made
+            // the longest line, not the biggest text, win the merchant vote and returned
+            // "Totale Cohplessivo" as the shop name. The short side is the text height at either
+            // orientation.
+            // ponytail: min(w, h) covers 0°/90°, the two ways a receipt is ever photographed. Text
+            // at a genuine diagonal overestimates; switch to the distance between the region's
+            // topLeft and bottomLeft corners if that ever shows up in a real miss.
+            let box = observation.boundingRegion.boundingBox
+            document.lineHeights[index + offset] = Double(min(box.width, box.height))
         }
 
         var rightmostX: [Int: CGFloat] = [:]

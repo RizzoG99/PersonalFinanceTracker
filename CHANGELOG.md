@@ -7,6 +7,10 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Scan receipt: fixed a scan occasionally filling in the wrong amount — on some receipts the first item's price was picked instead of the total, with no warning that it was a guess.
+- Scan receipt: receipts whose total line the camera misreads (for example "TOTALE COHPLESSIVO") are now still read correctly, because the amount is confirmed against the rest of the receipt instead of relying on that one line.
+- Scan receipt: the shop name is picked more reliably — VAT lines, addresses, column headings and till serial numbers are no longer mistaken for it, including on receipts photographed sideways.
+- Scan receipt: English-language receipts are now recognised, including "Total", "Grand Total" and "Amount Due" wording, US month-first dates, and amounts written as 1,234.56. Sub-totals, tax, cash given and suggested tips are correctly ignored.
 - Scan receipt: fixed the very first scan started from Home/Activity/Insights opening an empty Add Transaction form — the scanned values were dropped on that first attempt and only appeared if you scanned again.
 - Scan receipt: recognition now reads the receipt's layout rather than a flat list of lines, so amounts printed in a separate column from their labels are matched up reliably instead of by guesswork.
 - Scan receipt: the amount is now taken from the receipt's official "TOTALE COMPLESSIVO" line when it's printed, instead of asking you to pick between it and another total line whenever one of them was misread.

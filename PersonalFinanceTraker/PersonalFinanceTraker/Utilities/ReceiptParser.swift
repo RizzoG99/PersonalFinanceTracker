@@ -62,6 +62,7 @@ struct ReceiptDocument: Equatable {
 enum ReceiptParser {
 
     private static let itLocale = Locale(identifier: "it_IT")
+    private static let enLocale = Locale(identifier: "en_US")
 
     /// Lines whose amount is the real total, in **authority order** — the first tier that matches
     /// anything decides, and the tiers below it are never consulted.
@@ -73,14 +74,30 @@ enum ReceiptParser {
     /// turn a perfectly readable receipt into an ambiguous one. The mandated wording wins outright;
     /// the loose tier exists only for slips that don't follow the standard (old registers, bank POS
     /// receipts printing a bare `IMPORTO €`).
+    /// English tiers sit *below* both mandated Italian wordings and above the loose tier, for the
+    /// same reason the Italian ones are ordered: "GRAND TOTAL"/"BALANCE DUE" name the amount owed
+    /// outright, while a bare "TOTAL" also appears inside "SUB TOTAL" and "TOTAL TAX" and so has to
+    /// be the last thing consulted. Counts below are from the 195-receipt corpus in
+    /// `ReceiptForeignCorpusTests`, which is what these tiers were derived from rather than guessed.
     private static let rankedTotalKeywords: [[String]] = [
         ["TOTALE COMPLESSIVO"],
         ["IMPORTO PAGATO"],
-        ["TOTALE", "TOT.", "IMPORTO"],
+        // GRAND TOTAL x5, TOTAL DUE x9, BALANCE DUE x22, AMOUNT DUE x11.
+        ["GRAND TOTAL", "TOTAL DUE", "BALANCE DUE", "AMOUNT DUE"],
+        // Bare TOTAL x125 — the common case, but only once the qualified wordings above have had
+        // their chance and the decoys below have removed SUB TOTAL x46 and TOTAL TAX x9.
+        ["TOTALE", "TOT.", "IMPORTO", "TOTAL"],
     ]
     /// Lines that *do* contain a currency amount but must never be read as the total — the
     /// CONTANTI trap: cash tendered is reliably larger than what was actually owed.
-    private static let decoyKeywords = ["CONTANTI", "CONTANTE", "RESTO", "SUBTOTALE", "SUB TOTALE"]
+    /// The English half mirrors the Italian one exactly: SUB TOTAL / TOTAL TAX are totals of the
+    /// wrong thing, and CASH / CHANGE / TENDER / TIP / GRATUITY are the CONTANTI trap in English —
+    /// cash tendered and suggested tips both print larger than what was actually owed.
+    private static let decoyKeywords = [
+        "CONTANTI", "CONTANTE", "RESTO", "SUBTOTALE", "SUB TOTALE",
+        "SUBTOTAL", "SUB TOTAL", "SUB-TOTAL", "TOTAL TAX", "TAX TOTAL", "NET TOTAL",
+        "CASH", "CHANGE", "TENDER", "TIP", "GRATUITY",
+    ]
     /// RESO / RIMBORSO / STORNO as whole words — the standard prints them in the header
     /// ("DOCUMENTO COMMERCIALE di reso"). Word-bounded because a bare substring test flags any
     /// merchant or product that merely contains the letters, e.g. "RESORT", "PRESOTTO".
@@ -90,7 +107,9 @@ enum ReceiptParser {
     /// prefixes, and card-network/issuer/transaction-type words that show up on POS payment slips
     /// (which often carry no merchant name at all, only the card processor's own boilerplate).
     private static let merchantNoisePatterns = [
-        "P.IVA", "P. IVA", "PARTITA IVA", "C.F.",
+        // "PART. IVA" is the spelling two of the six real fixtures use; without it the VAT line
+        // won the merchant vote outright ("Part. IVA 04996160752", 2026-08-29).
+        "P.IVA", "P. IVA", "PART. IVA", "PART.IVA", "PARTITA IVA", "C.F.",
         "VIA ", "VIALE ", "CORSO ", "PIAZZA ", "PIAZZETTA ", "TEL.", "TEL ",
         "MASTERCARD", "VISA", "UNICREDIT", "MC CLESS", "ACQUISTO", "POSTEPAY",
         "BANCOMAT", "MAESTRO", "NEXI", "INTESA SANPAOLO", "SELLA", "PAGOBANCOMAT",
@@ -98,12 +117,44 @@ enum ReceiptParser {
         // processor printed it, so this covers issuers beyond the ones named explicitly above.
         "N.VERDE", "NUMERO VERDE",
     ]
+    /// Words that mark a line as part of the receipt's *structure* rather than its content — the
+    /// total block, the item-table headers, the "documento commerciale" preamble. A shop is never
+    /// named any of these, so they can never be the merchant no matter how large they print.
+    ///
+    /// This exists because the size heuristic in `merchantName` is only as good as the pool it
+    /// chooses from, and on real receipts the total line is legitimately the biggest text on the
+    /// page — it returned "Totale Cohplessivo" (Vision's own misreading of TOTALE COMPLESSIVO) and
+    /// "INA Prezzo(€" as shop names on two of the six fixtures, 2026-08-29. Built from the keyword
+    /// lists above rather than retyped, so a keyword added for total-detection is excluded here too.
+    private static let structuralKeywords: [String] =
+        rankedTotalKeywords.flatMap { $0 } + decoyKeywords + [
+            // "DOCUMENTO" alone, not the full "DOCUMENTO COMMERCIALE": Vision read that phrase as
+            // "DOCUMENTO COMMERTLALE" on one fixture and "Totale Cohplessivo" on another, so
+            // matching the whole thing is matching what OCR is most likely to have broken. The
+            // first word survives; no shop is called "Documento".
+            // "DESCRIZI", not "DESCRIZIONE": Vision returned "DESCRIZIOHE" on Puce Motorrad, and an
+            // unmatched column header then beat the shop name in the size vote. Same reasoning as
+            // "DOCUMENTO" above — match the stem OCR gets right, not the ending it garbles.
+            "DESCRIZI", "PREZZO", "DOCUMENTO", "VENDITA O PRESTAZIONE",
+            "NUMERO PEZZI", "PAGAMENTO", "PAGAMENTI", "CUI IVA",
+        ]
+
     /// Street-line prefixes — reused to spot the address for `merchantAddress(in:)`, not just to
     /// exclude those lines from the merchant name above.
     private static let streetPrefixes = ["VIA ", "VIALE ", "CORSO ", "PIAZZA ", "PIAZZETTA ", "LUNGOMARE "]
     // Italian postal codes (CAP) are always 5 digits, typically opening the city line, e.g.
     // "73050 SANTA CATERINA".
-    private static let postalCodeRegex = try! NSRegularExpression(pattern: #"^\d{5}\b"#)
+    // A single leading non-digit is tolerated because OCR routinely invents one: "(3040 ALLISTE (LE)"
+    // is really "73040 ALLISTE (LE)" (Camilla-Nu Bar, 2026-08-29), and left unmatched that city line
+    // was the tallest surviving merchant candidate on the receipt.
+    private static let postalCodeRegex = try! NSRegularExpression(pattern: #"^\D?\d{4,5}\b"#)
+    /// A line that is mostly digits is a register serial, a document number, or a table number —
+    /// never a shop name. "R7964B3003999" won the merchant vote on Puce Motorrad before this.
+    private static func isDigitHeavy(_ line: String) -> Bool {
+        let digits = line.filter(\.isNumber).count
+        let letters = line.filter(\.isLetter).count
+        return digits > letters
+    }
 
     // Year alternative order matters: NSRegularExpression tries alternatives left-to-right, not
     // longest-match, so `\d{4}` must come first or "25-07-2026" would match "20" as the year.
@@ -148,6 +199,12 @@ enum ReceiptParser {
             }
             if !totalMatches.isEmpty { break }
         }
+        // Nothing keyword-driven matched. On a split-column receipt that usually means OCR damaged
+        // the very words the tiers look for — "TOTALE COHPLESSIVO", "FREZZO(E) IVA" (both real,
+        // Barrueco 2026-08-29) — so the fallback deliberately reads none of them.
+        if totalMatches.isEmpty, let modal = modalAmountInPriceColumn(in: lines) {
+            totalMatches = [modal]
+        }
         let distinctTotals = Set(totalMatches)
         if distinctTotals.count == 1 {
             scan.total = totalMatches.first
@@ -160,7 +217,9 @@ enum ReceiptParser {
             return refundRegex.firstMatch(in: upper, range: NSRange(upper.startIndex..., in: upper)) != nil
         }
 
-        let (date, clamped) = parseDate(in: lines, detected: document.detectedDates, now: now)
+        let (date, clamped) = parseDate(
+            in: lines, detected: document.detectedDates, now: now, monthFirst: prefersMonthFirst(in: lines)
+        )
         scan.date = date
         scan.dateWasClamped = clamped
 
@@ -206,18 +265,43 @@ enum ReceiptParser {
             // keyword lines whose amount is printed in a form the regex can't read.
             if let detected = detectedAmounts[index] { return detected }
             for lookahead in lines.indices.dropFirst(index + 1).prefix(2) {
-                if let amount = bareAmount(in: lines[lookahead]) { return amount }
+                if let amount = bareAmount(in: lines[lookahead]) {
+                    // Only when this is a lone amount sitting under its label. If the very next
+                    // line is *also* a bare amount we are not looking at a label/price pair at all
+                    // — we have run off the end of the label column into the price column, where
+                    // the first entry is the first item's price, not this label's. That is exactly
+                    // how "IMPORTO PAGATO" came back as 7,90 on a 15,80 receipt (Camilla-Nu Bar,
+                    // 2026-08-29): confidently wrong, with no candidates to warn anyone.
+                    let next = lines.index(after: lookahead)
+                    guard next >= lines.count || bareAmount(in: lines[next]) == nil else { return nil }
+                    return amount
+                }
                 if let detected = detectedAmounts[lookahead] { return detected }
             }
             return nil
         }
     }
 
+    /// Reads an amount whose separator convention is decided by the text itself, not by a locale.
+    ///
+    /// "1.234,56" and "1,234.56" are the same money written two ways, and which is which is settled
+    /// by whichever separator comes *last* — that one is always the decimal point. Locale cannot
+    /// settle it: the device locale describes the user, while the receipt was printed wherever it
+    /// was printed. Amounts with a single separator are left to `AmountParser`, which already
+    /// resolves "13.00" under it_IT correctly.
+    private static func parseAmount(_ text: String) -> Decimal? {
+        guard let lastComma = text.lastIndex(of: ","), let lastDot = text.lastIndex(of: ".") else {
+            return AmountParser.parse(text, locale: itLocale)
+        }
+        let decimalIsComma = lastComma > lastDot
+        return AmountParser.parse(text, locale: decimalIsComma ? itLocale : enLocale)
+    }
+
     private static func firstAmount(in line: String) -> Decimal? {
         let range = NSRange(line.startIndex..., in: line)
         guard let match = amountRegex.firstMatch(in: line, range: range),
               let matchRange = Range(match.range(at: 1), in: line) else { return nil }
-        return AmountParser.parse(String(line[matchRange]), locale: itLocale)
+        return parseAmount(String(line[matchRange]))
     }
 
     /// A line that, once trimmed, is nothing but a currency amount (an optional leading "€", an
@@ -247,6 +331,43 @@ enum ReceiptParser {
               match.range(at: 1) == NSRange(trimmed.startIndex..., in: trimmed),
               let amount = firstAmount(in: trimmed) else { return nil }
         return isNegative ? -amount : amount
+    }
+
+    /// The amount printed most often in the receipt's price column, when that column came back as
+    /// its own run of bare-amount lines.
+    ///
+    /// This leans on the "documento commerciale" standard rather than on any wording: a compliant
+    /// receipt prints the same total four or five times over — SUBTOTALE, TOTALE COMPLESSIVO,
+    /// IMPORTO PAGATO, and the VAT-class line all carry it — while every item price, the VAT
+    /// amount, and any discount appear once each. So in a run of prices the mode *is* the total,
+    /// and it needs no label pairing, no keyword, and no column-order guessing, which is what makes
+    /// it survive the OCR corruption that defeats the tiers above.
+    ///
+    /// Deliberately conservative: it wants a real run (a stray pair of prices is not a column), and
+    /// a mode that is actually repeated and actually unique. A tie returns nil rather than picking
+    /// one, so the caller falls through to "no total" and asks the user instead of guessing.
+    ///
+    /// ponytail: mode over the longest run only. A receipt printing its total once and the same
+    /// item price twice would beat it — no fixture does, and the failure is a visible wrong number
+    /// rather than a silent one. Pair labels properly if that ever shows up.
+    private static func modalAmountInPriceColumn(in lines: [String]) -> Decimal? {
+        var longestRun: [Decimal] = []
+        var currentRun: [Decimal] = []
+        for line in lines {
+            if let amount = bareAmount(in: line) {
+                currentRun.append(amount)
+            } else {
+                if currentRun.count > longestRun.count { longestRun = currentRun }
+                currentRun = []
+            }
+        }
+        if currentRun.count > longestRun.count { longestRun = currentRun }
+        guard longestRun.count >= 3 else { return nil }
+
+        let counts = longestRun.reduce(into: [Decimal: Int]()) { $0[$1, default: 0] += 1 }
+        guard let best = counts.max(by: { $0.value < $1.value }), best.value > 1,
+              counts.filter({ $0.value == best.value }).count == 1 else { return nil }
+        return best.key
     }
 
     /// Recovers row/price pairs when Vision returns the entire label column and the entire price
@@ -312,6 +433,25 @@ enum ReceiptParser {
         return zip(labels, backwardAmounts).map(ReceiptRow.init)
     }
 
+    /// Whether this receipt writes dates month-first. Decided by the receipt's own wording rather
+    /// than by the device locale, which says where the *user* is, not where the receipt was printed
+    /// — a traveller scanning a US check on an Italian phone needs the US reading.
+    ///
+    /// Italian markers win over English ones, because an Italian receipt can legitimately contain
+    /// the substring "TOTAL" (inside "TOTALE") while the reverse does not happen.
+    private static func prefersMonthFirst(in lines: [String]) -> Bool {
+        var sawEnglish = false
+        for line in lines {
+            let upper = line.uppercased()
+            if italianMarkers.contains(where: { upper.contains($0) }) { return false }
+            if !sawEnglish, englishMarkers.contains(where: { upper.contains($0) }) { sawEnglish = true }
+        }
+        return sawEnglish
+    }
+
+    private static let italianMarkers = ["TOTALE", "IMPORTO", "SCONTRINO", "DOCUMENTO", "PREZZO", "IVA"]
+    private static let englishMarkers = ["TOTAL", "SUBTOTAL", "SUB TOTAL", "THANK YOU", "SERVER", "CASHIER", "AMOUNT DUE"]
+
     /// Accepts only dates within a sane window (not in the future, not absurdly old); anything else
     /// — missing, unparseable, or out of range — clamps to `now` rather than feeding a bad date into
     /// a form whose Save button silently disables on a future date with no explanation.
@@ -320,23 +460,44 @@ enum ReceiptParser {
     /// gives up, never before: a bare time like "19:25" also comes back as a detected date (today,
     /// at that time), which would otherwise outrank the real printed date. As a last chance before
     /// clamping, though, it's free accuracy.
-    private static func parseDate(in lines: [String], detected: [Date], now: Date) -> (Date, Bool) {
+    private static func parseDate(
+        in lines: [String], detected: [Date], now: Date, monthFirst: Bool
+    ) -> (Date, Bool) {
         let calendar = Calendar(identifier: .gregorian)
         let earliestSane = calendar.date(byAdding: .year, value: -2, to: now) ?? .distantPast
+
+        func validate(day: Int, month: Int, year: Int) -> Date? {
+            var components = DateComponents(year: year, month: month, day: day)
+            components.calendar = calendar
+            guard let candidate = components.date, candidate <= now, candidate >= earliestSane else {
+                return nil
+            }
+            return candidate
+        }
 
         for line in lines {
             let range = NSRange(line.startIndex..., in: line)
             guard let match = dateRegex.firstMatch(in: line, range: range) else { continue }
-            guard let dayRange = Range(match.range(at: 1), in: line),
-                  let monthRange = Range(match.range(at: 2), in: line),
+            guard let firstRange = Range(match.range(at: 1), in: line),
+                  let secondRange = Range(match.range(at: 2), in: line),
                   let yearRange = Range(match.range(at: 3), in: line),
-                  let day = Int(line[dayRange]), let month = Int(line[monthRange]),
+                  let first = Int(line[firstRange]), let second = Int(line[secondRange]),
                   var year = Int(line[yearRange]) else { continue }
             if year < 100 { year += 2000 }
 
-            var components = DateComponents(year: year, month: month, day: day)
-            components.calendar = calendar
-            guard let candidate = components.date, candidate <= now, candidate >= earliestSane else { continue }
+            // `05/06/2026` is 5 June in Italy and 6 May in the US, and nothing in the digits says
+            // which. The receipt's own wording does, so the caller decides the order — and this is
+            // the one place a foreign receipt could otherwise produce a *silently* wrong value
+            // rather than a visibly missing one. Either reading is tried second when the preferred
+            // one is impossible, which is what rescues an unambiguous "24/11/25" on an English
+            // receipt and "5/26/2016" on an Italian-defaulted one alike.
+            let preferred = monthFirst
+                ? validate(day: second, month: first, year: year)
+                : validate(day: first, month: second, year: year)
+            let fallbackOrder = monthFirst
+                ? validate(day: first, month: second, year: year)
+                : validate(day: second, month: first, year: year)
+            guard let candidate = preferred ?? fallbackOrder else { continue }
             return (candidate, false)
         }
         if let fallback = detected.first(where: { $0 <= now && $0 >= earliestSane }) {
@@ -355,15 +516,28 @@ enum ReceiptParser {
     /// "MASTERCARD" has no merchant name on it at all. Falling back to the topmost candidate keeps
     /// the old behaviour for callers with no geometry (every fixture test).
     private static func merchantName(in lines: [String], heights: [Int: Double]) -> String? {
-        // Capped: a receipt's name is at the top, and without the cap a big total further down
-        // could outbid it.
-        let candidates = lines.indices.filter { index in
+        // The merchant block is whatever prints *above* the item table, so the item-table header is
+        // a far better bound than a fixed line count. Falls back to the old 15-line cap when the
+        // header is missing or is itself line 0 (Vision sometimes emits the table first).
+        let headerIndex = lines.firstIndex { $0.uppercased().contains("DESCRIZI") } ?? 0
+        let searchLimit = headerIndex > 0 ? headerIndex : min(15, lines.count)
+
+        let candidates = lines.indices.prefix(searchLimit).filter { index in
             let trimmed = lines[index].trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { return false }
             let upper = trimmed.uppercased()
             if merchantNoisePatterns.contains(where: { upper.contains($0) }) { return false }
+            if structuralKeywords.contains(where: { upper.contains($0) }) { return false }
+            // The address is already recognized for `merchantAddress(in:)`; reuse those same two
+            // detectors here rather than keeping a second, drifting copy of the street list — the
+            // street line "Lungomare C. Colombo" was in `streetPrefixes` but not in
+            // `merchantNoisePatterns`, so it was excluded from the address and won the name.
+            if streetPrefixes.contains(where: { upper.contains($0) }) { return false }
+            let range = NSRange(trimmed.startIndex..., in: trimmed)
+            if postalCodeRegex.firstMatch(in: trimmed, range: range) != nil { return false }
+            if isDigitHeavy(trimmed) { return false }
             return firstAmount(in: trimmed) == nil
-        }.prefix(15)
+        }
 
         guard let topmost = candidates.first else { return nil }
         // Strictly-greater, so ties keep the earlier (higher on the page) line.
