@@ -7,6 +7,8 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Fixed a brief screen flash/flicker right when Face ID kicks in on unlock.
+- Removed the privacy screen that used to cover the app while screen recording; the app switcher snapshot cover is unaffected.
 - Italian now covers Settings discovery and Analysis labels, and the Settings close button immediately follows a theme change.
 - iPad: Activity's filter chips and transaction table now resize to fit alongside the sidebar instead of being hidden behind it.
 - iPad: shaking the device now hides amounts like it does on iPhone, and there's a new eye icon on iPad to hide/show amounts without shaking.
