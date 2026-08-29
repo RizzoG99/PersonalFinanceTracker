@@ -54,7 +54,18 @@ struct AuthenticationWrapper: View {
 
     private var overlay: Overlay {
         if showSplash { return .none } // splash is already shown in-window
-        if scenePhase != .active || isCaptured { return .cover }
+        if isCaptured { return .cover }
+        if scenePhase != .active {
+            // Face ID's own evaluatePolicy call causes a brief scenePhase
+            // inactive→active blip while it presents the system HUD — that's not a
+            // real backgrounding/task-switcher event, so don't let it flash the
+            // (non-interactive) splash cover in on top of the PIN screen, which is
+            // already an adequate cover for the moment.
+            if authService.isAuthenticating {
+                return isPINSetup && !authService.isUnlocked ? .pin : .none
+            }
+            return .cover
+        }
         if isPINSetup && !authService.isUnlocked { return .pin }
         return .none
     }
