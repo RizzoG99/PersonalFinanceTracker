@@ -30,8 +30,10 @@ public class BiometricAuthService: ObservableObject, BiometricAuthenticating {
 
     private let kBiometricLockEnabled = "biometric_lock_enabled"
     // ponytail: plain Bool guard, not an actor — authenticate() is only ever called
-    // from the main thread (SwiftUI onAppear/onChange callbacks).
-    private var isAuthenticating = false
+    // from the main thread (SwiftUI onAppear/onChange callbacks). Published so
+    // AuthenticationWrapper's `overlay` can tell a self-triggered Face ID scenePhase
+    // blip apart from a real backgrounding event.
+    @Published public private(set) var isAuthenticating = false
 
     public init() {
         checkBiometrics()

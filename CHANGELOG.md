@@ -7,6 +7,8 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Fixed a brief screen flash/flicker right when Face ID kicks in on unlock.
+- Removed the privacy screen that used to cover the app while screen recording; the app switcher snapshot cover is unaffected.
 
 ## 81 — 2026-08-29
 - Scan receipt: either volume button now takes the shot, like in the Camera app, so you can hold the phone steady over the receipt instead of reaching for the on-screen shutter.
