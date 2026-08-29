@@ -77,6 +77,8 @@ struct PersonalFinanceTrakerApp: App {
                         guard let request = PendingHabitTemplateRequest(widgetURL: url) else { return }
                         PendingHabitTemplateStore.save(request)
                         PendingTransactionIntent.shared.shouldReviewHabitTemplate = true
+                    case "scan-receipt":
+                        PendingTransactionIntent.shared.shouldScanReceipt = true
                     case "insights":
                         pendingWidgetDestination = "insights"
                     default:

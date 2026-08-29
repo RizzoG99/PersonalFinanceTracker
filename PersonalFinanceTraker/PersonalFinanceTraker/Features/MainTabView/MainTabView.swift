@@ -27,6 +27,8 @@ struct MainTabView: View {
     /// prefill" looked like. `.sheet(item:)` can't have that gap — the value that triggers the
     /// presentation is the value the content is built with.
     @State private var addSheet: AddSheetContext?
+    /// Flipped by the "Scan Receipt" widget deep link.
+    @State private var scanFromWidget = false
 
     /// One Add Transaction presentation, with whatever opened it.
     private struct AddSheetContext: Identifiable {
@@ -84,6 +86,14 @@ struct MainTabView: View {
 
     private func applyScan(_ scan: ReceiptScan) {
         addSheet = AddSheetContext(scan: scan)
+    }
+
+    /// "Scan Receipt" widget deep link — straight to the camera, no source dialog.
+    private func consumePendingScan() {
+        guard PendingTransactionIntent.shared.shouldScanReceipt,
+              addSheet == nil, viewModel.transactionToEdit == nil else { return }
+        PendingTransactionIntent.shared.shouldScanReceipt = false
+        scanFromWidget = true
     }
 
     private func consumePendingAdd() {
@@ -188,6 +198,7 @@ struct MainTabView: View {
         }
         .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
         .hideAmountsShortcut(appSettings)
+        .receiptScanShortcut(isPresented: $scanFromWidget, directToCamera: true, onScanned: applyScan)
         .onChange(of: selectedTab) { _, newTab in
             shellModels.selectedTab = newTab
         }
@@ -231,6 +242,7 @@ struct MainTabView: View {
             if phase == .active {
                 consumePendingHabitTemplate()
                 consumePendingAdd()
+                consumePendingScan()
             }
             if phase == .active || phase == .background {
                 // ponytail: in-memory check may lag a just-saved transaction by one
@@ -251,11 +263,15 @@ struct MainTabView: View {
             await repo.refreshSafeToSpendWidgetSnapshot()
             dataChanged.bump()
             consumePendingAdd()
+            consumePendingScan()
             consumePendingHabitTemplate()
             consumePendingWidgetDestination()
         }
         .onChange(of: PendingTransactionIntent.shared.shouldPresentAdd) { _, pending in
             if pending { consumePendingAdd() }
+        }
+        .onChange(of: PendingTransactionIntent.shared.shouldScanReceipt) { _, pending in
+            if pending { consumePendingScan() }
         }
         .onChange(of: featureDiscovery.pendingDestination) { _, destination in
             if destination != nil { consumeFeatureDiscoveryDestination() }

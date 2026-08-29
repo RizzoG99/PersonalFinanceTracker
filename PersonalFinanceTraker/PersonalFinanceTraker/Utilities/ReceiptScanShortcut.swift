@@ -24,6 +24,8 @@ import AVFoundation
 
 private struct ReceiptScanShortcut: ViewModifier {
     @Binding var isPresented: Bool
+    /// Widget entry point: no source dialog, straight to the camera.
+    var directToCamera = false
     let onScanned: (ReceiptScan) -> Void
 
     @State private var showingDocumentScanner = false
@@ -37,12 +39,20 @@ private struct ReceiptScanShortcut: ViewModifier {
         content
             .confirmationDialog(
                 "Scan Receipt",
-                isPresented: $isPresented,
+                isPresented: Binding(
+                    get: { isPresented && !directToCamera },
+                    set: { if !$0 { isPresented = false } }
+                ),
                 titleVisibility: .visible
             ) {
                 Button("Take Photo") { requestCameraAccessThenScan() }
                 Button("Choose Photo") { showingPhotoPicker = true }
                 Button("Cancel", role: .cancel) {}
+            }
+            .onChange(of: isPresented) { _, wants in
+                guard directToCamera, wants else { return }
+                isPresented = false
+                requestCameraAccessThenScan()
             }
             .alert(
                 "Camera Access Needed",
@@ -172,7 +182,11 @@ extension View {
     /// Attach once, high up the view hierarchy (the tab/shell root, not the Add Transaction
     /// sheet). Flip `isPresented` to true to show the source-choice dialog; `onScanned` fires
     /// once recognition + parsing succeed, with the sheet not open yet.
-    func receiptScanShortcut(isPresented: Binding<Bool>, onScanned: @escaping (ReceiptScan) -> Void) -> some View {
-        modifier(ReceiptScanShortcut(isPresented: isPresented, onScanned: onScanned))
+    func receiptScanShortcut(
+        isPresented: Binding<Bool>,
+        directToCamera: Bool = false,
+        onScanned: @escaping (ReceiptScan) -> Void
+    ) -> some View {
+        modifier(ReceiptScanShortcut(isPresented: isPresented, directToCamera: directToCamera, onScanned: onScanned))
     }
 }
