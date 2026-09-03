@@ -43,14 +43,11 @@ Release a native Kotlin and Jetpack Compose Android version of Personal Finance 
 
 **Done when:** all current iOS analytical and advanced-finance workflows have Android acceptance coverage and parity status.
 
-### 4. Import, export, and iOS migration
+### 4. Import and export parity
 
 - CSV/XLSX transaction import and export, including column mapping and category mapping.
-- Versioned portable transfer archive for all Android-v1 parity data.
-- iOS archive export and Android onboarding-only archive import.
-- Passphrase protection, validation, preview, rollback, version errors, and recovery guidance.
 
-**Done when:** a tester can transfer a representative iOS dataset into a new Android installation and can still use ongoing CSV/XLSX imports after setup.
+**Done when:** a tester can import and export representative CSV/XLSX transaction data with the same mapping, validation, and error behaviour as iOS.
 
 ### 5. Security and backup parity
 
@@ -73,13 +70,13 @@ Release a native Kotlin and Jetpack Compose Android version of Personal Finance 
 
 - Review every iOS feature change against Android before it is considered complete.
 - Add or update a parity item and shared documentation for every changed cross-platform rule.
-- Track future device-to-device transfer separately from the v1 archive flow.
+- Track deferred enhancements, including iOS-to-Android onboarding migration, separately from Android v1.
 
 ## GitHub Project conventions
 
 - Project: `Android Native`
 - Status: `Backlog`, `Ready`, `In progress`, `Blocked`, `In review`, `Done`
-- Milestone: `0 Contract`, `1 Foundation`, `2 Core parity`, `3 Advanced parity`, `4 Data transfer`, `5 Security and backup`, `6 Release`, `7 Maintenance`
+- Milestone: `0 Contract`, `1 Foundation`, `2 Core parity`, `3 Advanced parity`, `4 Import and export`, `5 Security and backup`, `6 Release`, `7 Maintenance`
 - Area: `Architecture`, `UI`, `Data`, `Transactions`, `Categories`, `Insights`, `Budgets`, `Credit`, `Import/Export`, `Security`, `Quality`, `Release`
 - Parity: `Not assessed`, `Planned`, `In progress`, `Matched`, `Platform-specific`, `Deferred`
 

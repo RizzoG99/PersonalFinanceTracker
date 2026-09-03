@@ -14,7 +14,7 @@ This is the working inventory for Android v1. `Planned` means the feature is req
 | Credit | Credit cards and utilization | Planned | Include current iOS scope |
 | Imports | CSV/XLSX import with column and category mapping | Planned | Available after onboarding |
 | Exports | CSV/XLSX transaction export | Planned | Available at any time |
-| Migration | Full iOS-to-Android data transfer | Planned | Passphrase-protected; onboarding only; no merge |
+| Migration | Full iOS-to-Android data transfer | Deferred | Separate enhancement; not Android v1 scope |
 | Backup | Encrypted iCloud Drive backup and restore | Planned | Android equivalent is encrypted Google Drive backup and restore |
 | Security | Biometric/PIN protection and protected data deletion | Planned | Use Android-native security APIs |
 | Receipts | Receipt capture and category assistance | Planned | Match current iOS behaviour |

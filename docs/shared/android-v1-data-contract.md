@@ -2,7 +2,9 @@
 
 ## Status and purpose
 
-This is the source-audited starting contract for Android v1. It defines what the Android database, iOS-to-Android transfer archive, and Android backup must preserve to achieve current iOS parity. It is intentionally separate from any database or encryption implementation.
+This is the source-audited starting contract for Android v1. It defines what the Android database and Android backup must preserve to achieve current iOS parity. It is intentionally separate from any database or encryption implementation.
+
+The cross-platform transfer-archive sections are deferred to enhancement #87 and are not Android v1 scope. They are retained here only as source-audited input for that later work.
 
 The wire schema, encryption algorithm, password-based key derivation, and compatibility policy remain implementation decisions; they must conform to the invariants below.
 
@@ -40,7 +42,7 @@ Current non-SwiftData state was also audited:
 
 The iOS `.pftbackup` payload currently contains only transactions and recurrence rules. It is encrypted with an iCloud Keychain-backed key. It cannot be imported by Android and is not a substitute for the portable transfer archive.
 
-The portable archive must be a separate format. It includes the required data above, is encrypted with a user-chosen passphrase, and is available only for first-time Android onboarding. CSV/XLSX continue to be transaction-focused imports available after onboarding.
+Any portable archive must be a separate future format. Android v1 provides CSV/XLSX transaction import and export, with the same mapping behaviour as iOS.
 
 ## Cross-platform invariants
 
@@ -54,9 +56,9 @@ The portable archive must be a separate format. It includes the required data ab
 - Imported categories must be available before transactions and recurrence rules are linked; imported goals must exist before their references are resolved.
 - Default categories are seeded only when the transfer archive does not provide a category dataset.
 
-## Required archive sections
+## Deferred archive sections
 
-The v1 archive must have sections for:
+The future migration archive must have sections for:
 
 1. Metadata: format identifier, schema version, creation timestamp, producing app/version, and the minimum Android version supported by the archive.
 2. Profile and preferences: pay-cycle start day, base currency, user name, import and receipt mappings, health-score preference, and reminder preference.

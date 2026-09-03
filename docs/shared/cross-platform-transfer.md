@@ -1,5 +1,7 @@
 # Cross-Platform Transfer Contract
 
+> **Status: deferred enhancement.** This contract is intentionally outside Android v1 and is tracked in GitHub issue #87. It remains here for the future work; Android v1 retains CSV/XLSX transaction import and export only.
+
 ## Purpose
 
 Allow an iOS user to move their Personal Finance Tracker data to a new Android installation without exposing the data in a plaintext attachment or merging it into an existing Android dataset.
