@@ -4,6 +4,8 @@
 
 Allow an iOS user to move their Personal Finance Tracker data to a new Android installation without exposing the data in a plaintext attachment or merging it into an existing Android dataset.
 
+The transferable-data inventory and cross-platform invariants are defined in `android-v1-data-contract.md`.
+
 ## Agreed experience
 
 1. In iOS, the user chooses to export an Android transfer archive and chooses a passphrase.

@@ -10,6 +10,7 @@ Release a native Kotlin and Jetpack Compose Android version of Personal Finance 
 
 - Audit every current iOS feature, workflow, entity, calculation, and edge case.
 - Publish the parity matrix and classify each item as matched, planned, blocked, or intentionally platform-specific.
+- Maintain the source-audited Android v1 data contract in `docs/shared/android-v1-data-contract.md`.
 - Define money, date, category, recurrence, import/export, archive-version, and privacy rules independent of iOS and Android implementation.
 - Define acceptance scenarios that both apps must pass.
 
