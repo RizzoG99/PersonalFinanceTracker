@@ -19,6 +19,7 @@ Release a native Kotlin and Jetpack Compose Android version of Personal Finance 
 ### 1. Android foundation
 
 - Create the Android Studio project in `Android/` without moving the existing iOS project.
+- Implement the approved Room and repository map in `docs/android/room-entity-map.md`.
 - Establish Kotlin, Jetpack Compose, Material 3, Room, MVVM/repositories, navigation, localization, dependency injection, test conventions, and CI.
 - Build the app theme, reusable components, accessibility baseline, and empty/loading/error states.
 
