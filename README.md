@@ -17,6 +17,15 @@ A personal finance app for tracking income and expenses, understanding spending 
 - **Security** — Face ID / Touch ID and PIN lock; PIN-confirmed delete-all-data
 - **Profile** — pay cycle configuration and personal info
 
+## Screenshots
+
+| Dashboard | Activity | Insights | Add transaction |
+|---|---|---|---|
+| ![Dashboard](docs/screenshots/iphone/light/01-dashboard.png) | ![Activity](docs/screenshots/iphone/light/02-activity.png) | ![Insights](docs/screenshots/iphone/light/04-insights.png) | ![Add transaction](docs/screenshots/iphone/light/05-add-transaction.png) |
+
+Dark mode and the iPad sidebar layout are in [`docs/screenshots/`](docs/screenshots).
+Regenerate the whole set with `scripts/screenshots` (add `--ipad` for the iPad pass).
+
 ## Tech Stack
 
 | Layer | Technology |
