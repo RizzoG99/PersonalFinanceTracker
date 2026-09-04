@@ -5,8 +5,12 @@
     <string name="tab_insights">Insights</string>
     <string name="home_title">Your finances</string>
     <string name="financial_overview">Financial overview</string>
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
     <string name="total_balance">Total balance</string>
     <string name="current_financial_period">Current financial period</string>
+    <string name="no_transactions_this_period">No transactions yet this period</string>
     <string name="recent_transactions">Recent transactions</string>
     <string name="view_activity">View all</string>
     <string name="empty_dashboard_title">Start tracking</string>

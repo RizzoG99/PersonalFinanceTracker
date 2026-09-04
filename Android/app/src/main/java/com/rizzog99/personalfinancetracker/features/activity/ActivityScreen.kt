@@ -1,8 +1,11 @@
 package com.rizzog99.personalfinancetracker.features.activity
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +28,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
@@ -44,6 +46,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -108,8 +112,18 @@ fun ActivityScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.activity_title)) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                title = {
+                    Text(
+                        text = stringResource(R.string.activity_title),
+                        style = MaterialTheme.typography.displaySmall,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    actionIconContentColor = LocalFinancePalette.current.textMid,
+                ),
                 actions = {
                     IconButton(onClick = { filtersVisible = true }) {
                         Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
@@ -119,6 +133,7 @@ fun ActivityScreen() {
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { isCreating = true },
@@ -239,13 +254,22 @@ private fun ActivityContent(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            OutlinedTextField(
+            TextField(
                 value = state.searchText,
                 onValueChange = onSearchChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.search_transactions)) },
+                placeholder = { Text(stringResource(R.string.search_transactions)) },
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 singleLine = true,
+                shape = RoundedCornerShape(28.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                ),
             )
         }
         item {
@@ -267,6 +291,9 @@ private fun ActivityContent(
                 }
             }
         }
+        if (state.visibleTransactions.isNotEmpty()) {
+            item { ActivitySummary(transactions = state.visibleTransactions) }
+        }
         when {
             state.allTransactions.isEmpty() -> item {
                 EmptyStateWithAction(onAdd = onAdd)
@@ -285,6 +312,59 @@ private fun ActivityContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ActivitySummary(transactions: List<FinanceTransaction>) {
+    val palette = LocalFinancePalette.current
+    val income = transactions.filter { it.amount > BigDecimal.ZERO }
+        .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount }
+    val expenses = transactions.filter { it.amount < BigDecimal.ZERO }
+        .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount.abs() }
+    val currencyCode = transactions.first().currencyCode
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        ActivitySummaryAmount(
+            modifier = Modifier.weight(1f),
+            label = stringResource(R.string.filter_income),
+            value = formatSignedCurrency(income, currencyCode),
+            color = palette.positive,
+        )
+        ActivitySummaryAmount(
+            modifier = Modifier.weight(1f),
+            label = stringResource(R.string.filter_expense),
+            value = formatSignedCurrency(expenses.negate(), currencyCode),
+            color = palette.negative,
+        )
+    }
+}
+
+@Composable
+private fun ActivitySummaryAmount(
+    label: String,
+    value: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(20.dp)
+    Column(
+        modifier = modifier
+            .border(1.dp, color.copy(alpha = 0.38f), shape)
+            .background(color.copy(alpha = 0.14f), shape)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(label, style = MaterialTheme.typography.titleSmall, color = color)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge,
+            color = color,
+            fontFamily = FontFamily.Monospace,
+        )
     }
 }
 

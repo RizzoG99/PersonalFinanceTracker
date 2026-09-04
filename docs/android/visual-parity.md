@@ -17,3 +17,20 @@ baseline for Android parity work; it does not require reproducing iOS controls p
 - Positive and negative money values use explicit signs as well as semantic color.
 - Native Material controls remain native. The app mirrors iOS hierarchy and character, not iOS interaction mechanics.
 - Each visual parity feature must be reviewed in light/dark appearance, compact/wide layouts, and with large localized text before it is marked matched.
+
+## Screenshot references
+
+Use the current iPhone captures as the parity reference, especially
+`docs/screenshots/iphone/{light,dark}/01-dashboard.png` and
+`docs/screenshots/iphone/{light,dark}/02-activity.png`. They describe information hierarchy,
+colour relationships, and states; Android retains Material navigation, sheets, and back behaviour.
+
+## Verification record
+
+- 2026-09-04: Home and Activity empty states inspected on a Pixel 7 emulator in dark and light
+  appearance. The app shell, system bars, readable foreground colour, dashboard greeting/balance
+  hierarchy, Activity search surface, and empty-state action were checked against the current
+  iPhone captures.
+- Still required before visual parity sign-off: populated transaction states, light appearance,
+  compact/wide and large-font layouts, TalkBack order, keyboard/sheet behaviour, and destructive
+  flows. Track these against Android issue #92; keep issue #93 open until they are complete.

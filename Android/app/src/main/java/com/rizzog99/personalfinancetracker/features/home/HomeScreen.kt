@@ -5,14 +5,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +46,7 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import java.time.LocalTime
 
 @Composable
 fun HomeScreen(onViewActivity: () -> Unit) {
@@ -50,7 +59,10 @@ fun HomeScreen(onViewActivity: () -> Unit) {
     )
     val state by viewModel.uiState.collectAsState()
 
-    Scaffold(containerColor = androidx.compose.ui.graphics.Color.Transparent) { innerPadding ->
+    Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    ) { innerPadding ->
         when {
             state.isLoading -> LoadingState(modifier = Modifier.padding(innerPadding))
             else -> HomeContent(
@@ -70,24 +82,22 @@ private fun HomeContent(
 ) {
     val metrics = requireNotNull(state.metrics)
     val period = requireNotNull(state.period)
+    val greeting = when (LocalTime.now().hour) {
+        in 5..11 -> R.string.greeting_morning
+        in 12..17 -> R.string.greeting_afternoon
+        else -> R.string.greeting_evening
+    }
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
             .padding(PaddingValues(horizontal = 20.dp, vertical = 16.dp)),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = stringResource(R.string.home_title),
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.semantics { heading() },
-            )
-            Text(
-                text = stringResource(R.string.financial_overview),
-                style = MaterialTheme.typography.bodyMedium,
-                color = LocalFinancePalette.current.textMid,
-            )
-        }
+        Text(
+            text = stringResource(greeting),
+            style = MaterialTheme.typography.displaySmall,
+            modifier = Modifier.semantics { heading() },
+        )
         BalanceCard(
             totalBalance = formatCurrency(metrics.totalBalance, state.currencyCode),
             periodLabel = formatPeriod(period.start, period.endInclusive),
@@ -115,6 +125,7 @@ private fun BalanceCard(
     currencyCode: String,
 ) {
     val palette = LocalFinancePalette.current
+    val hasPeriodTransactions = income.signum() != 0 || expenses.signum() != 0
     FinanceCard {
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
@@ -141,18 +152,28 @@ private fun BalanceCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = palette.textMid,
             )
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                FinancialStat(
-                    modifier = Modifier.weight(1f),
-                    label = stringResource(R.string.filter_income),
-                    value = formatSignedCurrency(income, currencyCode),
-                    color = palette.positive,
-                )
-                FinancialStat(
-                    modifier = Modifier.weight(1f),
-                    label = stringResource(R.string.filter_expense),
-                    value = formatSignedCurrency(expenses.negate(), currencyCode),
-                    color = palette.negative,
+            if (hasPeriodTransactions) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    FinancialStat(
+                        modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.filter_income),
+                        value = formatSignedCurrency(income, currencyCode),
+                        color = palette.positive,
+                        icon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null) },
+                    )
+                    FinancialStat(
+                        modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.filter_expense),
+                        value = formatSignedCurrency(expenses.negate(), currencyCode),
+                        color = palette.negative,
+                        icon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null) },
+                    )
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.no_transactions_this_period),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = palette.textMid,
                 )
             }
         }
@@ -164,11 +185,25 @@ private fun FinancialStat(
     label: String,
     value: String,
     color: androidx.compose.ui.graphics.Color,
+    icon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = LocalFinancePalette.current.textMid)
-        Text(value, style = MaterialTheme.typography.titleMedium, color = color, fontFamily = FontFamily.Monospace)
+    val shape = RoundedCornerShape(20.dp)
+    Column(
+        modifier = modifier
+            .border(1.dp, color.copy(alpha = 0.38f), shape)
+            .background(color.copy(alpha = 0.14f), shape)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.material3.LocalContentColor provides color,
+                content = icon,
+            )
+            Text(label, style = MaterialTheme.typography.titleSmall, color = color)
+        }
+        Text(value, style = MaterialTheme.typography.titleLarge, color = color, fontFamily = FontFamily.Monospace)
     }
 }
 
