@@ -1,0 +1,82 @@
+#!/bin/bash
+# Regenerates docs/screenshots/ by running the ScreenshotTests UI test once per
+# appearance. Output is committed and acts as the visual baseline — rerun after
+# UI work and diff. See CLAUDE.md.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+PROJECT=PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj
+SCHEME=PersonalFinanceTraker
+TESTS=PersonalFinanceTrakerUITests/ScreenshotTests
+
+if [ "${1:-}" = "--ipad" ]; then
+  PLATFORM=ipad
+  SIM_NAME="pft-shots-ipad"
+  DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB
+else
+  PLATFORM=iphone
+  SIM_NAME="pft-shots-iphone"
+  DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPhone-17
+fi
+
+# Dedicated simulators, not the worktree's build sim: these get their appearance
+# flipped and their app data wiped, which would trample a manual test session.
+# Same UDID-not-name targeting as scripts/xcb — see its resolve_sim comment.
+resolve_sim() {
+  local udid
+  udid=$(xcrun simctl list devices -j | SIM_NAME="$SIM_NAME" python3 -c '
+import json, os, sys
+want = os.environ["SIM_NAME"]
+for group in json.load(sys.stdin)["devices"].values():
+    for d in group:
+        if d["name"] == want and d.get("isAvailable"):
+            print(d["udid"]); sys.exit(0)
+')
+  if [ -n "$udid" ]; then echo "$udid"; return; fi
+
+  local runtime
+  runtime=$(xcrun simctl list runtimes -j | DEVICE_TYPE="$DEVICE_TYPE" python3 -c '
+import json, os, sys
+want = os.environ["DEVICE_TYPE"]
+best = None
+for r in json.load(sys.stdin)["runtimes"]:
+    if not r.get("isAvailable"): continue
+    if not r["identifier"].startswith("com.apple.CoreSimulator.SimRuntime.iOS-"): continue
+    if want not in [d["identifier"] for d in r.get("supportedDeviceTypes", [])]: continue
+    key = tuple(int(p) for p in r["version"].split("."))
+    if best is None or key > best[0]: best = (key, r["identifier"])
+print(best[1] if best else "")
+')
+  [ -n "$runtime" ] || { echo "screenshots: no iOS runtime supports $DEVICE_TYPE" >&2; exit 1; }
+  xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" "$runtime"
+}
+
+UDID=$(resolve_sim)
+xcrun simctl boot "$UDID" 2>/dev/null || true
+xcrun simctl bootstatus "$UDID" >/dev/null 2>&1 || true
+# Nobody wants 9:41-adjacent noise in the status bar; pin it.
+xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 2>/dev/null || true
+
+mkdir -p .build
+for appearance in light dark; do
+  OUT="$PWD/docs/screenshots/$PLATFORM/$appearance"
+  rm -rf "$OUT"
+  mkdir -p "$OUT"
+  echo "screenshots: $PLATFORM/$appearance ..." >&2
+  xcrun simctl ui "$UDID" appearance "$appearance"
+  # Clean install every pass: the app opens on PIN setup only when it has no data,
+  # and a stale store would make the shots depend on run order.
+  xcrun simctl uninstall "$UDID" rizzoG99.PersonalFinanceTraker 2>/dev/null || true
+  rm -rf .build/Screenshots.xcresult
+  # TEST_RUNNER_ prefix is how xcodebuild forwards an env var into the test process.
+  TEST_RUNNER_SCREENSHOT_DIR="$OUT" xcodebuild test \
+    -project "$PROJECT" -scheme "$SCHEME" \
+    -destination "id=$UDID" \
+    -derivedDataPath .build \
+    -resultBundlePath .build/Screenshots.xcresult \
+    -only-testing:"$TESTS" \
+    -parallel-testing-enabled NO \
+    -quiet >".build/screenshots-$PLATFORM-$appearance.log" 2>&1 || {
+      tail -40 ".build/screenshots-$PLATFORM-$appearance.log"; exit 1; }
+  echo "screenshots: wrote $(ls "$OUT" | wc -l | tr -d ' ') images to $OUT" >&2
+done

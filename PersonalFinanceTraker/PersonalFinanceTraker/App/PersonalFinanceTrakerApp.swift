@@ -22,6 +22,7 @@ struct PersonalFinanceTrakerApp: App {
         seedMemberSinceDateIfNeeded()
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
         configureTips()
+        seedSampleDataIfRequested()
     }
 
     // MARK: - Properties
@@ -126,6 +127,33 @@ private extension PersonalFinanceTrakerApp {
         UserDefaults.standard.set(Date.now.timeIntervalSince1970, forKey: key)
     }
 
+    /// `-seedSampleData` replaces the store with `SampleData`'s fixed set so the
+    /// screenshot pass (`scripts/screenshots`) always shoots the same populated app.
+    /// `AppContainer` seeds default categories on every launch, and
+    /// `populateModelContext` no-ops when any category exists, so the wipe comes first.
+    @MainActor
+    func seedSampleDataIfRequested() {
+        #if DEBUG
+        guard ProcessInfo.processInfo.arguments.contains("-seedSampleData") else { return }
+        let context = AppContainer.shared.mainContext
+        try? context.delete(model: TransactionModel.self)
+        try? context.delete(model: CategoryModel.self)
+        try? context.save()
+        SampleData.populateModelContext(context)
+        // SampleData sets no budgets, which leaves the Budgets screen reading
+        // "No limit" for every row — true, but it shows nothing about the feature.
+        let budgets: [String: Decimal] = [
+            "Groceries": 400, "Restaurants": 200, "Coffee & Drinks": 60,
+            "Gas": 150, "Streaming Services": 40, "Clothing": 120,
+        ]
+        let categories = (try? context.fetch(FetchDescriptor<CategoryModel>())) ?? []
+        for category in categories {
+            category.monthlyBudget = budgets[category.name]
+        }
+        try? context.save()
+        #endif
+    }
+
     /// `-resetTips` lets a Debug build re-see already-shown tips without an
     /// uninstall — the shared simulator is also used for manual testing that
     /// shouldn't get wiped by a reinstall (see feedback_shared_simulator_collision).
@@ -133,6 +161,11 @@ private extension PersonalFinanceTrakerApp {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-resetTips") {
             try? Tips.resetDatastore()
+        }
+        // Tip popovers land on top of whatever is being captured, so the screenshot
+        // pass turns them off wholesale rather than dismissing them one by one.
+        if ProcessInfo.processInfo.arguments.contains("-hideTips") {
+            Tips.hideAllTipsForTesting()
         }
         #endif
         try? Tips.configure()
