@@ -46,6 +46,8 @@
     <string name="filter_this_month">This month</string>
     <string name="filter_last_three_months">Last 3 months</string>
     <string name="filter_this_year">This year</string>
+    <string name="filter_custom">Custom</string>
+    <string name="custom_date_range">Custom range</string>
     <string name="amount_range">Amount range</string>
     <string name="minimum_amount">Minimum amount</string>
     <string name="maximum_amount">Maximum amount</string>

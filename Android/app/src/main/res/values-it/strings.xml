@@ -46,6 +46,8 @@
     <string name="filter_this_month">Questo mese</string>
     <string name="filter_last_three_months">Ultimi 3 mesi</string>
     <string name="filter_this_year">Quest’anno</string>
+    <string name="filter_custom">Personalizzato</string>
+    <string name="custom_date_range">Intervallo personalizzato</string>
     <string name="amount_range">Intervallo di importo</string>
     <string name="minimum_amount">Importo minimo</string>
     <string name="maximum_amount">Importo massimo</string>

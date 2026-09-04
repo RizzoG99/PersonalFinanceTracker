@@ -27,6 +27,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -44,6 +46,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,7 +75,9 @@ import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
@@ -313,6 +318,7 @@ private fun ActivityFiltersSheet(
     var minimum by remember(filters) { mutableStateOf(filters.amountMin?.toPlainString().orEmpty()) }
     var maximum by remember(filters) { mutableStateOf(filters.amountMax?.toPlainString().orEmpty()) }
     var recurringOnly by remember(filters) { mutableStateOf(filters.recurringOnly) }
+    var customDateRangeVisible by remember { mutableStateOf(false) }
     val minimumAmount = minimum.replace(',', '.').toBigDecimalOrNull()
     val maximumAmount = maximum.replace(',', '.').toBigDecimalOrNull()
     val amountsValid = (minimum.isBlank() || minimumAmount != null) &&
@@ -343,6 +349,11 @@ private fun ActivityFiltersSheet(
                         label = { Text(stringResource(label)) },
                     )
                 }
+                FilterChip(
+                    selected = selectedDateRange is SearchDateRange.Custom,
+                    onClick = { customDateRangeVisible = true },
+                    label = { Text(stringResource(R.string.filter_custom)) },
+                )
             }
             Text(stringResource(R.string.amount_range), style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
@@ -406,7 +417,66 @@ private fun ActivityFiltersSheet(
             }
         }
     }
+
+    if (customDateRangeVisible) {
+        CustomDateRangePickerDialog(
+            selectedDateRange = selectedDateRange as? SearchDateRange.Custom,
+            onDismiss = { customDateRangeVisible = false },
+            onApply = {
+                selectedDateRange = it
+                customDateRangeVisible = false
+            },
+        )
+    }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CustomDateRangePickerDialog(
+    selectedDateRange: SearchDateRange.Custom?,
+    onDismiss: () -> Unit,
+    onApply: (SearchDateRange.Custom) -> Unit,
+) {
+    val today = LocalDate.now()
+    val defaultStart = selectedDateRange?.from ?: today.minusMonths(1)
+    val defaultEnd = selectedDateRange?.to ?: today
+    val pickerState = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = defaultStart.toUtcStartOfDayMillis(),
+        initialSelectedEndDateMillis = defaultEnd.toUtcStartOfDayMillis(),
+    )
+    val selectedStart = pickerState.selectedStartDateMillis
+    val selectedEnd = pickerState.selectedEndDateMillis
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                enabled = selectedStart != null && selectedEnd != null,
+                onClick = {
+                    onApply(
+                        SearchDateRange.Custom(
+                            from = selectedStart!!.toUtcLocalDate(),
+                            to = selectedEnd!!.toUtcLocalDate(),
+                        ),
+                    )
+                },
+            ) { Text(stringResource(R.string.apply_filters)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    ) {
+        DateRangePicker(
+            state = pickerState,
+            title = { Text(stringResource(R.string.custom_date_range)) },
+            showModeToggle = false,
+        )
+    }
+}
+
+private fun LocalDate.toUtcStartOfDayMillis(): Long = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
+private fun Long.toUtcLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
 
 @Composable
 private fun TransactionRow(
