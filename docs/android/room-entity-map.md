@@ -2,7 +2,7 @@
 
 ## Decision summary
 
-Android v1 uses Room for durable financial records and DataStore for app and device preferences. Repositories expose domain models and suspend/`Flow` APIs; feature ViewModels never depend on Room entities or DAOs directly.
+Android v1 uses Room for durable financial records and DataStore for app and device preferences. Repositories expose domain models and suspend/`Flow` APIs; feature ViewModels never depend on Room entities or DAOs directly. The current Room schema is version 2; its version-1 migration adds the normalized category name used for iOS-matched uniqueness.
 
 This maps the current iOS SwiftData schema without reproducing SwiftData implementation details. iOS-to-Android onboarding migration is deferred to enhancement #87 and does not shape the Android v1 primary keys.
 
@@ -13,7 +13,7 @@ This maps the current iOS SwiftData schema without reproducing SwiftData impleme
 | Android entity | Primary key | iOS source | Relationships and notes |
 | --- | --- | --- | --- |
 | `TransactionEntity` | generated UUID string | `TransactionModel` | Nullable `categoryId`, `goalId`, and `recurrenceRuleId`; preserve `categoryLabel` as the historical display snapshot. |
-| `CategoryEntity` | UUID string | `CategoryModel` | Name, icon token, type, colour token, optional monthly budget, and currency. |
+| `CategoryEntity` | UUID string | `CategoryModel` | Name, normalized name, icon token, type, colour token, optional monthly budget, and currency. The normalized name plus type is unique, so Income and Expense can both have “Other”, while case or surrounding whitespace cannot create duplicates. |
 | `GoalEntity` | UUID string | `GoalModel` | Goal progress remains derived from linked transactions, not stored as a mutable balance. |
 | `CreditCardEntity` | UUID string | `CreditCardModel` | Name, last four digits, balance, limit, colour token, and currency. |
 | `RecurrenceRuleEntity` | UUID string | `RecurrenceRule` | Frequency, interval, active dates, materialization cursor, transaction template, and nullable category/goal IDs. |

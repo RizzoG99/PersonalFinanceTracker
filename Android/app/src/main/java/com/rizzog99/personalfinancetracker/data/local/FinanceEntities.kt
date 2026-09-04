@@ -7,11 +7,12 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "categories",
-    indices = [Index(value = ["name", "type"], unique = true)],
+    indices = [Index(value = ["normalizedName", "type"], unique = true)],
 )
 data class CategoryEntity(
     @PrimaryKey val id: String,
     val name: String,
+    val normalizedName: String,
     val iconToken: String,
     val type: String,
     val colorToken: String,
