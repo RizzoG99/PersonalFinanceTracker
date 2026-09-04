@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Insights
-import androidx.compose.material.icons.outlined.List
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -28,6 +27,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.rizzog99.personalfinancetracker.R
+import com.rizzog99.personalfinancetracker.features.activity.ActivityScreen
 
 private sealed class MainDestination(
     val route: String,
@@ -59,7 +59,7 @@ fun PersonalFinanceNavHost() {
                 FoundationScreen(R.string.home_title)
             }
             composable(MainDestination.Activity.route) {
-                FoundationScreen(R.string.activity_title)
+                ActivityScreen()
             }
             composable(MainDestination.Insights.route) {
                 FoundationScreen(R.string.insights_title)
