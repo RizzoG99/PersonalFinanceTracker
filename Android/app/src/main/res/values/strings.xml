@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Personal Finance Tracker</string>
-    <string name="foundation_ready">Android foundation ready</string>
+    <string name="tab_home">Home</string>
+    <string name="tab_activity">Activity</string>
+    <string name="tab_insights">Insights</string>
+    <string name="home_title">Your finances</string>
+    <string name="activity_title">Activity</string>
+    <string name="insights_title">Insights</string>
+    <string name="foundation_placeholder">This screen is ready for its parity implementation.</string>
+    <string name="loading">Loading your finances</string>
+    <string name="empty_state_title">Nothing here yet</string>
+    <string name="empty_state_message">Add your first transaction to start tracking your finances.</string>
+    <string name="error_state_title">Something went wrong</string>
+    <string name="retry">Try again</string>
 </resources>
