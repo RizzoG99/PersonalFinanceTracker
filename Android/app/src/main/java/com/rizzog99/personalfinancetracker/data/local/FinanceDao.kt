@@ -20,8 +20,23 @@ interface TransactionDao {
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun delete(id: String)
 
+    @Query("DELETE FROM transactions WHERE recurrenceRuleId = :recurrenceRuleId AND timestampEpochMillis >= :cutoffEpochMillis")
+    suspend fun deleteOccurrencesFrom(recurrenceRuleId: String, cutoffEpochMillis: Long)
+
     @Query("DELETE FROM transactions")
     suspend fun deleteAll()
+}
+
+@Dao
+interface RecurrenceRuleDao {
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(rule: RecurrenceRuleEntity)
+
+    @Query("UPDATE recurrence_rules SET endDateEpochMillis = :endDateEpochMillis WHERE id = :id")
+    suspend fun close(id: String, endDateEpochMillis: Long)
+
+    @Query("SELECT * FROM recurrence_rules WHERE id = :id")
+    suspend fun get(id: String): RecurrenceRuleEntity?
 }
 
 @Dao

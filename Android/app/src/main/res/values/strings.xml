@@ -36,4 +36,21 @@
     <string name="cancel">Cancel</string>
     <string name="delete_transaction_confirmation_title">Delete this transaction?</string>
     <string name="delete_transaction_confirmation_message">You can undo this action for a short time.</string>
+    <string name="recurring_delete_title">This is part of a recurring series</string>
+    <string name="recurring_delete_message">Choose the transactions you want to remove.</string>
+    <string name="delete_this_transaction">This transaction</string>
+    <string name="delete_this_and_future">This and future</string>
+    <string name="filters">Filters</string>
+    <string name="date_range">Date range</string>
+    <string name="filter_any_date">Any time</string>
+    <string name="filter_this_month">This month</string>
+    <string name="filter_last_three_months">Last 3 months</string>
+    <string name="filter_this_year">This year</string>
+    <string name="amount_range">Amount range</string>
+    <string name="minimum_amount">Minimum amount</string>
+    <string name="maximum_amount">Maximum amount</string>
+    <string name="invalid_amount_range">Enter valid amounts with a minimum no greater than the maximum.</string>
+    <string name="recurring_only">Recurring only</string>
+    <string name="categories">Categories</string>
+    <string name="apply_filters">Apply filters</string>
 </resources>

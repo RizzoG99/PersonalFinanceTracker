@@ -36,4 +36,21 @@
     <string name="cancel">Annulla</string>
     <string name="delete_transaction_confirmation_title">Eliminare questa transazione?</string>
     <string name="delete_transaction_confirmation_message">Puoi annullare l’azione per un breve periodo.</string>
+    <string name="recurring_delete_title">Fa parte di una serie ricorrente</string>
+    <string name="recurring_delete_message">Scegli quali transazioni eliminare.</string>
+    <string name="delete_this_transaction">Solo questa transazione</string>
+    <string name="delete_this_and_future">Questa e le successive</string>
+    <string name="filters">Filtri</string>
+    <string name="date_range">Intervallo di date</string>
+    <string name="filter_any_date">Qualsiasi periodo</string>
+    <string name="filter_this_month">Questo mese</string>
+    <string name="filter_last_three_months">Ultimi 3 mesi</string>
+    <string name="filter_this_year">Quest’anno</string>
+    <string name="amount_range">Intervallo di importo</string>
+    <string name="minimum_amount">Importo minimo</string>
+    <string name="maximum_amount">Importo massimo</string>
+    <string name="invalid_amount_range">Inserisci importi validi, con il minimo non superiore al massimo.</string>
+    <string name="recurring_only">Solo ricorrenti</string>
+    <string name="categories">Categorie</string>
+    <string name="apply_filters">Applica filtri</string>
 </resources>

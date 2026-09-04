@@ -22,6 +22,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 abstract class PersonalFinanceDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun recurrenceRuleDao(): RecurrenceRuleDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {

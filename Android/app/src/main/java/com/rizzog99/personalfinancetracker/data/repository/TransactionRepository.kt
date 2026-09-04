@@ -15,6 +15,7 @@ interface TransactionRepository {
     suspend fun upsert(transaction: FinanceTransaction)
     suspend fun insertBatch(transactions: List<FinanceTransaction>)
     suspend fun delete(id: String)
+    suspend fun deleteThisAndFuture(recurrenceRuleId: String, cutoff: Instant)
 }
 
 class RoomTransactionRepository(
@@ -38,6 +39,16 @@ class RoomTransactionRepository(
 
     override suspend fun delete(id: String) {
         dao.delete(id)
+    }
+
+    override suspend fun deleteThisAndFuture(recurrenceRuleId: String, cutoff: Instant) {
+        database.withTransaction {
+            database.recurrenceRuleDao().close(
+                id = recurrenceRuleId,
+                endDateEpochMillis = cutoff.minusMillis(1).toEpochMilli(),
+            )
+            dao.deleteOccurrencesFrom(recurrenceRuleId, cutoff.toEpochMilli())
+        }
     }
 }
 

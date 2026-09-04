@@ -24,7 +24,7 @@ data class ActivityUiState(
     val visibleTransactions: List<FinanceTransaction> = emptyList(),
     val categories: List<FinanceCategory> = emptyList(),
     val searchText: String = "",
-    val typeFilter: TransactionTypeFilter = TransactionTypeFilter.ALL,
+    val filters: TransactionFilters = TransactionFilters(),
 )
 
 class ActivityViewModel(
@@ -35,7 +35,7 @@ class ActivityViewModel(
     private val transactions = MutableStateFlow<List<FinanceTransaction>>(emptyList())
     private val categories = MutableStateFlow<List<FinanceCategory>>(emptyList())
     private val searchText = MutableStateFlow("")
-    private val typeFilter = MutableStateFlow(TransactionTypeFilter.ALL)
+    private val filters = MutableStateFlow(TransactionFilters())
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -44,19 +44,19 @@ class ActivityViewModel(
         transactions,
         categories,
         searchText,
-        typeFilter,
-    ) { allTransactions, allCategories, query, type ->
+        filters,
+    ) { allTransactions, allCategories, query, filters ->
         ActivityUiState(
             allTransactions = allTransactions,
             visibleTransactions = TransactionSearch.filter(
                 transactions = allTransactions,
                 searchText = query,
-                filters = TransactionFilters(type = type),
+                filters = filters,
                 zoneId = zoneId,
             ),
             categories = allCategories,
             searchText = query,
-            typeFilter = type,
+            filters = filters,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActivityUiState())
 
@@ -76,7 +76,15 @@ class ActivityViewModel(
     }
 
     fun updateTypeFilter(filter: TransactionTypeFilter) {
-        typeFilter.value = filter
+        filters.value = filters.value.copy(type = filter)
+    }
+
+    fun updateFilters(filters: TransactionFilters) {
+        this.filters.value = filters
+    }
+
+    fun clearFilters() {
+        filters.value = TransactionFilters()
     }
 
     suspend fun save(transaction: FinanceTransaction): Boolean = runCatching {
@@ -85,6 +93,10 @@ class ActivityViewModel(
 
     suspend fun delete(transaction: FinanceTransaction): Boolean = runCatching {
         transactionRepository.delete(transaction.id)
+    }.onFailure(::showError).isSuccess
+
+    suspend fun deleteThisAndFuture(transaction: FinanceTransaction): Boolean = runCatching {
+        transactionRepository.deleteThisAndFuture(requireNotNull(transaction.recurrenceRuleId), transaction.timestamp)
     }.onFailure(::showError).isSuccess
 
     fun clearError() {

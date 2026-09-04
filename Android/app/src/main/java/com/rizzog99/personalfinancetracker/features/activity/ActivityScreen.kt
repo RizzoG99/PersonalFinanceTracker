@@ -1,6 +1,8 @@
 package com.rizzog99.personalfinancetracker.features.activity
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +22,11 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -63,6 +67,8 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
+import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
+import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.time.Instant
@@ -89,9 +95,20 @@ fun ActivityScreen() {
     var editingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var isCreating by remember { mutableStateOf(false) }
     var deletingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
+    var recurringDeletionTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
+    var filtersVisible by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.activity_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.activity_title)) },
+                actions = {
+                    IconButton(onClick = { filtersVisible = true }) {
+                        Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
+                    }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
@@ -111,10 +128,25 @@ fun ActivityScreen() {
             onSearchChange = viewModel::updateSearch,
             onTypeFilterChange = viewModel::updateTypeFilter,
             onClearError = viewModel::clearError,
+            onClearFilters = viewModel::clearFilters,
             onAdd = { isCreating = true },
             onEdit = { editingTransaction = it },
-            onDelete = { deletingTransaction = it },
+            onDelete = {
+                if (it.recurrenceRuleId == null) deletingTransaction = it else recurringDeletionTransaction = it
+            },
             modifier = Modifier.padding(innerPadding),
+        )
+    }
+
+    if (filtersVisible) {
+        ActivityFiltersSheet(
+            filters = state.filters,
+            categories = state.categories,
+            onDismiss = { filtersVisible = false },
+            onApply = {
+                viewModel.updateFilters(it)
+                filtersVisible = false
+            },
         )
     }
 
@@ -161,6 +193,22 @@ fun ActivityScreen() {
             },
         )
     }
+
+    recurringDeletionTransaction?.let { transaction ->
+        RecurringDeleteDialog(
+            onDismiss = { recurringDeletionTransaction = null },
+            onDeleteThisOnly = {
+                recurringDeletionTransaction = null
+                scope.launch {
+                    if (viewModel.delete(transaction)) showUndoDeletion(snackbarHostState, viewModel, transaction, application)
+                }
+            },
+            onDeleteThisAndFuture = {
+                recurringDeletionTransaction = null
+                scope.launch { viewModel.deleteThisAndFuture(transaction) }
+            },
+        )
+    }
 }
 
 @Composable
@@ -170,6 +218,7 @@ private fun ActivityContent(
     onSearchChange: (String) -> Unit,
     onTypeFilterChange: (TransactionTypeFilter) -> Unit,
     onClearError: () -> Unit,
+    onClearFilters: () -> Unit,
     onAdd: () -> Unit,
     onEdit: (FinanceTransaction) -> Unit,
     onDelete: (FinanceTransaction) -> Unit,
@@ -192,7 +241,7 @@ private fun ActivityContent(
         }
         item {
             TransactionTypeFilters(
-                selected = state.typeFilter,
+                selected = state.filters.type,
                 onSelected = onTypeFilterChange,
             )
         }
@@ -216,7 +265,7 @@ private fun ActivityContent(
             state.visibleTransactions.isEmpty() -> item {
                 NoResultsState(onClear = {
                     onSearchChange("")
-                    onTypeFilterChange(TransactionTypeFilter.ALL)
+                    onClearFilters()
                 })
             }
             else -> items(state.visibleTransactions, key = FinanceTransaction::id) { transaction ->
@@ -247,6 +296,114 @@ private fun TransactionTypeFilters(
                 onClick = { onSelected(filter) },
                 label = { Text(stringResource(labelRes)) },
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun ActivityFiltersSheet(
+    filters: TransactionFilters,
+    categories: List<FinanceCategory>,
+    onDismiss: () -> Unit,
+    onApply: (TransactionFilters) -> Unit,
+) {
+    var selectedCategories by remember(filters) { mutableStateOf(filters.categories) }
+    var selectedDateRange by remember(filters) { mutableStateOf(filters.dateRange) }
+    var minimum by remember(filters) { mutableStateOf(filters.amountMin?.toPlainString().orEmpty()) }
+    var maximum by remember(filters) { mutableStateOf(filters.amountMax?.toPlainString().orEmpty()) }
+    var recurringOnly by remember(filters) { mutableStateOf(filters.recurringOnly) }
+    val minimumAmount = minimum.replace(',', '.').toBigDecimalOrNull()
+    val maximumAmount = maximum.replace(',', '.').toBigDecimalOrNull()
+    val amountsValid = (minimum.isBlank() || minimumAmount != null) &&
+        (maximum.isBlank() || maximumAmount != null) &&
+        (minimumAmount == null || maximumAmount == null || minimumAmount <= maximumAmount)
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.filters),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(stringResource(R.string.date_range), style = MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(
+                    null to R.string.filter_any_date,
+                    SearchDateRange.ThisMonth to R.string.filter_this_month,
+                    SearchDateRange.Last3Months to R.string.filter_last_three_months,
+                    SearchDateRange.ThisYear to R.string.filter_this_year,
+                ).forEach { (range, label) ->
+                    FilterChip(
+                        selected = selectedDateRange == range,
+                        onClick = { selectedDateRange = range },
+                        label = { Text(stringResource(label)) },
+                    )
+                }
+            }
+            Text(stringResource(R.string.amount_range), style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(
+                value = minimum,
+                onValueChange = { minimum = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.minimum_amount)) },
+                singleLine = true,
+            )
+            OutlinedTextField(
+                value = maximum,
+                onValueChange = { maximum = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.maximum_amount)) },
+                isError = !amountsValid,
+                supportingText = { if (!amountsValid) Text(stringResource(R.string.invalid_amount_range)) },
+                singleLine = true,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = recurringOnly, onCheckedChange = { recurringOnly = it })
+                Text(stringResource(R.string.recurring_only))
+            }
+            Text(stringResource(R.string.categories), style = MaterialTheme.typography.titleMedium)
+            categories.forEach { category ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        selectedCategories = if (category.name in selectedCategories) {
+                            selectedCategories - category.name
+                        } else {
+                            selectedCategories + category.name
+                        }
+                    },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = category.name in selectedCategories,
+                        onCheckedChange = { checked ->
+                            selectedCategories = if (checked) selectedCategories + category.name else selectedCategories - category.name
+                        },
+                    )
+                    Text(category.name)
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = { onApply(TransactionFilters()) }) { Text(stringResource(R.string.clear_filters)) }
+                Spacer(Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        onApply(
+                            filters.copy(
+                                categories = selectedCategories,
+                                dateRange = selectedDateRange,
+                                amountMin = minimumAmount,
+                                amountMax = maximumAmount,
+                                recurringOnly = recurringOnly,
+                            ),
+                        )
+                    },
+                    enabled = amountsValid,
+                ) { Text(stringResource(R.string.apply_filters)) }
+            }
         }
     }
 }
@@ -463,6 +620,39 @@ private fun DeleteTransactionDialog(onDismiss: () -> Unit, onConfirm: () -> Unit
             TextButton(onClick = onConfirm) { Text(stringResource(R.string.delete_transaction)) }
         },
     )
+}
+
+@Composable
+private fun RecurringDeleteDialog(
+    onDismiss: () -> Unit,
+    onDeleteThisOnly: () -> Unit,
+    onDeleteThisAndFuture: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.recurring_delete_title)) },
+        text = { Text(stringResource(R.string.recurring_delete_message)) },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+        confirmButton = {
+            Column(horizontalAlignment = Alignment.End) {
+                TextButton(onClick = onDeleteThisOnly) { Text(stringResource(R.string.delete_this_transaction)) }
+                TextButton(onClick = onDeleteThisAndFuture) { Text(stringResource(R.string.delete_this_and_future)) }
+            }
+        },
+    )
+}
+
+private suspend fun showUndoDeletion(
+    snackbarHostState: SnackbarHostState,
+    viewModel: ActivityViewModel,
+    transaction: FinanceTransaction,
+    application: PersonalFinanceApplication,
+) {
+    val result = snackbarHostState.showSnackbar(
+        message = application.getString(R.string.transaction_deleted),
+        actionLabel = application.getString(R.string.undo),
+    )
+    if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
 }
 
 private fun formatAmount(amount: BigDecimal, currencyCode: String): String {
