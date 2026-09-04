@@ -17,13 +17,14 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
 - Shared project skills live canonically in `.agents/skills`; `.codex/skills` and `.claude/skills` contain relative symlinks for native discovery. Edit only the canonical copy and add a symlink for each supported agent when adding a skill.
 - Use the shared project skills when the task matches them:
   - `$swiftui-pro`: SwiftUI code writing, review, architecture, performance, accessibility.
+  - `$android-compose-pro`: Kotlin/Compose UI writing, review, architecture, performance, accessibility.
   - `$feature-brainstorm`: interactive product brainstorming and concise handoff docs.
   - `$ux-audit`: screenshot-based mobile UX/UI audits.
   - `$graphify`: codebase architecture, relationships, and knowledge graph tasks.
 - Prefer `rg` and graphify queries before broad source browsing.
 - Preserve unrelated user changes in the working tree.
 - Keep implementation scoped to the relevant feature folder, model, utility, and test files.
-- For every new or materially changed user-facing view, use `$swiftui-pro` before implementation, inspect the two closest existing screens/components, and follow its `references/design.md` preflight and quality gate.
+- For every new or materially changed user-facing view, use `$swiftui-pro` for iOS SwiftUI or `$android-compose-pro` for Android Compose before implementation. Inspect the two closest existing screens/components and follow the selected skill's `references/design.md` preflight and quality gate.
 - Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
 
 ## Changelog
