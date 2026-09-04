@@ -46,6 +46,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -72,14 +74,14 @@ import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
+import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
+import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
 import java.math.BigDecimal
-import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import java.util.UUID
 import kotlinx.coroutines.launch
 
@@ -107,6 +109,7 @@ fun ActivityScreen() {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.activity_title)) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
                     IconButton(onClick = { filtersVisible = true }) {
                         Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
@@ -115,6 +118,7 @@ fun ActivityScreen() {
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Color.Transparent,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { isCreating = true },
@@ -252,7 +256,7 @@ private fun ActivityContent(
         }
         if (error != null) {
             item {
-                Card {
+                FinanceCard {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -484,23 +488,23 @@ private fun TransactionRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Card {
+    FinanceCard {
         ListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(role = Role.Button, onClick = onEdit),
             headlineContent = { Text(transaction.note.ifBlank { transaction.categoryLabel }) },
             supportingContent = {
-                Text("${transaction.categoryLabel} · ${formatDate(transaction.timestamp)}")
+                Text("${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}")
             },
             trailingContent = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = formatAmount(transaction.amount, transaction.currencyCode),
+                        text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
                         color = if (transaction.amount < BigDecimal.ZERO) {
-                            MaterialTheme.colorScheme.error
+                            LocalFinancePalette.current.negative
                         } else {
-                            MaterialTheme.colorScheme.primary
+                            LocalFinancePalette.current.positive
                         },
                         fontFamily = FontFamily.Monospace,
                     )
@@ -724,15 +728,3 @@ private suspend fun showUndoDeletion(
     )
     if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
 }
-
-private fun formatAmount(amount: BigDecimal, currencyCode: String): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale.getDefault()).apply { currency = java.util.Currency.getInstance(currencyCode) }
-    val sign = if (amount >= BigDecimal.ZERO) "+" else "−"
-    return sign + formatter.format(amount.abs())
-}
-
-private fun formatDate(timestamp: Instant): String = DateTimeFormatter
-    .ofLocalizedDate(java.time.format.FormatStyle.MEDIUM)
-    .withLocale(Locale.getDefault())
-    .withZone(ZoneId.systemDefault())
-    .format(timestamp)

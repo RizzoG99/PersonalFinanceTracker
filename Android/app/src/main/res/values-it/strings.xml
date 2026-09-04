@@ -4,6 +4,14 @@
     <string name="tab_activity">Attività</string>
     <string name="tab_insights">Analisi</string>
     <string name="home_title">Le tue finanze</string>
+    <string name="financial_overview">Situazione finanziaria</string>
+    <string name="total_balance">Saldo totale</string>
+    <string name="current_financial_period">Periodo finanziario corrente</string>
+    <string name="recent_transactions">Transazioni recenti</string>
+    <string name="view_activity">Vedi tutte</string>
+    <string name="empty_dashboard_title">Inizia a tenere traccia</string>
+    <string name="empty_dashboard_message">Aggiungi una transazione per vedere saldo e riepilogo delle spese.</string>
+    <string name="go_to_activity">Vai ad Attività</string>
     <string name="activity_title">Attività</string>
     <string name="insights_title">Analisi</string>
     <string name="foundation_placeholder">Questa schermata è pronta per raggiungere la parità con iOS.</string>

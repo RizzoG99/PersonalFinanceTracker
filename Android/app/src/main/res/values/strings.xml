@@ -4,6 +4,14 @@
     <string name="tab_activity">Activity</string>
     <string name="tab_insights">Insights</string>
     <string name="home_title">Your finances</string>
+    <string name="financial_overview">Financial overview</string>
+    <string name="total_balance">Total balance</string>
+    <string name="current_financial_period">Current financial period</string>
+    <string name="recent_transactions">Recent transactions</string>
+    <string name="view_activity">View all</string>
+    <string name="empty_dashboard_title">Start tracking</string>
+    <string name="empty_dashboard_message">Add a transaction to see your balance and spending summary.</string>
+    <string name="go_to_activity">Go to Activity</string>
     <string name="activity_title">Activity</string>
     <string name="insights_title">Insights</string>
     <string name="foundation_placeholder">This screen is ready for its parity implementation.</string>
