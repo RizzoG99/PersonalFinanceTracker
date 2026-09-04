@@ -46,6 +46,7 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import java.math.BigDecimal
 import java.time.LocalTime
 
 @Composable
@@ -164,8 +165,13 @@ private fun BalanceCard(
                     FinancialStat(
                         modifier = Modifier.weight(1f),
                         label = stringResource(R.string.filter_expense),
-                        value = formatSignedCurrency(expenses.negate(), currencyCode),
+                        value = if (expenses.signum() == 0) {
+                            formatCurrency(BigDecimal.ZERO, currencyCode)
+                        } else {
+                            formatSignedCurrency(expenses.negate(), currencyCode)
+                        },
                         color = palette.negative,
+                        valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
                         icon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null) },
                     )
                 }
@@ -185,6 +191,7 @@ private fun FinancialStat(
     label: String,
     value: String,
     color: androidx.compose.ui.graphics.Color,
+    valueColor: androidx.compose.ui.graphics.Color = color,
     icon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -203,7 +210,7 @@ private fun FinancialStat(
             )
             Text(label, style = MaterialTheme.typography.titleSmall, color = color)
         }
-        Text(value, style = MaterialTheme.typography.titleLarge, color = color, fontFamily = FontFamily.Monospace)
+        Text(value, style = MaterialTheme.typography.titleLarge, color = valueColor, fontFamily = FontFamily.Monospace)
     }
 }
 

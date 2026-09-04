@@ -79,6 +79,7 @@ import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFil
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
@@ -337,8 +338,13 @@ private fun ActivitySummary(transactions: List<FinanceTransaction>) {
         ActivitySummaryAmount(
             modifier = Modifier.weight(1f),
             label = stringResource(R.string.filter_expense),
-            value = formatSignedCurrency(expenses.negate(), currencyCode),
+            value = if (expenses.signum() == 0) {
+                formatCurrency(BigDecimal.ZERO, currencyCode)
+            } else {
+                formatSignedCurrency(expenses.negate(), currencyCode)
+            },
             color = palette.negative,
+            valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
         )
     }
 }
@@ -348,6 +354,7 @@ private fun ActivitySummaryAmount(
     label: String,
     value: String,
     color: Color,
+    valueColor: Color = color,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(20.dp)
@@ -362,7 +369,7 @@ private fun ActivitySummaryAmount(
         Text(
             text = value,
             style = MaterialTheme.typography.titleLarge,
-            color = color,
+            color = valueColor,
             fontFamily = FontFamily.Monospace,
         )
     }
