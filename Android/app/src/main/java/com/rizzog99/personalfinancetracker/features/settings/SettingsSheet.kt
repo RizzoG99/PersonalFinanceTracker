@@ -12,11 +12,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,8 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
@@ -37,7 +43,10 @@ import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsSheet(onDismiss: () -> Unit) {
+fun SettingsSheet(
+    onDismiss: () -> Unit,
+    onOpenCategories: () -> Unit,
+) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: SettingsViewModel = viewModel(
         factory = SettingsViewModel.factory(application.preferencesRepository),
@@ -103,6 +112,19 @@ fun SettingsSheet(onDismiss: () -> Unit) {
                 text = stringResource(R.string.pay_cycle_detail, state.payCycleStartDay, endDay),
                 style = MaterialTheme.typography.bodyMedium,
                 color = LocalFinancePalette.current.textMid,
+            )
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onOpenCategories),
+                headlineContent = { Text(stringResource(R.string.categories)) },
+                supportingContent = { Text(stringResource(R.string.categories_settings_detail)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
+                    )
+                },
             )
         }
     }

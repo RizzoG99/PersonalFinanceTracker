@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 interface CategoryRepository {
     fun observeAll(): Flow<List<FinanceCategory>>
     suspend fun add(category: NewCategory): FinanceCategory
+    suspend fun update(category: FinanceCategory): FinanceCategory
     suspend fun delete(id: String)
     suspend fun seedDefaultsIfEmpty()
 }
@@ -33,6 +34,10 @@ class RoomCategoryRepository(
 
     override suspend fun add(category: NewCategory): FinanceCategory = database.withTransaction {
         category.toEntity().also { entity -> dao.insert(entity) }.toDomain()
+    }
+
+    override suspend fun update(category: FinanceCategory): FinanceCategory = database.withTransaction {
+        category.toUpdatedEntity().also { entity -> dao.update(entity) }.toDomain()
     }
 
     override suspend fun delete(id: String) {
@@ -75,6 +80,24 @@ private fun CategoryEntity.toDomain() = FinanceCategory(
     monthlyBudget = monthlyBudgetDecimal?.let(MoneyCodec::decode),
     currencyCode = currencyCode,
 )
+
+private fun FinanceCategory.toUpdatedEntity(): CategoryEntity {
+    val trimmedName = name.trim()
+    require(trimmedName.isNotEmpty()) { "A category name cannot be blank." }
+    require(CategoryNameValidator.isValid(trimmedName)) { "A category name contains unsupported characters." }
+    monthlyBudget?.let { require(it >= java.math.BigDecimal.ZERO) { "A category budget cannot be negative." } }
+
+    return CategoryEntity(
+        id = id,
+        name = trimmedName,
+        normalizedName = CategoryNameValidator.normalized(trimmedName),
+        iconToken = iconToken,
+        type = type.storageValue,
+        colorToken = colorToken,
+        monthlyBudgetDecimal = monthlyBudget?.let(MoneyCodec::encode),
+        currencyCode = currencyCode,
+    )
+}
 
 private val TransactionType.storageValue: String
     get() = name.lowercase()

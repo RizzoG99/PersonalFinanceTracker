@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -34,6 +35,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.features.activity.ActivityScreen
+import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
 import com.rizzog99.personalfinancetracker.features.settings.SettingsSheet
 import com.rizzog99.personalfinancetracker.ui.components.AppBackground
@@ -47,6 +49,7 @@ private sealed class MainDestination(
     data object Home : MainDestination("home", R.string.tab_home)
     data object Activity : MainDestination("activity", R.string.tab_activity)
     data object Insights : MainDestination("insights", R.string.tab_insights)
+    data object Categories : MainDestination("categories", R.string.category_settings_title)
 }
 
 private val mainDestinations = listOf(
@@ -109,38 +112,49 @@ fun PersonalFinanceNavHost() {
                 composable(MainDestination.Insights.route) {
                     InsightsPlaceholderScreen()
                 }
+                composable(MainDestination.Categories.route) {
+                    CategorySettingsScreen(onBack = { navController.popBackStack() })
+                }
             }
 
             if (settingsVisible) {
-                SettingsSheet(onDismiss = { settingsVisible = false })
+                SettingsSheet(
+                    onDismiss = { settingsVisible = false },
+                    onOpenCategories = {
+                        settingsVisible = false
+                        navController.navigate(MainDestination.Categories.route)
+                    },
+                )
             }
 
-            NavigationBar(containerColor = palette.surfaceRaised) {
-                mainDestinations.forEach { destination ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = destination.icon(),
-                                contentDescription = null,
-                            )
-                        },
-                        label = { Text(stringResource(destination.labelRes)) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        ),
-                        alwaysShowLabel = true,
-                    )
+            if (currentDestination?.route in mainDestinations.map(MainDestination::route)) {
+                NavigationBar(containerColor = palette.surfaceRaised) {
+                    mainDestinations.forEach { destination ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(destination.route) {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = destination.icon(),
+                                    contentDescription = null,
+                                )
+                            },
+                            label = { Text(stringResource(destination.labelRes)) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            ),
+                            alwaysShowLabel = true,
+                        )
+                    }
                 }
             }
         }
@@ -175,4 +189,5 @@ private fun MainDestination.icon() = when (this) {
     MainDestination.Home -> Icons.Outlined.Home
     MainDestination.Activity -> Icons.AutoMirrored.Outlined.List
     MainDestination.Insights -> Icons.Outlined.Insights
+    MainDestination.Categories -> Icons.Outlined.Category
 }

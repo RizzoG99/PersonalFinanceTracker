@@ -58,4 +58,41 @@ class RoomCategoryRepositoryTest {
             )
         }
     }
+
+    @Test
+    fun `updates a category while keeping its identity and financial metadata`() = runBlocking {
+        val original = repository.add(
+            NewCategory(
+                name = "Travel fund",
+                iconToken = "airplane",
+                type = TransactionType.EXPENSE,
+                colorToken = "categoryAmber",
+            ),
+        )
+
+        val updated = repository.update(
+            original.copy(name = "Trips", iconToken = "luggage", colorToken = "categoryTeal"),
+        )
+
+        assertEquals(original.id, updated.id)
+        assertEquals(TransactionType.EXPENSE, updated.type)
+        assertEquals("Trips", updated.name)
+        assertEquals("luggage", updated.iconToken)
+        assertEquals("categoryTeal", updated.colorToken)
+        assertEquals(original.currencyCode, updated.currencyCode)
+    }
+
+    @Test(expected = android.database.sqlite.SQLiteConstraintException::class)
+    fun `rejects an update that duplicates a category in its type`() {
+        runBlocking {
+            val groceries = repository.add(
+                NewCategory(name = "Groceries", iconToken = "cart", type = TransactionType.EXPENSE),
+            )
+            repository.add(
+                NewCategory(name = "Dining", iconToken = "fork.knife", type = TransactionType.EXPENSE),
+            )
+
+            repository.update(groceries.copy(name = " dining "))
+        }
+    }
 }

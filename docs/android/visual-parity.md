@@ -51,6 +51,12 @@ colour relationships, and states; Android retains Material navigation, sheets, a
   Edit, and Delete, and exposes the no-results recovery and destructive dialog actions. Manual
   TalkBack speech and traversal still require a device-assisted check; automated hierarchy
   inspection alone is not treated as a TalkBack sign-off.
+- 2026-09-06: Category Settings now mirrors the iOS capability set: Settings opens a dedicated
+  Android subpage with separate Expense and Income sections, and users can create, edit, and
+  confirm deletion of categories. The editor keeps the category type fixed after creation,
+  validates names before save, and provides native color and icon pickers. Existing transactions
+  retain their saved category label after a category is deleted. The debug build and unit tests
+  pass; visual emulator inspection is still pending because the host was locked during this run.
 
 Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
 check is complete.

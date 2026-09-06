@@ -7,6 +7,8 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Android: Settings now lets you create, edit, and safely delete income and expense categories,
+  including an icon and color for each one.
 - Fixed a brief screen flash/flicker right when Face ID kicks in on unlock.
 - Removed the privacy screen that used to cover the app while screen recording; the app switcher snapshot cover is unaffected.
 
