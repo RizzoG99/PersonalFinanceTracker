@@ -56,7 +56,9 @@ colour relationships, and states; Android retains Material navigation, sheets, a
   confirm deletion of categories. The editor keeps the category type fixed after creation,
   validates names before save, and provides native color and icon pickers. Existing transactions
   retain their saved category label after a category is deleted. The debug build and unit tests
-  pass; visual emulator inspection is still pending because the host was locked during this run.
+  pass. A Pixel 7 emulator check in dark appearance covered Settings navigation, populated
+  categories, native icon differentiation, the disabled fresh editor, and scrolling to every
+  picker and action. Italian and large-text checks for this new screen remain open.
 
 Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
 check is complete.
