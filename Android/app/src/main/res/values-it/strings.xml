@@ -49,6 +49,14 @@
     <string name="select_category">Seleziona una categoria</string>
     <string name="note">Nota</string>
     <string name="note_optional">Facoltativa</string>
+    <string name="repeat_transaction">Ripeti transazione</string>
+    <string name="repeat_transaction_detail">Crea di nuovo questa transazione secondo una cadenza.</string>
+    <string name="repeats_every">Ripeti ogni</string>
+    <string name="recurrence_weekly">Settimana</string>
+    <string name="recurrence_monthly">Mese</string>
+    <string name="recurrence_yearly">Anno</string>
+    <string name="decrease_interval">Riduci l’intervallo di ripetizione</string>
+    <string name="increase_interval">Aumenta l’intervallo di ripetizione</string>
     <string name="save">Salva</string>
     <string name="cancel">Annulla</string>
     <string name="delete_transaction_confirmation_title">Eliminare questa transazione?</string>

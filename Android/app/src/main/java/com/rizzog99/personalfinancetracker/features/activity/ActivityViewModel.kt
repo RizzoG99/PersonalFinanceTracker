@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
+import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
+import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionSearch
@@ -30,6 +32,7 @@ data class ActivityUiState(
 class ActivityViewModel(
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
+    private val recurrenceRepository: RecurrenceRepository,
     private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
     private val transactions = MutableStateFlow<List<FinanceTransaction>>(emptyList())
@@ -91,6 +94,10 @@ class ActivityViewModel(
         transactionRepository.upsert(transaction)
     }.onFailure(::showError).isSuccess
 
+    suspend fun createRecurringTransaction(rule: NewRecurrenceRule): Boolean = runCatching {
+        recurrenceRepository.createAndMaterialize(rule)
+    }.onFailure(::showError).isSuccess
+
     suspend fun delete(transaction: FinanceTransaction): Boolean = runCatching {
         transactionRepository.delete(transaction.id)
     }.onFailure(::showError).isSuccess
@@ -111,8 +118,9 @@ class ActivityViewModel(
         fun factory(
             transactionRepository: TransactionRepository,
             categoryRepository: CategoryRepository,
+            recurrenceRepository: RecurrenceRepository,
         ) = viewModelFactory {
-            initializer { ActivityViewModel(transactionRepository, categoryRepository) }
+            initializer { ActivityViewModel(transactionRepository, categoryRepository, recurrenceRepository) }
         }
     }
 }

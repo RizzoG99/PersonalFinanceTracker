@@ -59,6 +59,12 @@ colour relationships, and states; Android retains Material navigation, sheets, a
   pass. A Pixel 7 emulator check in dark appearance covered Settings navigation, populated
   categories, native icon differentiation, the disabled fresh editor, and scrolling to every
   picker and action. Italian and large-text checks for this new screen remain open.
+- 2026-09-06: Activity's Add Transaction sheet now exposes the iOS recurrence v1 contract with
+  a native Repeat toggle, Weekly/Monthly/Yearly cadence and an adjustable interval. Recurrences
+  materialize silently on launch and foreground return; the existing per-occurrence and
+  this-and-future deletion choices remain in place. Automated recurrence date and repository
+  integrity tests pass. Pixel 7 dark-appearance QA covered the scrollable editor, the expanded
+  cadence controls, and the reachable Save action. Italian and large-text checks remain open.
 
 Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
 check is complete.

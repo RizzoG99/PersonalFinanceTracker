@@ -38,6 +38,12 @@ interface RecurrenceRuleDao {
 
     @Query("SELECT * FROM recurrence_rules WHERE id = :id")
     suspend fun get(id: String): RecurrenceRuleEntity?
+
+    @Query("SELECT * FROM recurrence_rules WHERE endDateEpochMillis IS NULL OR endDateEpochMillis >= :throughEpochMillis")
+    suspend fun getActive(throughEpochMillis: Long): List<RecurrenceRuleEntity>
+
+    @Query("UPDATE recurrence_rules SET lastMaterializedDateEpochMillis = :lastMaterializedDateEpochMillis WHERE id = :id")
+    suspend fun updateLastMaterializedDate(id: String, lastMaterializedDateEpochMillis: Long)
 }
 
 @Dao

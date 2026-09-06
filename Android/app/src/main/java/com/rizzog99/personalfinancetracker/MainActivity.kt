@@ -11,4 +11,9 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent { PersonalFinanceTrackerApp() }
     }
+
+    override fun onResume() {
+        super.onResume()
+        (application as PersonalFinanceApplication).materializeRecurringTransactions()
+    }
 }

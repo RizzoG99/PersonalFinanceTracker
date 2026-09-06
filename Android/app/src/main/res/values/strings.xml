@@ -49,6 +49,14 @@
     <string name="select_category">Select a category</string>
     <string name="note">Note</string>
     <string name="note_optional">Optional</string>
+    <string name="repeat_transaction">Repeat transaction</string>
+    <string name="repeat_transaction_detail">Create this transaction again on a schedule.</string>
+    <string name="repeats_every">Repeats every</string>
+    <string name="recurrence_weekly">Week</string>
+    <string name="recurrence_monthly">Month</string>
+    <string name="recurrence_yearly">Year</string>
+    <string name="decrease_interval">Decrease repeat interval</string>
+    <string name="increase_interval">Increase repeat interval</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete_transaction_confirmation_title">Delete this transaction?</string>

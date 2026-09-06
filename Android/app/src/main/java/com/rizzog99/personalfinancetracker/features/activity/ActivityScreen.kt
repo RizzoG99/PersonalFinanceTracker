@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
@@ -52,6 +53,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -78,6 +80,8 @@ import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
+import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
@@ -107,6 +111,7 @@ fun ActivityScreen(
         factory = ActivityViewModel.factory(
             transactionRepository = application.transactionRepository,
             categoryRepository = application.categoryRepository,
+            recurrenceRepository = application.recurrenceRepository,
         ),
     )
     val state by viewModel.uiState.collectAsState()
@@ -212,9 +217,10 @@ fun ActivityScreen(
                 editingTransaction = null
                 if (shouldReturnToDashboard) onDashboardCreationFinished()
             },
-            onSave = { transaction ->
+            onSave = { transaction, recurrenceRule ->
                 scope.launch {
-                    if (viewModel.save(transaction)) {
+                    val saved = recurrenceRule?.let { viewModel.createRecurringTransaction(it) } ?: viewModel.save(transaction)
+                    if (saved) {
                         val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                         isCreating = false
                         editingTransaction = null
@@ -744,13 +750,13 @@ private fun NoResultsState(onClear: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun TransactionEditorSheet(
     editingTransaction: FinanceTransaction?,
     categories: List<FinanceCategory>,
     onDismiss: () -> Unit,
-    onSave: (FinanceTransaction) -> Unit,
+    onSave: (FinanceTransaction, NewRecurrenceRule?) -> Unit,
 ) {
     var amountText by remember(editingTransaction) {
         mutableStateOf(editingTransaction?.amount?.abs()?.toPlainString().orEmpty())
@@ -768,6 +774,9 @@ private fun TransactionEditorSheet(
         )
     }
     var categoryMenuExpanded by remember { mutableStateOf(false) }
+    var repeats by remember { mutableStateOf(false) }
+    var recurrenceFrequency by remember { mutableStateOf(RecurrenceFrequency.MONTHLY) }
+    var recurrenceInterval by remember { mutableStateOf(1) }
     val matchingCategories = categories.filter { it.type == selectedType }
     val selectedCategory = matchingCategories.firstOrNull { it.id == selectedCategoryId }
     val amount = amountText.replace(',', '.').toBigDecimalOrNull()
@@ -775,7 +784,10 @@ private fun TransactionEditorSheet(
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
@@ -839,6 +851,70 @@ private fun TransactionEditorSheet(
                 label = { Text(stringResource(R.string.note)) },
                 supportingText = { Text(stringResource(R.string.note_optional)) },
             )
+            if (editingTransaction == null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.repeat_transaction), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            stringResource(R.string.repeat_transaction_detail),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = LocalFinancePalette.current.textMid,
+                        )
+                    }
+                    Switch(
+                        checked = repeats,
+                        onCheckedChange = { repeats = it },
+                    )
+                }
+                if (repeats) {
+                    Text(
+                        stringResource(R.string.repeats_every),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        OutlinedButton(
+                            onClick = { recurrenceInterval = (recurrenceInterval - 1).coerceAtLeast(1) },
+                            enabled = recurrenceInterval > 1,
+                        ) {
+                            Icon(Icons.Outlined.Remove, contentDescription = stringResource(R.string.decrease_interval))
+                        }
+                        Text(
+                            text = recurrenceInterval.toString(),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        OutlinedButton(onClick = { recurrenceInterval += 1 }) {
+                            Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.increase_interval))
+                        }
+                        Spacer(Modifier.weight(1f))
+                    }
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        RecurrenceFrequency.entries.forEach { frequency ->
+                            FilterChip(
+                                selected = recurrenceFrequency == frequency,
+                                onClick = { recurrenceFrequency = frequency },
+                                label = {
+                                    Text(
+                                        stringResource(
+                                            when (frequency) {
+                                                RecurrenceFrequency.WEEKLY -> R.string.recurrence_weekly
+                                                RecurrenceFrequency.MONTHLY -> R.string.recurrence_monthly
+                                                RecurrenceFrequency.YEARLY -> R.string.recurrence_yearly
+                                            },
+                                        ),
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.End,
@@ -849,18 +925,34 @@ private fun TransactionEditorSheet(
                     onClick = {
                         val category = requireNotNull(selectedCategory)
                         val signedAmount = if (category.type == TransactionType.EXPENSE) amount!!.negate() else amount!!
+                        val transaction = FinanceTransaction(
+                            id = editingTransaction?.id ?: UUID.randomUUID().toString(),
+                            timestamp = editingTransaction?.timestamp ?: Instant.now(),
+                            amount = signedAmount,
+                            note = note.trim(),
+                            categoryLabel = category.name,
+                            categoryId = category.id,
+                            currencyCode = category.currencyCode,
+                            goalId = editingTransaction?.goalId,
+                            recurrenceRuleId = editingTransaction?.recurrenceRuleId,
+                        )
                         onSave(
-                            FinanceTransaction(
-                                id = editingTransaction?.id ?: UUID.randomUUID().toString(),
-                                timestamp = editingTransaction?.timestamp ?: Instant.now(),
-                                amount = signedAmount,
-                                note = note.trim(),
-                                categoryLabel = category.name,
-                                categoryId = category.id,
-                                currencyCode = category.currencyCode,
-                                goalId = editingTransaction?.goalId,
-                                recurrenceRuleId = editingTransaction?.recurrenceRuleId,
-                            ),
+                            transaction,
+                            if (repeats) {
+                                NewRecurrenceRule(
+                                    frequency = recurrenceFrequency,
+                                    interval = recurrenceInterval,
+                                    startDate = transaction.timestamp,
+                                    amount = transaction.amount,
+                                    note = transaction.note,
+                                    categoryLabel = transaction.categoryLabel,
+                                    categoryId = transaction.categoryId,
+                                    currencyCode = transaction.currencyCode,
+                                    goalId = transaction.goalId,
+                                )
+                            } else {
+                                null
+                            },
                         )
                     },
                     enabled = canSave,

@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Android: Add Transaction can now repeat weekly, monthly, or yearly, including every 2 weeks/months/years. New occurrences appear automatically when you open the app.
 - Android: Settings now lets you create, edit, and safely delete income and expense categories,
   including an icon and color for each one.
 - Fixed a brief screen flash/flicker right when Face ID kicks in on unlock.
