@@ -6,8 +6,10 @@ import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
+import com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomCategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomRecurrenceRepository
+import com.rizzog99.personalfinancetracker.data.repository.RoomReceiptMappingRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +42,10 @@ class PersonalFinanceApplication : Application() {
 
     val recurrenceRepository: RecurrenceRepository by lazy {
         RoomRecurrenceRepository(database)
+    }
+
+    val receiptMappingRepository: ReceiptMappingRepository by lazy {
+        RoomReceiptMappingRepository(database)
     }
 
     private val recurrenceMaterializationMutex = Mutex()

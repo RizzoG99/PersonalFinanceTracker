@@ -65,6 +65,12 @@ colour relationships, and states; Android retains Material navigation, sheets, a
   this-and-future deletion choices remain in place. Automated recurrence date and repository
   integrity tests pass. Pixel 7 dark-appearance QA covered the scrollable editor, the expanded
   cadence controls, and the reachable Save action. Italian and large-text checks remain open.
+- 2026-09-06: Add Transaction now has an Android-native receipt path: Scan receipt offers a
+  camera photo or photo-picker source and states that the image is processed locally then
+  discarded. The reviewable amount, date, merchant note, category suggestion, and ambiguous-total
+  choices are populated only after local OCR. Pixel 7 dark-appearance QA covered the scan entry
+  point, source choice, privacy copy, and the new date control. OCR needs a physical-receipt
+  device check; Italian and large-text checks remain open.
 
 Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
 check is complete.

@@ -23,6 +23,7 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun categoryDao(): CategoryDao
     abstract fun recurrenceRuleDao(): RecurrenceRuleDao
+    abstract fun merchantCategoryMappingDao(): MerchantCategoryMappingDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {

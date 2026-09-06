@@ -1,5 +1,10 @@
 package com.rizzog99.personalfinancetracker.features.activity
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
@@ -82,6 +87,9 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
+import com.rizzog99.personalfinancetracker.domain.receipt.ReceiptParser
+import com.rizzog99.personalfinancetracker.domain.receipt.ReceiptScan
+import com.rizzog99.personalfinancetracker.domain.receipt.ReceiptTextRecognizer
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
@@ -92,8 +100,11 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
 import java.math.BigDecimal
+import java.io.File
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlinx.coroutines.launch
@@ -212,13 +223,14 @@ fun ActivityScreen(
         TransactionEditorSheet(
             editingTransaction = editingTransaction,
             categories = state.categories,
+            receiptMappingRepository = application.receiptMappingRepository,
             onDismiss = {
                 val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                 isCreating = false
                 editingTransaction = null
                 if (shouldReturnToDashboard) onDashboardCreationFinished()
             },
-            onSave = { transaction, recurrenceRule ->
+            onSave = { transaction, recurrenceRule, receiptMerchant ->
                 if (editingTransaction?.recurrenceRuleId != null) {
                     recurringEditTransaction = transaction
                 } else {
@@ -226,6 +238,9 @@ fun ActivityScreen(
                     scope.launch {
                         val saved = recurrenceRule?.let { viewModel.createRecurringTransaction(it) } ?: viewModel.save(transaction)
                         if (saved) {
+                            if (receiptMerchant != null && transaction.categoryId != null) {
+                                application.receiptMappingRepository.remember(receiptMerchant, transaction.categoryId)
+                            }
                             val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                             isCreating = false
                             editingTransaction = null
@@ -794,8 +809,9 @@ private fun NoResultsState(onClear: () -> Unit) {
 private fun TransactionEditorSheet(
     editingTransaction: FinanceTransaction?,
     categories: List<FinanceCategory>,
+    receiptMappingRepository: com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository,
     onDismiss: () -> Unit,
-    onSave: (FinanceTransaction, NewRecurrenceRule?) -> Unit,
+    onSave: (FinanceTransaction, NewRecurrenceRule?, String?) -> Unit,
 ) {
     var amountText by remember(editingTransaction) {
         mutableStateOf(editingTransaction?.amount?.abs()?.toPlainString().orEmpty())
@@ -816,10 +832,23 @@ private fun TransactionEditorSheet(
     var repeats by remember { mutableStateOf(false) }
     var recurrenceFrequency by remember { mutableStateOf(RecurrenceFrequency.MONTHLY) }
     var recurrenceInterval by remember { mutableStateOf(1) }
+    var categoryTouched by remember { mutableStateOf(false) }
+    var receiptStatus by remember { mutableStateOf<String?>(null) }
+    var receiptMerchant by remember { mutableStateOf<String?>(null) }
+    var scannedAmountText by remember { mutableStateOf<String?>(null) }
+    var receiptTotalCandidates by remember { mutableStateOf<List<BigDecimal>>(emptyList()) }
+    var timestamp by remember(editingTransaction) { mutableStateOf(editingTransaction?.timestamp ?: Instant.now()) }
+    var scannedDate by remember { mutableStateOf<LocalDate?>(null) }
+    var datePickerVisible by remember { mutableStateOf(false) }
     val matchingCategories = categories.filter { it.type == selectedType }
     val selectedCategory = matchingCategories.firstOrNull { it.id == selectedCategoryId }
     val amount = amountText.replace(',', '.').toBigDecimalOrNull()
     val canSave = amount != null && amount > BigDecimal.ZERO && selectedCategory != null
+    val receiptReviewMessage = stringResource(R.string.receipt_review_before_saving)
+    val receiptAmbiguousMessage = stringResource(R.string.receipt_total_ambiguous)
+    val receiptAmountUnreadableMessage = stringResource(R.string.receipt_amount_unreadable)
+    val receiptDateClampedMessage = stringResource(R.string.receipt_date_clamped)
+    val receiptUnreadableMessage = stringResource(R.string.receipt_unreadable)
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -834,6 +863,72 @@ private fun TransactionEditorSheet(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.semantics { heading() },
             )
+            if (editingTransaction == null) {
+                ReceiptCaptureAction(
+                    onScan = { scan ->
+                        val wasAmountScanned = amountText == scannedAmountText
+                        if (amountText.isBlank() || wasAmountScanned) {
+                            scan.total?.let {
+                                amountText = it.toPlainString()
+                                scannedAmountText = amountText
+                            }
+                        }
+                        receiptTotalCandidates = scan.totalCandidates
+                        val displayedDate = timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
+                        if ((displayedDate == LocalDate.now() || displayedDate == scannedDate) && !scan.dateWasClamped) {
+                            scan.date?.let { date ->
+                                timestamp = date.atTime(LocalTime.now()).atZone(ZoneId.systemDefault()).toInstant()
+                                scannedDate = date
+                            }
+                        }
+                        if (note.isBlank() || note == receiptMerchant.orEmpty()) {
+                            scan.merchant?.let { note = it }
+                        }
+                        receiptMerchant = scan.merchant
+                        if (!categoryTouched) {
+                            val mappedCategoryId = scan.merchant?.let { receiptMappingRepository.categoryIdFor(it) }
+                            val inferredCategory = categories.firstOrNull { it.id == mappedCategoryId }
+                                ?: inferReceiptCategory(scan, categories, selectedType)
+                            if (inferredCategory != null) {
+                                selectedType = inferredCategory.type
+                                selectedCategoryId = inferredCategory.id
+                            }
+                        }
+                        receiptStatus = when {
+                            scan.totalCandidates.isNotEmpty() -> receiptAmbiguousMessage
+                            scan.total == null -> receiptAmountUnreadableMessage
+                            scan.dateWasClamped -> receiptDateClampedMessage
+                            else -> receiptReviewMessage
+                        }
+                    },
+                    onFailure = { receiptStatus = receiptUnreadableMessage },
+                )
+            }
+            receiptStatus?.let { status ->
+                FinanceCard {
+                    Text(
+                        text = status,
+                        modifier = Modifier.padding(12.dp),
+                        color = LocalFinancePalette.current.textMid,
+                    )
+                }
+            }
+            if (receiptTotalCandidates.isNotEmpty()) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    receiptTotalCandidates.forEach { candidate ->
+                        FilterChip(
+                            selected = false,
+                            onClick = {
+                                amountText = candidate.toPlainString()
+                                scannedAmountText = amountText
+                                receiptTotalCandidates = emptyList()
+                                receiptStatus = receiptReviewMessage
+                            },
+                            label = { Text(formatCurrency(candidate, "EUR")) },
+                        )
+                    }
+                }
+            }
             OutlinedTextField(
                 value = amountText,
                 onValueChange = { amountText = it },
@@ -842,12 +937,19 @@ private fun TransactionEditorSheet(
                 supportingText = { Text(stringResource(R.string.amount_must_be_positive)) },
                 singleLine = true,
             )
+            OutlinedButton(
+                onClick = { datePickerVisible = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("${stringResource(R.string.transaction_date)}: ${formatTransactionDate(timestamp)}")
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = selectedType == TransactionType.INCOME,
                     onClick = {
                         selectedType = TransactionType.INCOME
                         selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
+                        categoryTouched = true
                     },
                     label = { Text(stringResource(R.string.filter_income)) },
                 )
@@ -856,6 +958,7 @@ private fun TransactionEditorSheet(
                     onClick = {
                         selectedType = TransactionType.EXPENSE
                         selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
+                        categoryTouched = true
                     },
                     label = { Text(stringResource(R.string.filter_expense)) },
                 )
@@ -877,6 +980,7 @@ private fun TransactionEditorSheet(
                             text = { Text(category.name) },
                             onClick = {
                                 selectedCategoryId = category.id
+                                categoryTouched = true
                                 categoryMenuExpanded = false
                             },
                         )
@@ -966,7 +1070,7 @@ private fun TransactionEditorSheet(
                         val signedAmount = if (category.type == TransactionType.EXPENSE) amount!!.negate() else amount!!
                         val transaction = FinanceTransaction(
                             id = editingTransaction?.id ?: UUID.randomUUID().toString(),
-                            timestamp = editingTransaction?.timestamp ?: Instant.now(),
+                            timestamp = timestamp,
                             amount = signedAmount,
                             note = note.trim(),
                             categoryLabel = category.name,
@@ -992,6 +1096,7 @@ private fun TransactionEditorSheet(
                             } else {
                                 null
                             },
+                            receiptMerchant,
                         )
                     },
                     enabled = canSave,
@@ -1001,6 +1106,119 @@ private fun TransactionEditorSheet(
             }
         }
     }
+
+    if (datePickerVisible) {
+        val selectedDate = timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
+        val datePickerState = androidx.compose.material3.rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.toUtcStartOfDayMillis(),
+        )
+        DatePickerDialog(
+            onDismissRequest = { datePickerVisible = false },
+            confirmButton = {
+                TextButton(
+                    enabled = datePickerState.selectedDateMillis != null,
+                    onClick = {
+                        val date = datePickerState.selectedDateMillis!!.toUtcLocalDate()
+                        timestamp = date.atTime(LocalTime.now()).atZone(ZoneId.systemDefault()).toInstant()
+                        scannedDate = null
+                        datePickerVisible = false
+                    },
+                ) { Text(stringResource(R.string.done)) }
+            },
+            dismissButton = { TextButton(onClick = { datePickerVisible = false }) { Text(stringResource(R.string.cancel)) } },
+        ) {
+            androidx.compose.material3.DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@Composable
+private fun ReceiptCaptureAction(
+    onScan: suspend (ReceiptScan) -> Unit,
+    onFailure: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var sourcePickerVisible by remember { mutableStateOf(false) }
+    var pendingCameraFile by remember { mutableStateOf<File?>(null) }
+
+    fun recognize(uri: Uri, temporaryFile: File? = null) {
+        scope.launch {
+            try {
+                val scan = ReceiptParser.parse(ReceiptTextRecognizer.recognize(context, uri))
+                temporaryFile?.delete()
+                onScan(scan)
+            } catch (_: Exception) {
+                temporaryFile?.delete()
+                onFailure()
+            }
+        }
+    }
+
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) recognize(uri)
+    }
+    val cameraCapture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        val file = pendingCameraFile
+        pendingCameraFile = null
+        if (success && file != null) {
+            recognize(FileProvider.getUriForFile(context, "${context.packageName}.receipt-files", file), file)
+        } else {
+            file?.delete()
+        }
+    }
+
+    TextButton(onClick = { sourcePickerVisible = true }) {
+        Text(stringResource(R.string.scan_receipt))
+    }
+
+    if (sourcePickerVisible) {
+        AlertDialog(
+            onDismissRequest = { sourcePickerVisible = false },
+            title = { Text(stringResource(R.string.scan_receipt)) },
+            text = { Text(stringResource(R.string.receipt_privacy_detail)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        sourcePickerVisible = false
+                        val directory = File(context.cacheDir, "receipt-capture").apply { mkdirs() }
+                        val file = File(directory, "${UUID.randomUUID()}.jpg")
+                        pendingCameraFile = file
+                        cameraCapture.launch(
+                            FileProvider.getUriForFile(context, "${context.packageName}.receipt-files", file),
+                        )
+                    },
+                ) { Text(stringResource(R.string.take_photo)) }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        sourcePickerVisible = false
+                        photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                ) { Text(stringResource(R.string.choose_photo)) }
+            },
+        )
+    }
+}
+
+private fun inferReceiptCategory(
+    scan: ReceiptScan,
+    categories: List<FinanceCategory>,
+    transactionType: TransactionType,
+): FinanceCategory? {
+    val merchant = scan.merchant.orEmpty().lowercase()
+    val keywords = when {
+        listOf("supermerc", "market", "alimentari", "conad", "coop", "lidl", "esselunga").any(merchant::contains) -> listOf("grocer")
+        listOf("farmacia", "pharma").any(merchant::contains) -> listOf("pharmacy", "health")
+        listOf("eni", "q8", "ip ", "fuel", "benzina").any(merchant::contains) -> listOf("gas")
+        listOf("bar", "caffe", "coffee").any(merchant::contains) -> listOf("coffee", "restaurant")
+        listOf("ristor", "pizzeria", "trattoria").any(merchant::contains) -> listOf("restaurant", "takeout")
+        else -> emptyList()
+    }
+    return categories.firstOrNull { category ->
+        category.type == transactionType && keywords.any(category.name.lowercase()::contains)
+    } ?: categories.firstOrNull { it.type == transactionType }
 }
 
 @Composable

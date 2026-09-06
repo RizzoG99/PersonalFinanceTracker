@@ -53,6 +53,15 @@ interface RecurrenceRuleDao {
 }
 
 @Dao
+interface MerchantCategoryMappingDao {
+    @Query("SELECT categoryId FROM merchant_category_mappings WHERE normalizedMerchant = :normalizedMerchant")
+    suspend fun categoryIdFor(normalizedMerchant: String): String?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(mapping: MerchantCategoryMappingEntity)
+}
+
+@Dao
 interface CategoryDao {
     @Query("SELECT * FROM categories ORDER BY name COLLATE NOCASE")
     fun observeAll(): Flow<List<CategoryEntity>>
