@@ -25,6 +25,11 @@
     <string name="error_state_title">Something went wrong</string>
     <string name="retry">Try again</string>
     <string name="add_transaction">Add transaction</string>
+    <string name="settings_title">Settings</string>
+    <string name="done">Done</string>
+    <string name="pay_cycle">PAY CYCLE</string>
+    <string name="pay_cycle_start_day">Financial month starts on day %1$d</string>
+    <string name="pay_cycle_detail">Periods run from day %1$d to day %2$d of the next month.</string>
     <string name="edit_transaction">Edit transaction</string>
     <string name="delete_transaction">Delete transaction</string>
     <string name="search_transactions">Search transactions</string>

@@ -27,10 +27,30 @@ colour relationships, and states; Android retains Material navigation, sheets, a
 
 ## Verification record
 
-- 2026-09-04: Home and Activity empty states inspected on a Pixel 7 emulator in dark and light
-  appearance. The app shell, system bars, readable foreground colour, dashboard greeting/balance
-  hierarchy, Activity search surface, and empty-state action were checked against the current
-  iPhone captures.
-- Still required before visual parity sign-off: populated transaction states, light appearance,
-  compact/wide and large-font layouts, TalkBack order, keyboard/sheet behaviour, and destructive
-  flows. Track these against Android issue #92; keep issue #93 open until they are complete.
+- 2026-09-04: Home and Activity were inspected on a Pixel 7 emulator in light and dark appearance,
+  against the current iPhone dashboard and Activity captures. This covered the populated and empty
+  states, shell and system bars, readable foreground colour, dashboard greeting/balance hierarchy,
+  Activity search surface, and empty-state action.
+- 2026-09-04: At 150% font scale, Home period statistics and Activity summary cards reflow into
+  full-width rows; Activity transaction actions remain reachable. Activity was also checked in
+  landscape: Add moves to the top bar so it does not cover the financial summary, and the portrait
+  list reserves space for the floating action button.
+- 2026-09-04: Activity interaction QA passed for a no-results search and its recovery action, the
+  filter sheet and custom-date dialog, keyboard dismissal followed by sheet dismissal using Back,
+  and the delete confirmation plus Undo. The latter used and restored an emulator-only sample
+  transaction.
+- 2026-09-04: Italian app-locale inspection covered Home, Activity, and the filter sheet. Long
+  labels such as `Intervallo di importo`, `Importo minimo`, and `Personalizzato` remained visible.
+- 2026-09-04: Signed income and expense values keep their sign attached to the currency amount.
+  The Home and Activity summary cards display `+€2,500.00` on one line at the standard font scale.
+- 2026-09-04: `AppBackground` extends behind the status bar in both appearances; content is inset
+  below the system icons and their light/dark contrast remains readable.
+- 2026-09-04: Home exposes a labeled Add action that opens the existing transaction form. Dismissing
+  that dashboard-initiated form returns to Home, rather than leaving the user in Activity.
+- 2026-09-04: The emulator accessibility hierarchy exposes localized labels for Filter, Add,
+  Edit, and Delete, and exposes the no-results recovery and destructive dialog actions. Manual
+  TalkBack speech and traversal still require a device-assisted check; automated hierarchy
+  inspection alone is not treated as a TalkBack sign-off.
+
+Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
+check is complete.

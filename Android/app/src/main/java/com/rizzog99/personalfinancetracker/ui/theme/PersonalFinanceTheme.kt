@@ -12,9 +12,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.isSystemInDarkTheme
 
 data class FinancePalette(
@@ -97,12 +97,13 @@ private val DarkPalette = FinancePalette(
 fun PersonalFinanceTheme(content: @Composable () -> Unit) {
     val darkTheme = isSystemInDarkTheme()
     val colorScheme = if (darkTheme) DarkColors else LightColors
+    val palette = if (darkTheme) DarkPalette else LightPalette
     val view = LocalView.current
 
     if (!view.isInEditMode) {
         SideEffect {
             view.context.findActivity()?.window?.let { window ->
-                window.statusBarColor = colorScheme.background.toArgb()
+                window.statusBarColor = Color.Transparent.toArgb()
                 window.navigationBarColor = colorScheme.background.toArgb()
                 WindowCompat.getInsetsController(window, view).apply {
                     isAppearanceLightStatusBars = !darkTheme
@@ -112,7 +113,7 @@ fun PersonalFinanceTheme(content: @Composable () -> Unit) {
         }
     }
 
-    CompositionLocalProvider(LocalFinancePalette provides if (darkTheme) DarkPalette else LightPalette) {
+    CompositionLocalProvider(LocalFinancePalette provides palette) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography(),

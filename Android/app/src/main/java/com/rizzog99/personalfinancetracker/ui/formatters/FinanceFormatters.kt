@@ -10,12 +10,14 @@ import java.time.format.FormatStyle
 import java.util.Currency
 import java.util.Locale
 
+private const val WORD_JOINER = "\u2060"
+
 fun formatSignedCurrency(amount: BigDecimal, currencyCode: String): String {
     val formatter = NumberFormat.getCurrencyInstance(Locale.getDefault()).apply {
         currency = Currency.getInstance(currencyCode)
     }
     val sign = if (amount >= BigDecimal.ZERO) "+" else "−"
-    return sign + formatter.format(amount.abs())
+    return sign + WORD_JOINER + formatter.format(amount.abs())
 }
 
 fun formatCurrency(amount: BigDecimal, currencyCode: String): String = NumberFormat

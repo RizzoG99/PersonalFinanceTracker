@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.Home
@@ -17,6 +18,10 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -30,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.features.activity.ActivityScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
+import com.rizzog99.personalfinancetracker.features.settings.SettingsSheet
 import com.rizzog99.personalfinancetracker.ui.components.AppBackground
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
@@ -54,9 +60,16 @@ fun PersonalFinanceNavHost() {
     val navController = rememberNavController()
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     val palette = LocalFinancePalette.current
+    var startCreatingActivity by rememberSaveable { mutableStateOf(false) }
+    var returnToDashboardAfterCreation by rememberSaveable { mutableStateOf(false) }
+    var settingsVisible by rememberSaveable { mutableStateOf(false) }
 
     AppBackground {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding(),
+        ) {
             NavHost(
                 navController = navController,
                 startDestination = MainDestination.Home.route,
@@ -69,14 +82,37 @@ fun PersonalFinanceNavHost() {
                                 launchSingleTop = true
                             }
                         },
+                        onAddTransaction = {
+                            startCreatingActivity = true
+                            returnToDashboardAfterCreation = true
+                            navController.navigate(MainDestination.Activity.route) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onOpenSettings = { settingsVisible = true },
                     )
                 }
                 composable(MainDestination.Activity.route) {
-                    ActivityScreen()
+                    ActivityScreen(
+                        startCreating = startCreatingActivity,
+                        onStartCreatingConsumed = { startCreatingActivity = false },
+                        returnToDashboardAfterCreation = returnToDashboardAfterCreation,
+                        onDashboardCreationFinished = {
+                            returnToDashboardAfterCreation = false
+                            navController.navigate(MainDestination.Home.route) {
+                                popUpTo(MainDestination.Home.route) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        },
+                    )
                 }
                 composable(MainDestination.Insights.route) {
                     InsightsPlaceholderScreen()
                 }
+            }
+
+            if (settingsVisible) {
+                SettingsSheet(onDismiss = { settingsVisible = false })
             }
 
             NavigationBar(containerColor = palette.surfaceRaised) {

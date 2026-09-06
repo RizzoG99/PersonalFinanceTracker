@@ -25,6 +25,11 @@
     <string name="error_state_title">Si è verificato un problema</string>
     <string name="retry">Riprova</string>
     <string name="add_transaction">Aggiungi transazione</string>
+    <string name="settings_title">Impostazioni</string>
+    <string name="done">Fine</string>
+    <string name="pay_cycle">CICLO FINANZIARIO</string>
+    <string name="pay_cycle_start_day">Il mese finanziario inizia il giorno %1$d</string>
+    <string name="pay_cycle_detail">I periodi vanno dal giorno %1$d al giorno %2$d del mese successivo.</string>
     <string name="edit_transaction">Modifica transazione</string>
     <string name="delete_transaction">Elimina transazione</string>
     <string name="search_transactions">Cerca transazioni</string>

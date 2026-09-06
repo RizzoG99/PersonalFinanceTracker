@@ -1,5 +1,6 @@
 package com.rizzog99.personalfinancetracker.features.activity
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,6 +54,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +65,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -92,7 +96,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivityScreen() {
+fun ActivityScreen(
+    startCreating: Boolean = false,
+    onStartCreatingConsumed: () -> Unit = {},
+    returnToDashboardAfterCreation: Boolean = false,
+    onDashboardCreationFinished: () -> Unit = {},
+) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: ActivityViewModel = viewModel(
         factory = ActivityViewModel.factory(
@@ -109,6 +118,14 @@ fun ActivityScreen() {
     var deletingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var recurringDeletionTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var filtersVisible by remember { mutableStateOf(false) }
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    LaunchedEffect(startCreating) {
+        if (startCreating) {
+            isCreating = true
+            onStartCreatingConsumed()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -126,6 +143,14 @@ fun ActivityScreen() {
                     actionIconContentColor = LocalFinancePalette.current.textMid,
                 ),
                 actions = {
+                    if (isLandscape) {
+                        IconButton(onClick = { isCreating = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Add,
+                                contentDescription = stringResource(R.string.add_transaction),
+                            )
+                        }
+                    }
                     IconButton(onClick = { filtersVisible = true }) {
                         Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
                     }
@@ -136,15 +161,17 @@ fun ActivityScreen() {
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { isCreating = true },
-                content = {
-                    Icon(
-                        imageVector = Icons.Outlined.Add,
-                        contentDescription = stringResource(R.string.add_transaction),
-                    )
-                },
-            )
+            if (!isLandscape) {
+                FloatingActionButton(
+                    onClick = { isCreating = true },
+                    content = {
+                        Icon(
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = stringResource(R.string.add_transaction),
+                        )
+                    },
+                )
+            }
         },
     ) { innerPadding ->
         ActivityContent(
@@ -180,21 +207,28 @@ fun ActivityScreen() {
             editingTransaction = editingTransaction,
             categories = state.categories,
             onDismiss = {
+                val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                 isCreating = false
                 editingTransaction = null
+                if (shouldReturnToDashboard) onDashboardCreationFinished()
             },
             onSave = { transaction ->
                 scope.launch {
                     if (viewModel.save(transaction)) {
+                        val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                         isCreating = false
                         editingTransaction = null
-                        snackbarHostState.showSnackbar(
-                            message = if (transaction.id == editingTransaction?.id) {
-                                application.getString(R.string.transaction_updated)
-                            } else {
-                                application.getString(R.string.transaction_added)
-                            },
-                        )
+                        if (shouldReturnToDashboard) {
+                            onDashboardCreationFinished()
+                        } else {
+                            snackbarHostState.showSnackbar(
+                                message = if (transaction.id == editingTransaction?.id) {
+                                    application.getString(R.string.transaction_updated)
+                                } else {
+                                    application.getString(R.string.transaction_added)
+                                },
+                            )
+                        }
                     }
                 }
             },
@@ -251,7 +285,7 @@ private fun ActivityContent(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
@@ -318,35 +352,62 @@ private fun ActivityContent(
 
 @Composable
 private fun ActivitySummary(transactions: List<FinanceTransaction>) {
-    val palette = LocalFinancePalette.current
     val income = transactions.filter { it.amount > BigDecimal.ZERO }
         .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount }
     val expenses = transactions.filter { it.amount < BigDecimal.ZERO }
         .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount.abs() }
     val currencyCode = transactions.first().currencyCode
+    val useVerticalCards = LocalDensity.current.fontScale >= 1.3f
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        ActivitySummaryAmount(
-            modifier = Modifier.weight(1f),
-            label = stringResource(R.string.filter_income),
-            value = formatSignedCurrency(income, currencyCode),
-            color = palette.positive,
-        )
-        ActivitySummaryAmount(
-            modifier = Modifier.weight(1f),
-            label = stringResource(R.string.filter_expense),
-            value = if (expenses.signum() == 0) {
-                formatCurrency(BigDecimal.ZERO, currencyCode)
-            } else {
-                formatSignedCurrency(expenses.negate(), currencyCode)
-            },
-            color = palette.negative,
-            valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
-        )
+    if (useVerticalCards) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            ActivitySummaryCards(
+                income = income,
+                expenses = expenses,
+                currencyCode = currencyCode,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            ActivitySummaryCards(
+                income = income,
+                expenses = expenses,
+                currencyCode = currencyCode,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
+}
+
+@Composable
+private fun ActivitySummaryCards(
+    income: BigDecimal,
+    expenses: BigDecimal,
+    currencyCode: String,
+    modifier: Modifier,
+) {
+    val palette = LocalFinancePalette.current
+    ActivitySummaryAmount(
+        modifier = modifier,
+        label = stringResource(R.string.filter_income),
+        value = formatSignedCurrency(income, currencyCode),
+        color = palette.positive,
+    )
+    ActivitySummaryAmount(
+        modifier = modifier,
+        label = stringResource(R.string.filter_expense),
+        value = if (expenses.signum() == 0) {
+            formatCurrency(BigDecimal.ZERO, currencyCode)
+        } else {
+            formatSignedCurrency(expenses.negate(), currencyCode)
+        },
+        color = palette.negative,
+        valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
+    )
 }
 
 @Composable
@@ -368,7 +429,7 @@ private fun ActivitySummaryAmount(
         Text(label, style = MaterialTheme.typography.titleSmall, color = color)
         Text(
             text = value,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = valueColor,
             fontFamily = FontFamily.Monospace,
         )
@@ -575,27 +636,42 @@ private fun TransactionRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val amountColor = if (transaction.amount < BigDecimal.ZERO) {
+        LocalFinancePalette.current.negative
+    } else {
+        LocalFinancePalette.current.positive
+    }
+    val largeText = LocalDensity.current.fontScale >= 1.3f
+
     FinanceCard {
-        ListItem(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(role = Role.Button, onClick = onEdit),
-            headlineContent = { Text(transaction.note.ifBlank { transaction.categoryLabel }) },
-            supportingContent = {
-                Text("${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}")
-            },
-            trailingContent = {
+        if (largeText) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onEdit)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(transaction.note.ifBlank { transaction.categoryLabel })
+                        Text(
+                            text = "${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = LocalFinancePalette.current.textMid,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
                     Text(
                         text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
-                        color = if (transaction.amount < BigDecimal.ZERO) {
-                            LocalFinancePalette.current.negative
-                        } else {
-                            LocalFinancePalette.current.positive
-                        },
+                        color = amountColor,
                         fontFamily = FontFamily.Monospace,
                     )
-                    Spacer(Modifier.width(4.dp))
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
                     IconButton(onClick = onEdit) {
                         Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.edit_transaction))
                     }
@@ -603,8 +679,34 @@ private fun TransactionRow(
                         Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_transaction))
                     }
                 }
-            },
-        )
+            }
+        } else {
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onEdit),
+                headlineContent = { Text(transaction.note.ifBlank { transaction.categoryLabel }) },
+                supportingContent = {
+                    Text("${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}")
+                },
+                trailingContent = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
+                            color = amountColor,
+                            fontFamily = FontFamily.Monospace,
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(onClick = onEdit) {
+                            Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.edit_transaction))
+                        }
+                        IconButton(onClick = onDelete) {
+                            Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_transaction))
+                        }
+                    }
+                },
+            )
+        }
     }
 }
 

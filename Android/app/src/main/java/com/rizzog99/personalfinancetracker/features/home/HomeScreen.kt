@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,11 +15,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -50,7 +53,11 @@ import java.math.BigDecimal
 import java.time.LocalTime
 
 @Composable
-fun HomeScreen(onViewActivity: () -> Unit) {
+fun HomeScreen(
+    onViewActivity: () -> Unit,
+    onAddTransaction: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.factory(
@@ -69,6 +76,8 @@ fun HomeScreen(onViewActivity: () -> Unit) {
             else -> HomeContent(
                 state = state,
                 onViewActivity = onViewActivity,
+                onAddTransaction = onAddTransaction,
+                onOpenSettings = onOpenSettings,
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -79,6 +88,8 @@ fun HomeScreen(onViewActivity: () -> Unit) {
 private fun HomeContent(
     state: HomeUiState,
     onViewActivity: () -> Unit,
+    onAddTransaction: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val metrics = requireNotNull(state.metrics)
@@ -94,6 +105,23 @@ private fun HomeContent(
             .padding(PaddingValues(horizontal = 20.dp, vertical = 16.dp)),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            IconButton(onClick = onOpenSettings) {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = stringResource(R.string.settings_title),
+                )
+            }
+            IconButton(onClick = onAddTransaction) {
+                Icon(
+                    imageVector = Icons.Outlined.Add,
+                    contentDescription = stringResource(R.string.add_transaction),
+                )
+            }
+        }
         Text(
             text = stringResource(greeting),
             style = MaterialTheme.typography.displaySmall,
@@ -127,6 +155,7 @@ private fun BalanceCard(
 ) {
     val palette = LocalFinancePalette.current
     val hasPeriodTransactions = income.signum() != 0 || expenses.signum() != 0
+    val useVerticalStats = LocalDensity.current.fontScale >= 1.3f
     FinanceCard {
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
@@ -154,26 +183,24 @@ private fun BalanceCard(
                 color = palette.textMid,
             )
             if (hasPeriodTransactions) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FinancialStat(
-                        modifier = Modifier.weight(1f),
-                        label = stringResource(R.string.filter_income),
-                        value = formatSignedCurrency(income, currencyCode),
-                        color = palette.positive,
-                        icon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null) },
-                    )
-                    FinancialStat(
-                        modifier = Modifier.weight(1f),
-                        label = stringResource(R.string.filter_expense),
-                        value = if (expenses.signum() == 0) {
-                            formatCurrency(BigDecimal.ZERO, currencyCode)
-                        } else {
-                            formatSignedCurrency(expenses.negate(), currencyCode)
-                        },
-                        color = palette.negative,
-                        valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
-                        icon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null) },
-                    )
+                if (useVerticalStats) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        PeriodStats(
+                            income = income,
+                            expenses = expenses,
+                            currencyCode = currencyCode,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                } else {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        PeriodStats(
+                            income = income,
+                            expenses = expenses,
+                            currencyCode = currencyCode,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             } else {
                 Text(
@@ -184,6 +211,35 @@ private fun BalanceCard(
             }
         }
     }
+}
+
+@Composable
+private fun PeriodStats(
+    income: BigDecimal,
+    expenses: BigDecimal,
+    currencyCode: String,
+    modifier: Modifier,
+) {
+    val palette = LocalFinancePalette.current
+    FinancialStat(
+        modifier = modifier,
+        label = stringResource(R.string.filter_income),
+        value = formatSignedCurrency(income, currencyCode),
+        color = palette.positive,
+        icon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null) },
+    )
+    FinancialStat(
+        modifier = modifier,
+        label = stringResource(R.string.filter_expense),
+        value = if (expenses.signum() == 0) {
+            formatCurrency(BigDecimal.ZERO, currencyCode)
+        } else {
+            formatSignedCurrency(expenses.negate(), currencyCode)
+        },
+        color = palette.negative,
+        valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
+        icon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null) },
+    )
 }
 
 @Composable
@@ -210,7 +266,7 @@ private fun FinancialStat(
             )
             Text(label, style = MaterialTheme.typography.titleSmall, color = color)
         }
-        Text(value, style = MaterialTheme.typography.titleLarge, color = valueColor, fontFamily = FontFamily.Monospace)
+        Text(value, style = MaterialTheme.typography.titleMedium, color = valueColor, fontFamily = FontFamily.Monospace)
     }
 }
 
