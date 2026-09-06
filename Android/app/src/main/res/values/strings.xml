@@ -63,6 +63,10 @@
     <string name="delete_transaction_confirmation_message">You can undo this action for a short time.</string>
     <string name="recurring_delete_title">This is part of a recurring series</string>
     <string name="recurring_delete_message">Choose the transactions you want to remove.</string>
+    <string name="recurring_edit_title">This is part of a recurring series</string>
+    <string name="recurring_edit_message">Choose which transactions you want to update.</string>
+    <string name="edit_this_transaction">This transaction</string>
+    <string name="edit_this_and_future">This and future</string>
     <string name="delete_this_transaction">This transaction</string>
     <string name="delete_this_and_future">This and future</string>
     <string name="filters">Filters</string>

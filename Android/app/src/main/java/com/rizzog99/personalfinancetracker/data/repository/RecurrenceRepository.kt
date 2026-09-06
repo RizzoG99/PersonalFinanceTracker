@@ -9,6 +9,7 @@ import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceOccurrenceCalculator
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceRule
+import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.ZoneId
@@ -17,6 +18,7 @@ import java.util.UUID
 interface RecurrenceRepository {
     suspend fun createAndMaterialize(rule: NewRecurrenceRule): RecurrenceRule
     suspend fun materializeDue(through: Instant = Instant.now(), zoneId: ZoneId = ZoneId.systemDefault())
+    suspend fun updateThisAndFuture(occurrence: FinanceTransaction)
 }
 
 class RoomRecurrenceRepository(
@@ -36,6 +38,27 @@ class RoomRecurrenceRepository(
         val rules = database.recurrenceRuleDao().getActive(through.toEpochMilli())
         rules.forEach { rule ->
             database.withTransaction { materialize(rule, through, zoneId) }
+        }
+    }
+
+    override suspend fun updateThisAndFuture(occurrence: FinanceTransaction) {
+        val ruleId = requireNotNull(occurrence.recurrenceRuleId)
+        database.withTransaction {
+            val rule = requireNotNull(database.recurrenceRuleDao().get(ruleId))
+            val cutoff = occurrence.timestamp.toEpochMilli()
+            database.transactionDao().upsert(occurrence.toEntity())
+            database.transactionDao().deleteOccurrencesAfter(ruleId, cutoff)
+            database.recurrenceRuleDao().update(
+                rule.copy(
+                    amountDecimal = MoneyCodec.encode(occurrence.amount),
+                    note = occurrence.note,
+                    categoryLabel = occurrence.categoryLabel,
+                    categoryId = occurrence.categoryId,
+                    currencyCode = occurrence.currencyCode,
+                    goalId = occurrence.goalId,
+                    lastMaterializedDateEpochMillis = cutoff,
+                ),
+            )
         }
     }
 
@@ -95,6 +118,18 @@ private fun RecurrenceRuleEntity.toDomain() = RecurrenceRule(
     categoryId = categoryId,
     currencyCode = currencyCode,
     goalId = goalId,
+)
+
+private fun FinanceTransaction.toEntity() = TransactionEntity(
+    id = id,
+    timestampEpochMillis = timestamp.toEpochMilli(),
+    amountDecimal = MoneyCodec.encode(amount),
+    note = note,
+    categoryLabel = categoryLabel,
+    categoryId = categoryId,
+    currencyCode = currencyCode,
+    goalId = goalId,
+    recurrenceRuleId = recurrenceRuleId,
 )
 
 private val RecurrenceFrequency.storageValue: String get() = name.lowercase()

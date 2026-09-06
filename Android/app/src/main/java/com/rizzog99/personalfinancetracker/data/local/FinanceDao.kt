@@ -24,6 +24,9 @@ interface TransactionDao {
     @Query("DELETE FROM transactions WHERE recurrenceRuleId = :recurrenceRuleId AND timestampEpochMillis >= :cutoffEpochMillis")
     suspend fun deleteOccurrencesFrom(recurrenceRuleId: String, cutoffEpochMillis: Long)
 
+    @Query("DELETE FROM transactions WHERE recurrenceRuleId = :recurrenceRuleId AND timestampEpochMillis > :cutoffEpochMillis")
+    suspend fun deleteOccurrencesAfter(recurrenceRuleId: String, cutoffEpochMillis: Long)
+
     @Query("DELETE FROM transactions")
     suspend fun deleteAll()
 }
@@ -44,6 +47,9 @@ interface RecurrenceRuleDao {
 
     @Query("UPDATE recurrence_rules SET lastMaterializedDateEpochMillis = :lastMaterializedDateEpochMillis WHERE id = :id")
     suspend fun updateLastMaterializedDate(id: String, lastMaterializedDateEpochMillis: Long)
+
+    @Update(onConflict = OnConflictStrategy.ABORT)
+    suspend fun update(rule: RecurrenceRuleEntity)
 }
 
 @Dao

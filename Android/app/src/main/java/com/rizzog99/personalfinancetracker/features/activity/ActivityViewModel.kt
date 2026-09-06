@@ -98,6 +98,10 @@ class ActivityViewModel(
         recurrenceRepository.createAndMaterialize(rule)
     }.onFailure(::showError).isSuccess
 
+    suspend fun updateThisAndFuture(transaction: FinanceTransaction): Boolean = runCatching {
+        recurrenceRepository.updateThisAndFuture(transaction)
+    }.onFailure(::showError).isSuccess
+
     suspend fun delete(transaction: FinanceTransaction): Boolean = runCatching {
         transactionRepository.delete(transaction.id)
     }.onFailure(::showError).isSuccess

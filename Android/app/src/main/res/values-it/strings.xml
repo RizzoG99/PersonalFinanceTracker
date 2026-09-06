@@ -63,6 +63,10 @@
     <string name="delete_transaction_confirmation_message">Puoi annullare l’azione per un breve periodo.</string>
     <string name="recurring_delete_title">Fa parte di una serie ricorrente</string>
     <string name="recurring_delete_message">Scegli quali transazioni eliminare.</string>
+    <string name="recurring_edit_title">Fa parte di una serie ricorrente</string>
+    <string name="recurring_edit_message">Scegli quali transazioni aggiornare.</string>
+    <string name="edit_this_transaction">Solo questa transazione</string>
+    <string name="edit_this_and_future">Questa e le successive</string>
     <string name="delete_this_transaction">Solo questa transazione</string>
     <string name="delete_this_and_future">Questa e le successive</string>
     <string name="filters">Filtri</string>

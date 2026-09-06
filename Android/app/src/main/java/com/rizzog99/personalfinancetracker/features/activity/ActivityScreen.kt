@@ -122,6 +122,7 @@ fun ActivityScreen(
     var isCreating by remember { mutableStateOf(false) }
     var deletingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var recurringDeletionTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
+    var recurringEditTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var filtersVisible by remember { mutableStateOf(false) }
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -218,9 +219,41 @@ fun ActivityScreen(
                 if (shouldReturnToDashboard) onDashboardCreationFinished()
             },
             onSave = { transaction, recurrenceRule ->
+                if (editingTransaction?.recurrenceRuleId != null) {
+                    recurringEditTransaction = transaction
+                } else {
+                    val wasEditing = editingTransaction != null
+                    scope.launch {
+                        val saved = recurrenceRule?.let { viewModel.createRecurringTransaction(it) } ?: viewModel.save(transaction)
+                        if (saved) {
+                            val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
+                            isCreating = false
+                            editingTransaction = null
+                            if (shouldReturnToDashboard) {
+                                onDashboardCreationFinished()
+                            } else {
+                                snackbarHostState.showSnackbar(
+                                    message = if (wasEditing) {
+                                        application.getString(R.string.transaction_updated)
+                                    } else {
+                                        application.getString(R.string.transaction_added)
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    recurringEditTransaction?.let { transaction ->
+        RecurringEditDialog(
+            onDismiss = { recurringEditTransaction = null },
+            onEditThisOnly = {
+                recurringEditTransaction = null
                 scope.launch {
-                    val saved = recurrenceRule?.let { viewModel.createRecurringTransaction(it) } ?: viewModel.save(transaction)
-                    if (saved) {
+                    if (viewModel.save(transaction)) {
                         val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                         isCreating = false
                         editingTransaction = null
@@ -228,13 +261,19 @@ fun ActivityScreen(
                             onDashboardCreationFinished()
                         } else {
                             snackbarHostState.showSnackbar(
-                                message = if (transaction.id == editingTransaction?.id) {
-                                    application.getString(R.string.transaction_updated)
-                                } else {
-                                    application.getString(R.string.transaction_added)
-                                },
+                                message = application.getString(R.string.transaction_updated),
                             )
                         }
+                    }
+                }
+            },
+            onEditThisAndFuture = {
+                recurringEditTransaction = null
+                scope.launch {
+                    if (viewModel.updateThisAndFuture(transaction)) {
+                        isCreating = false
+                        editingTransaction = null
+                        snackbarHostState.showSnackbar(application.getString(R.string.transaction_updated))
                     }
                 }
             },
@@ -992,6 +1031,26 @@ private fun RecurringDeleteDialog(
             Column(horizontalAlignment = Alignment.End) {
                 TextButton(onClick = onDeleteThisOnly) { Text(stringResource(R.string.delete_this_transaction)) }
                 TextButton(onClick = onDeleteThisAndFuture) { Text(stringResource(R.string.delete_this_and_future)) }
+            }
+        },
+    )
+}
+
+@Composable
+private fun RecurringEditDialog(
+    onDismiss: () -> Unit,
+    onEditThisOnly: () -> Unit,
+    onEditThisAndFuture: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.recurring_edit_title)) },
+        text = { Text(stringResource(R.string.recurring_edit_message)) },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+        confirmButton = {
+            Column(horizontalAlignment = Alignment.End) {
+                TextButton(onClick = onEditThisOnly) { Text(stringResource(R.string.edit_this_transaction)) }
+                TextButton(onClick = onEditThisAndFuture) { Text(stringResource(R.string.edit_this_and_future)) }
             }
         },
     )
