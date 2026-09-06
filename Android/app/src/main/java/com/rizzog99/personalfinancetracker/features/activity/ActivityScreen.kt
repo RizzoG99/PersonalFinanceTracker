@@ -9,6 +9,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +22,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
@@ -79,6 +83,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
@@ -95,6 +100,7 @@ import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFil
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
@@ -849,20 +855,72 @@ private fun TransactionEditorSheet(
     val receiptAmountUnreadableMessage = stringResource(R.string.receipt_amount_unreadable)
     val receiptDateClampedMessage = stringResource(R.string.receipt_date_clamped)
     val receiptUnreadableMessage = stringResource(R.string.receipt_unreadable)
+    val submitTransaction: () -> Unit = {
+        val category = requireNotNull(selectedCategory)
+        val signedAmount = if (category.type == TransactionType.EXPENSE) amount!!.negate() else amount!!
+        val transaction = FinanceTransaction(
+            id = editingTransaction?.id ?: UUID.randomUUID().toString(),
+            timestamp = timestamp,
+            amount = signedAmount,
+            note = note.trim(),
+            categoryLabel = category.name,
+            categoryId = category.id,
+            currencyCode = category.currencyCode,
+            goalId = editingTransaction?.goalId,
+            recurrenceRuleId = editingTransaction?.recurrenceRuleId,
+        )
+        onSave(
+            transaction,
+            if (repeats) {
+                NewRecurrenceRule(
+                    frequency = recurrenceFrequency,
+                    interval = recurrenceInterval,
+                    startDate = transaction.timestamp,
+                    amount = transaction.amount,
+                    note = transaction.note,
+                    categoryLabel = transaction.categoryLabel,
+                    categoryId = transaction.categoryId,
+                    currencyCode = transaction.currencyCode,
+                    goalId = transaction.goalId,
+                )
+            } else {
+                null
+            },
+            receiptMerchant,
+        )
+    }
+    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                text = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.edit_transaction),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.semantics { heading() },
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+                Text(
+                    text = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.edit_transaction),
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f).semantics { heading() },
+                )
+                IconButton(onClick = submitTransaction, enabled = canSave) {
+                    Icon(
+                        imageVector = Icons.Outlined.Check,
+                        contentDescription = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.save),
+                    )
+                }
+            }
             if (editingTransaction == null) {
                 ReceiptCaptureAction(
                     onScan = { scan ->
@@ -929,47 +987,86 @@ private fun TransactionEditorSheet(
                     }
                 }
             }
-            OutlinedTextField(
+            TextField(
                 value = amountText,
                 onValueChange = { amountText = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.amount)) },
-                supportingText = { Text(stringResource(R.string.amount_must_be_positive)) },
+                modifier = Modifier.fillMaxWidth().height(156.dp),
+                leadingIcon = {
+                    Text(
+                        text = "€",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = LocalFinancePalette.current.textMid,
+                    )
+                },
+                placeholder = { Text("0", style = MaterialTheme.typography.displayLarge) },
+                textStyle = MaterialTheme.typography.displayLarge.copy(
+                    textAlign = TextAlign.End,
+                    fontFamily = FontFamily.Monospace,
+                ),
                 singleLine = true,
+                shape = RoundedCornerShape(36.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
             )
-            OutlinedButton(
-                onClick = { datePickerVisible = true },
-                modifier = Modifier.fillMaxWidth(),
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(28.dp))
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text("${stringResource(R.string.transaction_date)}: ${formatTransactionDate(timestamp)}")
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
+                TransactionTypeOption(
+                    label = stringResource(R.string.filter_income),
                     selected = selectedType == TransactionType.INCOME,
                     onClick = {
                         selectedType = TransactionType.INCOME
                         selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
                         categoryTouched = true
                     },
-                    label = { Text(stringResource(R.string.filter_income)) },
+                    modifier = Modifier.weight(1f),
                 )
-                FilterChip(
+                TransactionTypeOption(
+                    label = stringResource(R.string.filter_expense),
                     selected = selectedType == TransactionType.EXPENSE,
                     onClick = {
                         selectedType = TransactionType.EXPENSE
                         selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
                         categoryTouched = true
                     },
-                    label = { Text(stringResource(R.string.filter_expense)) },
+                    modifier = Modifier.weight(1f),
                 )
             }
             Box {
-                OutlinedButton(
-                    onClick = { categoryMenuExpanded = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = matchingCategories.isNotEmpty(),
-                ) {
-                    Text(selectedCategory?.name ?: stringResource(R.string.select_category))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(R.string.categories),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalFinancePalette.current.textMid,
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        matchingCategories.forEach { category ->
+                            CategoryPickerTile(
+                                category = category,
+                                selected = category.id == selectedCategoryId,
+                                onClick = {
+                                    selectedCategoryId = category.id
+                                    categoryTouched = true
+                                },
+                            )
+                        }
+                        OutlinedButton(onClick = { categoryMenuExpanded = true }) {
+                            Text(stringResource(R.string.select_category))
+                        }
+                    }
                 }
                 androidx.compose.material3.DropdownMenu(
                     expanded = categoryMenuExpanded,
@@ -994,6 +1091,12 @@ private fun TransactionEditorSheet(
                 label = { Text(stringResource(R.string.note)) },
                 supportingText = { Text(stringResource(R.string.note_optional)) },
             )
+            OutlinedButton(
+                onClick = { datePickerVisible = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("${stringResource(R.string.transaction_date)}: ${formatTransactionDate(timestamp)}")
+            }
             if (editingTransaction == null) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1058,52 +1161,6 @@ private fun TransactionEditorSheet(
                     }
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
-                Spacer(Modifier.width(8.dp))
-                Button(
-                    onClick = {
-                        val category = requireNotNull(selectedCategory)
-                        val signedAmount = if (category.type == TransactionType.EXPENSE) amount!!.negate() else amount!!
-                        val transaction = FinanceTransaction(
-                            id = editingTransaction?.id ?: UUID.randomUUID().toString(),
-                            timestamp = timestamp,
-                            amount = signedAmount,
-                            note = note.trim(),
-                            categoryLabel = category.name,
-                            categoryId = category.id,
-                            currencyCode = category.currencyCode,
-                            goalId = editingTransaction?.goalId,
-                            recurrenceRuleId = editingTransaction?.recurrenceRuleId,
-                        )
-                        onSave(
-                            transaction,
-                            if (repeats) {
-                                NewRecurrenceRule(
-                                    frequency = recurrenceFrequency,
-                                    interval = recurrenceInterval,
-                                    startDate = transaction.timestamp,
-                                    amount = transaction.amount,
-                                    note = transaction.note,
-                                    categoryLabel = transaction.categoryLabel,
-                                    categoryId = transaction.categoryId,
-                                    currencyCode = transaction.currencyCode,
-                                    goalId = transaction.goalId,
-                                )
-                            } else {
-                                null
-                            },
-                            receiptMerchant,
-                        )
-                    },
-                    enabled = canSave,
-                ) {
-                    Text(stringResource(R.string.save))
-                }
-            }
         }
     }
 
@@ -1129,6 +1186,63 @@ private fun TransactionEditorSheet(
         ) {
             androidx.compose.material3.DatePicker(state = datePickerState)
         }
+    }
+}
+
+@Composable
+private fun TransactionTypeOption(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = modifier.background(
+            if (selected) MaterialTheme.colorScheme.surface else Color.Transparent,
+            RoundedCornerShape(24.dp),
+        ),
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+private fun CategoryPickerTile(
+    category: FinanceCategory,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(18.dp)
+    Column(
+        modifier = Modifier
+            .width(108.dp)
+            .height(120.dp)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else Color.Transparent,
+                shape,
+            )
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary else LocalFinancePalette.current.hairline,
+                shape = shape,
+            )
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            imageVector = categoryIconFor(category.iconToken),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = category.name,
+            style = MaterialTheme.typography.labelMedium,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+        )
     }
 }
 

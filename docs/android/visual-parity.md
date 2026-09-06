@@ -71,6 +71,12 @@ colour relationships, and states; Android retains Material navigation, sheets, a
   choices are populated only after local OCR. Pixel 7 dark-appearance QA covered the scan entry
   point, source choice, privacy copy, and the new date control. OCR needs a physical-receipt
   device check; Italian and large-text checks remain open.
+- 2026-09-06: Add and Edit Transaction now open expanded and use the iOS form hierarchy: top
+  Cancel/Save actions, amount, Income/Expenses, a horizontally scrollable category-card strip,
+  note, date, and recurrence. The strip uses the same category-specific Android icons as Category
+  Settings. Pixel 7 dark-appearance QA covered the full-height opening state, long amount entry
+  with aligned EUR marker, visible category selection, and a successful Save through the top bar.
+  Italian, light-appearance, large-text, and manual TalkBack checks remain open.
 
 Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
 check is complete.

@@ -21,40 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.automirrored.outlined.ShowChart
-import androidx.compose.material.icons.automirrored.outlined.Undo
-import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.BusinessCenter
-import androidx.compose.material.icons.outlined.Build
-import androidx.compose.material.icons.outlined.CardGiftcard
-import androidx.compose.material.icons.outlined.Category
-import androidx.compose.material.icons.outlined.Checkroom
-import androidx.compose.material.icons.outlined.CreditCard
-import androidx.compose.material.icons.outlined.DirectionsBus
-import androidx.compose.material.icons.outlined.DirectionsCar
-import androidx.compose.material.icons.outlined.Flight
-import androidx.compose.material.icons.outlined.LocalGasStation
-import androidx.compose.material.icons.outlined.LocalHospital
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.LocalDining
-import androidx.compose.material.icons.outlined.LocalTaxi
-import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Movie
-import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material.icons.outlined.Pets
-import androidx.compose.material.icons.outlined.PhoneIphone
-import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material.icons.outlined.Restaurant
-import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material.icons.outlined.SportsEsports
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.Tv
-import androidx.compose.material.icons.outlined.Work
-import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -83,7 +50,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -98,6 +64,7 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
 import kotlinx.coroutines.launch
 
@@ -485,7 +452,7 @@ private fun CategoryIconPicker(selected: String, onSelected: (String) -> Unit) {
             tokens.forEach { token ->
                 AssistChip(
                     onClick = { onSelected(token) },
-                    label = { Icon(categoryIcon(token), contentDescription = stringResource(R.string.category_icon_option, token)) },
+                    label = { Icon(categoryIconFor(token), contentDescription = stringResource(R.string.category_icon_option, token)) },
                     leadingIcon = null,
                     colors = androidx.compose.material3.AssistChipDefaults.assistChipColors(
                         containerColor = if (selected == token) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
@@ -546,47 +513,10 @@ private fun categoryColor(token: String) = when (token) {
     else -> MaterialTheme.colorScheme.primary
 }
 
-private fun categoryIcon(token: String): ImageVector = when {
-    token.contains("cart") -> Icons.Outlined.ShoppingCart
-    token.contains("fork") || token.contains("cup") || token.contains("takeout") -> Icons.Outlined.Restaurant
-    token.contains("house") -> Icons.Outlined.Home
-    token.contains("briefcase") -> Icons.Outlined.BusinessCenter
-    token.contains("banknote") -> Icons.Outlined.AccountBalanceWallet
-    token.contains("chart") -> Icons.AutoMirrored.Outlined.ShowChart
-    token.contains("gift") -> Icons.Outlined.CardGiftcard
-    token.contains("airplane") -> Icons.Outlined.Flight
-    token.contains("fuel") -> Icons.Outlined.LocalGasStation
-    token.contains("wrench") -> Icons.Outlined.Build
-    token.contains("bus") -> Icons.Outlined.DirectionsBus
-    token.contains("taxi") -> Icons.Outlined.LocalTaxi
-    token.contains("car") -> Icons.Outlined.DirectionsCar
-    token.contains("star") -> Icons.Outlined.Star
-    token.contains("trophy") -> Icons.Outlined.EmojiEvents
-    token.contains("bolt") -> Icons.Outlined.Build
-    token.contains("iphone") -> Icons.Outlined.PhoneIphone
-    token.contains("globe") -> Icons.Outlined.Public
-    token.contains("tv") -> Icons.Outlined.Tv
-    token.contains("tshirt") -> Icons.Outlined.Checkroom
-    token.contains("bag") -> Icons.Outlined.ShoppingBag
-    token.contains("gamecontroller") -> Icons.Outlined.SportsEsports
-    token.contains("book") -> Icons.AutoMirrored.Outlined.MenuBook
-    token.contains("cross") || token.contains("pills") || token.contains("dumbbell") -> Icons.Outlined.LocalHospital
-    token.contains("film") -> Icons.Outlined.Movie
-    token.contains("music") -> Icons.Outlined.MusicNote
-    token.contains("graduationcap") -> Icons.Outlined.School
-    token.contains("pawprint") -> Icons.Outlined.Pets
-    token.contains("arrow.uturn") -> Icons.AutoMirrored.Outlined.Undo
-    token.contains("creditcard") -> Icons.Outlined.CreditCard
-    token.contains("ellipsis") -> Icons.Outlined.MoreHoriz
-    token.contains("dining") -> Icons.Outlined.LocalDining
-    token.contains("work") -> Icons.Outlined.Work
-    else -> Icons.Outlined.Category
-}
-
 @Composable
 private fun CategoryIcon(token: String, tint: androidx.compose.ui.graphics.Color) {
     Icon(
-        imageVector = categoryIcon(token),
+        imageVector = categoryIconFor(token),
         contentDescription = null,
         tint = tint,
     )
