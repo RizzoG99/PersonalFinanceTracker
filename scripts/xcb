@@ -243,8 +243,22 @@ PYEOF
     shift
     group="${1:-}"
     echo "xcb: release starting — test, analyze, archive, export, release-notes$( [ -n "$group" ] && echo ", assign-testers")" >&2
-    "$0" test && "$0" analyze && "$0" archive && "$0" export && "$0" release-notes
-    [ -n "$group" ] && "$0" assign-testers "$group"
+    # Run as a loop, not as an && chain. `set -e` does not fire for a command that
+    # fails in a non-final position of an && list, and the list's status was then
+    # discarded by the `echo` below — so a release that aborted at `test` still
+    # printed "release done" and exited 0, indistinguishable from one that shipped.
+    for step in test analyze archive export release-notes; do
+      if ! "$0" "$step"; then
+        echo "xcb: release ABORTED at '$step' — no later step ran, nothing was uploaded" >&2
+        exit 1
+      fi
+    done
+    if [ -n "$group" ]; then
+      if ! "$0" assign-testers "$group"; then
+        echo "xcb: build was uploaded, but assigning it to '$group' failed" >&2
+        exit 1
+      fi
+    fi
     echo "xcb: release done" >&2
     ;;
 
