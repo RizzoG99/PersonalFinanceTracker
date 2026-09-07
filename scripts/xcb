@@ -117,11 +117,18 @@ case "${1:-}" in
     # via `executionTimeAllowance`, not a default: at 120 it silently clamped
     # testLaunchPerformance's own request for 300, so that test kept failing at exactly
     # 2 minutes however much it asked for.
+    #
+    # -parallel-testing-enabled NO because the two targets otherwise run at the same time
+    # on two booted simulator clones, and the UI target then measures a machine under load
+    # from the unit target: identical launches in one such run took 9.7s, 57.2s, 15.2s,
+    # 16.2s and 7.6s, and the UI runner was eventually killed outright ("signal kill before
+    # establishing connection"). Nothing with a time budget can be stable against that.
     xcodebuild test \
       -project "$PROJECT" -scheme "$SCHEME" \
       -destination "id=$(resolve_sim)" \
       -derivedDataPath .build \
       -resultBundlePath "$RESULT" \
+      -parallel-testing-enabled NO \
       -test-timeouts-enabled YES \
       -maximum-test-execution-time-allowance 300 \
       -quiet "$@" >.build/test.log 2>&1 || status=$?
