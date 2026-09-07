@@ -49,6 +49,10 @@ struct TransactionFormView: View {
 
     @FocusState private var focusedField: TransactionFormField?
 
+    @Environment(\.scenePhase) private var scenePhase
+    /// Field to hand focus back to when the app returns. See the `scenePhase` handler.
+    @State private var focusBeforeLeaving: TransactionFormField?
+
     /// Drives the tip card, its scrim and the form's blur as one unit — see
     /// `syncTipVisibility()` for why this is stored state rather than a computed property.
     @State private var tipVisible = false
@@ -368,6 +372,37 @@ struct TransactionFormView: View {
                     withAnimation { proxy.scrollTo(field, anchor: .top) }
                 }
                 .onChange(of: tips.currentTip?.id) { _, _ in syncTipVisibility() }
+                // The keyboard is a system-owned window that draws over the privacy cover, so it
+                // stays on screen — and in the task-switcher snapshot — unless it is dismissed.
+                //
+                // Done here rather than by the cover itself, for two reasons. Ordering: at
+                // `.inactive` the keyboard is still up and this view still knows what had focus,
+                // whereas a dismissal from another view races this one's chance to remember it.
+                // And timing: `.inactive` comes before `.background`, so the keyboard is already
+                // retracting by the time the system takes its snapshot.
+                //
+                // Focus is restored on the way back, so nothing is lost — including for an
+                // `.inactive` that never became a real backgrounding, like a Control Centre pull
+                // or a notification banner. The visible cost there is the keyboard bouncing down
+                // and back up.
+                .onChange(of: scenePhase) { _, phase in
+                    switch phase {
+                    case .inactive:
+                        // On the way back in, `.inactive` arrives with focus already cleared, so
+                        // this cannot overwrite what it saved on the way out.
+                        if focusedField != nil {
+                            focusBeforeLeaving = focusedField
+                            focusedField = nil
+                        }
+                    case .active:
+                        if let field = focusBeforeLeaving {
+                            focusBeforeLeaving = nil
+                            focusedField = field
+                        }
+                    default:
+                        break
+                    }
+                }
                 .onChange(of: focusTrigger) { _, _ in
                     // After an "Add another" save the form resets in place; snap back to the top
                     // (blank Amount) so the user isn't left at the bottom of the sheet. Fires on the

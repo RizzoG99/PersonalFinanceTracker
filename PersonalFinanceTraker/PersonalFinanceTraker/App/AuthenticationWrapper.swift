@@ -32,6 +32,9 @@ struct AuthenticationWrapper: View {
     /// True between `willEnterForeground` and the scene actually becoming active — the whole
     /// resume animation. See `LockOverlayDecision.resolve`.
     @State private var isEnteringForeground = false
+    /// Set only by `willEnterForeground`: the app is coming back from the background, which is
+    /// the one scene transition that has actually earned a biometric prompt.
+    @State private var pendingForegroundAuth = false
 
     private let pinService = PINService()
     private let backupService = BackupService()
@@ -264,15 +267,35 @@ struct AuthenticationWrapper: View {
             guard isPINSetup else { return }
             authService.relockIfGraceExpired()
             isEnteringForeground = true
+            pendingForegroundAuth = true
         }
-        // The device was unlocked. If we suppressed a prompt because the screen was locked,
-        // this is when it becomes safe to ask — but only if the app is actually in front.
+        // The device was unlocked. This is the moment that covers an auto-lock: the app may
+        // never have backgrounded, so there is no `willEnterForeground` to hang the prompt
+        // on, but the user has just proved who they are to the device and is looking at us.
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataDidBecomeAvailableNotification)) { _ in
             guard scenePhase == .active else { return }
             authenticateIfNeeded()
         }
         .onChange(of: scenePhase) { _, newPhase in
             isEnteringForeground = LockOverlayDecision.isEnteringForeground(isEnteringForeground, phase: newPhase)
+            if newPhase == .background {
+                // The keyboard is a system-owned window that draws over ours whatever level we
+                // take, so an open keyboard sits on top of the cover, snapshot included, and
+                // dismissing it is the only thing that removes it.
+                //
+                // Here rather than in `syncLockOverlay`: the cover is already up from
+                // `.inactive` by now, so `overlay` does not change on the way to `.background`
+                // and nothing in that path would run.
+                //
+                // A catch-all for every other screen with a keyboard — Activity's search field,
+                // the bulk-edit sheets. The Add Transaction form does its own, earlier, at
+                // `.inactive`, because it is the one that can put focus back afterwards.
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                // A return that was started and abandoned before the scene became active has
+                // not earned a prompt; leaving this set would hand one to the next `.active`,
+                // which may be a blip behind the lock screen.
+                pendingForegroundAuth = false
+            }
             if newPhase == .background && isPINSetup {
                 // Note the time; do not lock yet. Whether coming back costs a Face ID is
                 // decided on the way in, by how long this lasted. The cover is already up
@@ -280,7 +303,18 @@ struct AuthenticationWrapper: View {
                 authService.noteBackgrounded()
             } else if newPhase == .active && isPINSetup {
                 authService.relockIfGraceExpired()
-                authenticateIfNeeded()
+                // Only when this `.active` is the end of a real return from the background.
+                //
+                // An app that was frontmost when the screen locked does not necessarily
+                // background: it resigns active, and when the display wakes to the *lock
+                // screen* it can go `.active` again behind it. Prompting on any `.active`
+                // put a Face ID sheet over the lock screen — and `isProtectedDataAvailable`
+                // does not catch it, because the keys are still available in the window
+                // right after the device locks.
+                if pendingForegroundAuth {
+                    pendingForegroundAuth = false
+                    authenticateIfNeeded()
+                }
             }
             if newPhase == .active {
                 let repo = TransactionActor.make(modelContainer)
