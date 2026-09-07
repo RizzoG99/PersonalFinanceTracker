@@ -97,7 +97,9 @@ final class TransactionListViewModel {
     var transactionToEdit: TransactionSnapshot? = nil
 
     private(set) var pendingDeletion: [TransactionSnapshot] = []
-    private var pendingDeletionTask: Task<Void, Never>?
+    /// `private(set)` so a test can await the timer it just cancelled and assert on what
+    /// the cancelled timer did — the race below is otherwise only reproducible under load.
+    private(set) var pendingDeletionTask: Task<Void, Never>?
     /// Set instead of scheduling deletion when a single swiped-to-delete item belongs to a
     /// recurring series — the view prompts for "this transaction" vs. "this and future" scope.
     var pendingRecurrenceDeletion: TransactionSnapshot? = nil
@@ -356,14 +358,23 @@ final class TransactionListViewModel {
     }
 
     /// Shared 5s progress timer, extracted from scheduleDeletion.
+    ///
+    /// Every exit that is not the timer running out belongs to somebody else: cancelling
+    /// happens because a banner was replaced or already finalized. `try?` swallows the
+    /// cancellation error the sleep throws, so without the two checks below a cancelled
+    /// timer walked out of the loop and committed anyway — clearing the banner that had
+    /// just replaced it (delete a row, then edit: the edit's undo vanished instantly) and
+    /// committing a batched delete early.
     private func startUndoTimer() -> Task<Void, Never> {
         Task {
             let start = Date.now
             while !Task.isCancelled {
                 try? await Task.sleep(for: .milliseconds(100))
-                    deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
+                if Task.isCancelled { break }
+                deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
                 if deleteProgress >= 1.0 { break }
             }
+            guard !Task.isCancelled else { return }
             await commitPending()
         }
     }
