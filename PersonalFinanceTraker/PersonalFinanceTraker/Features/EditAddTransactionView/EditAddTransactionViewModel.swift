@@ -22,6 +22,16 @@ final class EditAddTransactionViewModel {
     /// picker. Empty until setTransactionViewModel() tallies it. [[category-usage-ordering]]
     var categoryUsage: [PersistentIdentifier: Int] = [:]
     var selectedGoal: GoalSnapshot?
+    var availableTravels: [TravelSnapshot] = []
+    var selectedTravelId: UUID?
+
+    /// Creates a travel from inside the form and selects it, so the user lands back on the
+    /// form with the new travel already chosen rather than having to pick it again.
+    func createAndSelectTravel(name: String, symbolName: String) async {
+        guard let id = try? await repo.addTravel(name: name, symbolName: symbolName) else { return }
+        availableTravels = (try? await repo.fetchTravels()) ?? availableTravels
+        selectedTravelId = id
+    }
     var showingDatePicker: Bool = false
     var showingCategoryPicker: Bool = false
     var showingErrorAlert: Bool = false
@@ -82,10 +92,11 @@ final class EditAddTransactionViewModel {
         var date: Date
         var category: CategorySnapshot?
         var goal: GoalSnapshot?
+        var travelId: UUID?
     }
     private var originalFormSnapshot: FormSnapshot?
     private var currentFormSnapshot: FormSnapshot {
-        FormSnapshot(name: transactionName, amount: amount, type: transactionType, date: date, category: selectedCategory, goal: selectedGoal)
+        FormSnapshot(name: transactionName, amount: amount, type: transactionType, date: date, category: selectedCategory, goal: selectedGoal, travelId: selectedTravelId)
     }
 
     /// Edit mode's nav-bar save button stays disabled until this is true — editing an existing
@@ -128,6 +139,7 @@ final class EditAddTransactionViewModel {
         loadTask = Task {
             availableCategories = (try? await repo.fetchCategories()) ?? []
             availableGoals = (try? await repo.fetchGoals()) ?? []
+            availableTravels = (try? await repo.fetchTravels()) ?? []
 
             // Tally category usage so the compact picker can show the most-used first. One fetch on
             // open; fine for a personal dataset. ponytail: if this ever gets slow on huge histories,
@@ -149,6 +161,12 @@ final class EditAddTransactionViewModel {
             // Pre-select goal when editing a transfer
             if let editingItem = editingItem, let goalId = editingItem.goalId {
                 selectedGoal = availableGoals.first { $0.id == goalId }
+            }
+
+            // Pre-select the travel when editing an already-tagged transaction.
+            if let editingItem, let travelId = editingItem.travelId,
+               availableTravels.contains(where: { $0.id == travelId }) {
+                selectedTravelId = travelId
             }
 
             if editingItem == nil {
@@ -360,6 +378,7 @@ final class EditAddTransactionViewModel {
             category: categoryLabel,
             currencyCode: currencyCode,
             goalId: selectedGoal?.id,
+            travelId: selectedTravelId,
             categoryPersistentId: selectedCategory?.persistentId
         )
     }
@@ -470,6 +489,9 @@ final class EditAddTransactionViewModel {
         scanAppliedDate = nil
         scanAppliedCategoryId = nil
         scanAppliedName = nil
+        // selectedTravelId is deliberately NOT reset: "Keep adding" exists for logging
+        // several expenses in one sitting, and on a trip they all belong to the same
+        // travel. Re-picking it per expense is the chore the folder is meant to avoid.
     }
 
 }

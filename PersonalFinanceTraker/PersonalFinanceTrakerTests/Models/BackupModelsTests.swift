@@ -65,7 +65,7 @@ struct BackupModelsTests {
         let payload = BackupPayload(
             version: 1,
             createdAt: date(2026, 1, 1),
-            transactions: [BackupTransaction(timestamp: date(2026, 1, 1), amount: -10, note: "A", category: "Food", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil)],
+            transactions: [BackupTransaction(timestamp: date(2026, 1, 1), amount: -10, note: "A", category: "Food", currencyCode: "EUR", goalId: nil, travelId: nil, recurrenceRuleId: nil)],
             recurrenceRules: [BackupRecurrenceRule(id: UUID(), frequency: .monthly, interval: 1, startDate: date(2026, 1, 1), endDate: endDate, lastMaterializedDate: lastMaterializedDate, amount: -1200, note: "", category: "Housing", currencyCode: "EUR", goalId: nil)]
         )
 

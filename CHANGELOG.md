@@ -7,6 +7,9 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+
+## 93 — 2026-09-07
+- Travels: group a trip's expenses together. When adding or editing a transaction, the "Part of a trip?" row lets you pick a travel or create one on the spot. Activity then shows the whole trip as a single row with its total and the days it spans ("Barcellona Travel · 6 spese · 12–16 Sep · −€400,00"); tap it for the trip's dates, how long it lasted, what a day cost, and where the money went by category. The airplane button in Activity lists every travel you've made, so older trips stay easy to find. "Add expense" inside a travel opens the form already tagged with it, and you can pull a single expense back out from the same screen. You can also multi-select transactions and move them into a travel in one go. Deleting a travel keeps the expenses — it only removes the grouping. Budgets, insights and category breakdowns are unchanged: each expense still counts on its own.
 - Fixed the Face ID prompt that could still appear over the lock screen when the phone auto-locked with the app open. The app now only asks when it is actually coming back from the background, or right after you unlock the phone with it in front.
 - The privacy cover now hides the keyboard too: backgrounding the app with the amount field open no longer leaves the keypad on screen over the cover, or in the app switcher. Coming back puts the cursor straight back in the field you were typing in.
 

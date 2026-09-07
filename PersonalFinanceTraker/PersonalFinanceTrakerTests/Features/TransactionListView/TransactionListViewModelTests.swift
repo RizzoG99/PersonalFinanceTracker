@@ -574,7 +574,13 @@ struct TransactionListViewModelTests {
         let item = vm.filteredItems.first { $0.recurrenceRuleId == nil }!
         vm.delete(item)                       // arm a delete: row removed, pendingDeletion=[item]
         #expect(vm.pendingDeletion.count == 1)
+        let deleteTimer = vm.pendingDeletionTask  // the delete's 5s timer, about to be cancelled
         await vm.armUndo(message: "edited") { }   // arming an edit flushes the pending delete
+        // Wait for the cancelled timer to actually finish. It wakes from its sleep *after*
+        // the new banner is armed, and it used to commit on the way out and clear it —
+        // which is why this test only failed under parallel load until the timer learned
+        // to check its own cancellation.
+        await deleteTimer?.value
         let after = try! await vm.repo.fetchAll()
         #expect(!after.contains { $0.id == item.id })   // delete was committed, not leaked
         #expect(vm.pendingDeletion.isEmpty)

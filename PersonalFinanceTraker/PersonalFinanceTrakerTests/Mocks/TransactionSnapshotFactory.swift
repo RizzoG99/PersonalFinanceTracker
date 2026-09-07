@@ -27,6 +27,7 @@ extension TransactionSnapshot {
         category: String,
         currencyCode: String = "EUR",
         goalId: UUID? = nil,
+        travelId: UUID? = nil,
         recurrenceRuleId: UUID? = nil
     ) -> TransactionSnapshot {
         let context = ModelContext(SnapshotTestSupport.container)
@@ -37,6 +38,7 @@ extension TransactionSnapshot {
             category: category,
             currencyCode: currencyCode,
             goalId: goalId,
+            travelId: travelId,
             recurrenceRuleId: recurrenceRuleId
         )
         context.insert(model)

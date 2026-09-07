@@ -62,6 +62,7 @@ struct TransactionFormView: View {
     /// whenever a new scan runs, so the banner comes back for that scan even if a previous one
     /// was dismissed.
     @State private var dismissedScanBanner = false
+    @State private var showingNewTravel = false
 
     // .popoverTip() doesn't anchor from the keyboard accessory bar — it lives in
     // UIRemoteKeyboardWindow, not the app window (verified on-device, issue #31).
@@ -218,8 +219,42 @@ struct TransactionFormView: View {
                     }
                     .appFormSectionBackground()
 
+                    // Optional, and last: a travel tags an ordinary expense, it doesn't change
+                    // what the transaction is. Hidden for transfers — a transfer between the
+                    // user's own goals is never a trip expense.
+                    if viewModel.transactionType != .transfer {
+                        Section {
+                            if viewModel.availableTravels.isEmpty {
+                                travelIntroRow
+                            } else {
+                                // Not "Travel": that key already exists as a category name
+                                // ("Viaggi" in Italian), so reusing it echoed the section
+                                // header word-for-word.
+                                Picker("Choose which one", selection: $viewModel.selectedTravelId) {
+                                    Text("None").tag(UUID?.none)
+                                    ForEach(viewModel.availableTravels) { travel in
+                                        Label(travel.name, systemImage: travel.symbolName)
+                                            .tag(UUID?.some(travel.id))
+                                    }
+                                }
+                                .tint(.accentIndigo)
+                            }
+                        } header: {
+                            travelSectionHeader
+                        }
+                        .appFormSectionBackground()
+                    }
+
                 }
                 .appFormBackground()
+                .sheet(isPresented: $showingNewTravel) {
+
+                    // Selects the new travel on save, so creating one from the picker
+                    // leaves the form with it already chosen.
+                    TravelFormSheet { name, symbolName in
+                        Task { await viewModel.createAndSelectTravel(name: name, symbolName: symbolName) }
+                    }
+                }
                 // Chevron taps go through `navigate` (scroll target into view, wait for the scroll
                 // to actually settle, only then request focus) instead of setting focus directly —
                 // same fix as AddGoalSheet's chevrons: a field currently scrolled out of the Form
@@ -534,6 +569,39 @@ struct TransactionFormView: View {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         return formatter.string(from: NSNumber(value: value)) ?? ""
+    }
+
+    // MARK: - Travel
+
+    /// Title + "＋", mirroring `GoalsSection` — this app's established way to say "add one of
+    /// these". Keeping creation in the header (rather than inside the picker) leaves the row
+    /// below a plain native Picker, and makes the action visible without opening anything.
+    private var travelSectionHeader: some View {
+        HStack {
+            // Explanatory, not a noun: a "Travel" header above a "Travel" picker row said
+            // the same word twice. This states what the row is *for*, the way GoalsSection's
+            // subtitle does, and reads the same once localized.
+            Text("Part of a trip?")
+            Spacer()
+            Button("Add Travel", systemImage: "plus.circle.fill") {
+                showingNewTravel = true
+            }
+            .labelStyle(.iconOnly)
+            .font(.title3)
+            .foregroundStyle(.accentIndigo)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
+        }
+    }
+
+    /// Shown until the first travel exists. A picker whose only option is "None" is a dead
+    /// control that explains nothing, so the empty state says what the feature is for and
+    /// leaves the action to the header's ＋.
+    private var travelIntroRow: some View {
+        Text("Group a trip's expenses to see what the whole trip cost.")
+            .font(.caption)
+            .foregroundStyle(.textDim)
+            .padding(.vertical, 2)
     }
 }
 

@@ -13,6 +13,7 @@ struct DataWipeServiceTests {
             CategoryModel.self,
             CreditCardModel.self,
             GoalModel.self,
+            TravelModel.self,
             HealthScoreSnapshot.self,
             DailyForecastCache.self,
         ])
@@ -26,6 +27,7 @@ struct DataWipeServiceTests {
         // One instance of each of the remaining models
         context.insert(CreditCardModel(name: "Test Card", lastFour: "1234", balance: 100, limit: 1000))
         context.insert(GoalModel(name: "Test Goal", targetAmount: 500))
+        context.insert(TravelModel(name: "Barcellona Travel"))
         context.insert(HealthScoreSnapshot(
             timestamp: .now, score: 80, savingsScore: 80,
             stabilityScore: 80, adherenceScore: 80, subscriptionScore: 80
@@ -49,6 +51,7 @@ struct DataWipeServiceTests {
         #expect(try context.fetchCount(FetchDescriptor<CategoryModel>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<CreditCardModel>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<GoalModel>()) > 0)
+        #expect(try context.fetchCount(FetchDescriptor<TravelModel>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<HealthScoreSnapshot>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<DailyForecastCache>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<RecurrenceRule>()) > 0)
@@ -59,6 +62,7 @@ struct DataWipeServiceTests {
         #expect(try context.fetchCount(FetchDescriptor<CategoryModel>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<CreditCardModel>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<GoalModel>()) == 0)
+        #expect(try context.fetchCount(FetchDescriptor<TravelModel>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<HealthScoreSnapshot>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<DailyForecastCache>()) == 0)
         // Survivors here re-materialize transactions at the next launch and suppress every

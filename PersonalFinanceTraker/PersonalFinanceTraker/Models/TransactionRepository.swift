@@ -68,6 +68,15 @@ protocol ITransactionRepository {
     func addCategory(_ input: CategoryInput) async throws
     func deleteCategory(id: PersistentIdentifier) async throws
 
+    // Travels
+    func fetchTravels() async throws -> [TravelSnapshot]
+    @discardableResult
+    func addTravel(name: String, symbolName: String) async throws -> UUID
+    func updateTravel(id: UUID, name: String, symbolName: String) async throws
+    func deleteTravel(id: UUID) async throws
+    func setTravel(_ travelId: UUID?, forIDs ids: [PersistentIdentifier]) async throws
+    func replaceAllTravels(_ travels: [TravelSnapshot]) async throws
+
     // Goals
     func fetchGoals() async throws -> [GoalSnapshot]
     func addGoal(_ input: GoalInput) async throws

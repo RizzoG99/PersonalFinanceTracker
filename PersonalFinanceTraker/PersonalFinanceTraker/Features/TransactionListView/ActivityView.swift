@@ -17,6 +17,14 @@ struct ActivityView: View {
     @State private var showAmountSheet = false
     @State private var showNoteSheet = false
     @State private var showRecurringView = false
+    @State private var showTravelsView = false
+    @State private var selectedTravel: TravelSummary? = nil
+    @State private var showTravelPicker = false
+    @State private var pendingTravelDeletion: TravelSummary? = nil
+    /// Travel whose "Add expense" was tapped. The Add sheet is opened from the *dismissal* of
+    /// the sheet that asked for it — presenting one sheet while another is still going down
+    /// drops the presentation.
+    @State private var pendingAddExpenseTravelId: UUID? = nil
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -67,84 +75,12 @@ struct ActivityView: View {
 
                 ForEach(groupedFiltered, id: \.0) { dateString, dayItems in
                     Section {
-                        ForEach(dayItems) { item in
-                            Button {
-                                if viewModel.isSelecting {
-                                    viewModel.toggleSelection(item.id)
-                                } else {
-                                    viewModel.transactionToEdit = item
-                                }
-                            } label: {
-                                HStack(spacing: 12) {
-                                    if viewModel.isSelecting {
-                                        Image(systemName: viewModel.selectedIDs.contains(item.id) ? "checkmark.circle.fill" : "circle")
-                                            .font(.title3)
-                                            .foregroundStyle(viewModel.selectedIDs.contains(item.id) ? Color.accentIndigo : Color.textMid)
-                                            .accessibilityHidden(true)
-                                    }
-                                    TransactionItemView(item: item)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                            // A plain Button in a List swallows .onLongPressGesture, so run the
-                            // long-press alongside the button via .simultaneousGesture instead.
-                            // The long-press ONLY enters selection mode — the button's own tap
-                            // (which fires on release) then selects the pressed row. Toggling here
-                            // too would double-fire with that tap and cancel the selection.
-                            .simultaneousGesture(
-                                LongPressGesture(minimumDuration: 0.4).onEnded { _ in
-                                    if !viewModel.isSelecting {
-                                        viewModel.isSelecting = true
-                                    }
-                                }
-                            )
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                            // Recurring rows must not use role: .destructive here — iOS plays the
-                            // swipe-to-delete row-collapse animation the instant a destructive-role
-                            // swipe action is tapped, regardless of whether the closure actually
-                            // deletes anything. For a recurring item we need to ask "this transaction"
-                            // vs. "this and future" first, so the row must stay put until the user
-                            // chooses; a plain button (red-tinted, no destructive role) avoids the
-                            // automatic collapse.
-                            //
-                            // The confirmationDialog itself must live on this row's main Button, not
-                            // on the swipeActions button — SwiftUI bridges swipeActions content to
-                            // UIContextualAction under the hood, and presentation modifiers attached
-                            // there silently fail to present.
-                            .confirmationDialog(
-                                "This is part of a recurring series",
-                                isPresented: isRecurringDeletionPresented(for: item),
-                                titleVisibility: .visible
-                            ) {
-                                Button("This transaction", role: .destructive) {
-                                    viewModel.applyRecurrenceDeletionScope(.thisOnly)
-                                }
-                                Button("This and future", role: .destructive) {
-                                    viewModel.applyRecurrenceDeletionScope(.thisAndFuture)
-                                }
-                                Button("Cancel", role: .cancel) {
-                                    viewModel.pendingRecurrenceDeletion = nil
-                                }
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: item.recurrenceRuleId == nil) {
-                                if !viewModel.isSelecting {
-                                    if item.recurrenceRuleId != nil {
-                                        Button {
-                                            viewModel.pendingRecurrenceDeletion = item
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                        .tint(.red)
-                                    } else {
-                                        Button(role: .destructive) {
-                                            viewModel.delete(item)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                        .tint(.red)
-                                    }
-                                }
+                        ForEach(dayItems) { row in
+                            switch row {
+                            case .travel(let summary):
+                                travelRow(summary)
+                            case .transaction(let item):
+                                transactionRow(item)
                             }
                         }
                     } header: {
@@ -185,13 +121,21 @@ struct ActivityView: View {
                         }
                     }
                 } else {
+                    // Both open a *list* over the same transactions, so they share one
+                    // overflow menu rather than each claiming a bare glyph next to the
+                    // global gear: three icons in the leading group read as noise, and the
+                    // next such list would make it four. Creating a travel still lives on
+                    // the plus inside that list and in the add transaction form, never here.
                     ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showRecurringView = true
+                        Menu {
+                            Button("Recurring", systemImage: "repeat") { showRecurringView = true }
+                            Button("Travels", systemImage: "airplane") { showTravelsView = true }
                         } label: {
-                            Image(systemName: "repeat")
+                            // .circle, not a bare ellipsis: it sits beside the gear, and
+                            // three loose dots read lighter than every other toolbar glyph.
+                            Image(systemName: "ellipsis.circle")
                         }
-                        .accessibilityLabel(String(localized: "Recurring"))
+                        .accessibilityLabel(String(localized: "Lists"))
                     }
                 }
             }
@@ -200,6 +144,15 @@ struct ActivityView: View {
             .sheet(isPresented: $showRecurringView) {
                 NavigationStack {
                     RecurringView(materializationService: materializationService)
+                }
+                .presentationBackground { AppBackground() }
+            }
+            .sheet(isPresented: $showTravelsView, onDismiss: flushPendingAddExpense) {
+                NavigationStack {
+                    TravelsView(onAddExpense: { travelId in
+                        pendingAddExpenseTravelId = travelId
+                        showTravelsView = false
+                    })
                 }
                 .presentationBackground { AppBackground() }
             }
@@ -220,6 +173,33 @@ struct ActivityView: View {
             }
             .sheet(isPresented: $showNoteSheet) {
                 descriptionSheet
+            }
+            .sheet(isPresented: $showTravelPicker) {
+                TravelPickerSheet(travels: viewModel.travels) { travelId in
+                    viewModel.bulkSetTravel(travelId)
+                    showTravelPicker = false
+                }
+            }
+            .sheet(item: $selectedTravel, onDismiss: flushPendingAddExpense) { summary in
+                TravelDetailSheet(
+                    travel: summary,
+                    members: viewModel.members(of: summary),
+                    onAddExpense: {
+                        pendingAddExpenseTravelId = summary.id
+                        selectedTravel = nil
+                    },
+                    onSelect: { item in
+                        selectedTravel = nil
+                        viewModel.transactionToEdit = item
+                    },
+                    onRemoveMember: { viewModel.removeFromTravel($0) },
+                    onRename: { name, symbolName in
+                        viewModel.renameTravel(id: summary.id, name: name, symbolName: symbolName)
+                        selectedTravel = nil
+                    },
+                    onDelete: { viewModel.deleteTravel(id: summary.id) }
+                )
+                .presentationBackground { AppBackground() }
             }
             .overlay {
                 if groupedFiltered.isEmpty && (!viewModel.searchText.isEmpty || viewModel.filters.isActive) {
@@ -258,6 +238,7 @@ struct ActivityView: View {
                     bulkButton("Category", "tag") { showCategorySheet = true }
                     bulkButton("Amount", "eurosign.circle") { showAmountSheet = true }
                     bulkButton("Description", "text.alignleft") { showNoteSheet = true }
+                    bulkButton("Travel", "airplane") { showTravelPicker = true }
                 }
                 .disabled(viewModel.selectedIDs.isEmpty)
                 .padding(.vertical, 12)
@@ -292,11 +273,161 @@ struct ActivityView: View {
         )
     }
 
-    private var groupedFiltered: [(String, [TransactionSnapshot])] {
+    // The category lens only ever runs with a chip selected, and a chip selection means
+    // filters are active — so travels are already expanded and every row here is a
+    // transaction. Travel rows are kept rather than dropped in case that changes.
+    private var groupedFiltered: [(String, [ActivityRow])] {
         guard let category = viewModel.effectiveCategory else { return viewModel.groupedItems }
-        return viewModel.groupedItems.compactMap { (dateString, items) in
-            let filtered = items.filter { $0.category == category }
+        return viewModel.groupedItems.compactMap { (dateString, rows) in
+            let filtered = rows.filter { $0.transaction.map { $0.category == category } ?? true }
             return filtered.isEmpty ? nil : (dateString, filtered)
+        }
+    }
+
+    private func travelRow(_ summary: TravelSummary) -> some View {
+        Button {
+            selectedTravel = summary
+        } label: {
+            TravelRowView(travel: summary)
+        }
+        .buttonStyle(.plain)
+        // Every other row in the list enters multi-select on a long press; a travel row
+        // that ignores it reads as broken. Selecting expands travels, so what appears
+        // under the finger is the members.
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.4).onEnded { _ in
+                if !viewModel.isSelecting {
+                    viewModel.isSelecting = true
+                }
+            }
+        )
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        // On the row's own Button, not the swipe action: SwiftUI bridges swipeActions
+        // content to UIContextualAction, and presentation modifiers attached there
+        // silently fail to present — same constraint as the recurring dialog below.
+        .confirmationDialog(
+            "Delete \(summary.name)?",
+            isPresented: isTravelDeletionPresented(for: summary),
+            titleVisibility: .visible
+        ) {
+            Button("Delete Travel", role: .destructive) {
+                viewModel.deleteTravel(id: summary.id)
+                pendingTravelDeletion = nil
+            }
+            Button("Cancel", role: .cancel) { pendingTravelDeletion = nil }
+        } message: {
+            Text("The \(TravelCountLabel.text(summary.count)) inside stay in your transactions — only the travel is removed.")
+        }
+        // No full swipe, and a plain red button rather than role: .destructive — a
+        // destructive-role swipe action plays the row-collapse animation immediately,
+        // before the confirmation has been answered.
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if !viewModel.isSelecting {
+                Button {
+                    pendingTravelDeletion = summary
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+                .tint(.red)
+            }
+        }
+    }
+
+    /// Called from the dismissal of whichever sheet asked for it; the shell then opens the
+    /// Add form already tagged with the travel.
+    private func flushPendingAddExpense() {
+        guard let travelId = pendingAddExpenseTravelId else { return }
+        pendingAddExpenseTravelId = nil
+        viewModel.addExpenseTravelId = travelId
+    }
+
+    private func isTravelDeletionPresented(for summary: TravelSummary) -> Binding<Bool> {
+        Binding(
+            get: { pendingTravelDeletion?.id == summary.id },
+            set: { if !$0 { pendingTravelDeletion = nil } }
+        )
+    }
+
+    @ViewBuilder
+    private func transactionRow(_ item: TransactionSnapshot) -> some View {
+        Button {
+            if viewModel.isSelecting {
+                viewModel.toggleSelection(item.id)
+            } else {
+                viewModel.transactionToEdit = item
+            }
+        } label: {
+            HStack(spacing: 12) {
+                if viewModel.isSelecting {
+                    Image(systemName: viewModel.selectedIDs.contains(item.id) ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundStyle(viewModel.selectedIDs.contains(item.id) ? Color.accentIndigo : Color.textMid)
+                        .accessibilityHidden(true)
+                }
+                TransactionItemView(item: item)
+            }
+        }
+        .buttonStyle(.plain)
+        // A plain Button in a List swallows .onLongPressGesture, so run the
+        // long-press alongside the button via .simultaneousGesture instead.
+        // The long-press ONLY enters selection mode — the button's own tap
+        // (which fires on release) then selects the pressed row. Toggling here
+        // too would double-fire with that tap and cancel the selection.
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.4).onEnded { _ in
+                if !viewModel.isSelecting {
+                    viewModel.isSelecting = true
+                }
+            }
+        )
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        // Recurring rows must not use role: .destructive here — iOS plays the
+        // swipe-to-delete row-collapse animation the instant a destructive-role
+        // swipe action is tapped, regardless of whether the closure actually
+        // deletes anything. For a recurring item we need to ask "this transaction"
+        // vs. "this and future" first, so the row must stay put until the user
+        // chooses; a plain button (red-tinted, no destructive role) avoids the
+        // automatic collapse.
+        //
+        // The confirmationDialog itself must live on this row's main Button, not
+        // on the swipeActions button — SwiftUI bridges swipeActions content to
+        // UIContextualAction under the hood, and presentation modifiers attached
+        // there silently fail to present.
+        .confirmationDialog(
+            "This is part of a recurring series",
+            isPresented: isRecurringDeletionPresented(for: item),
+            titleVisibility: .visible
+        ) {
+            Button("This transaction", role: .destructive) {
+                viewModel.applyRecurrenceDeletionScope(.thisOnly)
+            }
+            Button("This and future", role: .destructive) {
+                viewModel.applyRecurrenceDeletionScope(.thisAndFuture)
+            }
+            Button("Cancel", role: .cancel) {
+                viewModel.pendingRecurrenceDeletion = nil
+            }
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: item.recurrenceRuleId == nil) {
+            if !viewModel.isSelecting {
+                if item.recurrenceRuleId != nil {
+                    Button {
+                        viewModel.pendingRecurrenceDeletion = item
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    .tint(.red)
+                } else {
+                    Button(role: .destructive) {
+                        viewModel.delete(item)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    .tint(.red)
+                }
+            }
         }
     }
 }
