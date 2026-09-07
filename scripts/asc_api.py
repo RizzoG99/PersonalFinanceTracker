@@ -9,6 +9,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -117,6 +118,11 @@ def set_whats_new(build_id: str, notes: str, token: str) -> None:
         )
 
 
+def _instant(ts: str) -> datetime:
+    """ISO 8601 from either side, as an aware datetime. Accepts a trailing Z."""
+    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+
 def latest_build_number(app_id: str, version: str, token: str) -> int:
     """Highest build number App Store Connect already holds for `version`, 0 if none.
 
@@ -164,7 +170,11 @@ def wait_for_build(
         if r["data"]:
             build = r["data"][0]
             uploaded = build["attributes"].get("uploadedDate") or ""
-            if uploaded_after and uploaded and uploaded < uploaded_after:
+            # Parsed, never compared as strings: App Store Connect answers in the team's
+            # local offset ("...T07:47:08-07:00") while this run stamps UTC ("...T14:46:20Z"),
+            # so a lexicographic compare calls a build uploaded a minute ago older than the
+            # run that uploaded it.
+            if uploaded_after and uploaded and _instant(uploaded) < _instant(uploaded_after):
                 sys.exit(
                     f"asc_api: build {version} ({build_number}) already existed before this "
                     f"upload (uploaded {uploaded}, this run started {uploaded_after}). The "
