@@ -204,7 +204,6 @@ fun ActivityScreen(
             onTypeFilterChange = viewModel::updateTypeFilter,
             onClearError = viewModel::clearError,
             onClearFilters = viewModel::clearFilters,
-            onAdd = { isCreating = true },
             onEdit = { editingTransaction = it },
             onDelete = {
                 if (it.recurrenceRuleId == null) deletingTransaction = it else recurringDeletionTransaction = it
@@ -344,61 +343,42 @@ private fun ActivityContent(
     onTypeFilterChange: (TransactionTypeFilter) -> Unit,
     onClearError: () -> Unit,
     onClearFilters: () -> Unit,
-    onAdd: () -> Unit,
     onEdit: (FinanceTransaction) -> Unit,
     onDelete: (FinanceTransaction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (state.allTransactions.isEmpty()) {
+        EmptyActivityContent(
+            searchText = state.searchText,
+            filters = state.filters.type,
+            error = error,
+            onSearchChange = onSearchChange,
+            onTypeFilterChange = onTypeFilterChange,
+            onClearError = onClearError,
+            modifier = modifier,
+        )
+        return
+    }
+
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            TextField(
-                value = state.searchText,
-                onValueChange = onSearchChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.search_transactions)) },
-                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                singleLine = true,
-                shape = RoundedCornerShape(28.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                ),
+            ActivityFilterControls(
+                searchText = state.searchText,
+                filters = state.filters.type,
+                error = error,
+                onSearchChange = onSearchChange,
+                onTypeFilterChange = onTypeFilterChange,
+                onClearError = onClearError,
             )
-        }
-        item {
-            TransactionTypeFilters(
-                selected = state.filters.type,
-                onSelected = onTypeFilterChange,
-            )
-        }
-        if (error != null) {
-            item {
-                FinanceCard {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(error, modifier = Modifier.weight(1f))
-                        TextButton(onClick = onClearError) { Text(stringResource(R.string.dismiss)) }
-                    }
-                }
-            }
         }
         if (state.visibleTransactions.isNotEmpty()) {
             item { ActivitySummary(transactions = state.visibleTransactions) }
         }
         when {
-            state.allTransactions.isEmpty() -> item {
-                EmptyStateWithAction(onAdd = onAdd)
-            }
             state.visibleTransactions.isEmpty() -> item {
                 NoResultsState(onClear = {
                     onSearchChange("")
@@ -411,6 +391,78 @@ private fun ActivityContent(
                     onEdit = { onEdit(transaction) },
                     onDelete = { onDelete(transaction) },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyActivityContent(
+    searchText: String,
+    filters: TransactionTypeFilter,
+    error: String?,
+    onSearchChange: (String) -> Unit,
+    onTypeFilterChange: (TransactionTypeFilter) -> Unit,
+    onClearError: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        ActivityFilterControls(
+            searchText = searchText,
+            filters = filters,
+            error = error,
+            onSearchChange = onSearchChange,
+            onTypeFilterChange = onTypeFilterChange,
+            onClearError = onClearError,
+        )
+        Spacer(Modifier.weight(1f))
+        EmptyActivityState()
+        Spacer(Modifier.weight(0.55f))
+    }
+}
+
+@Composable
+private fun ActivityFilterControls(
+    searchText: String,
+    filters: TransactionTypeFilter,
+    error: String?,
+    onSearchChange: (String) -> Unit,
+    onTypeFilterChange: (TransactionTypeFilter) -> Unit,
+    onClearError: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        TextField(
+            value = searchText,
+            onValueChange = onSearchChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(stringResource(R.string.search_transactions)) },
+            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+            singleLine = true,
+            shape = RoundedCornerShape(28.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+            ),
+        )
+        TransactionTypeFilters(selected = filters, onSelected = onTypeFilterChange)
+        if (error != null) {
+            FinanceCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(error, modifier = Modifier.weight(1f))
+                    TextButton(onClick = onClearError) { Text(stringResource(R.string.dismiss)) }
+                }
             }
         }
     }
@@ -777,19 +829,33 @@ private fun TransactionRow(
 }
 
 @Composable
-private fun EmptyStateWithAction(onAdd: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 56.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.empty_state_title),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.semantics { heading() },
-        )
-        Text(stringResource(R.string.empty_state_message))
-        Button(onClick = onAdd) { Text(stringResource(R.string.add_transaction)) }
+private fun EmptyActivityState() {
+    FinanceCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Add,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = stringResource(R.string.empty_state_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                text = stringResource(R.string.empty_state_message),
+                style = MaterialTheme.typography.bodyLarge,
+                color = LocalFinancePalette.current.textMid,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 

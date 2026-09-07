@@ -77,6 +77,11 @@ colour relationships, and states; Android retains Material navigation, sheets, a
   Settings. Pixel 7 dark-appearance QA covered the full-height opening state, long amount entry
   with aligned EUR marker, visible category selection, and a successful Save through the top bar.
   Italian, light-appearance, large-text, and manual TalkBack checks remain open.
+- 2026-09-07: Activity’s no-transaction state now uses a lower, centered FinanceCard with a
+  decorative accent, clear title, and centered supporting copy. The persistent Add FAB remains
+  visible rather than duplicating a primary action inside the card. Pixel 7 dark-appearance QA
+  covered the card, search and filter controls, and the unobstructed FAB. Italian,
+  light-appearance, large-text, and manual TalkBack checks remain open.
 
 Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
 check is complete.
