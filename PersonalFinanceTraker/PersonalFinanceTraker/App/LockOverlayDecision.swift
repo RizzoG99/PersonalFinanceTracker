@@ -21,18 +21,24 @@ enum LockOverlay: Equatable {
 /// unlock — and getting it wrong either flashes a splash screen at the user or leaves
 /// their balances in the task-switcher snapshot.
 enum LockOverlayDecision {
+    /// - Parameter isEnteringForeground: the app is on its way back in — `willEnterForeground`
+    ///   has fired but the scene has not become active yet. The whole resume animation happens
+    ///   inside that gap, so waiting for `.active` keeps the cover up for the entire zoom and
+    ///   delays the first frame underneath it, which is what "the splash takes a while to go"
+    ///   actually is.
     static func resolve(
         scenePhase: ScenePhase,
         isPINSetup: Bool,
         showSplash: Bool,
         lockState: LockState,
-        isSystemAuthInFlight: Bool
+        isSystemAuthInFlight: Bool,
+        isEnteringForeground: Bool = false
     ) -> LockOverlay {
         // The launch splash is already up in-window; a second copy in the overlay window
         // would only cross-fade against it.
         if showSplash { return .none }
 
-        if scenePhase == .active {
+        if scenePhase == .active || isEnteringForeground {
             return isPINSetup && lockState != .unlocked ? .pin : .none
         }
 

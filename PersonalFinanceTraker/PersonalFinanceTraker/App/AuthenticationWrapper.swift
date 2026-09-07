@@ -29,6 +29,9 @@ struct AuthenticationWrapper: View {
     /// PIN lock screen and privacy cover render in their own window above the shell — see
     /// `overlay` and `LockOverlayWindow`'s doc comment for why.
     @State private var lockOverlay = LockOverlayWindow()
+    /// True between `willEnterForeground` and the scene actually becoming active — the whole
+    /// resume animation. See `LockOverlayDecision.resolve`.
+    @State private var isEnteringForeground = false
 
     private let pinService = PINService()
     private let backupService = BackupService()
@@ -49,7 +52,8 @@ struct AuthenticationWrapper: View {
             isPINSetup: isPINSetup,
             showSplash: showSplash,
             lockState: authService.lockState,
-            isSystemAuthInFlight: authService.isSystemAuthInFlight
+            isSystemAuthInFlight: authService.isSystemAuthInFlight,
+            isEnteringForeground: isEnteringForeground
         )
     }
 
@@ -232,7 +236,23 @@ struct AuthenticationWrapper: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataWillBecomeUnavailableNotification)) { _ in
             if isPINSetup { authService.invalidateGrace() }
         }
+        // Fires at the *start* of the return animation; `scenePhase == .active` only lands at
+        // its end. Deciding here means the shell (or the PIN pad) renders during the zoom
+        // rather than after it, and the system stops showing the stale snapshot sooner.
+        //
+        // Only the overlay is decided here. The biometric prompt still waits for `.active` —
+        // LocalAuthentication presents system UI, and asking for it before the scene is active
+        // is asking for it to arrive at a bad moment.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            guard isPINSetup else { return }
+            authService.relockIfGraceExpired()
+            isEnteringForeground = true
+        }
         .onChange(of: scenePhase) { _, newPhase in
+            // Cleared on `.background` only: the phase goes background -> inactive -> active,
+            // and `willEnterForeground` lands *before* that `.inactive`, so clearing on any
+            // non-active phase would throw the flag away the moment it was set.
+            if newPhase == .background { isEnteringForeground = false }
             if newPhase == .background && isPINSetup {
                 // Note the time; do not lock yet. Whether coming back costs a Face ID is
                 // decided on the way in, by how long this lasted. The cover is already up

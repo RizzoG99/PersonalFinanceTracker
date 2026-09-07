@@ -8,6 +8,11 @@ import Foundation
 @testable import PersonalFinanceTraker
 
 /// The grace period only, driven by injected dates — no LocalAuthentication involved.
+///
+/// `@MainActor` because the service publishes: Swift Testing runs cases on arbitrary threads,
+/// and mutating `@Published` off the main thread trips SwiftUI's runtime check in Xcode even
+/// though the command-line runner lets it through.
+@MainActor
 struct BiometricGraceTests {
     private func unlockedService(grace: TimeInterval = 30) -> BiometricAuthService {
         let service = BiometricAuthService()

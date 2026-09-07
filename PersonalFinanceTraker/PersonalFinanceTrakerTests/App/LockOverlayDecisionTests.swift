@@ -13,14 +13,16 @@ struct LockOverlayDecisionTests {
         pin: Bool = true,
         splash: Bool = false,
         state: LockState,
-        authInFlight: Bool = false
+        authInFlight: Bool = false,
+        entering: Bool = false
     ) -> LockOverlay {
         LockOverlayDecision.resolve(
             scenePhase: phase,
             isPINSetup: pin,
             showSplash: splash,
             lockState: state,
-            isSystemAuthInFlight: authInFlight
+            isSystemAuthInFlight: authInFlight,
+            isEnteringForeground: entering
         )
     }
 
@@ -60,6 +62,19 @@ struct LockOverlayDecisionTests {
         #expect(resolve(.inactive, pin: false, state: .locked, authInFlight: true) == .none)
         // The cover is not about authentication, so it still applies.
         #expect(resolve(.inactive, pin: false, state: .locked) == .cover)
+    }
+
+    // `willEnterForeground` lands at the start of the return animation; the scene only becomes
+    // active at its end. Waiting for active keeps the cover up for the whole zoom — which is
+    // most of the "why is the splash still there" the recording showed.
+    @Test func returningToTheForegroundUncoversBeforeTheSceneIsActive() {
+        #expect(resolve(.background, state: .unlocked, entering: true) == .none)
+        #expect(resolve(.inactive, state: .unlocked, entering: true) == .none)
+    }
+
+    // Same moment, but the grace ran out: the pad renders during the zoom instead of after it.
+    @Test func returningLockedShowsThePadDuringTheZoom() {
+        #expect(resolve(.background, state: .locked, entering: true) == .pin)
     }
 
     // The launch splash is already up in-window; a second copy would cross-fade with it.
