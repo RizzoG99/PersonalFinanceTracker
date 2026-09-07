@@ -117,17 +117,60 @@ def set_whats_new(build_id: str, notes: str, token: str) -> None:
         )
 
 
-def wait_for_build(app_id: str, version: str, build_number: str, token: str, timeout_s: int) -> str:
-    """Builds take a while to finish Apple's processing before they're assignable."""
+def latest_build_number(app_id: str, version: str, token: str) -> int:
+    """Highest build number App Store Connect already holds for `version`, 0 if none.
+
+    Xcode Cloud uploads from its own auto-incrementing counter, so `scripts/BUILD_NUMBER`
+    alone goes stale the moment a Cloud build lands: the local counter then produces a
+    number that either collides with an existing build (the upload is dropped) or sorts
+    below Cloud's in TestFlight.
+    """
+    r = call(
+        f"/builds?filter[app]={app_id}&filter[preReleaseVersion.version]={version}"
+        f"&limit=200&fields[builds]=version",
+        token,
+    )
+    numbers = []
+    for b in r.get("data", []):
+        raw = b["attributes"].get("version") or ""
+        if raw.isdigit():
+            numbers.append(int(raw))
+    return max(numbers, default=0)
+
+
+def wait_for_build(
+    app_id: str,
+    version: str,
+    build_number: str,
+    token: str,
+    timeout_s: int,
+    uploaded_after: str | None = None,
+) -> str:
+    """Builds take a while to finish Apple's processing before they're assignable.
+
+    `uploaded_after` (ISO 8601, UTC) rejects a build that was already there before this
+    run. Without it, an upload silently dropped for reusing an existing build number
+    still "found" that older build — and the release notes for code it does not contain
+    were written onto it. That happened to build 82.
+    """
     deadline = time.time() + timeout_s
     path = (
         f"/builds?filter[app]={app_id}&filter[version]={build_number}"
         f"&filter[preReleaseVersion.version]={version}&limit=1"
+        f"&fields[builds]=version,processingState,uploadedDate"
     )
     while True:
         r = call(path, token)
         if r["data"]:
             build = r["data"][0]
+            uploaded = build["attributes"].get("uploadedDate") or ""
+            if uploaded_after and uploaded and uploaded < uploaded_after:
+                sys.exit(
+                    f"asc_api: build {version} ({build_number}) already existed before this "
+                    f"upload (uploaded {uploaded}, this run started {uploaded_after}). The "
+                    f"upload was almost certainly dropped for reusing a build number — "
+                    f"refusing to touch somebody else's build."
+                )
             state = build["attributes"]["processingState"]
             if state == "VALID":
                 return build["id"]
@@ -148,11 +191,20 @@ def main():
     timeout_s = int(os.environ.get("ASC_WAIT_TIMEOUT", "1800"))
     token = make_jwt(key_id, issuer_id)
 
+    if mode == "latest-build":
+        bundle_id, version = sys.argv[2:4]
+        app_id = find_app_id(bundle_id, token)
+        print(latest_build_number(app_id, version, token))
+        return
+
     if mode == "release-notes":
         bundle_id, version, build_number = sys.argv[2:5]
+        uploaded_after = sys.argv[5] if len(sys.argv) > 5 else None
         notes = sys.stdin.read().strip()
         app_id = find_app_id(bundle_id, token)
-        build_id = wait_for_build(app_id, version, build_number, token, timeout_s)
+        build_id = wait_for_build(
+            app_id, version, build_number, token, timeout_s, uploaded_after=uploaded_after
+        )
         set_whats_new(build_id, notes, token)
         print(f"asc_api: set What to Test for build {version} ({build_number})")
         return

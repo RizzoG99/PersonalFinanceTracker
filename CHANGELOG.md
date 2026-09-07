@@ -7,6 +7,8 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+
+## 83 — 2026-09-07
 - Fixed the privacy cover only working once: after the first time you switched away and came back, swiping to the app switcher again showed your balances for the whole swipe, and the cover only appeared once the app had fully backgrounded.
 - Fixed a Face ID prompt appearing on its own when the phone was locked with the app open. The app no longer asks to unlock while the screen is locked; it waits until the phone is unlocked and the app is actually in front.
 
