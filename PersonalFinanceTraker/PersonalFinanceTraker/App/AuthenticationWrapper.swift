@@ -43,37 +43,14 @@ struct AuthenticationWrapper: View {
         UIDevice.current.userInterfaceIdiom == .pad
     }
 
-    private enum Overlay: Equatable {
-        case none
-        /// Task-switcher snapshot cover. Wins over `.pin` so an `.inactive` relock never
-        /// flashes the PIN pad mid-transition.
-        case cover
-        case pin
-    }
-
-    private var overlay: Overlay {
-        if showSplash { return .none } // splash is already shown in-window
-        if scenePhase != .active {
-            // Face ID's own evaluatePolicy call causes a brief scenePhase
-            // inactive→active blip while it presents (and dismisses) the system HUD —
-            // that's not a real backgrounding/task-switcher event, so don't let it
-            // flash the (non-interactive) splash cover in. `isUnlocked` is checked
-            // separately from `isAuthenticating` (not just `!isAuthenticating &&
-            // isUnlocked`): the completion handler sets them in two separate
-            // `@Published` writes, so there's a real intermediate render where
-            // isAuthenticating has already gone false but isUnlocked hasn't gone true
-            // yet — during that gap this used to fall through to `.cover` and show a
-            // second splash right after a successful unlock, before scenePhase caught up.
-            if authService.isUnlocked {
-                return .none
-            }
-            if authService.isAuthenticating {
-                return isPINSetup ? .pin : .none
-            }
-            return .cover
-        }
-        if isPINSetup && !authService.isUnlocked { return .pin }
-        return .none
+    private var overlay: LockOverlay {
+        LockOverlayDecision.resolve(
+            scenePhase: scenePhase,
+            isPINSetup: isPINSetup,
+            showSplash: showSplash,
+            lockState: authService.lockState,
+            isSystemAuthInFlight: authService.isSystemAuthInFlight
+        )
     }
 
     private func syncLockOverlay() {
@@ -81,7 +58,7 @@ struct AuthenticationWrapper: View {
         case .none:
             lockOverlay.hide()
         case .cover:
-            lockOverlay.show(interactive: false) { SplashView() }
+            lockOverlay.show(interactive: false) { SplashView(animated: false) }
         case .pin:
             // The software keyboard is its own system-owned window, docked to the screen
             // regardless of our overlay's level — it stays up and hittable, still routing
@@ -249,11 +226,21 @@ struct AuthenticationWrapper: View {
             isPINSetup = true
             authService.unlock()
         }
+        // The device screen locked. Whatever is left of the grace period is spent: it
+        // assumes the phone is still in its owner's hands, and this is the event that says
+        // otherwise. Fires while backgrounded too, which is the case that matters.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataWillBecomeUnavailableNotification)) { _ in
+            if isPINSetup { authService.invalidateGrace() }
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background && isPINSetup {
-                authService.lock()
-            } else if newPhase == .active && isPINSetup && !authService.isUnlocked {
-                if authService.isBiometricFeatureEnabled {
+                // Note the time; do not lock yet. Whether coming back costs a Face ID is
+                // decided on the way in, by how long this lasted. The cover is already up
+                // regardless — it follows the scene phase, not the lock state.
+                authService.noteBackgrounded()
+            } else if newPhase == .active && isPINSetup {
+                authService.relockIfGraceExpired()
+                if !authService.isUnlocked && authService.isBiometricFeatureEnabled {
                     authService.authenticate { _ in }
                 }
             }

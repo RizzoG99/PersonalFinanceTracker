@@ -28,10 +28,10 @@ final class PINEntryViewModel {
         authService.isBiometricFeatureEnabled && authService.isBiometricsAvailable
     }
 
-    var biometricIcon: String {
-        let ctx = LAContext()
-        return ctx.biometryType == .touchID ? "touchid" : "faceid"
-    }
+    // Resolved once by the service, not per render: this used to build an `LAContext` on
+    // every body evaluation — every digit, every shake, every countdown tick — and read a
+    // `biometryType` that a fresh context has not populated yet.
+    var biometricIcon: String { authService.biometricSymbolName }
 
     init(pinService: PINService, authService: BiometricAuthService) {
         self.pinService = pinService

@@ -9,6 +9,11 @@ import SwiftUI
 /// app name fades up beneath it. Shown by `AuthenticationWrapper` while it
 /// decides whether to route to the lock screen or straight to the dashboard.
 struct SplashView: View {
+    /// The launch splash animates in. The same view is reused as the privacy cover, where
+    /// it appears many times a session, always mid-transition and never looked at for long
+    /// — there the spring is only work competing with the system's own animation.
+    var animated: Bool = true
+
     @State private var appeared = false
 
     var body: some View {
@@ -32,6 +37,10 @@ struct SplashView: View {
                 }
             }
             .onAppear {
+                guard animated else {
+                    appeared = true
+                    return
+                }
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                     appeared = true
                 }

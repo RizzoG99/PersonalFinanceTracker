@@ -7,6 +7,9 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Switching to another app and coming straight back no longer asks for Face ID every time. The app now only asks again if you were away for more than 30 seconds — so copying figures out of another app, or checking a message mid-entry, stops costing an unlock each time. Locking the phone's screen still ends that grace immediately, and force-quitting the app always asks.
+- The app now covers itself as soon as you start swiping to the app switcher, instead of only once it has fully backgrounded. Previously your balances stayed on screen for the whole swipe.
+- Returning to the app with Face ID no longer stutters. The lock screen was being rebuilt three or four times per unlock, and the keypad icon rebuilt a biometric context on every keystroke.
 - Fixed a brief screen flash/flicker right when Face ID kicks in on unlock.
 - Removed the privacy screen that used to cover the app while screen recording; the app switcher snapshot cover is unaffected.
 
