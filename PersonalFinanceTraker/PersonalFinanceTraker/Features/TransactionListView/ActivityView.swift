@@ -21,6 +21,10 @@ struct ActivityView: View {
     @State private var selectedTravel: TravelSummary? = nil
     @State private var showTravelPicker = false
     @State private var pendingTravelDeletion: TravelSummary? = nil
+    /// Travel whose "Add expense" was tapped. The Add sheet is opened from the *dismissal* of
+    /// the sheet that asked for it — presenting one sheet while another is still going down
+    /// drops the presentation.
+    @State private var pendingAddExpenseTravelId: UUID? = nil
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -117,24 +121,21 @@ struct ActivityView: View {
                         }
                     }
                 } else {
+                    // Both open a *list* over the same transactions, so they share one
+                    // overflow menu rather than each claiming a bare glyph next to the
+                    // global gear: three icons in the leading group read as noise, and the
+                    // next such list would make it four. Creating a travel still lives on
+                    // the plus inside that list and in the add transaction form, never here.
                     ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showRecurringView = true
+                        Menu {
+                            Button("Recurring", systemImage: "repeat") { showRecurringView = true }
+                            Button("Travels", systemImage: "airplane") { showTravelsView = true }
                         } label: {
-                            Image(systemName: "repeat")
+                            // .circle, not a bare ellipsis: it sits beside the gear, and
+                            // three loose dots read lighter than every other toolbar glyph.
+                            Image(systemName: "ellipsis.circle")
                         }
-                        .accessibilityLabel(String(localized: "Recurring"))
-                    }
-                    // Opens the travels *list*, the same verb as the Recurring button beside
-                    // it. Creating a travel lives on the ＋ inside that list and in the add
-                    // transaction form — never here.
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showTravelsView = true
-                        } label: {
-                            Image(systemName: "airplane")
-                        }
-                        .accessibilityLabel(String(localized: "Travels"))
+                        .accessibilityLabel(String(localized: "Lists"))
                     }
                 }
             }
@@ -146,9 +147,12 @@ struct ActivityView: View {
                 }
                 .presentationBackground { AppBackground() }
             }
-            .sheet(isPresented: $showTravelsView) {
+            .sheet(isPresented: $showTravelsView, onDismiss: flushPendingAddExpense) {
                 NavigationStack {
-                    TravelsView()
+                    TravelsView(onAddExpense: { travelId in
+                        pendingAddExpenseTravelId = travelId
+                        showTravelsView = false
+                    })
                 }
                 .presentationBackground { AppBackground() }
             }
@@ -176,18 +180,19 @@ struct ActivityView: View {
                     showTravelPicker = false
                 }
             }
-            .sheet(item: $selectedTravel) { summary in
+            .sheet(item: $selectedTravel, onDismiss: flushPendingAddExpense) { summary in
                 TravelDetailSheet(
                     travel: summary,
                     members: viewModel.members(of: summary),
                     onAddExpense: {
+                        pendingAddExpenseTravelId = summary.id
                         selectedTravel = nil
-                        showingAddItemView = true
                     },
                     onSelect: { item in
                         selectedTravel = nil
                         viewModel.transactionToEdit = item
                     },
+                    onRemoveMember: { viewModel.removeFromTravel($0) },
                     onRename: { name, symbolName in
                         viewModel.renameTravel(id: summary.id, name: name, symbolName: symbolName)
                         selectedTravel = nil
@@ -286,6 +291,16 @@ struct ActivityView: View {
             TravelRowView(travel: summary)
         }
         .buttonStyle(.plain)
+        // Every other row in the list enters multi-select on a long press; a travel row
+        // that ignores it reads as broken. Selecting expands travels, so what appears
+        // under the finger is the members.
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.4).onEnded { _ in
+                if !viewModel.isSelecting {
+                    viewModel.isSelecting = true
+                }
+            }
+        )
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
         // On the row's own Button, not the swipe action: SwiftUI bridges swipeActions
@@ -317,6 +332,14 @@ struct ActivityView: View {
                 .tint(.red)
             }
         }
+    }
+
+    /// Called from the dismissal of whichever sheet asked for it; the shell then opens the
+    /// Add form already tagged with the travel.
+    private func flushPendingAddExpense() {
+        guard let travelId = pendingAddExpenseTravelId else { return }
+        pendingAddExpenseTravelId = nil
+        viewModel.addExpenseTravelId = travelId
     }
 
     private func isTravelDeletionPresented(for summary: TravelSummary) -> Binding<Bool> {

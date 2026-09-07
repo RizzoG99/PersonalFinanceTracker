@@ -16,6 +16,17 @@ struct TravelRowView: View {
 
     private var countLabel: String { TravelCountLabel.text(travel.count) }
 
+    /// "5 expenses · 12–16 Sep". The row sits in the day section of its *latest* member,
+    /// so without the span a trip that ran all week looks like it happened today.
+    /// A single-day trip says only the count — the section header already gives the day.
+    private var subtitle: String {
+        guard let start = travel.startDate, let end = travel.endDate else { return countLabel }
+        let style = Date.FormatStyle.dateTime.day().month(.abbreviated)
+        let from = start.formatted(style)
+        let to = end.formatted(style)
+        return from == to ? countLabel : "\(countLabel) · \(from) – \(to)"
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             GlassCard(tint: Color.accentIndigo.opacity(0.12), borderRadius: 12) {
@@ -29,7 +40,7 @@ struct TravelRowView: View {
                 Text(travel.name)
                     .font(.body)
                     .foregroundStyle(.textPrimary)
-                Text(countLabel)
+                Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.textDim)
             }
@@ -58,7 +69,7 @@ struct TravelRowView: View {
         .padding(.vertical, 4)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(travel.name), \(countLabel)")
+        .accessibilityLabel("\(travel.name), \(subtitle)")
         .accessibilityHint("Shows the expenses in this travel")
     }
 }
@@ -68,7 +79,8 @@ struct TravelRowView: View {
         List {
             TravelRowView(travel: TravelSummary(
                 id: UUID(), name: "Barcellona Travel", symbolName: "airplane",
-                total: -400, count: 6, anchorDate: Date()
+                total: -400, count: 6, anchorDate: Date(),
+                startDate: Date().addingTimeInterval(-4 * 86_400), endDate: Date()
             ))
             TravelRowView(travel: TravelSummary(
                 id: UUID(), name: "Weekend in the mountains with friends", symbolName: "mountain.2",

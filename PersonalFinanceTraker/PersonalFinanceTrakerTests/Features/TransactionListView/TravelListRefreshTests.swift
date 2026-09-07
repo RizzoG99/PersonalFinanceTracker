@@ -32,10 +32,10 @@ struct TravelListRefreshTests {
         repo.stubbedTravels = [TravelSnapshot(id: travelId, name: "Barcellona", symbolName: "airplane")]
         repo.stubbedTransactions = [.test(amount: -40, category: "🍽️ Food")]
 
-        // An empty travel already has its own row; the transaction sits beside it.
+        // The travel has no members yet, so Activity shows only the transaction.
         let vm = await makeViewModel(repo)
-        #expect(vm.groupedItems.flatMap(\.1).count == 2)
-        #expect(summaries(vm).first?.count == 0)
+        #expect(vm.groupedItems.flatMap(\.1).count == 1)
+        #expect(summaries(vm).isEmpty)
 
         // What the edit sheet's save amounts to: the transaction now carries the travel.
         repo.stubbedTransactions = [.test(amount: -40, category: "🍽️ Food", travelId: travelId)]
@@ -64,7 +64,7 @@ struct TravelListRefreshTests {
         await vm.loadTask?.value
         await vm.groupingTask?.value
 
-        #expect(summaries(vm).first?.count == 0)
-        #expect(vm.groupedItems.flatMap(\.1).count == 2)
+        #expect(summaries(vm).isEmpty)
+        #expect(vm.groupedItems.flatMap(\.1).count == 1)
     }
 }

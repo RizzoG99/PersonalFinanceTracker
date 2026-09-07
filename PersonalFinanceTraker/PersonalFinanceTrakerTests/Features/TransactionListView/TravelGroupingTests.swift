@@ -90,14 +90,44 @@ struct TravelGroupingTests {
         #expect(summaries(sections).first?.total == -350)
     }
 
-    @Test func emptyTravelStillGetsARowAtZero() {
+    // Activity is a log of what happened: a travel with nothing in it is not an event.
+    @Test func emptyTravelIsLeftOutOfActivity() {
         let id = UUID()
         let sections = ActivityRowGrouper.group([], travels: [travel(id, createdAt: date(2026, 6, 3))])
+
+        #expect(sections.isEmpty)
+    }
+
+    // ...but the Travels screen has to list it, or a trip you have not spent on yet is lost.
+    @Test func emptyTravelIsKeptWhenIncludeEmpty() {
+        let id = UUID()
+        let sections = ActivityRowGrouper.group(
+            [], travels: [travel(id, createdAt: date(2026, 6, 3))], includeEmpty: true
+        )
 
         let summary = try! #require(summaries(sections).first)
         #expect(summary.total == 0)
         #expect(summary.count == 0)
         #expect(summary.anchorDate == date(2026, 6, 3))
+        // No members, so there is no span to show on the row.
+        #expect(summary.startDate == nil)
+        #expect(summary.endDate == nil)
+    }
+
+    // The row sits in its latest member's day section, so it has to carry the span itself.
+    @Test func travelCarriesTheSpanOfItsMembers() {
+        let id = UUID()
+        let items = [
+            TransactionSnapshot.test(timestamp: date(2026, 6, 3), amount: -100, category: "🏨 Hotel", travelId: id),
+            TransactionSnapshot.test(timestamp: date(2026, 6, 9), amount: -50, category: "🍽️ Food", travelId: id),
+            TransactionSnapshot.test(timestamp: date(2026, 6, 6), amount: -20, category: "🍽️ Food", travelId: id),
+        ]
+        let sections = ActivityRowGrouper.group(items, travels: [travel(id)])
+
+        let summary = try! #require(summaries(sections).first)
+        #expect(summary.startDate == date(2026, 6, 3))
+        #expect(summary.endDate == date(2026, 6, 9))
+        #expect(summary.anchorDate == summary.endDate)
     }
 
     // A tag pointing at a travel that no longer exists must not swallow the row.

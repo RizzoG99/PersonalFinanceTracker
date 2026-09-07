@@ -13,6 +13,7 @@ struct TravelDetailSheet: View {
 
     let onAddExpense: () -> Void
     let onSelect: (TransactionSnapshot) -> Void
+    let onRemoveMember: (TransactionSnapshot) -> Void
     let onRename: (String, String) -> Void
     let onDelete: () -> Void
 
@@ -249,6 +250,13 @@ struct TravelDetailSheet: View {
                                 TransactionItemView(item: item)
                             }
                             .buttonStyle(.plain)
+                            // Not a swipe action: these rows live in a VStack inside a
+                            // ScrollView, and swipeActions only exist inside a List.
+                            .contextMenu {
+                                Button("Remove from travel", systemImage: "airplane.departure", role: .destructive) {
+                                    onRemoveMember(item)
+                                }
+                            }
 
                             if index < members.count - 1 {
                                 Divider().overlay(Color.hairline)
@@ -271,7 +279,7 @@ struct TravelDetailSheet: View {
             TransactionSnapshot(TransactionModel(timestamp: Date(), amount: -250, note: "Hotel", category: "🏨 Travel")),
             TransactionSnapshot(TransactionModel(timestamp: Date(), amount: -150, note: "Flights", category: "🏨 Travel")),
         ],
-        onAddExpense: {}, onSelect: { _ in }, onRename: { _, _ in }, onDelete: {}
+        onAddExpense: {}, onSelect: { _ in }, onRemoveMember: { _ in }, onRename: { _, _ in }, onDelete: {}
     )
 }
 
@@ -282,6 +290,6 @@ struct TravelDetailSheet: View {
             total: 0, count: 0, anchorDate: Date()
         ),
         members: [],
-        onAddExpense: {}, onSelect: { _ in }, onRename: { _, _ in }, onDelete: {}
+        onAddExpense: {}, onSelect: { _ in }, onRemoveMember: { _ in }, onRename: { _, _ in }, onDelete: {}
     )
 }

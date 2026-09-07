@@ -61,10 +61,14 @@ struct EditAddTransactionView: View {
         // Set when the "Scan receipt" shortcut next to "+ Add" already ran capture + recognition
         // before this sheet opened. Applied once in .onAppear, same tail as a scan started from
         // this sheet's own toolbar button.
-        initialReceiptScan: ReceiptScan? = nil
+        initialReceiptScan: ReceiptScan? = nil,
+        // Set when the form was opened from inside a travel, so the new expense is already
+        // tagged with it. Add-mode only — when editing, the transaction's own travel wins.
+        initialTravelId: UUID? = nil
     ) {
         let vm = EditAddTransactionViewModel(editingItem: snapshot, draft: draft, repo: repo, hasPendingReceiptScan: initialReceiptScan != nil)
         if presetRecurring { vm.isRecurring = true }
+        if snapshot == nil { vm.selectedTravelId = initialTravelId }
         _viewModel = State(wrappedValue: vm)
         self.materializationService = materializationService
         _pendingInitialScan = State(wrappedValue: initialReceiptScan)

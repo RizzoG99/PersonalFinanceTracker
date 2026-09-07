@@ -11,18 +11,25 @@ import SwiftUI
 ///
 /// Presented as a sheet that owns its own nested detail sheet, matching `RecurringView`.
 struct TravelsView: View {
+    /// Handed up to Activity, which owns the presentation the Add form comes from.
+    let onAddExpense: (UUID) -> Void
+
     @Environment(TransactionListViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
 
     @State private var showingAddSheet = false
     @State private var selectedTravel: TravelSummary?
     @State private var pendingDeletion: TravelSummary?
+    /// Same two-step as Activity: ask on dismissal, never while a sheet is going down.
+    @State private var pendingAddExpenseTravelId: UUID?
 
     /// Built from the same grouper the Activity list uses, so a travel's total and anchor
     /// date can never disagree between the two screens.
     private var summaries: [TravelSummary] {
         ActivityRowGrouper
-            .group(viewModel.transactions, travels: viewModel.travels)
+            // Unlike Activity, this screen keeps empty travels: a trip you have created but
+            // not spent on yet has to be findable, and this is the screen that lists them.
+            .group(viewModel.transactions, travels: viewModel.travels, includeEmpty: true)
             .flatMap(\.1)
             .compactMap { if case .travel(let s) = $0 { return s } else { return nil } }
             .sorted { $0.anchorDate > $1.anchorDate }
@@ -107,12 +114,16 @@ struct TravelsView: View {
                 viewModel.addTravel(name: name, symbolName: symbolName)
             }
         }
-        .sheet(item: $selectedTravel) { summary in
+        .sheet(item: $selectedTravel, onDismiss: flushPendingAddExpense) { summary in
             TravelDetailSheet(
                 travel: summary,
                 members: viewModel.members(of: summary),
-                onAddExpense: { selectedTravel = nil },
+                onAddExpense: {
+                    pendingAddExpenseTravelId = summary.id
+                    selectedTravel = nil
+                },
                 onSelect: { _ in selectedTravel = nil },
+                onRemoveMember: { viewModel.removeFromTravel($0) },
                 onRename: { name, symbolName in
                     viewModel.renameTravel(id: summary.id, name: name, symbolName: symbolName)
                     selectedTravel = nil
@@ -121,6 +132,14 @@ struct TravelsView: View {
             )
             .presentationBackground { AppBackground() }
         }
+    }
+
+    /// Hands the request up to Activity once the detail sheet is gone; Activity closes this
+    /// screen in turn and only then asks for the Add form.
+    private func flushPendingAddExpense() {
+        guard let travelId = pendingAddExpenseTravelId else { return }
+        pendingAddExpenseTravelId = nil
+        onAddExpense(travelId)
     }
 
     private func isDeletionPresented(for summary: TravelSummary) -> Binding<Bool> {

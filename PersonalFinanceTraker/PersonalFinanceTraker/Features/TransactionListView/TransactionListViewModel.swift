@@ -689,7 +689,7 @@ final class TransactionListViewModel {
 
     func addTravel(name: String, symbolName: String) {
         Task {
-            try? await repo.addTravel(name: name, symbolName: symbolName)
+            _ = try? await repo.addTravel(name: name, symbolName: symbolName)
             reload()
         }
     }
@@ -708,6 +708,21 @@ final class TransactionListViewModel {
             reload()
         }
     }
+
+    /// Takes one transaction back out of its travel, leaving the transaction itself alone.
+    /// The way in (add, edit, bulk tag) has three doors; without this the only way out was
+    /// the transaction's own edit sheet.
+    func removeFromTravel(_ item: TransactionSnapshot) {
+        Task {
+            try? await repo.setTravel(nil, forIDs: [item.id])
+            reload()
+        }
+    }
+
+    /// Set by a travel's "Add expense" button and consumed by the shell, which owns the Add
+    /// Transaction sheet. A plain flag would open an untagged form — the whole point of that
+    /// button is that the expense lands in the trip you are looking at.
+    var addExpenseTravelId: UUID?
 
     /// Bulk-tags the current selection into a travel (or untags it with `nil`).
     func bulkSetTravel(_ travelId: UUID?) {

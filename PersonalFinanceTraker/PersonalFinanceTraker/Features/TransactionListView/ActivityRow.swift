@@ -18,6 +18,30 @@ struct TravelSummary: Identifiable, Sendable, Hashable {
     /// Day section the row sits in: the most recent member, or — for a travel with
     /// no members yet — the day it was created, so it stays findable.
     let anchorDate: Date
+    /// First and last member. The row sits in one day section but can span many, so
+    /// the row itself has to say when the trip happened. Nil while the travel is empty.
+    let startDate: Date?
+    let endDate: Date?
+
+    init(
+        id: UUID,
+        name: String,
+        symbolName: String,
+        total: Decimal,
+        count: Int,
+        anchorDate: Date,
+        startDate: Date? = nil,
+        endDate: Date? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.symbolName = symbolName
+        self.total = total
+        self.count = count
+        self.anchorDate = anchorDate
+        self.startDate = startDate
+        self.endDate = endDate
+    }
 }
 
 /// One row in the Activity list: either a plain transaction, or a collapsed travel.
@@ -76,9 +100,14 @@ enum ActivityRowGrouper {
     /// Passing an empty `travels` yields nothing but `.transaction` rows — that is how
     /// callers opt out of collapsing while searching, filtering or multi-selecting,
     /// which keeps every existing filter and selection path working on plain rows.
+    ///
+    /// Empty travels are left out: Activity is a log of what happened, and a folder with
+    /// nothing in it is not an event. The Travels screen passes `includeEmpty: true` —
+    /// that is where a trip you have not spent on yet belongs.
     nonisolated static func group(
         _ items: [TransactionSnapshot],
-        travels: [TravelSnapshot] = []
+        travels: [TravelSnapshot] = [],
+        includeEmpty: Bool = false
     ) -> [(String, [ActivityRow])] {
         let calendar = Calendar.current
         let byId = Dictionary(uniqueKeysWithValues: travels.map { ($0.id, $0) })
@@ -98,13 +127,17 @@ enum ActivityRowGrouper {
 
         for travel in travels {
             let group = members[travel.id] ?? []
+            if group.isEmpty && !includeEmpty { continue }
+            let dates = group.map(\.timestamp)
             rows.append(.travel(TravelSummary(
                 id: travel.id,
                 name: travel.name,
                 symbolName: travel.symbolName,
                 total: group.reduce(Decimal(0)) { $0 + $1.amount },
                 count: group.count,
-                anchorDate: group.map(\.timestamp).max() ?? travel.createdAt
+                anchorDate: dates.max() ?? travel.createdAt,
+                startDate: dates.min(),
+                endDate: dates.max()
             )))
         }
 
