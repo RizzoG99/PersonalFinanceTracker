@@ -56,6 +56,10 @@ final class LockOverlayWindow {
             window.rootViewController = hosting
             self.hosting = hosting
         }
+        // `.alert + 1`, not something higher: raising this above the keyboard's documented
+        // window level (10,000,000) was tried on device and the keyboard still drew on top,
+        // so the keyboard is not ordered against us by level at all. The cover has to get the
+        // keyboard off the screen instead — see AuthenticationWrapper.syncLockOverlay.
         window.windowLevel = .alert + 1
         // Opaque content already blocks visual leakage; this additionally stops VoiceOver
         // from reaching the shell underneath while the overlay is up. Must be set on the
