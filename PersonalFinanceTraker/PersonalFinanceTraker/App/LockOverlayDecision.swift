@@ -26,6 +26,21 @@ enum LockOverlayDecision {
     ///   inside that gap, so waiting for `.active` keeps the cover up for the entire zoom and
     ///   delays the first frame underneath it, which is what "the splash takes a while to go"
     ///   actually is.
+    /// Lifetime of the "coming back" flag. It means *a return is in progress*, so it has to
+    /// end when the scene actually becomes active: a return that has completed is not one in
+    /// progress, and leaving it set means the next swipe to the app switcher resolves to
+    /// `.none` and renders the balances uncovered until `.background` finally lands.
+    ///
+    /// `.inactive` must not clear it — the phase order is background -> inactive -> active and
+    /// `willEnterForeground` lands before that `.inactive`, so clearing there would throw the
+    /// flag away the moment it was set.
+    static func isEnteringForeground(_ current: Bool, phase: ScenePhase) -> Bool {
+        switch phase {
+        case .active, .background: return false
+        default: return current
+        }
+    }
+
     static func resolve(
         scenePhase: ScenePhase,
         isPINSetup: Bool,

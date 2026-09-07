@@ -7,6 +7,10 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Fixed the privacy cover only working once: after the first time you switched away and came back, swiping to the app switcher again showed your balances for the whole swipe, and the cover only appeared once the app had fully backgrounded.
+- Fixed a Face ID prompt appearing on its own when the phone was locked with the app open. The app no longer asks to unlock while the screen is locked; it waits until the phone is unlocked and the app is actually in front.
+
+## 82 — 2026-09-07
 - Switching to another app and coming straight back no longer asks for Face ID every time. The app now only asks again if you were away for more than 30 seconds — so copying figures out of another app, or checking a message mid-entry, stops costing an unlock each time. Locking the phone's screen still ends that grace immediately, and force-quitting the app always asks.
 - The app now covers itself as soon as you start swiping to the app switcher, instead of only once it has fully backgrounded. Previously your balances stayed on screen for the whole swipe.
 - Returning to the app with Face ID no longer stutters. The lock screen was being rebuilt three or four times per unlock, and the keypad icon rebuilt a biometric context on every keystroke.

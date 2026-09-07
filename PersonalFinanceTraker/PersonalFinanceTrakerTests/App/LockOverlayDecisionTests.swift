@@ -77,6 +77,40 @@ struct LockOverlayDecisionTests {
         #expect(resolve(.background, state: .locked, entering: true) == .pin)
     }
 
+    // Reported from build 82: the cover worked once, then stopped appearing during the swipe
+    // and only showed up once the app had fully backgrounded. The flag meant "a return is in
+    // progress" but was only cleared at the *next* background, so it stayed set for the whole
+    // time the app was active and suppressed the cover on the following swipe away.
+    //
+    // Walks two full cycles the way the phases actually arrive.
+    @Test func theCoverStillWorksOnTheSecondTripToTheAppSwitcher() {
+        var entering = false
+
+        func phase(_ p: ScenePhase) -> LockOverlay {
+            entering = LockOverlayDecision.isEnteringForeground(entering, phase: p)
+            return resolve(p, state: .unlocked, entering: entering)
+        }
+
+        // First swipe away, then back.
+        #expect(phase(.inactive) == .cover)
+        #expect(phase(.background) == .cover)
+        entering = true                     // willEnterForeground
+        #expect(phase(.inactive) == .none)  // uncovers during the zoom, on purpose
+        #expect(phase(.active) == .none)
+
+        // Second swipe away: this is the one that regressed.
+        #expect(phase(.inactive) == .cover)
+        #expect(phase(.background) == .cover)
+    }
+
+    // `willEnterForeground` lands before the `.inactive` of the same transition, so that
+    // phase must not be what clears the flag.
+    @Test func inactiveDoesNotClearTheReturningFlag() {
+        #expect(LockOverlayDecision.isEnteringForeground(true, phase: .inactive) == true)
+        #expect(LockOverlayDecision.isEnteringForeground(true, phase: .active) == false)
+        #expect(LockOverlayDecision.isEnteringForeground(true, phase: .background) == false)
+    }
+
     // The launch splash is already up in-window; a second copy would cross-fade with it.
     @Test func splashSuppressesEverything() {
         #expect(resolve(.background, splash: true, state: .locked) == .none)

@@ -57,6 +57,25 @@ struct AuthenticationWrapper: View {
         )
     }
 
+    /// The only place that starts a biometric prompt.
+    ///
+    /// `isProtectedDataAvailable` is false while the device itself is locked. Asking
+    /// LocalAuthentication to evaluate then puts a Face ID sheet over the *lock screen* —
+    /// a prompt the user never asked for, on an app they are not looking at. The scene can
+    /// still report `.active` in that state (screen locked with the app frontmost, or woken
+    /// without being unlocked), so the scene phase alone is not enough to tell.
+    ///
+    /// Deferred rather than dropped: `protectedDataDidBecomeAvailable` calls this again once
+    /// the device is unlocked and the app is actually in front.
+    private func authenticateIfNeeded() {
+        guard isPINSetup,
+              !authService.isUnlocked,
+              authService.isBiometricFeatureEnabled,
+              UIApplication.shared.isProtectedDataAvailable
+        else { return }
+        authService.authenticate { _ in }
+    }
+
     private func syncLockOverlay() {
         switch overlay {
         case .none:
@@ -221,9 +240,7 @@ struct AuthenticationWrapper: View {
                 // completed this timer opened a second prompt on an already-unlocked
                 // app — the duplicate cold-launch prompt. Matches the condition the
                 // scenePhase trigger already uses.
-                if isPINSetup && authService.isBiometricFeatureEnabled && !authService.isUnlocked {
-                    authService.authenticate { _ in }
-                }
+                authenticateIfNeeded()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .pinSetupComplete)) { _ in
@@ -248,11 +265,14 @@ struct AuthenticationWrapper: View {
             authService.relockIfGraceExpired()
             isEnteringForeground = true
         }
+        // The device was unlocked. If we suppressed a prompt because the screen was locked,
+        // this is when it becomes safe to ask — but only if the app is actually in front.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataDidBecomeAvailableNotification)) { _ in
+            guard scenePhase == .active else { return }
+            authenticateIfNeeded()
+        }
         .onChange(of: scenePhase) { _, newPhase in
-            // Cleared on `.background` only: the phase goes background -> inactive -> active,
-            // and `willEnterForeground` lands *before* that `.inactive`, so clearing on any
-            // non-active phase would throw the flag away the moment it was set.
-            if newPhase == .background { isEnteringForeground = false }
+            isEnteringForeground = LockOverlayDecision.isEnteringForeground(isEnteringForeground, phase: newPhase)
             if newPhase == .background && isPINSetup {
                 // Note the time; do not lock yet. Whether coming back costs a Face ID is
                 // decided on the way in, by how long this lasted. The cover is already up
@@ -260,9 +280,7 @@ struct AuthenticationWrapper: View {
                 authService.noteBackgrounded()
             } else if newPhase == .active && isPINSetup {
                 authService.relockIfGraceExpired()
-                if !authService.isUnlocked && authService.isBiometricFeatureEnabled {
-                    authService.authenticate { _ in }
-                }
+                authenticateIfNeeded()
             }
             if newPhase == .active {
                 let repo = TransactionActor.make(modelContainer)
