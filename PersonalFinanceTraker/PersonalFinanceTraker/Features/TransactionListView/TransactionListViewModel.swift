@@ -24,7 +24,25 @@ final class TransactionListViewModel {
             intersectSelectionWithVisible()
         }
     }
-    var groupedItems: [(String, [TransactionSnapshot])] = []
+    var groupedItems: [(String, [ActivityRow])] = []
+
+    var travels: [TravelSnapshot] = [] {
+        didSet { updateGroupedItems() }
+    }
+
+    /// Travels collapse only in the plain list. While searching, filtering or selecting,
+    /// the user is looking for individual transactions — and leaving the rows flat keeps
+    /// every existing filter and multi-select path working on plain transactions.
+    var isCollapsingTravels: Bool {
+        searchText.isEmpty && !filters.isActive && !isSelecting
+    }
+
+    /// Members of `travel`, newest first — the Activity list holds the only fetched copy.
+    func members(of travel: TravelSummary) -> [TransactionSnapshot] {
+        transactions
+            .filter { $0.travelId == travel.id }
+            .sorted { $0.timestamp > $1.timestamp }
+    }
 
     /// Category chip selection on the Activity screen; nil means "All"
     var selectedCategory: String? = nil {
@@ -68,8 +86,7 @@ final class TransactionListViewModel {
             searchDebounceTask?.cancel()
             searchDebounceTask = Task {
                 try? await Task.sleep(for: .milliseconds(250))
-                guard !Task.isCancelled else { return }
-                await doFilterItemBySearchText()
+                    await doFilterItemBySearchText()
             }
         }
     }
@@ -96,7 +113,10 @@ final class TransactionListViewModel {
     @ObservationIgnored private(set) var bulkEditTask: Task<Void, Never>?
 
     // MARK: - Multi-select
-    var isSelecting = false
+    // Entering selection mode expands travels, so their members can be picked individually.
+    var isSelecting = false {
+        didSet { if oldValue != isSelecting { updateGroupedItems() } }
+    }
     var selectedIDs: Set<PersistentIdentifier> = []
 
     var selectedSnapshots: [TransactionSnapshot] {
@@ -161,6 +181,7 @@ final class TransactionListViewModel {
     private func fetchAndRefresh() async {
         do {
             transactions = try await repo.fetchAll()
+            travels = (try? await repo.fetchTravels()) ?? []
             await doFilterItemBySearchText()  // triggers filteredItems.didSet → updateGroupedItems() + chartData
         } catch { print(error) }
     }
@@ -205,27 +226,24 @@ final class TransactionListViewModel {
         self.filteredItems = filtered
     }
 
+    /// In-flight grouping, so a newer call can cancel an older one — and so tests can await it.
+    @ObservationIgnored private(set) var groupingTask: Task<Void, Never>?
+
     private func updateGroupedItems() {
         let items = filteredItems
-        Task { [weak self] in
-            let grouped = await Task.detached(priority: .userInitiated) { Self.group(items) }.value
+        // Handing the grouper no travels is how the list opts out of collapsing.
+        let travels = isCollapsingTravels ? travels : []
+        // A refresh fires this twice — once from `travels` (still holding the previous
+        // `filteredItems`) and once from the new `filteredItems`. Both group off the main
+        // thread, so without cancelling, the stale one can land last and the list shows the
+        // state from before the edit until something refreshes it again.
+        groupingTask?.cancel()
+        groupingTask = Task { [weak self] in
+            let grouped = await Task.detached(priority: .userInitiated) {
+                ActivityRowGrouper.group(items, travels: travels)
+            }.value
+            guard !Task.isCancelled else { return }
             self?.groupedItems = grouped
-        }
-    }
-
-    nonisolated private static func group(_ items: [TransactionSnapshot]) -> [(String, [TransactionSnapshot])] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: items) { item in
-            calendar.startOfDay(for: item.timestamp)
-        }
-
-        return grouped.map { (date, items) in
-            (date.formattedForTransaction(), items.sorted { $0.timestamp > $1.timestamp })
-        }.sorted { first, second in
-            // Sort sections by date (newest first)
-            let firstDate = calendar.startOfDay(for: first.1.first?.timestamp ?? Date())
-            let secondDate = calendar.startOfDay(for: second.1.first?.timestamp ?? Date())
-            return firstDate > secondDate
         }
     }
 
@@ -343,11 +361,9 @@ final class TransactionListViewModel {
             let start = Date.now
             while !Task.isCancelled {
                 try? await Task.sleep(for: .milliseconds(100))
-                guard !Task.isCancelled else { return }
-                deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
+                    deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
                 if deleteProgress >= 1.0 { break }
             }
-            guard !Task.isCancelled else { return }
             await commitPending()
         }
     }
@@ -666,6 +682,41 @@ final class TransactionListViewModel {
     func bulkSetNote(_ note: String) {
         applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
             self.input(from: s, note: note)
+        }
+    }
+
+    // MARK: - Travels
+
+    func addTravel(name: String, symbolName: String) {
+        Task {
+            try? await repo.addTravel(name: name, symbolName: symbolName)
+            reload()
+        }
+    }
+
+    func renameTravel(id: UUID, name: String, symbolName: String) {
+        Task {
+            try? await repo.updateTravel(id: id, name: name, symbolName: symbolName)
+            reload()
+        }
+    }
+
+    /// Removes the folder only — members are untagged by the repository and stay in the list.
+    func deleteTravel(id: UUID) {
+        Task {
+            try? await repo.deleteTravel(id: id)
+            reload()
+        }
+    }
+
+    /// Bulk-tags the current selection into a travel (or untags it with `nil`).
+    func bulkSetTravel(_ travelId: UUID?) {
+        let ids = Array(selectedIDs)
+        guard !ids.isEmpty else { return }
+        exitSelection()
+        bulkEditTask = Task {
+            try? await repo.setTravel(travelId, forIDs: ids)
+            reload()
         }
     }
 

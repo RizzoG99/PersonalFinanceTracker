@@ -10,6 +10,7 @@ enum DataWipeService {
         try context.delete(model: CategoryModel.self)
         try context.delete(model: CreditCardModel.self)
         try context.delete(model: GoalModel.self)
+        try context.delete(model: TravelModel.self)
         try context.delete(model: HealthScoreSnapshot.self)
         try context.delete(model: DailyForecastCache.self)
         try context.save()

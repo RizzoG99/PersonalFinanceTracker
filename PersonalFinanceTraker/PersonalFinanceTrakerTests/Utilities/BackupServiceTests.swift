@@ -123,6 +123,7 @@ struct BackupServiceTests {
                     category: "Food",
                     currencyCode: "EUR",
                     goalId: nil,
+                    travelId: nil,
                     recurrenceRuleId: nil
                 )
             ],
@@ -160,6 +161,7 @@ struct BackupServiceTests {
                     category: "Food",
                     currencyCode: "EUR",
                     goalId: nil,
+                    travelId: nil,
                     recurrenceRuleId: nil
                 )
             ],
@@ -202,6 +204,7 @@ struct BackupServiceTests {
                     category: "Transport",
                     currencyCode: "EUR",
                     goalId: nil,
+                    travelId: nil,
                     recurrenceRuleId: nil
                 )
             ],

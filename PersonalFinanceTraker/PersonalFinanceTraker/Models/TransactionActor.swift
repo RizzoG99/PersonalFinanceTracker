@@ -24,6 +24,7 @@ actor TransactionActor: ITransactionRepository {
             category: input.category,
             currencyCode: input.currencyCode,
             goalId: input.goalId,
+            travelId: input.travelId,
             recurrenceRuleId: input.recurrenceRuleId
         )
         if let pid = input.categoryPersistentId,
@@ -45,6 +46,7 @@ actor TransactionActor: ITransactionRepository {
                 category: input.category,
                 currencyCode: input.currencyCode,
                 goalId: input.goalId,
+                travelId: input.travelId,
                 recurrenceRuleId: input.recurrenceRuleId
             )
             if let pid = input.categoryPersistentId,
@@ -81,6 +83,7 @@ actor TransactionActor: ITransactionRepository {
         model.category = input.category
         model.currencyCode = input.currencyCode
         model.goalId = input.goalId
+        model.travelId = input.travelId
         if let pid = input.categoryPersistentId,
            let cat = modelContext.model(for: pid) as? CategoryModel {
             model.categoryModel = cat
@@ -259,6 +262,65 @@ actor TransactionActor: ITransactionRepository {
     func deleteCategory(id: PersistentIdentifier) async throws {
         guard let model = modelContext.model(for: id) as? CategoryModel else { return }
         modelContext.delete(model)
+        try modelContext.save()
+    }
+
+    // MARK: Travels
+
+    func fetchTravels() async throws -> [TravelSnapshot] {
+        let desc = FetchDescriptor<TravelModel>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+        return try modelContext.fetch(desc).map(TravelSnapshot.init)
+    }
+
+    @discardableResult
+    func addTravel(name: String, symbolName: String) async throws -> UUID {
+        let model = TravelModel(name: name, symbolName: symbolName)
+        modelContext.insert(model)
+        try modelContext.save()
+        return model.id
+    }
+
+    func updateTravel(id: UUID, name: String, symbolName: String) async throws {
+        var desc = FetchDescriptor<TravelModel>(predicate: #Predicate { $0.id == id })
+        desc.fetchLimit = 1
+        guard let model = try modelContext.fetch(desc).first else { return }
+        model.name = name
+        model.symbolName = symbolName
+        try modelContext.save()
+    }
+
+    /// Deletes the folder, never its contents: members are untagged and stay in the list.
+    func deleteTravel(id: UUID) async throws {
+        let members = try modelContext.fetch(
+            FetchDescriptor<TransactionModel>(predicate: #Predicate { $0.travelId == id })
+        )
+        for member in members { member.travelId = nil }
+
+        var desc = FetchDescriptor<TravelModel>(predicate: #Predicate { $0.id == id })
+        desc.fetchLimit = 1
+        if let model = try modelContext.fetch(desc).first {
+            modelContext.delete(model)
+        }
+        try modelContext.save()
+    }
+
+    /// Replaces all travels, preserving ids so restored transactions stay linked.
+    func replaceAllTravels(_ travels: [TravelSnapshot]) async throws {
+        try modelContext.delete(model: TravelModel.self)
+        for travel in travels {
+            modelContext.insert(
+                TravelModel(id: travel.id, name: travel.name, symbolName: travel.symbolName, createdAt: travel.createdAt)
+            )
+        }
+        try modelContext.save()
+    }
+
+    /// Bulk-tags (or with `travelId: nil`, untags) the given transactions.
+    func setTravel(_ travelId: UUID?, forIDs ids: [PersistentIdentifier]) async throws {
+        for id in ids {
+            guard let model = modelContext.model(for: id) as? TransactionModel else { continue }
+            model.travelId = travelId
+        }
         try modelContext.save()
     }
 
