@@ -112,13 +112,25 @@ case "${1:-}" in
     status=0
     # -quiet still prints a line per test case, so the log goes to a file and only
     # the summary reaches stdout. Read .build/test.log when you need detail.
+    #
+    # -maximum-test-execution-time-allowance is a *ceiling* on what a test may request
+    # via `executionTimeAllowance`, not a default: at 120 it silently clamped
+    # testLaunchPerformance's own request for 300, so that test kept failing at exactly
+    # 2 minutes however much it asked for.
+    #
+    # -parallel-testing-enabled NO because the two targets otherwise run at the same time
+    # on two booted simulator clones, and the UI target then measures a machine under load
+    # from the unit target: identical launches in one such run took 9.7s, 57.2s, 15.2s,
+    # 16.2s and 7.6s, and the UI runner was eventually killed outright ("signal kill before
+    # establishing connection"). Nothing with a time budget can be stable against that.
     xcodebuild test \
       -project "$PROJECT" -scheme "$SCHEME" \
       -destination "id=$(resolve_sim)" \
       -derivedDataPath .build \
       -resultBundlePath "$RESULT" \
+      -parallel-testing-enabled NO \
       -test-timeouts-enabled YES \
-      -maximum-test-execution-time-allowance 120 \
+      -maximum-test-execution-time-allowance 300 \
       -quiet "$@" >.build/test.log 2>&1 || status=$?
     if [ -d "$RESULT" ]; then
       xcrun xcresulttool get test-results summary --path "$RESULT"
@@ -145,7 +157,25 @@ case "${1:-}" in
     # it's shared across machines/worktrees. Override with CURRENT_PROJECT_VERSION=N
     # if you ever need to.
     if [ -z "${CURRENT_PROJECT_VERSION:-}" ]; then
-      CURRENT_PROJECT_VERSION=$(($(cat scripts/BUILD_NUMBER) + 1))
+      # Ask App Store Connect what it already holds instead of trusting the local counter
+      # alone. Xcode Cloud uploads from its own auto-incrementing counter, so BUILD_NUMBER
+      # goes stale as soon as a Cloud build lands: it then produces a number that either
+      # collides with an existing build (Apple drops the upload, and the run looks like it
+      # succeeded) or sorts below Cloud's in TestFlight. Build 82 was dropped exactly that
+      # way, and 83 shipped underneath Cloud's 91.
+      local_num=$(cat scripts/BUILD_NUMBER)
+      remote_num=0
+      if [ -n "${ASC_KEY_ID:-}" ] && [ -n "${ASC_ISSUER_ID:-}" ]; then
+        remote_num=$(python3 scripts/asc_api.py latest-build \
+          "$("$0" bundle-id)" "$("$0" marketing-version)" 2>/dev/null || echo 0)
+        case "$remote_num" in ''|*[!0-9]*) remote_num=0 ;; esac
+        if [ "$remote_num" -eq 0 ]; then
+          echo "xcb: could not read App Store Connect's build numbers; using the local counter" >&2
+        fi
+      fi
+      base=$local_num
+      [ "$remote_num" -gt "$base" ] && base=$remote_num
+      CURRENT_PROJECT_VERSION=$((base + 1))
       echo "$CURRENT_PROJECT_VERSION" > scripts/BUILD_NUMBER
     fi
     echo "xcb: archiving build $CURRENT_PROJECT_VERSION (silent, can take several minutes)..." >&2
@@ -179,6 +209,9 @@ case "${1:-}" in
     # check it before polling ASC, instead of waiting 30min for a build that
     # was never sent.
     cat scripts/BUILD_NUMBER > .build/last_export_build
+    # release-notes uses this to reject a build that already existed before this upload —
+    # the failure mode that put build 82's notes on an unrelated August build.
+    date -u +%Y-%m-%dT%H:%M:%SZ > .build/last_export_at
     ;;
 
   bundle-id)   # internal helper: print PRODUCT_BUNDLE_IDENTIFIER, used by release-notes/assign-testers
@@ -205,6 +238,7 @@ case "${1:-}" in
       printf '%s\n' "$notes" > .build/release_notes.txt
       python3 scripts/asc_api.py release-notes \
         "$("$0" bundle-id)" "$("$0" marketing-version)" "$(cat scripts/BUILD_NUMBER)" \
+        "$(cat .build/last_export_at 2>/dev/null)" \
         < .build/release_notes.txt
       # Move the Unreleased bullets under a dated heading for this build, leave Unreleased empty.
       # Passed via env var/file, never interpolated into the python source — a changelog
@@ -243,8 +277,22 @@ PYEOF
     shift
     group="${1:-}"
     echo "xcb: release starting — test, analyze, archive, export, release-notes$( [ -n "$group" ] && echo ", assign-testers")" >&2
-    "$0" test && "$0" analyze && "$0" archive && "$0" export && "$0" release-notes
-    [ -n "$group" ] && "$0" assign-testers "$group"
+    # Run as a loop, not as an && chain. `set -e` does not fire for a command that
+    # fails in a non-final position of an && list, and the list's status was then
+    # discarded by the `echo` below — so a release that aborted at `test` still
+    # printed "release done" and exited 0, indistinguishable from one that shipped.
+    for step in test analyze archive export release-notes; do
+      if ! "$0" "$step"; then
+        echo "xcb: release ABORTED at '$step' — no later step ran, nothing was uploaded" >&2
+        exit 1
+      fi
+    done
+    if [ -n "$group" ]; then
+      if ! "$0" assign-testers "$group"; then
+        echo "xcb: build was uploaded, but assigning it to '$group' failed" >&2
+        exit 1
+      fi
+    fi
     echo "xcb: release done" >&2
     ;;
 

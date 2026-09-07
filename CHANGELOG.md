@@ -8,8 +8,13 @@ number that shipped it.
 
 ## Unreleased
 - Travels: group a trip's expenses together. When adding or editing a transaction, the "Part of a trip?" row lets you pick a travel or create one on the spot. Activity then shows the whole trip as a single row with its total and the days it spans ("Barcellona Travel · 6 spese · 12–16 Sep · −€400,00"); tap it for the trip's dates, how long it lasted, what a day cost, and where the money went by category. The ✈️ button in Activity lists every travel you've made, so older trips stay easy to find. "Add expense" inside a travel opens the form already tagged with it, and you can pull a single expense back out from the same screen. You can also multi-select transactions and move them into a travel in one go. Deleting a travel keeps the expenses — it only removes the grouping. Budgets, insights and category breakdowns are unchanged: each expense still counts on its own.
+- Switching to another app and coming straight back no longer asks for Face ID every time. The app now only asks again if you were away for more than 30 seconds — so copying figures out of another app, or checking a message mid-entry, stops costing an unlock each time. Locking the phone's screen still ends that grace immediately, and force-quitting the app always asks.
+- The app now covers itself as soon as you start swiping to the app switcher, instead of only once it has fully backgrounded. Previously your balances stayed on screen for the whole swipe.
+- Returning to the app with Face ID no longer stutters. The lock screen was being rebuilt three or four times per unlock, and the keypad icon rebuilt a biometric context on every keystroke.
 - Fixed a brief screen flash/flicker right when Face ID kicks in on unlock.
 - Removed the privacy screen that used to cover the app while screen recording; the app switcher snapshot cover is unaffected.
+- Fixed the privacy cover only working once: after the first time you switched away and came back, swiping to the app switcher again showed your balances for the whole swipe, and the cover only appeared once the app had fully backgrounded.
+- Fixed a Face ID prompt appearing on its own when the phone was locked with the app open. The app no longer asks to unlock while the screen is locked; it waits until the phone is unlocked and the app is actually in front.
 
 ## 81 — 2026-08-29
 - Scan receipt: either volume button now takes the shot, like in the Camera app, so you can hold the phone steady over the receipt instead of reaching for the on-screen shutter.
