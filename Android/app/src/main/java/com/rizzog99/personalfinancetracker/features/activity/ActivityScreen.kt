@@ -5,12 +5,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
@@ -29,13 +30,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -44,7 +50,6 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -74,22 +79,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.text.KeyboardOptions
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
+import com.rizzog99.personalfinancetracker.domain.money.AmountInput
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.receipt.ReceiptParser
@@ -99,7 +110,10 @@ import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
+import com.rizzog99.personalfinancetracker.ui.components.AppBackground
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
+import com.rizzog99.personalfinancetracker.ui.components.SheetDragHandle
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
@@ -118,10 +132,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityScreen(
-    startCreating: Boolean = false,
-    onStartCreatingConsumed: () -> Unit = {},
-    returnToDashboardAfterCreation: Boolean = false,
-    onDashboardCreationFinished: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: ActivityViewModel = viewModel(
@@ -141,61 +152,17 @@ fun ActivityScreen(
     var recurringDeletionTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var recurringEditTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var filtersVisible by remember { mutableStateOf(false) }
-    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-    LaunchedEffect(startCreating) {
-        if (startCreating) {
-            isCreating = true
-            onStartCreatingConsumed()
-        }
-    }
-
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.activity_title),
-                        style = MaterialTheme.typography.displaySmall,
-                        modifier = Modifier.semantics { heading() },
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = LocalFinancePalette.current.textMid,
-                ),
-                actions = {
-                    if (isLandscape) {
-                        IconButton(onClick = { isCreating = true }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Add,
-                                contentDescription = stringResource(R.string.add_transaction),
-                            )
-                        }
-                    }
-                    IconButton(onClick = { filtersVisible = true }) {
-                        Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
-                    }
-                },
+            MainTopBar(
+                onOpenSettings = onOpenSettings,
+                onAddTransaction = { isCreating = true },
+                onScanReceipt = { isCreating = true },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
-        floatingActionButton = {
-            if (!isLandscape) {
-                FloatingActionButton(
-                    onClick = { isCreating = true },
-                    content = {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = stringResource(R.string.add_transaction),
-                        )
-                    },
-                )
-            }
-        },
     ) { innerPadding ->
         ActivityContent(
             state = state,
@@ -204,6 +171,7 @@ fun ActivityScreen(
             onTypeFilterChange = viewModel::updateTypeFilter,
             onClearError = viewModel::clearError,
             onClearFilters = viewModel::clearFilters,
+            onAdd = { isCreating = true },
             onEdit = { editingTransaction = it },
             onDelete = {
                 if (it.recurrenceRuleId == null) deletingTransaction = it else recurringDeletionTransaction = it
@@ -230,10 +198,8 @@ fun ActivityScreen(
             categories = state.categories,
             receiptMappingRepository = application.receiptMappingRepository,
             onDismiss = {
-                val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                 isCreating = false
                 editingTransaction = null
-                if (shouldReturnToDashboard) onDashboardCreationFinished()
             },
             onSave = { transaction, recurrenceRule, receiptMerchant ->
                 if (editingTransaction?.recurrenceRuleId != null) {
@@ -246,20 +212,15 @@ fun ActivityScreen(
                             if (receiptMerchant != null && transaction.categoryId != null) {
                                 application.receiptMappingRepository.remember(receiptMerchant, transaction.categoryId)
                             }
-                            val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                             isCreating = false
                             editingTransaction = null
-                            if (shouldReturnToDashboard) {
-                                onDashboardCreationFinished()
-                            } else {
-                                snackbarHostState.showSnackbar(
-                                    message = if (wasEditing) {
-                                        application.getString(R.string.transaction_updated)
-                                    } else {
-                                        application.getString(R.string.transaction_added)
-                                    },
-                                )
-                            }
+                            snackbarHostState.showSnackbar(
+                                message = if (wasEditing) {
+                                    application.getString(R.string.transaction_updated)
+                                } else {
+                                    application.getString(R.string.transaction_added)
+                                },
+                            )
                         }
                     }
                 }
@@ -274,16 +235,11 @@ fun ActivityScreen(
                 recurringEditTransaction = null
                 scope.launch {
                     if (viewModel.save(transaction)) {
-                        val shouldReturnToDashboard = returnToDashboardAfterCreation && isCreating
                         isCreating = false
                         editingTransaction = null
-                        if (shouldReturnToDashboard) {
-                            onDashboardCreationFinished()
-                        } else {
-                            snackbarHostState.showSnackbar(
-                                message = application.getString(R.string.transaction_updated),
-                            )
-                        }
+                        snackbarHostState.showSnackbar(
+                            message = application.getString(R.string.transaction_updated),
+                        )
                     }
                 }
             },
@@ -343,42 +299,68 @@ private fun ActivityContent(
     onTypeFilterChange: (TransactionTypeFilter) -> Unit,
     onClearError: () -> Unit,
     onClearFilters: () -> Unit,
+    onAdd: () -> Unit,
     onEdit: (FinanceTransaction) -> Unit,
     onDelete: (FinanceTransaction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (state.allTransactions.isEmpty()) {
-        EmptyActivityContent(
-            searchText = state.searchText,
-            filters = state.filters.type,
-            error = error,
-            onSearchChange = onSearchChange,
-            onTypeFilterChange = onTypeFilterChange,
-            onClearError = onClearError,
-            modifier = modifier,
-        )
-        return
-    }
-
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            ActivityFilterControls(
-                searchText = state.searchText,
-                filters = state.filters.type,
-                error = error,
-                onSearchChange = onSearchChange,
-                onTypeFilterChange = onTypeFilterChange,
-                onClearError = onClearError,
+            Text(
+                text = stringResource(R.string.activity_title),
+                style = MaterialTheme.typography.displaySmall,
+                modifier = Modifier.semantics { heading() },
             )
+        }
+        item {
+            TextField(
+                value = state.searchText,
+                onValueChange = onSearchChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.search_transactions)) },
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                singleLine = true,
+                shape = RoundedCornerShape(28.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                ),
+            )
+        }
+        item {
+            TransactionTypeFilters(
+                selected = state.filters.type,
+                onSelected = onTypeFilterChange,
+            )
+        }
+        if (error != null) {
+            item {
+                FinanceCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(error, modifier = Modifier.weight(1f))
+                        TextButton(onClick = onClearError) { Text(stringResource(R.string.dismiss)) }
+                    }
+                }
+            }
         }
         if (state.visibleTransactions.isNotEmpty()) {
             item { ActivitySummary(transactions = state.visibleTransactions) }
         }
         when {
+            state.allTransactions.isEmpty() -> item {
+                EmptyStateWithAction(onAdd = onAdd)
+            }
             state.visibleTransactions.isEmpty() -> item {
                 NoResultsState(onClear = {
                     onSearchChange("")
@@ -391,78 +373,6 @@ private fun ActivityContent(
                     onEdit = { onEdit(transaction) },
                     onDelete = { onDelete(transaction) },
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EmptyActivityContent(
-    searchText: String,
-    filters: TransactionTypeFilter,
-    error: String?,
-    onSearchChange: (String) -> Unit,
-    onTypeFilterChange: (TransactionTypeFilter) -> Unit,
-    onClearError: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        ActivityFilterControls(
-            searchText = searchText,
-            filters = filters,
-            error = error,
-            onSearchChange = onSearchChange,
-            onTypeFilterChange = onTypeFilterChange,
-            onClearError = onClearError,
-        )
-        Spacer(Modifier.weight(1f))
-        EmptyActivityState()
-        Spacer(Modifier.weight(0.55f))
-    }
-}
-
-@Composable
-private fun ActivityFilterControls(
-    searchText: String,
-    filters: TransactionTypeFilter,
-    error: String?,
-    onSearchChange: (String) -> Unit,
-    onTypeFilterChange: (TransactionTypeFilter) -> Unit,
-    onClearError: () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        TextField(
-            value = searchText,
-            onValueChange = onSearchChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.search_transactions)) },
-            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            singleLine = true,
-            shape = RoundedCornerShape(28.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-            ),
-        )
-        TransactionTypeFilters(selected = filters, onSelected = onTypeFilterChange)
-        if (error != null) {
-            FinanceCard {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(error, modifier = Modifier.weight(1f))
-                    TextButton(onClick = onClearError) { Text(stringResource(R.string.dismiss)) }
-                }
             }
         }
     }
@@ -790,9 +700,6 @@ private fun TransactionRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    IconButton(onClick = onEdit) {
-                        Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.edit_transaction))
-                    }
                     IconButton(onClick = onDelete) {
                         Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_transaction))
                     }
@@ -815,9 +722,6 @@ private fun TransactionRow(
                             fontFamily = FontFamily.Monospace,
                         )
                         Spacer(Modifier.width(4.dp))
-                        IconButton(onClick = onEdit) {
-                            Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.edit_transaction))
-                        }
                         IconButton(onClick = onDelete) {
                             Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_transaction))
                         }
@@ -829,33 +733,19 @@ private fun TransactionRow(
 }
 
 @Composable
-private fun EmptyActivityState() {
-    FinanceCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Add,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = stringResource(R.string.empty_state_title),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.semantics { heading() },
-            )
-            Text(
-                text = stringResource(R.string.empty_state_message),
-                style = MaterialTheme.typography.bodyLarge,
-                color = LocalFinancePalette.current.textMid,
-                textAlign = TextAlign.Center,
-            )
-        }
+private fun EmptyStateWithAction(onAdd: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 56.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.empty_state_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(stringResource(R.string.empty_state_message))
+        Button(onClick = onAdd) { Text(stringResource(R.string.add_transaction)) }
     }
 }
 
@@ -878,7 +768,7 @@ private fun NoResultsState(onClear: () -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun TransactionEditorSheet(
+fun TransactionEditorSheet(
     editingTransaction: FinanceTransaction?,
     categories: List<FinanceCategory>,
     receiptMappingRepository: com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository,
@@ -900,7 +790,7 @@ private fun TransactionEditorSheet(
                 ?: categories.firstOrNull { it.type == selectedType }?.id,
         )
     }
-    var categoryMenuExpanded by remember { mutableStateOf(false) }
+    var categoryPickerVisible by remember { mutableStateOf(false) }
     var repeats by remember { mutableStateOf(false) }
     var recurrenceFrequency by remember { mutableStateOf(RecurrenceFrequency.MONTHLY) }
     var recurrenceInterval by remember { mutableStateOf(1) }
@@ -912,15 +802,58 @@ private fun TransactionEditorSheet(
     var timestamp by remember(editingTransaction) { mutableStateOf(editingTransaction?.timestamp ?: Instant.now()) }
     var scannedDate by remember { mutableStateOf<LocalDate?>(null) }
     var datePickerVisible by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
     val matchingCategories = categories.filter { it.type == selectedType }
     val selectedCategory = matchingCategories.firstOrNull { it.id == selectedCategoryId }
-    val amount = amountText.replace(',', '.').toBigDecimalOrNull()
+    var isAmountFocused by remember { mutableStateOf(false) }
+    val amount = AmountInput.parse(amountText)
+    val displayedAmountText = when {
+        amountText.isBlank() || isAmountFocused -> amountText
+        amount != null -> AmountInput.formattedDisplay(amount)
+        else -> amountText
+    }
     val canSave = amount != null && amount > BigDecimal.ZERO && selectedCategory != null
     val receiptReviewMessage = stringResource(R.string.receipt_review_before_saving)
     val receiptAmbiguousMessage = stringResource(R.string.receipt_total_ambiguous)
     val receiptAmountUnreadableMessage = stringResource(R.string.receipt_amount_unreadable)
     val receiptDateClampedMessage = stringResource(R.string.receipt_date_clamped)
     val receiptUnreadableMessage = stringResource(R.string.receipt_unreadable)
+    val applyReceiptScan: suspend (ReceiptScan) -> Unit = { scan ->
+        val wasAmountScanned = amountText == scannedAmountText
+        if (amountText.isBlank() || wasAmountScanned) {
+            scan.total?.let {
+                amountText = it.toPlainString()
+                scannedAmountText = amountText
+            }
+        }
+        receiptTotalCandidates = scan.totalCandidates
+        val displayedDate = timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
+        if ((displayedDate == LocalDate.now() || displayedDate == scannedDate) && !scan.dateWasClamped) {
+            scan.date?.let { date ->
+                timestamp = date.atTime(LocalTime.now()).atZone(ZoneId.systemDefault()).toInstant()
+                scannedDate = date
+            }
+        }
+        if (note.isBlank() || note == receiptMerchant.orEmpty()) {
+            scan.merchant?.let { note = it }
+        }
+        receiptMerchant = scan.merchant
+        if (!categoryTouched) {
+            val mappedCategoryId = scan.merchant?.let { receiptMappingRepository.categoryIdFor(it) }
+            val inferredCategory = categories.firstOrNull { it.id == mappedCategoryId }
+                ?: inferReceiptCategory(scan, categories, selectedType)
+            if (inferredCategory != null) {
+                selectedType = inferredCategory.type
+                selectedCategoryId = inferredCategory.id
+            }
+        }
+        receiptStatus = when {
+            scan.totalCandidates.isNotEmpty() -> receiptAmbiguousMessage
+            scan.total == null -> receiptAmountUnreadableMessage
+            scan.dateWasClamped -> receiptDateClampedMessage
+            else -> receiptReviewMessage
+        }
+    }
     val submitTransaction: () -> Unit = {
         val category = requireNotNull(selectedCategory)
         val signedAmount = if (category.type == TransactionType.EXPENSE) amount!!.negate() else amount!!
@@ -960,73 +893,47 @@ private fun TransactionEditorSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        dragHandle = null,
+        containerColor = MaterialTheme.colorScheme.background,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+        AppBackground(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.96f)) {
+            SheetDragHandle()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+                    .padding(start = 24.dp, top = 28.dp, end = 24.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Text(
                     text = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.edit_transaction),
                     style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f).semantics { heading() },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .semantics { heading() },
                 )
-                IconButton(onClick = submitTransaction, enabled = canSave) {
-                    Icon(
-                        imageVector = Icons.Outlined.Check,
-                        contentDescription = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.save),
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (editingTransaction == null) {
+                        ReceiptCaptureAction(
+                            onScan = applyReceiptScan,
+                            onFailure = { receiptStatus = receiptUnreadableMessage },
+                        )
+                    }
+                    IconButton(onClick = submitTransaction, enabled = canSave) {
+                        Icon(
+                            imageVector = Icons.Outlined.Check,
+                            contentDescription = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.save),
+                        )
+                    }
                 }
-            }
-            if (editingTransaction == null) {
-                ReceiptCaptureAction(
-                    onScan = { scan ->
-                        val wasAmountScanned = amountText == scannedAmountText
-                        if (amountText.isBlank() || wasAmountScanned) {
-                            scan.total?.let {
-                                amountText = it.toPlainString()
-                                scannedAmountText = amountText
-                            }
-                        }
-                        receiptTotalCandidates = scan.totalCandidates
-                        val displayedDate = timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
-                        if ((displayedDate == LocalDate.now() || displayedDate == scannedDate) && !scan.dateWasClamped) {
-                            scan.date?.let { date ->
-                                timestamp = date.atTime(LocalTime.now()).atZone(ZoneId.systemDefault()).toInstant()
-                                scannedDate = date
-                            }
-                        }
-                        if (note.isBlank() || note == receiptMerchant.orEmpty()) {
-                            scan.merchant?.let { note = it }
-                        }
-                        receiptMerchant = scan.merchant
-                        if (!categoryTouched) {
-                            val mappedCategoryId = scan.merchant?.let { receiptMappingRepository.categoryIdFor(it) }
-                            val inferredCategory = categories.firstOrNull { it.id == mappedCategoryId }
-                                ?: inferReceiptCategory(scan, categories, selectedType)
-                            if (inferredCategory != null) {
-                                selectedType = inferredCategory.type
-                                selectedCategoryId = inferredCategory.id
-                            }
-                        }
-                        receiptStatus = when {
-                            scan.totalCandidates.isNotEmpty() -> receiptAmbiguousMessage
-                            scan.total == null -> receiptAmountUnreadableMessage
-                            scan.dateWasClamped -> receiptDateClampedMessage
-                            else -> receiptReviewMessage
-                        }
-                    },
-                    onFailure = { receiptStatus = receiptUnreadableMessage },
-                )
             }
             receiptStatus?.let { status ->
                 FinanceCard {
@@ -1053,31 +960,61 @@ private fun TransactionEditorSheet(
                     }
                 }
             }
-            TextField(
-                value = amountText,
-                onValueChange = { amountText = it },
-                modifier = Modifier.fillMaxWidth().height(156.dp),
-                leadingIcon = {
-                    Text(
-                        text = "€",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = LocalFinancePalette.current.textMid,
-                    )
-                },
-                placeholder = { Text("0", style = MaterialTheme.typography.displayLarge) },
-                textStyle = MaterialTheme.typography.displayLarge.copy(
-                    textAlign = TextAlign.End,
-                    fontFamily = FontFamily.Monospace,
-                ),
-                singleLine = true,
-                shape = RoundedCornerShape(36.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                ),
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(156.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(36.dp)),
+            ) {
+                Text(
+                    text = "€",
+                    style = MaterialTheme.typography.displaySmall,
+                    color = LocalFinancePalette.current.textMid,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 28.dp),
+                )
+                BasicTextField(
+                    value = displayedAmountText,
+                    onValueChange = { amountText = AmountInput.sanitize(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center)
+                        .padding(horizontal = 72.dp)
+                        .onFocusChanged { focusState ->
+                            isAmountFocused = focusState.isFocused
+                            if (!focusState.isFocused && amountText.isNotBlank() && AmountInput.parse(amountText) == null) {
+                                amountText = ""
+                            }
+                        },
+                    textStyle = MaterialTheme.typography.displayLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                        fontFamily = FontFamily.Monospace,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    singleLine = true,
+                    decorationBox = { innerTextField ->
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            if (displayedAmountText.isBlank()) {
+                                Text(
+                                    text = "0",
+                                    style = MaterialTheme.typography.displayLarge,
+                                    color = LocalFinancePalette.current.textMid,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                            innerTextField()
+                        }
+                    },
+                )
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1089,6 +1026,7 @@ private fun TransactionEditorSheet(
                     label = stringResource(R.string.filter_income),
                     selected = selectedType == TransactionType.INCOME,
                     onClick = {
+                        focusManager.clearFocus()
                         selectedType = TransactionType.INCOME
                         selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
                         categoryTouched = true
@@ -1099,6 +1037,7 @@ private fun TransactionEditorSheet(
                     label = stringResource(R.string.filter_expense),
                     selected = selectedType == TransactionType.EXPENSE,
                     onClick = {
+                        focusManager.clearFocus()
                         selectedType = TransactionType.EXPENSE
                         selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
                         categoryTouched = true
@@ -1119,34 +1058,23 @@ private fun TransactionEditorSheet(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        matchingCategories.forEach { category ->
+                        inlineCategories(matchingCategories, selectedCategoryId).forEach { category ->
                             CategoryPickerTile(
                                 category = category,
                                 selected = category.id == selectedCategoryId,
                                 onClick = {
+                                    focusManager.clearFocus()
                                     selectedCategoryId = category.id
                                     categoryTouched = true
                                 },
                             )
                         }
-                        OutlinedButton(onClick = { categoryMenuExpanded = true }) {
-                            Text(stringResource(R.string.select_category))
+                        if (matchingCategories.size > MAX_INLINE_CATEGORIES) {
+                            MoreCategoriesTile(onClick = {
+                                focusManager.clearFocus()
+                                categoryPickerVisible = true
+                            })
                         }
-                    }
-                }
-                androidx.compose.material3.DropdownMenu(
-                    expanded = categoryMenuExpanded,
-                    onDismissRequest = { categoryMenuExpanded = false },
-                ) {
-                    matchingCategories.forEach { category ->
-                        androidx.compose.material3.DropdownMenuItem(
-                            text = { Text(category.name) },
-                            onClick = {
-                                selectedCategoryId = category.id
-                                categoryTouched = true
-                                categoryMenuExpanded = false
-                            },
-                        )
                     }
                 }
             }
@@ -1158,7 +1086,10 @@ private fun TransactionEditorSheet(
                 supportingText = { Text(stringResource(R.string.note_optional)) },
             )
             OutlinedButton(
-                onClick = { datePickerVisible = true },
+                onClick = {
+                    focusManager.clearFocus()
+                    datePickerVisible = true
+                },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text("${stringResource(R.string.transaction_date)}: ${formatTransactionDate(timestamp)}")
@@ -1227,6 +1158,7 @@ private fun TransactionEditorSheet(
                     }
                 }
             }
+            }
         }
     }
 
@@ -1253,6 +1185,20 @@ private fun TransactionEditorSheet(
             androidx.compose.material3.DatePicker(state = datePickerState)
         }
     }
+
+    if (categoryPickerVisible) {
+        CategoryPickerSheet(
+            categories = matchingCategories,
+            selectedCategoryId = selectedCategoryId,
+            onDismiss = { categoryPickerVisible = false },
+            onCategorySelected = { category ->
+                focusManager.clearFocus()
+                selectedCategoryId = category.id
+                categoryTouched = true
+                categoryPickerVisible = false
+            },
+        )
+    }
 }
 
 @Composable
@@ -1278,12 +1224,13 @@ private fun CategoryPickerTile(
     category: FinanceCategory,
     selected: Boolean,
     onClick: () -> Unit,
+    fillAvailableWidth: Boolean = false,
 ) {
     val shape = RoundedCornerShape(18.dp)
     Column(
         modifier = Modifier
-            .width(108.dp)
-            .height(120.dp)
+            .then(if (fillAvailableWidth) Modifier.fillMaxWidth() else Modifier.width(108.dp))
+            .height(88.dp)
             .background(
                 if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else Color.Transparent,
                 shape,
@@ -1296,7 +1243,7 @@ private fun CategoryPickerTile(
             .clickable(role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
     ) {
         Icon(
             imageVector = categoryIconFor(category.iconToken),
@@ -1309,6 +1256,118 @@ private fun CategoryPickerTile(
             textAlign = TextAlign.Center,
             maxLines = 2,
         )
+    }
+}
+
+private const val MAX_INLINE_CATEGORIES = 5
+
+private fun inlineCategories(
+    categories: List<FinanceCategory>,
+    selectedCategoryId: String?,
+): List<FinanceCategory> {
+    val topCategories = categories.take(MAX_INLINE_CATEGORIES)
+    val selectedCategory = categories.firstOrNull { it.id == selectedCategoryId }
+    return if (selectedCategory != null && selectedCategory !in topCategories) {
+        topCategories + selectedCategory
+    } else {
+        topCategories
+    }
+}
+
+@Composable
+private fun MoreCategoriesTile(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(18.dp)
+    Column(
+        modifier = Modifier
+            .width(108.dp)
+            .height(88.dp)
+            .border(1.dp, LocalFinancePalette.current.hairline, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.MoreHoriz,
+            contentDescription = null,
+            tint = LocalFinancePalette.current.textMid,
+        )
+        Text(
+            text = stringResource(R.string.more_categories),
+            style = MaterialTheme.typography.labelMedium,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CategoryPickerSheet(
+    categories: List<FinanceCategory>,
+    selectedCategoryId: String?,
+    onDismiss: () -> Unit,
+    onCategorySelected: (FinanceCategory) -> Unit,
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredCategories = categories.filter { category ->
+        searchQuery.isBlank() || category.name.contains(searchQuery.trim(), ignoreCase = true)
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.9f)
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.select_category),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f).semantics { heading() },
+                )
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            }
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.search_categories)) },
+                singleLine = true,
+            )
+            if (filteredCategories.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.no_matching_categories),
+                    color = LocalFinancePalette.current.textMid,
+                    modifier = Modifier.padding(vertical = 24.dp),
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 104.dp),
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(bottom = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(filteredCategories, key = { category -> category.id }) { category ->
+                        CategoryPickerTile(
+                            category = category,
+                            selected = category.id == selectedCategoryId,
+                            onClick = { onCategorySelected(category) },
+                            fillAvailableWidth = true,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1348,8 +1407,11 @@ private fun ReceiptCaptureAction(
         }
     }
 
-    TextButton(onClick = { sourcePickerVisible = true }) {
-        Text(stringResource(R.string.scan_receipt))
+    IconButton(onClick = { sourcePickerVisible = true }) {
+        Icon(
+            imageVector = Icons.Outlined.DocumentScanner,
+            contentDescription = stringResource(R.string.scan_receipt),
+        )
     }
 
     if (sourcePickerVisible) {

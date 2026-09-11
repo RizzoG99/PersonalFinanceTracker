@@ -1,6 +1,9 @@
 package com.rizzog99.personalfinancetracker.navigation
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,28 +22,37 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.features.activity.ActivityScreen
+import com.rizzog99.personalfinancetracker.features.activity.ActivityViewModel
+import com.rizzog99.personalfinancetracker.features.activity.TransactionEditorSheet
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
+import com.rizzog99.personalfinancetracker.features.insights.InsightsScreen
 import com.rizzog99.personalfinancetracker.features.settings.SettingsSheet
 import com.rizzog99.personalfinancetracker.ui.components.AppBackground
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import kotlinx.coroutines.launch
 
 private sealed class MainDestination(
     val route: String,
@@ -62,10 +74,31 @@ private val mainDestinations = listOf(
 fun PersonalFinanceNavHost() {
     val navController = rememberNavController()
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
+    val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val palette = LocalFinancePalette.current
-    var startCreatingActivity by rememberSaveable { mutableStateOf(false) }
-    var returnToDashboardAfterCreation by rememberSaveable { mutableStateOf(false) }
+    val transactionEditorViewModel: ActivityViewModel = viewModel(
+        factory = ActivityViewModel.factory(
+            transactionRepository = application.transactionRepository,
+            categoryRepository = application.categoryRepository,
+            recurrenceRepository = application.recurrenceRepository,
+        ),
+    )
+    val transactionEditorState by transactionEditorViewModel.uiState.collectAsState()
+    val transactionEditorScope = rememberCoroutineScope()
+    var dashboardTransactionEditorVisible by rememberSaveable { mutableStateOf(false) }
     var settingsVisible by rememberSaveable { mutableStateOf(false) }
+    var tabTransitionDirection by rememberSaveable { mutableStateOf(1) }
+    val navigateToMainDestination: (MainDestination) -> Unit = { destination ->
+        val currentRoute = currentDestination?.route
+        if (currentRoute != destination.route) {
+            tabTransitionDirection = tabSlideDirection(currentRoute, destination.route)
+            navController.navigate(destination.route) {
+                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
 
     AppBackground {
         Column(
@@ -77,40 +110,50 @@ fun PersonalFinanceNavHost() {
                 navController = navController,
                 startDestination = MainDestination.Home.route,
                 modifier = Modifier.weight(1f),
+                enterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { width -> tabTransitionDirection * width },
+                        animationSpec = tween(durationMillis = 280),
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { width -> -tabTransitionDirection * width },
+                        animationSpec = tween(durationMillis = 280),
+                    )
+                },
+                popEnterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { width -> tabTransitionDirection * width },
+                        animationSpec = tween(durationMillis = 280),
+                    )
+                },
+                popExitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { width -> -tabTransitionDirection * width },
+                        animationSpec = tween(durationMillis = 280),
+                    )
+                },
             ) {
                 composable(MainDestination.Home.route) {
                     HomeScreen(
                         onViewActivity = {
-                            navController.navigate(MainDestination.Activity.route) {
-                                launchSingleTop = true
-                            }
+                            navigateToMainDestination(MainDestination.Activity)
                         },
                         onAddTransaction = {
-                            startCreatingActivity = true
-                            returnToDashboardAfterCreation = true
-                            navController.navigate(MainDestination.Activity.route) {
-                                launchSingleTop = true
-                            }
+                            dashboardTransactionEditorVisible = true
                         },
                         onOpenSettings = { settingsVisible = true },
                     )
                 }
                 composable(MainDestination.Activity.route) {
-                    ActivityScreen(
-                        startCreating = startCreatingActivity,
-                        onStartCreatingConsumed = { startCreatingActivity = false },
-                        returnToDashboardAfterCreation = returnToDashboardAfterCreation,
-                        onDashboardCreationFinished = {
-                            returnToDashboardAfterCreation = false
-                            navController.navigate(MainDestination.Home.route) {
-                                popUpTo(MainDestination.Home.route) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                        },
-                    )
+                    ActivityScreen(onOpenSettings = { settingsVisible = true })
                 }
                 composable(MainDestination.Insights.route) {
-                    InsightsPlaceholderScreen()
+                    InsightsScreen(
+                        onAddTransaction = { dashboardTransactionEditorVisible = true },
+                        onOpenSettings = { settingsVisible = true },
+                    )
                 }
                 composable(MainDestination.Categories.route) {
                     CategorySettingsScreen(onBack = { navController.popBackStack() })
@@ -127,6 +170,28 @@ fun PersonalFinanceNavHost() {
                 )
             }
 
+            if (dashboardTransactionEditorVisible) {
+                TransactionEditorSheet(
+                    editingTransaction = null,
+                    categories = transactionEditorState.categories,
+                    receiptMappingRepository = application.receiptMappingRepository,
+                    onDismiss = { dashboardTransactionEditorVisible = false },
+                    onSave = { transaction, recurrenceRule, receiptMerchant ->
+                        transactionEditorScope.launch {
+                            val saved = recurrenceRule?.let {
+                                transactionEditorViewModel.createRecurringTransaction(it)
+                            } ?: transactionEditorViewModel.save(transaction)
+                            if (saved) {
+                                if (receiptMerchant != null && transaction.categoryId != null) {
+                                    application.receiptMappingRepository.remember(receiptMerchant, transaction.categoryId)
+                                }
+                                dashboardTransactionEditorVisible = false
+                            }
+                        }
+                    },
+                )
+            }
+
             if (currentDestination?.route in mainDestinations.map(MainDestination::route)) {
                 NavigationBar(containerColor = palette.surfaceRaised) {
                     mainDestinations.forEach { destination ->
@@ -134,11 +199,7 @@ fun PersonalFinanceNavHost() {
                         NavigationBarItem(
                             selected = selected,
                             onClick = {
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                                navigateToMainDestination(destination)
                             },
                             icon = {
                                 Icon(
@@ -161,27 +222,10 @@ fun PersonalFinanceNavHost() {
     }
 }
 
-@Composable
-private fun InsightsPlaceholderScreen() {
-    Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-        FinanceCard(modifier = Modifier.align(androidx.compose.ui.Alignment.Center)) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.insights_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(
-                    text = stringResource(R.string.foundation_placeholder),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = LocalFinancePalette.current.textMid,
-                )
-            }
-        }
-    }
+private fun tabSlideDirection(fromRoute: String?, toRoute: String?): Int {
+    val fromIndex = mainDestinations.indexOfFirst { it.route == fromRoute }
+    val toIndex = mainDestinations.indexOfFirst { it.route == toRoute }
+    return if (fromIndex >= 0 && toIndex >= 0 && toIndex < fromIndex) -1 else 1
 }
 
 @Composable

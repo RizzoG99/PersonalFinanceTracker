@@ -68,17 +68,6 @@ data class TransactionEntity(
     val recurrenceRuleId: String?,
 )
 
-@Entity(tableName = "credit_cards")
-data class CreditCardEntity(
-    @PrimaryKey val id: String,
-    val name: String,
-    val lastFour: String,
-    val balanceDecimal: String,
-    val limitDecimal: String,
-    val colorToken: String,
-    val currencyCode: String,
-)
-
 @Entity(tableName = "health_score_snapshots")
 data class HealthScoreSnapshotEntity(
     @PrimaryKey val id: String,

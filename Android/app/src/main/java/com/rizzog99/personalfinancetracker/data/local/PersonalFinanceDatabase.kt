@@ -10,18 +10,18 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         TransactionEntity::class,
         CategoryEntity::class,
         GoalEntity::class,
-        CreditCardEntity::class,
         RecurrenceRuleEntity::class,
         HealthScoreSnapshotEntity::class,
         DailyForecastCacheEntity::class,
         MerchantCategoryMappingEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class PersonalFinanceDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun goalDao(): GoalDao
     abstract fun recurrenceRuleDao(): RecurrenceRuleDao
     abstract fun merchantCategoryMappingDao(): MerchantCategoryMappingDao
 
@@ -40,6 +40,14 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
                         "ON categories (normalizedName, type)",
                 )
             }
+        }
+
+        /**
+         * Credit cards are deliberately excluded from Android parity. Keep the legacy table inert
+         * rather than deleting any locally stored rows without an explicit user data-wipe request.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) = Unit
         }
     }
 }

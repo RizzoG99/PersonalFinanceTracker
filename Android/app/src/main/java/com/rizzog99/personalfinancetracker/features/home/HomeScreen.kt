@@ -15,14 +15,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,6 +41,7 @@ import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
+import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
@@ -68,6 +66,13 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
+        topBar = {
+            MainTopBar(
+                onOpenSettings = onOpenSettings,
+                onAddTransaction = onAddTransaction,
+                onScanReceipt = onAddTransaction,
+            )
+        },
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
     ) { innerPadding ->
@@ -76,8 +81,6 @@ fun HomeScreen(
             else -> HomeContent(
                 state = state,
                 onViewActivity = onViewActivity,
-                onAddTransaction = onAddTransaction,
-                onOpenSettings = onOpenSettings,
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -88,8 +91,6 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeUiState,
     onViewActivity: () -> Unit,
-    onAddTransaction: () -> Unit,
-    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val metrics = requireNotNull(state.metrics)
@@ -105,23 +106,6 @@ private fun HomeContent(
             .padding(PaddingValues(horizontal = 20.dp, vertical = 16.dp)),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            IconButton(onClick = onOpenSettings) {
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = stringResource(R.string.settings_title),
-                )
-            }
-            IconButton(onClick = onAddTransaction) {
-                Icon(
-                    imageVector = Icons.Outlined.Add,
-                    contentDescription = stringResource(R.string.add_transaction),
-                )
-            }
-        }
         Text(
             text = stringResource(greeting),
             style = MaterialTheme.typography.displaySmall,

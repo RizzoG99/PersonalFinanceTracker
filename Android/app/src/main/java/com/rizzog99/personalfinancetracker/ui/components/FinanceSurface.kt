@@ -3,7 +3,11 @@ package com.rizzog99.personalfinancetracker.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -12,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -21,11 +26,10 @@ import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
 import kotlin.math.max
 
 @Composable
-fun AppBackground(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+fun AppBackground(modifier: Modifier = Modifier.fillMaxSize(), content: @Composable () -> Unit) {
     val palette = LocalFinancePalette.current
     Box(
         modifier = modifier
-            .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .drawWithCache {
                 val radius = max(size.width, size.height) * 0.72f
@@ -57,6 +61,24 @@ fun AppBackground(modifier: Modifier = Modifier, content: @Composable () -> Unit
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
             content()
         }
+    }
+}
+
+/** A visual drag affordance that stays within the app-gradient sheet surface. */
+@Composable
+fun SheetDragHandle() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp, bottom = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .width(36.dp)
+                .height(4.dp)
+                .background(LocalFinancePalette.current.textDim.copy(alpha = 0.6f), RoundedCornerShape(2.dp)),
+        )
     }
 }
 

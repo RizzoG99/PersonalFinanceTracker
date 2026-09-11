@@ -81,3 +81,18 @@ interface CategoryDao {
     @Query("DELETE FROM categories WHERE id = :id")
     suspend fun delete(id: String)
 }
+
+@Dao
+interface GoalDao {
+    @Query("SELECT * FROM goals ORDER BY createdAtEpochMillis ASC")
+    fun observeAll(): Flow<List<GoalEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(goal: GoalEntity)
+
+    @Update(onConflict = OnConflictStrategy.ABORT)
+    suspend fun update(goal: GoalEntity)
+
+    @Query("DELETE FROM goals WHERE id = :id")
+    suspend fun delete(id: String)
+}

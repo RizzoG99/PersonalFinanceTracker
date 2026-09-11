@@ -5,9 +5,11 @@ import androidx.room.Room
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
+import com.rizzog99.personalfinancetracker.data.repository.GoalRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomCategoryRepository
+import com.rizzog99.personalfinancetracker.data.repository.RoomGoalRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomRecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomReceiptMappingRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
@@ -24,7 +26,10 @@ class PersonalFinanceApplication : Application() {
 
     val database: PersonalFinanceDatabase by lazy {
         Room.databaseBuilder(this, PersonalFinanceDatabase::class.java, "personal_finance.db")
-            .addMigrations(PersonalFinanceDatabase.MIGRATION_1_2)
+            .addMigrations(
+                PersonalFinanceDatabase.MIGRATION_1_2,
+                PersonalFinanceDatabase.MIGRATION_2_3,
+            )
             .build()
     }
 
@@ -38,6 +43,10 @@ class PersonalFinanceApplication : Application() {
 
     val categoryRepository: CategoryRepository by lazy {
         RoomCategoryRepository(database)
+    }
+
+    val goalRepository: GoalRepository by lazy {
+        RoomGoalRepository(database)
     }
 
     val recurrenceRepository: RecurrenceRepository by lazy {
