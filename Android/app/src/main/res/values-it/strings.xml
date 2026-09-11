@@ -22,6 +22,11 @@
     <string name="insights_spending_detail">Per categoria nel periodo finanziario corrente</string>
     <string name="insights_empty_spending">Aggiungi delle uscite per vedere dove vanno i tuoi soldi.</string>
     <string name="goals_title">Obiettivi</string>
+    <string name="budgets_title">Budget</string>
+    <string name="budgets_settings_detail">Imposta un limite mensile per ogni categoria di spesa</string>
+    <string name="monthly_budget_expense_categories">BUDGET MENSILE · CATEGORIE DI SPESA</string>
+    <string name="total_budgeted">Budget totale</string>
+    <string name="no_limit">Nessun limite</string>
     <string name="goals_subtitle">Per cosa stai risparmiando</string>
     <string name="set_first_goal">Imposta il tuo primo obiettivo</string>
     <string name="goals_empty_message">Fondo viaggio, cuscinetto per le emergenze, acquisto dei sogni — rendilo concreto.</string>

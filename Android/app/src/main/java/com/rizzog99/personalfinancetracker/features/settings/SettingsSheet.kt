@@ -46,6 +46,7 @@ import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
 fun SettingsSheet(
     onDismiss: () -> Unit,
     onOpenCategories: () -> Unit,
+    onOpenBudgets: () -> Unit,
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: SettingsViewModel = viewModel(
@@ -119,6 +120,19 @@ fun SettingsSheet(
                     .clickable(role = Role.Button, onClick = onOpenCategories),
                 headlineContent = { Text(stringResource(R.string.categories)) },
                 supportingContent = { Text(stringResource(R.string.categories_settings_detail)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
+                    )
+                },
+            )
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onOpenBudgets),
+                headlineContent = { Text(stringResource(R.string.budgets_title)) },
+                supportingContent = { Text(stringResource(R.string.budgets_settings_detail)) },
                 trailingContent = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowForward,

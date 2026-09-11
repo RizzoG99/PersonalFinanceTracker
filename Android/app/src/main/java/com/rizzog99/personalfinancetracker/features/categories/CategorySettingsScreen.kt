@@ -505,7 +505,7 @@ private fun categoryNameErrorText(error: CategoryNameError?): Int? = when (error
 private enum class CategoryNameError { BLANK, INVALID, DUPLICATE }
 
 @Composable
-private fun categoryColor(token: String) = when (token) {
+fun categoryColor(token: String) = when (token) {
     "categoryGreen", "categoryTeal" -> MaterialTheme.colorScheme.secondary
     "categoryAmber" -> MaterialTheme.colorScheme.tertiary
     "categoryGray" -> MaterialTheme.colorScheme.outline

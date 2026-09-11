@@ -22,6 +22,11 @@
     <string name="insights_spending_detail">This financial period by category</string>
     <string name="insights_empty_spending">Add expense transactions to see where your money goes.</string>
     <string name="goals_title">Goals</string>
+    <string name="budgets_title">Budgets</string>
+    <string name="budgets_settings_detail">Set a monthly limit for each expense category</string>
+    <string name="monthly_budget_expense_categories">MONTHLY BUDGET · EXPENSE CATEGORIES</string>
+    <string name="total_budgeted">Total budgeted</string>
+    <string name="no_limit">No limit</string>
     <string name="goals_subtitle">What you’re saving toward</string>
     <string name="set_first_goal">Set your first goal</string>
     <string name="goals_empty_message">Trip fund, emergency buffer, dream purchase — make it visual.</string>

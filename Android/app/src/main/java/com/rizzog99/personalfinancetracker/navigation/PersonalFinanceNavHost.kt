@@ -46,6 +46,7 @@ import com.rizzog99.personalfinancetracker.features.activity.ActivityScreen
 import com.rizzog99.personalfinancetracker.features.activity.ActivityViewModel
 import com.rizzog99.personalfinancetracker.features.activity.TransactionEditorSheet
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsScreen
+import com.rizzog99.personalfinancetracker.features.budgets.BudgetsScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
 import com.rizzog99.personalfinancetracker.features.insights.InsightsScreen
 import com.rizzog99.personalfinancetracker.features.settings.SettingsSheet
@@ -62,6 +63,7 @@ private sealed class MainDestination(
     data object Activity : MainDestination("activity", R.string.tab_activity)
     data object Insights : MainDestination("insights", R.string.tab_insights)
     data object Categories : MainDestination("categories", R.string.category_settings_title)
+    data object Budgets : MainDestination("budgets", R.string.budgets_title)
 }
 
 private val mainDestinations = listOf(
@@ -158,6 +160,9 @@ fun PersonalFinanceNavHost() {
                 composable(MainDestination.Categories.route) {
                     CategorySettingsScreen(onBack = { navController.popBackStack() })
                 }
+                composable(MainDestination.Budgets.route) {
+                    BudgetsScreen(onBack = { navController.popBackStack() })
+                }
             }
 
             if (settingsVisible) {
@@ -166,6 +171,10 @@ fun PersonalFinanceNavHost() {
                     onOpenCategories = {
                         settingsVisible = false
                         navController.navigate(MainDestination.Categories.route)
+                    },
+                    onOpenBudgets = {
+                        settingsVisible = false
+                        navController.navigate(MainDestination.Budgets.route)
                     },
                 )
             }
@@ -234,4 +243,5 @@ private fun MainDestination.icon() = when (this) {
     MainDestination.Activity -> Icons.AutoMirrored.Outlined.List
     MainDestination.Insights -> Icons.Outlined.Insights
     MainDestination.Categories -> Icons.Outlined.Category
+    MainDestination.Budgets -> Icons.Outlined.Category
 }
