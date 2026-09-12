@@ -2,6 +2,7 @@ package com.rizzog99.personalfinancetracker
 
 import android.app.Application
 import androidx.room.Room
+import com.rizzog99.personalfinancetracker.data.backup.BackupRepository
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
@@ -55,6 +56,10 @@ class PersonalFinanceApplication : Application() {
 
     val receiptMappingRepository: ReceiptMappingRepository by lazy {
         RoomReceiptMappingRepository(database)
+    }
+
+    val backupRepository: BackupRepository by lazy {
+        BackupRepository(database, transactionRepository, categoryRepository, goalRepository)
     }
 
     private val recurrenceMaterializationMutex = Mutex()

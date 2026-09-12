@@ -3,10 +3,12 @@ package com.rizzog99.personalfinancetracker.data.preferences
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
+import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -18,6 +20,10 @@ class UserPreferencesRepository(private val context: Context) {
         val baseCurrency = stringPreferencesKey("base_currency")
         val themeMode = stringPreferencesKey("theme_mode")
         val hideBalance = booleanPreferencesKey("hide_balance")
+        val lastBackupAt = longPreferencesKey("last_backup_at")
+        val biometricEnabled = booleanPreferencesKey("biometric_enabled")
+        val pinHash = stringPreferencesKey("pin_hash")
+        val pinSalt = stringPreferencesKey("pin_salt")
     }
 
     val payCycleStartDay: Flow<Int> = context.userPreferencesDataStore.data.map {
@@ -34,6 +40,41 @@ class UserPreferencesRepository(private val context: Context) {
 
     val hideBalance: Flow<Boolean> = context.userPreferencesDataStore.data.map {
         it[Keys.hideBalance] ?: false
+    }
+
+    val lastBackupAt: Flow<Instant?> = context.userPreferencesDataStore.data.map {
+        it[Keys.lastBackupAt]?.let(Instant::ofEpochMilli)
+    }
+
+    val biometricEnabled: Flow<Boolean> = context.userPreferencesDataStore.data.map {
+        it[Keys.biometricEnabled] ?: false
+    }
+
+    /** Null when no PIN has been set — the app is unlocked without a gate. */
+    val pinHash: Flow<String?> = context.userPreferencesDataStore.data.map { it[Keys.pinHash] }
+    val pinSalt: Flow<String?> = context.userPreferencesDataStore.data.map { it[Keys.pinSalt] }
+
+    suspend fun setLastBackupAt(instant: Instant) {
+        context.userPreferencesDataStore.edit { it[Keys.lastBackupAt] = instant.toEpochMilli() }
+    }
+
+    suspend fun setBiometricEnabled(enabled: Boolean) {
+        context.userPreferencesDataStore.edit { it[Keys.biometricEnabled] = enabled }
+    }
+
+    suspend fun setPin(hash: String, salt: String) {
+        context.userPreferencesDataStore.edit {
+            it[Keys.pinHash] = hash
+            it[Keys.pinSalt] = salt
+        }
+    }
+
+    suspend fun clearPin() {
+        context.userPreferencesDataStore.edit {
+            it.remove(Keys.pinHash)
+            it.remove(Keys.pinSalt)
+            it[Keys.biometricEnabled] = false
+        }
     }
 
     suspend fun setPayCycleStartDay(day: Int) {

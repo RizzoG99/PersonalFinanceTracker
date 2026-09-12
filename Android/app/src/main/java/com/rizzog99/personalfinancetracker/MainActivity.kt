@@ -1,11 +1,12 @@
 package com.rizzog99.personalfinancetracker
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
+import androidx.fragment.app.FragmentActivity
 
-class MainActivity : ComponentActivity() {
+/** FragmentActivity (not ComponentActivity) so androidx.biometric.BiometricPrompt can attach. */
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)

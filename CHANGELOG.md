@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Android: Settings now has a Security section (PIN lock + biometric unlock) and a Data section with "Back up now" / "Restore from backup" (any file-picker destination, including Google Drive) and "Delete all data".
 - Android: adopted a new Material 3 look (colors, type, shapes) with a light/dark theme toggle, a floating add-transaction button, and an undo option after saving.
 - Android: Add and Edit Transaction now open in a full-height editor with an amount-first layout, Income/Expenses selector, visual category cards, and Save in the top bar.
 - Android: Add Transaction can now scan a receipt from a new photo or a chosen photo. The image is read on your device and discarded, then its amount, date, merchant, and likely category are ready for review before you save.

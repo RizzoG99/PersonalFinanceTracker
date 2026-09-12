@@ -48,6 +48,7 @@ dependencies {
     androidTestImplementation(composeBom)
 
     implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.2")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("com.google.android.material:material:1.12.0")
@@ -62,6 +63,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.biometric:biometric:1.1.0")
     implementation("com.google.mlkit:text-recognition:16.0.1")
 
     testImplementation("junit:junit:4.13.2")

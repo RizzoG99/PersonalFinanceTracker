@@ -150,6 +150,33 @@
     <string name="hide_balance">Nascondi saldo</string>
     <string name="show_balance">Mostra saldo</string>
     <string name="balance_hidden_placeholder">••••••</string>
+
+    <string name="security_section">Sicurezza</string>
+    <string name="biometric_unlock">Sblocco biometrico</string>
+    <string name="use_pin_instead">Usa il PIN</string>
+    <string name="set_pin">Imposta PIN</string>
+    <string name="change_pin">Cambia PIN</string>
+    <string name="pin_enabled_detail">Richiedi un PIN per aprire l\'app</string>
+    <string name="pin_create_title">Crea un PIN</string>
+    <string name="pin_confirm_title">Conferma il PIN</string>
+    <string name="pin_digits_hint">Inserisci %d cifre</string>
+    <string name="pin_unlock_title">Inserisci il PIN</string>
+    <string name="backspace">Cancella cifra</string>
+
+    <string name="data_section">Dati</string>
+    <string name="back_up_now">Esegui backup ora</string>
+    <string name="restore_from_backup">Ripristina da backup</string>
+    <string name="restore_confirm_title">Ripristinare dal backup?</string>
+    <string name="restore_confirm_message">Questo sostituisce ogni transazione, categoria e obiettivo attualmente su questo dispositivo con il contenuto del file di backup. Non è reversibile.</string>
+    <string name="not_backed_up">Nessun backup</string>
+    <string name="not_backed_up_detail">Esegui il backup per proteggere i tuoi dati se l\'app viene rimossa. Scegli Google Drive (o un altro provider) nel selettore di file che si apre.</string>
+    <string name="last_backed_up">Ultimo backup: %1$s</string>
+    <string name="backup_complete">Backup salvato</string>
+    <string name="backup_failed">Backup non riuscito</string>
+    <string name="restore_complete">Backup ripristinato</string>
+    <string name="restore_failed">Ripristino non riuscito: il file potrebbe non essere un backup di Personal Finance Tracker</string>
+    <string name="delete_all_data">Elimina tutti i dati</string>
+    <string name="delete_all_data_confirm_message">Questo elimina definitivamente ogni transazione, categoria, budget e obiettivo su questo dispositivo. Non è reversibile.</string>
     <string name="dismiss">Chiudi</string>
     <string name="clear_filters">Cancella ricerca e filtri</string>
     <string name="no_matching_transactions">Nessuna transazione corrispondente</string>
