@@ -46,14 +46,15 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
 import java.time.LocalTime
 
 @Composable
 fun HomeScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     onViewActivity: () -> Unit,
-    onAddTransaction: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as PersonalFinanceApplication
@@ -68,13 +69,14 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             MainTopBar(
+                title = stringResource(R.string.tab_home),
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
                 onOpenSettings = onOpenSettings,
-                onAddTransaction = onAddTransaction,
-                onScanReceipt = onAddTransaction,
             )
         },
-        containerColor = androidx.compose.ui.graphics.Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) { innerPadding ->
         when {
             state.isLoading -> LoadingState(modifier = Modifier.padding(innerPadding))
@@ -137,7 +139,6 @@ private fun BalanceCard(
     expenses: java.math.BigDecimal,
     currencyCode: String,
 ) {
-    val palette = LocalFinancePalette.current
     val hasPeriodTransactions = income.signum() != 0 || expenses.signum() != 0
     val useVerticalStats = LocalDensity.current.fontScale >= 1.3f
     FinanceCard {
@@ -148,23 +149,23 @@ private fun BalanceCard(
             Text(
                 text = stringResource(R.string.total_balance),
                 style = MaterialTheme.typography.titleSmall,
-                color = palette.textMid,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
                 text = totalBalance,
                 style = MaterialTheme.typography.displaySmall,
                 fontFamily = FontFamily.Monospace,
             )
-            HorizontalDivider(color = palette.hairline)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Text(
                 text = stringResource(R.string.current_financial_period),
                 style = MaterialTheme.typography.labelMedium,
-                color = palette.textDim,
+                color = MaterialTheme.colorScheme.outline,
             )
             Text(
                 text = periodLabel,
                 style = MaterialTheme.typography.bodyMedium,
-                color = palette.textMid,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (hasPeriodTransactions) {
                 if (useVerticalStats) {
@@ -190,7 +191,7 @@ private fun BalanceCard(
                 Text(
                     text = stringResource(R.string.no_transactions_this_period),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = palette.textMid,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -204,12 +205,11 @@ private fun PeriodStats(
     currencyCode: String,
     modifier: Modifier,
 ) {
-    val palette = LocalFinancePalette.current
     FinancialStat(
         modifier = modifier,
         label = stringResource(R.string.filter_income),
         value = formatSignedCurrency(income, currencyCode),
-        color = palette.positive,
+        color = LocalFinanceExtendedColors.current.positive,
         icon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null) },
     )
     FinancialStat(
@@ -220,8 +220,8 @@ private fun PeriodStats(
         } else {
             formatSignedCurrency(expenses.negate(), currencyCode)
         },
-        color = palette.negative,
-        valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
+        color = LocalFinanceExtendedColors.current.negative,
+        valueColor = if (expenses.signum() == 0) MaterialTheme.colorScheme.onSurfaceVariant else LocalFinanceExtendedColors.current.negative,
         icon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null) },
     )
 }
@@ -266,7 +266,7 @@ private fun EmptyDashboardCard(onViewActivity: () -> Unit) {
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.semantics { heading() },
             )
-            Text(stringResource(R.string.empty_dashboard_message), color = LocalFinancePalette.current.textMid)
+            Text(stringResource(R.string.empty_dashboard_message), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = onViewActivity) { Text(stringResource(R.string.go_to_activity)) }
         }
     }
@@ -289,7 +289,7 @@ private fun RecentTransactionsCard(
             }
             Spacer(Modifier.height(4.dp))
             transactions.forEachIndexed { index, transaction ->
-                if (index > 0) HorizontalDivider(color = LocalFinancePalette.current.hairline)
+                if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 RecentTransactionRow(transaction)
             }
         }
@@ -298,7 +298,6 @@ private fun RecentTransactionsCard(
 
 @Composable
 private fun RecentTransactionRow(transaction: FinanceTransaction) {
-    val palette = LocalFinancePalette.current
     val isIncome = transaction.amount >= java.math.BigDecimal.ZERO
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
@@ -309,14 +308,14 @@ private fun RecentTransactionRow(transaction: FinanceTransaction) {
             Text(
                 text = "${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}",
                 style = MaterialTheme.typography.bodySmall,
-                color = palette.textMid,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Spacer(Modifier.width(12.dp))
         Text(
             text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
             style = MaterialTheme.typography.titleSmall,
-            color = if (isIncome) palette.positive else palette.negative,
+            color = if (isIncome) LocalFinanceExtendedColors.current.positive else LocalFinanceExtendedColors.current.negative,
             fontFamily = FontFamily.Monospace,
         )
     }

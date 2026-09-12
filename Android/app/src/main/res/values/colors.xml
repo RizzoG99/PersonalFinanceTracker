@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window/splash background only. Compose owns every other color via
+         ui/theme/Color.kt — see that file for the full M3 palette. -->
+    <color name="window_background">#FCF8FF</color>
+</resources>

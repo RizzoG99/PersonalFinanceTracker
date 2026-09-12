@@ -7,7 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
-- Android: Activity’s first-use screen now uses a calmer empty-state card, while the floating Add button stays available as the single next step.
+- Android: adopted a new Material 3 look (colors, type, shapes) with a light/dark theme toggle, a floating add-transaction button, and an undo option after saving.
 - Android: Add and Edit Transaction now open in a full-height editor with an amount-first layout, Income/Expenses selector, visual category cards, and Save in the top bar.
 - Android: Add Transaction can now scan a receipt from a new photo or a chosen photo. The image is read on your device and discarded, then its amount, date, merchant, and likely category are ready for review before you save.
 - Android: Add Transaction can now repeat weekly, monthly, or yearly, including every 2 weeks/months/years. New occurrences appear automatically when you open the app.

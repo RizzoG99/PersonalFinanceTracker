@@ -54,7 +54,7 @@ import com.rizzog99.personalfinancetracker.domain.import.TransactionImportMapper
 import com.rizzog99.personalfinancetracker.domain.import.SignConvention
 import com.rizzog99.personalfinancetracker.domain.import.XlsxImportService
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,7 +148,7 @@ fun DataTransferScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = androidx.compose.ui.graphics.Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = LocalFinancePalette.current.textMid,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
         },
@@ -159,11 +159,11 @@ fun DataTransferScreen(onBack: () -> Unit) {
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.export_section), style = MaterialTheme.typography.labelLarge, color = LocalFinancePalette.current.textDim)
+            Text(stringResource(R.string.export_section), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.outline)
             FinanceCard {
                 Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.export_csv), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.export_csv_detail), color = LocalFinancePalette.current.textMid)
+                    Text(stringResource(R.string.export_csv_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Button(
                         onClick = { createCsvDocument.launch("personal-finance-transactions.csv") },
                         enabled = state.transactions.isNotEmpty(),
@@ -174,11 +174,11 @@ fun DataTransferScreen(onBack: () -> Unit) {
                     TextButton(onClick = { createXlsxDocument.launch("personal-finance-transactions.xlsx") }, enabled = state.transactions.isNotEmpty()) { Text(stringResource(R.string.export_xlsx)) }
                 }
             }
-            Text(stringResource(R.string.import_section), style = MaterialTheme.typography.labelLarge, color = LocalFinancePalette.current.textDim)
+            Text(stringResource(R.string.import_section), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.outline)
             FinanceCard {
                 Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.import_csv), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.import_csv_detail), color = LocalFinancePalette.current.textMid)
+                    Text(stringResource(R.string.import_csv_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Button(onClick = { openCsvDocument.launch(arrayOf("text/csv", "text/comma-separated-values", "text/plain", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) }) {
                         Icon(Icons.Outlined.FileOpen, contentDescription = null)
                         Text(stringResource(R.string.choose_csv), modifier = Modifier.padding(start = 8.dp))
@@ -215,7 +215,7 @@ private fun SheetPicker(workbook: XlsxImportService.Workbook, onSelect: (XlsxImp
     FinanceCard {
         Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.import_choose_sheet), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.import_choose_sheet_detail), color = LocalFinancePalette.current.textMid)
+            Text(stringResource(R.string.import_choose_sheet_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
             workbook.sheets.forEach { sheet -> TextButton(onClick = { onSelect(sheet) }) { Text(sheet.name) } }
         }
     }
@@ -246,22 +246,22 @@ private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzo
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Text(stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-            Text(stringResource(R.string.import_step_of, step, 3), color = LocalFinancePalette.current.textMid)
+            Text(stringResource(R.string.import_step_of, step, 3), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         when (step) {
             1 -> {
-                Text(stringResource(R.string.import_columns_detail), color = LocalFinancePalette.current.textMid)
+                Text(stringResource(R.string.import_columns_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.import_preview, file.rows.size), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                    Text(stringResource(R.string.import_preview, file.rows.size), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
                     Text(file.headers.joinToString(" · "), style = MaterialTheme.typography.labelSmall, maxLines = 1)
                     file.rows.take(3).forEach { row -> Text(row.take(file.headers.size).joinToString(" · ").ifBlank { "—" }, style = MaterialTheme.typography.bodySmall, maxLines = 1) }
                 } }
-                Text(stringResource(R.string.import_required), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.import_required), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
                 FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     MappingSelector(R.string.import_date_column, dateColumn, file.headers) { dateColumn = it }
                     MappingSelector(R.string.import_amount_column, amountColumn, file.headers) { amountColumn = it }
                 } }
-                Text(stringResource(R.string.import_optional), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.import_optional), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
                 FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     MappingSelector(R.string.import_type_column, typeColumn, file.headers) { typeColumn = it }
                     MappingSelector(R.string.import_category_column, categoryColumn, file.headers) { categoryColumn = it }
@@ -273,10 +273,10 @@ private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzo
                 } }
             }
             2 -> {
-                Text(stringResource(R.string.import_categories_detail), color = LocalFinancePalette.current.textMid)
-                if (mappedCategories.isEmpty()) Text(stringResource(R.string.import_no_categories), color = LocalFinancePalette.current.textMid)
+                Text(stringResource(R.string.import_categories_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (mappedCategories.isEmpty()) Text(stringResource(R.string.import_no_categories), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 mappedCategories.groupBy { label -> if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) R.string.import_expenses else R.string.import_income }.forEach { (type, labels) ->
-                    Text(stringResource(type), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                    Text(stringResource(type), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
                     FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         labels.forEach { label -> CategorySelector(label, categorySelections[label], categories) { selection -> categorySelections = categorySelections + (label to selection) } }
                     } }
@@ -289,11 +289,11 @@ private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzo
                     ImportMetric(stringResource(R.string.import_duplicates), duplicates.size)
                     ImportMetric(stringResource(R.string.import_errors), validation?.rejectedRows ?: 0)
                 } }
-                Text(stringResource(R.string.import_cannot_undo), color = LocalFinancePalette.current.textMid)
+                Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     candidates.take(8).forEach { transaction -> Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Column(modifier = Modifier.weight(1f)) { Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) }); Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = LocalFinancePalette.current.textMid) }
-                        Text(transaction.amount.toPlainString(), color = if (transaction.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinancePalette.current.positive)
+                        Column(modifier = Modifier.weight(1f)) { Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) }); Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        Text(transaction.amount.toPlainString(), color = if (transaction.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinanceExtendedColors.current.positive)
                     } }
                 } }
             }
@@ -318,7 +318,7 @@ private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzo
 @Composable
 private fun ImportMetric(label: String, value: Int) = Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
     Text(value.toString(), style = MaterialTheme.typography.headlineSmall)
-    Text(label, style = MaterialTheme.typography.labelSmall, color = LocalFinancePalette.current.textMid)
+    Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable

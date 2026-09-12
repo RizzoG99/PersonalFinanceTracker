@@ -55,7 +55,7 @@ import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -90,7 +90,7 @@ fun BudgetsScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = androidx.compose.ui.graphics.Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = LocalFinancePalette.current.textMid,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
         },
@@ -122,7 +122,7 @@ private fun BudgetContent(
             Text(
                 text = stringResource(R.string.monthly_budget_expense_categories),
                 style = MaterialTheme.typography.labelLarge,
-                color = LocalFinancePalette.current.textDim,
+                color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.padding(start = 4.dp, top = 8.dp).semantics { heading() },
             )
         }
@@ -137,7 +137,7 @@ private fun BudgetContent(
                 Text(
                     text = stringResource(R.string.total_budgeted),
                     style = MaterialTheme.typography.labelLarge,
-                    color = LocalFinancePalette.current.textDim,
+                    color = MaterialTheme.colorScheme.outline,
                 )
                 Spacer(Modifier.weight(1f))
                 Text(

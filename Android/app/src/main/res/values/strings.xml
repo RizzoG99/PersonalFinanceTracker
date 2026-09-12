@@ -144,7 +144,9 @@
     <string name="transaction_added">Transaction added</string>
     <string name="transaction_updated">Transaction updated</string>
     <string name="transaction_deleted">Transaction deleted</string>
+    <string name="transaction_saved">Transaction saved</string>
     <string name="undo">Undo</string>
+    <string name="toggle_theme">Toggle light/dark theme</string>
     <string name="dismiss">Dismiss</string>
     <string name="clear_filters">Clear search and filters</string>
     <string name="no_matching_transactions">No matching transactions</string>

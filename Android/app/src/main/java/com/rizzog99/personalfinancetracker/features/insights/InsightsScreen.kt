@@ -61,7 +61,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -94,7 +93,7 @@ import com.rizzog99.personalfinancetracker.ui.components.SheetDragHandle
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -104,7 +103,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InsightsScreen(onAddTransaction: () -> Unit, onOpenSettings: () -> Unit) {
+fun InsightsScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: InsightsViewModel = viewModel(
         factory = InsightsViewModel.factory(
@@ -124,13 +127,15 @@ fun InsightsScreen(onAddTransaction: () -> Unit, onOpenSettings: () -> Unit) {
     Scaffold(
         topBar = {
             MainTopBar(
+                title = stringResource(R.string.tab_insights),
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
                 onOpenSettings = onOpenSettings,
-                onAddTransaction = onAddTransaction,
-                onScanReceipt = onAddTransaction,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) { padding ->
         InsightsContent(
             state = state,
@@ -215,7 +220,6 @@ private fun InsightsContent(
     onSelectGoal: (GoalProgress) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val palette = LocalFinancePalette.current
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
@@ -249,7 +253,7 @@ private fun InsightsContent(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.semantics { heading() },
                 )
-                Text(stringResource(R.string.insights_spending_detail), color = palette.textMid)
+                Text(stringResource(R.string.insights_spending_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         if (state.categorySpending.isEmpty()) {
@@ -258,7 +262,7 @@ private fun InsightsContent(
                     Text(
                         stringResource(R.string.insights_empty_spending),
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        color = palette.textMid,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -270,7 +274,7 @@ private fun InsightsContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(category.label, modifier = Modifier.weight(1f))
-                        Text(formatCurrency(category.amount, state.currencyCode), color = palette.negative)
+                        Text(formatCurrency(category.amount, state.currencyCode), color = LocalFinanceExtendedColors.current.negative)
                     }
                 }
             }
@@ -297,7 +301,7 @@ private fun GoalsSection(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.semantics { heading() },
                 )
-                Text(stringResource(R.string.goals_subtitle), color = LocalFinancePalette.current.textMid)
+                Text(stringResource(R.string.goals_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             IconButton(onClick = onAddGoal) {
                 Icon(Icons.Outlined.Add, stringResource(R.string.add_goal))
@@ -319,7 +323,7 @@ private fun GoalsSection(
                     Text(stringResource(R.string.set_first_goal), style = MaterialTheme.typography.titleLarge)
                     Text(
                         stringResource(R.string.goals_empty_message),
-                        color = LocalFinancePalette.current.textMid,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -375,7 +379,7 @@ private fun GoalCard(
                     Text(
                         stringResource(R.string.goal_days_left, it),
                         style = MaterialTheme.typography.labelSmall,
-                        color = LocalFinancePalette.current.textDim,
+                        color = MaterialTheme.colorScheme.outline,
                     )
                 }
             }
@@ -384,7 +388,7 @@ private fun GoalCard(
                 progress = { fraction },
                 modifier = Modifier.fillMaxWidth(),
                 color = accent,
-                trackColor = LocalFinancePalette.current.hairline,
+                trackColor = MaterialTheme.colorScheme.outlineVariant,
             )
             Text(
                 text = stringResource(
@@ -393,7 +397,7 @@ private fun GoalCard(
                     formatCurrency(progress.goal.targetAmount, currencyCode),
                 ),
                 style = MaterialTheme.typography.labelSmall,
-                color = LocalFinancePalette.current.textMid,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -403,10 +407,9 @@ private fun GoalCard(
 
 @Composable
 private fun PaceCard(insight: PaceInsight) {
-    val palette = LocalFinancePalette.current
     val (icon, title, detail, color) = when (insight.direction) {
-        PaceDirection.UP -> listOf(Icons.Outlined.ArrowUpward, stringResource(R.string.pace_watch), stringResource(R.string.pace_watch_detail), palette.negative)
-        PaceDirection.DOWN -> listOf(Icons.Outlined.ArrowDownward, stringResource(R.string.pace_under), stringResource(R.string.pace_under_detail), palette.positive)
+        PaceDirection.UP -> listOf(Icons.Outlined.ArrowUpward, stringResource(R.string.pace_watch), stringResource(R.string.pace_watch_detail), LocalFinanceExtendedColors.current.negative)
+        PaceDirection.DOWN -> listOf(Icons.Outlined.ArrowDownward, stringResource(R.string.pace_under), stringResource(R.string.pace_under_detail), LocalFinanceExtendedColors.current.positive)
         PaceDirection.FLAT -> listOf(Icons.Outlined.Equalizer, stringResource(R.string.pace_on_track), stringResource(R.string.pace_on_track_detail), MaterialTheme.colorScheme.primary)
         PaceDirection.BUILDING -> listOf(Icons.Outlined.Equalizer, stringResource(R.string.pace_building), stringResource(R.string.pace_building_detail), MaterialTheme.colorScheme.primary)
     }
@@ -419,7 +422,7 @@ private fun PaceCard(insight: PaceInsight) {
             Icon(icon as androidx.compose.ui.graphics.vector.ImageVector, null, tint = color as Color, modifier = Modifier.size(32.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title as String, style = MaterialTheme.typography.titleLarge)
-                Text(detail as String, color = palette.textMid)
+                Text(detail as String, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             insight.percent?.let { Text(stringResource(R.string.pace_percent, it), color = color, style = MaterialTheme.typography.titleMedium) }
         }
@@ -430,10 +433,10 @@ private fun PaceCard(insight: PaceInsight) {
 private fun HealthSection(health: FinancialHealth?) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.health_score), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
-        Text(stringResource(R.string.health_score_detail), color = LocalFinancePalette.current.textMid)
+        Text(stringResource(R.string.health_score_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
         FinanceCard {
             if (health == null) {
-                Text(stringResource(R.string.health_score_empty), modifier = Modifier.fillMaxWidth().padding(24.dp), color = LocalFinancePalette.current.textMid)
+                Text(stringResource(R.string.health_score_empty), modifier = Modifier.fillMaxWidth().padding(24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 Row(Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("${health.score}", style = MaterialTheme.typography.displayMedium, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
@@ -441,12 +444,12 @@ private fun HealthSection(health: FinancialHealth?) {
                         Text(stringResource(R.string.health_score_value, health.score), style = MaterialTheme.typography.titleLarge)
                         health.components.forEach { component ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(component.name, modifier = Modifier.weight(1f), color = LocalFinancePalette.current.textMid)
+                                Text(component.name, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 androidx.compose.material3.LinearProgressIndicator(
                                     progress = { component.score.toFloat() / component.max },
                                     modifier = Modifier.width(90.dp),
                                     color = MaterialTheme.colorScheme.primary,
-                                    trackColor = LocalFinancePalette.current.hairline,
+                                    trackColor = MaterialTheme.colorScheme.outlineVariant,
                                 )
                                 Text(" ${component.score}/${component.max}", style = MaterialTheme.typography.labelMedium)
                             }
@@ -558,11 +561,11 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
                             singleLine = true,
                             colors = goalEditorTextFieldColors(),
                         )
-                        HorizontalDivider(color = LocalFinancePalette.current.hairline)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Text(
                             text = "${name.length}/24",
                             style = MaterialTheme.typography.labelMedium,
-                            color = if (name.length == 24) MaterialTheme.colorScheme.error else LocalFinancePalette.current.textDim,
+                            color = if (name.length == 24) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
                             modifier = Modifier.align(Alignment.End),
                         )
                     }
@@ -577,7 +580,7 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
                             .padding(start = 24.dp, end = 20.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(stringResource(R.string.amount), color = LocalFinancePalette.current.textMid)
+                        Text(stringResource(R.string.amount), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         TextField(
                             value = amountText,
                             onValueChange = { amountText = AmountInput.sanitize(it) },
@@ -592,7 +595,7 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
                             isError = amountText.isNotEmpty() && (parsedAmount == null || parsedAmount <= BigDecimal.ZERO),
                             colors = goalEditorTextFieldColors(),
                         )
-                        Text(stringResource(R.string.currency_eur), color = LocalFinancePalette.current.textMid)
+                        Text(stringResource(R.string.currency_eur), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     if (amountText.isNotEmpty() && (parsedAmount == null || parsedAmount <= BigDecimal.ZERO)) {
                         Text(stringResource(R.string.goal_target_error), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -720,13 +723,13 @@ private fun GoalDetailSheet(
                     formatCurrency(progress.currentAmount, currencyCode),
                     formatCurrency(progress.goal.targetAmount, currencyCode),
                 ),
-                color = LocalFinancePalette.current.textMid,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             androidx.compose.material3.LinearProgressIndicator(
                 progress = { fraction },
                 modifier = Modifier.fillMaxWidth(),
                 color = accent,
-                trackColor = LocalFinancePalette.current.hairline,
+                trackColor = MaterialTheme.colorScheme.outlineVariant,
             )
             OutlinedTextField(
                 value = contribution,
@@ -788,15 +791,15 @@ private fun DeleteGoalDialog(goal: FinanceGoal, onDismiss: () -> Unit, onConfirm
 
 @Composable
 private fun goalColor(token: String): Color {
-    val darkTheme = isSystemInDarkTheme()
+    val extended = LocalFinanceExtendedColors.current
     return when (token) {
-        "categoryGreen" -> if (darkTheme) Color(0xFF22D3A0) else Color(0xFF0A6B4F)
-        "categoryAmber" -> if (darkTheme) Color(0xFFF59E0B) else Color(0xFFB45309)
-        "categoryPink" -> if (darkTheme) Color(0xFFEC4899) else Color(0xFFDB2777)
-        "categoryPurple" -> if (darkTheme) Color(0xFF8B5CF6) else Color(0xFF7C3AED)
-        "categoryTeal" -> if (darkTheme) Color(0xFF14B8A6) else Color(0xFF0E7490)
-        "categoryGray" -> if (darkTheme) Color(0xFF94A3B8) else Color(0xFF64748B)
-        else -> if (darkTheme) Color(0xFF6366F1) else Color(0xFF4F46E5)
+        "categoryGreen" -> extended.categoryGreen
+        "categoryAmber" -> extended.categoryAmber
+        "categoryPink" -> extended.categoryPink
+        "categoryPurple" -> extended.categoryPurple
+        "categoryTeal" -> extended.categoryTeal
+        "categoryGray" -> extended.categoryGray
+        else -> extended.categoryIndigo
     }
 }
 

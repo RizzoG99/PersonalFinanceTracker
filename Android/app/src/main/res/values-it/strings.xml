@@ -144,7 +144,9 @@
     <string name="transaction_added">Transazione aggiunta</string>
     <string name="transaction_updated">Transazione aggiornata</string>
     <string name="transaction_deleted">Transazione eliminata</string>
+    <string name="transaction_saved">Transazione salvata</string>
     <string name="undo">Annulla</string>
+    <string name="toggle_theme">Cambia tema chiaro/scuro</string>
     <string name="dismiss">Chiudi</string>
     <string name="clear_filters">Cancella ricerca e filtri</string>
     <string name="no_matching_transactions">Nessuna transazione corrispondente</string>

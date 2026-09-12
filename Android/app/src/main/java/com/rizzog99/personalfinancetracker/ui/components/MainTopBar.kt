@@ -1,51 +1,56 @@
 package com.rizzog99.personalfinancetracker.ui.components
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.rizzog99.personalfinancetracker.R
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
 
-/** Consistent top-level controls for every main tab; feature content starts below this bar. */
+/**
+ * Consistent top bar for every main tab: a title, screen-specific actions,
+ * then the theme toggle and settings entry point shared by all three.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainTopBar(
+    title: String,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     onOpenSettings: () -> Unit,
-    onAddTransaction: () -> Unit,
-    onScanReceipt: () -> Unit,
+    screenActions: @Composable () -> Unit = {},
 ) {
     TopAppBar(
-        title = {},
-        navigationIcon = {
-            IconButton(onClick = onOpenSettings) {
-                Icon(Icons.Outlined.Settings, stringResource(R.string.settings_title))
-            }
-        },
+        title = { Text(title) },
         actions = {
-            IconButton(onClick = onScanReceipt) {
-                Icon(Icons.Outlined.DocumentScanner, stringResource(R.string.scan_receipt))
-            }
-            FilledIconButton(onClick = onAddTransaction) {
-                Icon(
-                    imageVector = Icons.Outlined.Add,
-                    contentDescription = stringResource(R.string.add_transaction),
-                )
+            Row {
+                screenActions()
+                IconButton(onClick = onToggleTheme) {
+                    Icon(
+                        imageVector = if (isDarkTheme) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                        contentDescription = stringResource(R.string.toggle_theme),
+                    )
+                }
+                IconButton(onClick = onOpenSettings) {
+                    Icon(Icons.Outlined.Settings, stringResource(R.string.settings_title))
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
-            navigationIconContentColor = LocalFinancePalette.current.textMid,
-            actionIconContentColor = LocalFinancePalette.current.textMid,
+            containerColor = MaterialTheme.colorScheme.surface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
+        modifier = Modifier,
     )
 }

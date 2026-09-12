@@ -65,7 +65,7 @@ import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,8 +110,8 @@ fun CategorySettingsScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = androidx.compose.ui.graphics.Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = LocalFinancePalette.current.textMid,
-                    actionIconContentColor = LocalFinancePalette.current.textMid,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
         },
@@ -200,7 +200,7 @@ private fun CategorySettingsContent(
             state.isLoading -> item {
                 Text(
                     text = stringResource(R.string.loading),
-                    color = LocalFinancePalette.current.textMid,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 24.dp),
                 )
             }
@@ -226,7 +226,7 @@ private fun CategorySectionTitle(textRes: Int) {
     Text(
         text = stringResource(textRes),
         style = MaterialTheme.typography.labelLarge,
-        color = LocalFinancePalette.current.textDim,
+        color = MaterialTheme.colorScheme.outline,
         modifier = Modifier.padding(start = 4.dp, top = 8.dp).semantics { heading() },
     )
 }
@@ -270,7 +270,7 @@ private fun EmptyCategoriesState(onAdd: () -> Unit) {
         )
         Text(
             text = stringResource(R.string.empty_categories_message),
-            color = LocalFinancePalette.current.textMid,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Button(onClick = onAdd) { Text(stringResource(R.string.add_category)) }
     }
@@ -505,12 +505,17 @@ private fun categoryNameErrorText(error: CategoryNameError?): Int? = when (error
 private enum class CategoryNameError { BLANK, INVALID, DUPLICATE }
 
 @Composable
-fun categoryColor(token: String) = when (token) {
-    "categoryGreen", "categoryTeal" -> MaterialTheme.colorScheme.secondary
-    "categoryAmber" -> MaterialTheme.colorScheme.tertiary
-    "categoryGray" -> MaterialTheme.colorScheme.outline
-    "categoryPink", "categoryPurple", "categoryIndigo" -> MaterialTheme.colorScheme.primary
-    else -> MaterialTheme.colorScheme.primary
+fun categoryColor(token: String): androidx.compose.ui.graphics.Color {
+    val extended = com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors.current
+    return when (token) {
+        "categoryGreen" -> extended.categoryGreen
+        "categoryAmber" -> extended.categoryAmber
+        "categoryPink" -> extended.categoryPink
+        "categoryPurple" -> extended.categoryPurple
+        "categoryTeal" -> extended.categoryTeal
+        "categoryGray" -> extended.categoryGray
+        else -> extended.categoryIndigo
+    }
 }
 
 @Composable

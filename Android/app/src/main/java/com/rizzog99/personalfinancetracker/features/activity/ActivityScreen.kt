@@ -118,7 +118,7 @@ import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
 import java.io.File
 import java.time.Instant
@@ -132,6 +132,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     onOpenSettings: () -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
@@ -155,14 +157,15 @@ fun ActivityScreen(
     Scaffold(
         topBar = {
             MainTopBar(
+                title = stringResource(R.string.tab_activity),
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
                 onOpenSettings = onOpenSettings,
-                onAddTransaction = { isCreating = true },
-                onScanReceipt = { isCreating = true },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) { innerPadding ->
         ActivityContent(
             state = state,
@@ -418,12 +421,11 @@ private fun ActivitySummaryCards(
     currencyCode: String,
     modifier: Modifier,
 ) {
-    val palette = LocalFinancePalette.current
     ActivitySummaryAmount(
         modifier = modifier,
         label = stringResource(R.string.filter_income),
         value = formatSignedCurrency(income, currencyCode),
-        color = palette.positive,
+        color = LocalFinanceExtendedColors.current.positive,
     )
     ActivitySummaryAmount(
         modifier = modifier,
@@ -433,8 +435,8 @@ private fun ActivitySummaryCards(
         } else {
             formatSignedCurrency(expenses.negate(), currencyCode)
         },
-        color = palette.negative,
-        valueColor = if (expenses.signum() == 0) palette.textMid else palette.negative,
+        color = LocalFinanceExtendedColors.current.negative,
+        valueColor = if (expenses.signum() == 0) MaterialTheme.colorScheme.onSurfaceVariant else LocalFinanceExtendedColors.current.negative,
     )
 }
 
@@ -665,9 +667,9 @@ private fun TransactionRow(
     onDelete: () -> Unit,
 ) {
     val amountColor = if (transaction.amount < BigDecimal.ZERO) {
-        LocalFinancePalette.current.negative
+        LocalFinanceExtendedColors.current.negative
     } else {
-        LocalFinancePalette.current.positive
+        LocalFinanceExtendedColors.current.positive
     }
     val largeText = LocalDensity.current.fontScale >= 1.3f
 
@@ -686,7 +688,7 @@ private fun TransactionRow(
                         Text(
                             text = "${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = LocalFinancePalette.current.textMid,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Spacer(Modifier.width(12.dp))
@@ -940,7 +942,7 @@ fun TransactionEditorSheet(
                     Text(
                         text = status,
                         modifier = Modifier.padding(12.dp),
-                        color = LocalFinancePalette.current.textMid,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -969,7 +971,7 @@ fun TransactionEditorSheet(
                 Text(
                     text = "€",
                     style = MaterialTheme.typography.displaySmall,
-                    color = LocalFinancePalette.current.textMid,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = 28.dp),
@@ -1005,7 +1007,7 @@ fun TransactionEditorSheet(
                                 Text(
                                     text = "0",
                                     style = MaterialTheme.typography.displayLarge,
-                                    color = LocalFinancePalette.current.textMid,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.fillMaxWidth(),
                                 )
@@ -1050,7 +1052,7 @@ fun TransactionEditorSheet(
                     Text(
                         text = stringResource(R.string.categories),
                         style = MaterialTheme.typography.titleMedium,
-                        color = LocalFinancePalette.current.textMid,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Row(
                         modifier = Modifier
@@ -1104,7 +1106,7 @@ fun TransactionEditorSheet(
                         Text(
                             stringResource(R.string.repeat_transaction_detail),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = LocalFinancePalette.current.textMid,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Switch(
@@ -1237,7 +1239,7 @@ private fun CategoryPickerTile(
             )
             .border(
                 width = if (selected) 2.dp else 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary else LocalFinancePalette.current.hairline,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                 shape = shape,
             )
             .clickable(role = Role.RadioButton, onClick = onClick)
@@ -1281,7 +1283,7 @@ private fun MoreCategoriesTile(onClick: () -> Unit) {
         modifier = Modifier
             .width(108.dp)
             .height(88.dp)
-            .border(1.dp, LocalFinancePalette.current.hairline, shape)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1290,7 +1292,7 @@ private fun MoreCategoriesTile(onClick: () -> Unit) {
         Icon(
             imageVector = Icons.Outlined.MoreHoriz,
             contentDescription = null,
-            tint = LocalFinancePalette.current.textMid,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = stringResource(R.string.more_categories),
@@ -1346,7 +1348,7 @@ private fun CategoryPickerSheet(
             if (filteredCategories.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_matching_categories),
-                    color = LocalFinancePalette.current.textMid,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 24.dp),
                 )
             } else {

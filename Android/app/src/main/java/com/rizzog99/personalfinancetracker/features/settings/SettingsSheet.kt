@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +81,7 @@ fun SettingsSheet(
             Text(
                 text = stringResource(R.string.pay_cycle),
                 style = MaterialTheme.typography.labelLarge,
-                color = LocalFinancePalette.current.textDim,
+                color = MaterialTheme.colorScheme.outline,
             )
             Text(
                 text = stringResource(R.string.pay_cycle_start_day, state.payCycleStartDay),
@@ -113,7 +113,7 @@ fun SettingsSheet(
             Text(
                 text = stringResource(R.string.pay_cycle_detail, state.payCycleStartDay, endDay),
                 style = MaterialTheme.typography.bodyMedium,
-                color = LocalFinancePalette.current.textMid,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             ListItem(
                 modifier = Modifier

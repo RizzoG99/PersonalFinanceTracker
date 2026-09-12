@@ -4,42 +4,46 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.Savings
+import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.features.activity.ActivityScreen
@@ -51,9 +55,7 @@ import com.rizzog99.personalfinancetracker.features.data.DataTransferScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
 import com.rizzog99.personalfinancetracker.features.insights.InsightsScreen
 import com.rizzog99.personalfinancetracker.features.settings.SettingsSheet
-import com.rizzog99.personalfinancetracker.ui.components.AppBackground
-import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
-import com.rizzog99.personalfinancetracker.ui.theme.LocalFinancePalette
+import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 
 private sealed class MainDestination(
@@ -74,12 +76,12 @@ private val mainDestinations = listOf(
     MainDestination.Insights,
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonalFinanceNavHost() {
     val navController = rememberNavController()
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
-    val palette = LocalFinancePalette.current
     val transactionEditorViewModel: ActivityViewModel = viewModel(
         factory = ActivityViewModel.factory(
             transactionRepository = application.transactionRepository,
@@ -92,6 +94,21 @@ fun PersonalFinanceNavHost() {
     var dashboardTransactionEditorVisible by rememberSaveable { mutableStateOf(false) }
     var settingsVisible by rememberSaveable { mutableStateOf(false) }
     var tabTransitionDirection by rememberSaveable { mutableStateOf(1) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val systemDark = isSystemInDarkTheme()
+    val themeMode by application.preferencesRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
+    val isDarkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> systemDark
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    val onToggleTheme: () -> Unit = {
+        transactionEditorScope.launch {
+            application.preferencesRepository.setThemeMode(if (isDarkTheme) ThemeMode.LIGHT else ThemeMode.DARK)
+        }
+    }
+
     val navigateToMainDestination: (MainDestination) -> Unit = { destination ->
         val currentRoute = currentDestination?.route
         if (currentRoute != destination.route) {
@@ -111,122 +128,33 @@ fun PersonalFinanceNavHost() {
         tabTransitionDirection = -1
         navController.popBackStack()
     }
+    val savedMessage = stringResource(R.string.transaction_saved)
+    val undoLabel = stringResource(R.string.undo)
+    val onTransactionSaved: () -> Unit = {
+        transactionEditorScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(message = savedMessage, actionLabel = undoLabel, duration = androidx.compose.material3.SnackbarDuration.Short)
+        }
+    }
+    val onMainDestination = currentDestination?.route in mainDestinations.map(MainDestination::route)
 
-    AppBackground {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding(),
-        ) {
-            NavHost(
-                navController = navController,
-                startDestination = MainDestination.Home.route,
-                modifier = Modifier.weight(1f),
-                enterTransition = {
-                    slideInHorizontally(
-                        initialOffsetX = { width -> tabTransitionDirection * width },
-                        animationSpec = tween(durationMillis = 280),
-                    )
-                },
-                exitTransition = {
-                    slideOutHorizontally(
-                        targetOffsetX = { width -> -tabTransitionDirection * width },
-                        animationSpec = tween(durationMillis = 280),
-                    )
-                },
-                popEnterTransition = {
-                    slideInHorizontally(
-                        initialOffsetX = { width -> tabTransitionDirection * width },
-                        animationSpec = tween(durationMillis = 280),
-                    )
-                },
-                popExitTransition = {
-                    slideOutHorizontally(
-                        targetOffsetX = { width -> -tabTransitionDirection * width },
-                        animationSpec = tween(durationMillis = 280),
-                    )
-                },
-            ) {
-                composable(MainDestination.Home.route) {
-                    HomeScreen(
-                        onViewActivity = {
-                            navigateToMainDestination(MainDestination.Activity)
-                        },
-                        onAddTransaction = {
-                            dashboardTransactionEditorVisible = true
-                        },
-                        onOpenSettings = { settingsVisible = true },
-                    )
-                }
-                composable(MainDestination.Activity.route) {
-                    ActivityScreen(onOpenSettings = { settingsVisible = true })
-                }
-                composable(MainDestination.Insights.route) {
-                    InsightsScreen(
-                        onAddTransaction = { dashboardTransactionEditorVisible = true },
-                        onOpenSettings = { settingsVisible = true },
-                    )
-                }
-                composable(MainDestination.Categories.route) {
-                    CategorySettingsScreen(onBack = navigateBackFromSecondary)
-                }
-                composable(MainDestination.Budgets.route) {
-                    BudgetsScreen(onBack = navigateBackFromSecondary)
-                }
-                composable(MainDestination.DataTransfer.route) {
-                    DataTransferScreen(onBack = navigateBackFromSecondary)
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
+        floatingActionButton = {
+            if (onMainDestination) {
+                FloatingActionButton(onClick = { dashboardTransactionEditorVisible = true }) {
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_transaction))
                 }
             }
-
-            if (settingsVisible) {
-                SettingsSheet(
-                    onDismiss = { settingsVisible = false },
-                    onOpenCategories = {
-                        settingsVisible = false
-                        navigateToSecondaryDestination(MainDestination.Categories)
-                    },
-                    onOpenBudgets = {
-                        settingsVisible = false
-                        navigateToSecondaryDestination(MainDestination.Budgets)
-                    },
-                    onOpenDataTransfer = {
-                        settingsVisible = false
-                        navigateToSecondaryDestination(MainDestination.DataTransfer)
-                    },
-                )
-            }
-
-            if (dashboardTransactionEditorVisible) {
-                TransactionEditorSheet(
-                    editingTransaction = null,
-                    categories = transactionEditorState.categories,
-                    receiptMappingRepository = application.receiptMappingRepository,
-                    onDismiss = { dashboardTransactionEditorVisible = false },
-                    onSave = { transaction, recurrenceRule, receiptMerchant ->
-                        transactionEditorScope.launch {
-                            val saved = recurrenceRule?.let {
-                                transactionEditorViewModel.createRecurringTransaction(it)
-                            } ?: transactionEditorViewModel.save(transaction)
-                            if (saved) {
-                                if (receiptMerchant != null && transaction.categoryId != null) {
-                                    application.receiptMappingRepository.remember(receiptMerchant, transaction.categoryId)
-                                }
-                                dashboardTransactionEditorVisible = false
-                            }
-                        }
-                    },
-                )
-            }
-
-            if (currentDestination?.route in mainDestinations.map(MainDestination::route)) {
-                NavigationBar(containerColor = palette.surfaceRaised) {
+        },
+        bottomBar = {
+            if (onMainDestination) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                     mainDestinations.forEach { destination ->
                         val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
                         NavigationBarItem(
                             selected = selected,
-                            onClick = {
-                                navigateToMainDestination(destination)
-                            },
+                            onClick = { navigateToMainDestination(destination) },
                             icon = {
                                 Icon(
                                     imageVector = destination.icon(),
@@ -244,6 +172,111 @@ fun PersonalFinanceNavHost() {
                     }
                 }
             }
+        },
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = MainDestination.Home.route,
+            modifier = Modifier.padding(padding),
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { width -> tabTransitionDirection * width },
+                    animationSpec = tween(durationMillis = 280),
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { width -> -tabTransitionDirection * width },
+                    animationSpec = tween(durationMillis = 280),
+                )
+            },
+            popEnterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { width -> tabTransitionDirection * width },
+                    animationSpec = tween(durationMillis = 280),
+                )
+            },
+            popExitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { width -> -tabTransitionDirection * width },
+                    animationSpec = tween(durationMillis = 280),
+                )
+            },
+        ) {
+            composable(MainDestination.Home.route) {
+                HomeScreen(
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    onViewActivity = {
+                        navigateToMainDestination(MainDestination.Activity)
+                    },
+                    onOpenSettings = { settingsVisible = true },
+                )
+            }
+            composable(MainDestination.Activity.route) {
+                ActivityScreen(
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    onOpenSettings = { settingsVisible = true },
+                )
+            }
+            composable(MainDestination.Insights.route) {
+                InsightsScreen(
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    onOpenSettings = { settingsVisible = true },
+                )
+            }
+            composable(MainDestination.Categories.route) {
+                CategorySettingsScreen(onBack = navigateBackFromSecondary)
+            }
+            composable(MainDestination.Budgets.route) {
+                BudgetsScreen(onBack = navigateBackFromSecondary)
+            }
+            composable(MainDestination.DataTransfer.route) {
+                DataTransferScreen(onBack = navigateBackFromSecondary)
+            }
+        }
+
+        if (settingsVisible) {
+            SettingsSheet(
+                onDismiss = { settingsVisible = false },
+                onOpenCategories = {
+                    settingsVisible = false
+                    navigateToSecondaryDestination(MainDestination.Categories)
+                },
+                onOpenBudgets = {
+                    settingsVisible = false
+                    navigateToSecondaryDestination(MainDestination.Budgets)
+                },
+                onOpenDataTransfer = {
+                    settingsVisible = false
+                    navigateToSecondaryDestination(MainDestination.DataTransfer)
+                },
+            )
+        }
+
+        if (dashboardTransactionEditorVisible) {
+            TransactionEditorSheet(
+                editingTransaction = null,
+                categories = transactionEditorState.categories,
+                receiptMappingRepository = application.receiptMappingRepository,
+                onDismiss = { dashboardTransactionEditorVisible = false },
+                onSave = { transaction, recurrenceRule, receiptMerchant ->
+                    transactionEditorScope.launch {
+                        val saved = recurrenceRule?.let {
+                            transactionEditorViewModel.createRecurringTransaction(it)
+                        } ?: transactionEditorViewModel.save(transaction)
+                        if (saved) {
+                            if (receiptMerchant != null && transaction.categoryId != null) {
+                                application.receiptMappingRepository.remember(receiptMerchant, transaction.categoryId)
+                            }
+                            dashboardTransactionEditorVisible = false
+                            onTransactionSaved()
+                        }
+                    }
+                },
+            )
         }
     }
 }
@@ -260,6 +293,6 @@ private fun MainDestination.icon() = when (this) {
     MainDestination.Activity -> Icons.AutoMirrored.Outlined.List
     MainDestination.Insights -> Icons.Outlined.Insights
     MainDestination.Categories -> Icons.Outlined.Category
-    MainDestination.Budgets -> Icons.Outlined.Category
-    MainDestination.DataTransfer -> Icons.Outlined.Category
+    MainDestination.Budgets -> Icons.Outlined.Savings
+    MainDestination.DataTransfer -> Icons.Outlined.SwapVert
 }
