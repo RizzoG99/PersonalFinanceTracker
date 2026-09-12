@@ -38,6 +38,8 @@
     <string name="import_file_error">Non è stato possibile leggere questo file CSV. Verifica che abbia una riga di intestazione.</string>
     <string name="import_preview">Anteprima · %1$d righe</string>
     <string name="import_mapping_title">Mappa colonne · %1$d righe</string>
+    <string name="import_choose_sheet">Scegli un foglio</string>
+    <string name="import_choose_sheet_detail">Seleziona il foglio di lavoro con i movimenti da importare.</string>
     <string name="import_date_column">Data</string>
     <string name="import_amount_column">Importo</string>
     <string name="import_category_column">Categoria</string>

@@ -38,6 +38,8 @@
     <string name="import_file_error">Couldn’t read this CSV file. Check that it has a header row.</string>
     <string name="import_preview">Preview · %1$d rows</string>
     <string name="import_mapping_title">Map columns · %1$d rows</string>
+    <string name="import_choose_sheet">Choose a sheet</string>
+    <string name="import_choose_sheet_detail">Select the worksheet containing the transactions to import.</string>
     <string name="import_date_column">Date</string>
     <string name="import_amount_column">Amount</string>
     <string name="import_category_column">Category</string>

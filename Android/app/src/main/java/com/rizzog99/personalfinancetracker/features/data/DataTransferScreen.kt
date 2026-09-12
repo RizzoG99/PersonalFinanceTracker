@@ -70,23 +70,30 @@ fun DataTransferScreen(onBack: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var importedFile by remember { mutableStateOf<CsvImportParser.CsvFile?>(null) }
+    var importedWorkbook by remember { mutableStateOf<XlsxImportService.Workbook?>(null) }
     var importError by remember { mutableStateOf<String?>(null) }
     val openCsvDocument = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         runCatching {
-            context.contentResolver.openInputStream(uri)?.use { input ->
+            requireNotNull(context.contentResolver.openInputStream(uri)) { "Could not open the selected file." }.use { input ->
                 val bytes = input.readBytes()
-                if (bytes.take(2).toByteArray().contentEquals(byteArrayOf('P'.code.toByte(), 'K'.code.toByte()))) XlsxImportService.read(bytes)
+                if (bytes.take(2).toByteArray().contentEquals(byteArrayOf('P'.code.toByte(), 'K'.code.toByte()))) {
+                    val workbook = XlsxImportService.readWorkbook(bytes)
+                    if (workbook.sheets.size == 1) workbook.sheets.single().file else {
+                        importedWorkbook = workbook
+                        return@use null
+                    }
+                }
                 else CsvImportParser.parse(bytes.toString(Charsets.UTF_8))
             }
-                ?: error("Could not open the selected file.")
         }.onSuccess {
-            importedFile = it
+            if (it != null) importedFile = it
             importError = null
         }.onFailure {
             importedFile = null
+            importedWorkbook = null
             importError = context.getString(R.string.import_file_error)
         }
     }
@@ -164,6 +171,18 @@ fun DataTransferScreen(onBack: () -> Unit) {
             importedFile?.let { file -> CsvPreview(file, state.transactions, state.categories) { transactions, selections ->
                 viewModel.import(transactions, selections) { success -> scope.launch { snackbarHostState.showSnackbar(context.getString(if (success) R.string.import_complete else R.string.import_failed)) } }
             } }
+            importedWorkbook?.let { workbook -> SheetPicker(workbook) { sheet -> importedWorkbook = null; importedFile = sheet.file } }
+        }
+    }
+}
+
+@Composable
+private fun SheetPicker(workbook: XlsxImportService.Workbook, onSelect: (XlsxImportService.Sheet) -> Unit) {
+    FinanceCard {
+        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.import_choose_sheet), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.import_choose_sheet_detail), color = LocalFinancePalette.current.textMid)
+            workbook.sheets.forEach { sheet -> TextButton(onClick = { onSelect(sheet) }) { Text(sheet.name) } }
         }
     }
 }
