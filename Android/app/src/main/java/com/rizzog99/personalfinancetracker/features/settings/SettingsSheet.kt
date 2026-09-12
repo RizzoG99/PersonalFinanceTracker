@@ -47,6 +47,7 @@ fun SettingsSheet(
     onDismiss: () -> Unit,
     onOpenCategories: () -> Unit,
     onOpenBudgets: () -> Unit,
+    onOpenDataTransfer: () -> Unit,
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: SettingsViewModel = viewModel(
@@ -133,6 +134,19 @@ fun SettingsSheet(
                     .clickable(role = Role.Button, onClick = onOpenBudgets),
                 headlineContent = { Text(stringResource(R.string.budgets_title)) },
                 supportingContent = { Text(stringResource(R.string.budgets_settings_detail)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
+                    )
+                },
+            )
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onOpenDataTransfer),
+                headlineContent = { Text(stringResource(R.string.import_export_title)) },
+                supportingContent = { Text(stringResource(R.string.import_export_settings_detail)) },
                 trailingContent = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowForward,

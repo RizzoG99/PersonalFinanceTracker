@@ -47,6 +47,7 @@ import com.rizzog99.personalfinancetracker.features.activity.ActivityViewModel
 import com.rizzog99.personalfinancetracker.features.activity.TransactionEditorSheet
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsScreen
 import com.rizzog99.personalfinancetracker.features.budgets.BudgetsScreen
+import com.rizzog99.personalfinancetracker.features.data.DataTransferScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
 import com.rizzog99.personalfinancetracker.features.insights.InsightsScreen
 import com.rizzog99.personalfinancetracker.features.settings.SettingsSheet
@@ -64,6 +65,7 @@ private sealed class MainDestination(
     data object Insights : MainDestination("insights", R.string.tab_insights)
     data object Categories : MainDestination("categories", R.string.category_settings_title)
     data object Budgets : MainDestination("budgets", R.string.budgets_title)
+    data object DataTransfer : MainDestination("data-transfer", R.string.import_export_title)
 }
 
 private val mainDestinations = listOf(
@@ -100,6 +102,14 @@ fun PersonalFinanceNavHost() {
                 restoreState = true
             }
         }
+    }
+    val navigateToSecondaryDestination: (MainDestination) -> Unit = { destination ->
+        tabTransitionDirection = 1
+        navController.navigate(destination.route) { launchSingleTop = true }
+    }
+    val navigateBackFromSecondary: () -> Unit = {
+        tabTransitionDirection = -1
+        navController.popBackStack()
     }
 
     AppBackground {
@@ -158,10 +168,13 @@ fun PersonalFinanceNavHost() {
                     )
                 }
                 composable(MainDestination.Categories.route) {
-                    CategorySettingsScreen(onBack = { navController.popBackStack() })
+                    CategorySettingsScreen(onBack = navigateBackFromSecondary)
                 }
                 composable(MainDestination.Budgets.route) {
-                    BudgetsScreen(onBack = { navController.popBackStack() })
+                    BudgetsScreen(onBack = navigateBackFromSecondary)
+                }
+                composable(MainDestination.DataTransfer.route) {
+                    DataTransferScreen(onBack = navigateBackFromSecondary)
                 }
             }
 
@@ -170,11 +183,15 @@ fun PersonalFinanceNavHost() {
                     onDismiss = { settingsVisible = false },
                     onOpenCategories = {
                         settingsVisible = false
-                        navController.navigate(MainDestination.Categories.route)
+                        navigateToSecondaryDestination(MainDestination.Categories)
                     },
                     onOpenBudgets = {
                         settingsVisible = false
-                        navController.navigate(MainDestination.Budgets.route)
+                        navigateToSecondaryDestination(MainDestination.Budgets)
+                    },
+                    onOpenDataTransfer = {
+                        settingsVisible = false
+                        navigateToSecondaryDestination(MainDestination.DataTransfer)
                     },
                 )
             }
@@ -244,4 +261,5 @@ private fun MainDestination.icon() = when (this) {
     MainDestination.Insights -> Icons.Outlined.Insights
     MainDestination.Categories -> Icons.Outlined.Category
     MainDestination.Budgets -> Icons.Outlined.Category
+    MainDestination.DataTransfer -> Icons.Outlined.Category
 }
