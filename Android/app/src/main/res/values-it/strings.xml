@@ -76,6 +76,7 @@
     <string name="import_confirm_title">Importare i movimenti?</string>
     <string name="import_confirm_message">%1$d movimenti verranno aggiunti all’attività. L’operazione non può essere annullata.</string>
     <string name="import_transactions">Importa %1$d movimenti</string>
+    <string name="importing_transactions">Importazione in corso…</string>
     <string name="import_complete">Movimenti importati.</string>
     <string name="import_failed">Non è stato possibile importare i movimenti. Riprova.</string>
     <string name="import_mapping_next">Prossimo passo: mappa le colonne data, importo, categoria e nota.</string>

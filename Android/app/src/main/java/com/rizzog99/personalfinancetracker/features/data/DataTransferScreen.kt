@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileOpen
 import androidx.compose.material3.Button
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -124,10 +123,13 @@ fun DataTransferScreen(onBack: () -> Unit) {
             existing = state.transactions,
             categories = state.categories,
             onCancel = { importedFile = null },
-            onImport = { transactions, selections ->
+            onImport = { transactions, selections, finished ->
                 viewModel.import(transactions, selections) { success ->
-                    scope.launch { snackbarHostState.showSnackbar(context.getString(if (success) R.string.import_complete else R.string.import_failed)) }
-                    if (success) importedFile = null
+                    if (success) {
+                        importedFile = null
+                        scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.import_complete)) }
+                    }
+                    finished(success)
                 }
             },
         )
@@ -191,7 +193,7 @@ fun DataTransferScreen(onBack: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>) -> Unit) {
+private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>, (Boolean) -> Unit) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -220,7 +222,7 @@ private fun SheetPicker(workbook: XlsxImportService.Workbook, onSelect: (XlsxImp
 }
 
 @Composable
-private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>) -> Unit) {
+private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>, (Boolean) -> Unit) -> Unit) {
     var step by remember(file) { mutableStateOf(1) }
     var dateColumn by remember(file) { mutableStateOf(file.headers.matching("date", "period")) }
     var amountColumn by remember(file) { mutableStateOf(file.headers.matching("amount", "value")) }
@@ -237,7 +239,8 @@ private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzo
     }
     val duplicates = resolved.filter { candidate -> existing.any { it.timestamp == candidate.timestamp && it.amount.compareTo(candidate.amount) == 0 && it.note == candidate.note } }
     val candidates = resolved - duplicates.toSet()
-    var confirming by remember(file, dateColumn, amountColumn, categoryColumn, noteColumn, typeColumn, dateFormat, signConvention, categorySelections) { mutableStateOf(false) }
+    var importing by remember(file) { mutableStateOf(false) }
+    var importFailed by remember(file) { mutableStateOf(false) }
     val canContinue = dateColumn != null && amountColumn != null && validation != null
     val title = when (step) { 1 -> R.string.import_map_columns; 2 -> R.string.import_map_categories; else -> R.string.import_preview_title }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -297,19 +300,18 @@ private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzo
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TextButton(onClick = { if (step == 1) onCancel() else step-- }) { Text(stringResource(if (step == 1) R.string.cancel else R.string.back)) }
-            Button(onClick = { if (step < 3) step++ else confirming = true }, enabled = if (step == 1) canContinue else candidates.isNotEmpty()) {
-                if (step < 3) Text(stringResource(R.string.continue_label)) else Text(stringResource(R.string.import_transactions, candidates.size))
+            Button(onClick = {
+                if (step < 3) step++ else {
+                    importing = true
+                    importFailed = false
+                    onImport(candidates, categorySelections) { success -> importing = false; importFailed = !success }
+                }
+            }, enabled = !importing && (if (step == 1) canContinue else candidates.isNotEmpty())) {
+                if (importing) Text(stringResource(R.string.importing_transactions))
+                else if (step < 3) Text(stringResource(R.string.continue_label)) else Text(stringResource(R.string.import_transactions, candidates.size))
             }
         }
-    }
-    if (confirming) {
-        AlertDialog(
-            onDismissRequest = { confirming = false },
-            title = { Text(stringResource(R.string.import_confirm_title)) },
-            text = { Text(stringResource(R.string.import_confirm_message, candidates.size)) },
-            confirmButton = { Button(onClick = { confirming = false; onImport(candidates, categorySelections) }) { Text(stringResource(R.string.import_transactions, candidates.size)) } },
-            dismissButton = { TextButton(onClick = { confirming = false }) { Text(stringResource(R.string.cancel)) } },
-        )
+        if (importFailed) Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error)
     }
 }
 

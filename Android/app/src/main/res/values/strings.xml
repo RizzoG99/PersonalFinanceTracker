@@ -76,6 +76,7 @@
     <string name="import_confirm_title">Import transactions?</string>
     <string name="import_confirm_message">%1$d transactions will be added to your activity. This can’t be undone.</string>
     <string name="import_transactions">Import %1$d transactions</string>
+    <string name="importing_transactions">Importing…</string>
     <string name="import_complete">Transactions imported.</string>
     <string name="import_failed">Couldn’t import transactions. Try again.</string>
     <string name="import_mapping_next">Next: map the date, amount, category, and note columns.</string>
