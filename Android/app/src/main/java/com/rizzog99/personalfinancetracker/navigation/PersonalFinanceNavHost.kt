@@ -136,7 +136,8 @@ fun PersonalFinanceNavHost() {
             snackbarHostState.showSnackbar(message = savedMessage, actionLabel = undoLabel, duration = androidx.compose.material3.SnackbarDuration.Short)
         }
     }
-    val onMainDestination = currentDestination?.route in mainDestinations.map(MainDestination::route)
+    val onMainDestination = currentDestination?.route in mainDestinations.map(MainDestination::route) &&
+        !settingsVisible && !dashboardTransactionEditorVisible
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
