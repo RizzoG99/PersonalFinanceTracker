@@ -147,6 +147,9 @@
     <string name="transaction_saved">Transaction saved</string>
     <string name="undo">Undo</string>
     <string name="toggle_theme">Toggle light/dark theme</string>
+    <string name="hide_balance">Hide balance</string>
+    <string name="show_balance">Show balance</string>
+    <string name="balance_hidden_placeholder">••••••</string>
     <string name="dismiss">Dismiss</string>
     <string name="clear_filters">Clear search and filters</string>
     <string name="no_matching_transactions">No matching transactions</string>

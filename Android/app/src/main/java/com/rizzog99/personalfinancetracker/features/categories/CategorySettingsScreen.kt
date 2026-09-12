@@ -108,15 +108,16 @@ fun CategorySettingsScreen(onBack: () -> Unit) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) { innerPadding ->
         CategorySettingsContent(
             state = state,

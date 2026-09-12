@@ -147,6 +147,9 @@
     <string name="transaction_saved">Transazione salvata</string>
     <string name="undo">Annulla</string>
     <string name="toggle_theme">Cambia tema chiaro/scuro</string>
+    <string name="hide_balance">Nascondi saldo</string>
+    <string name="show_balance">Mostra saldo</string>
+    <string name="balance_hidden_placeholder">••••••</string>
     <string name="dismiss">Chiudi</string>
     <string name="clear_filters">Cancella ricerca e filtri</string>
     <string name="no_matching_transactions">Nessuna transazione corrispondente</string>

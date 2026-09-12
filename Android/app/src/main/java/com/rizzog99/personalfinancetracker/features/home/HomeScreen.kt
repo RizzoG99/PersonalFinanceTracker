@@ -17,9 +17,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -49,6 +53,7 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
 import java.time.LocalTime
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -65,6 +70,8 @@ fun HomeScreen(
         ),
     )
     val state by viewModel.uiState.collectAsState()
+    val hideBalance by application.preferencesRepository.hideBalance.collectAsState(initial = false)
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -73,6 +80,16 @@ fun HomeScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 onOpenSettings = onOpenSettings,
+                screenActions = {
+                    IconButton(onClick = {
+                        scope.launch { application.preferencesRepository.setHideBalance(!hideBalance) }
+                    }) {
+                        Icon(
+                            imageVector = if (hideBalance) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                            contentDescription = stringResource(if (hideBalance) R.string.show_balance else R.string.hide_balance),
+                        )
+                    }
+                },
             )
         },
         containerColor = MaterialTheme.colorScheme.surface,
@@ -82,6 +99,7 @@ fun HomeScreen(
             state.isLoading -> LoadingState(modifier = Modifier.padding(innerPadding))
             else -> HomeContent(
                 state = state,
+                hideBalance = hideBalance,
                 onViewActivity = onViewActivity,
                 modifier = Modifier.padding(innerPadding),
             )
@@ -92,6 +110,7 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(
     state: HomeUiState,
+    hideBalance: Boolean,
     onViewActivity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -119,6 +138,7 @@ private fun HomeContent(
             income = metrics.periodIncome,
             expenses = metrics.periodExpenses,
             currencyCode = state.currencyCode,
+            hideBalance = hideBalance,
         )
         if (metrics.recentTransactions.isEmpty()) {
             EmptyDashboardCard(onViewActivity = onViewActivity)
@@ -138,9 +158,11 @@ private fun BalanceCard(
     income: java.math.BigDecimal,
     expenses: java.math.BigDecimal,
     currencyCode: String,
+    hideBalance: Boolean,
 ) {
     val hasPeriodTransactions = income.signum() != 0 || expenses.signum() != 0
     val useVerticalStats = LocalDensity.current.fontScale >= 1.3f
+    val placeholder = stringResource(R.string.balance_hidden_placeholder)
     FinanceCard {
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
@@ -152,7 +174,7 @@ private fun BalanceCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = totalBalance,
+                text = if (hideBalance) placeholder else totalBalance,
                 style = MaterialTheme.typography.displaySmall,
                 fontFamily = FontFamily.Monospace,
             )
@@ -174,6 +196,7 @@ private fun BalanceCard(
                             income = income,
                             expenses = expenses,
                             currencyCode = currencyCode,
+                            hideBalance = hideBalance,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -183,6 +206,7 @@ private fun BalanceCard(
                             income = income,
                             expenses = expenses,
                             currencyCode = currencyCode,
+                            hideBalance = hideBalance,
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -203,22 +227,24 @@ private fun PeriodStats(
     income: BigDecimal,
     expenses: BigDecimal,
     currencyCode: String,
+    hideBalance: Boolean,
     modifier: Modifier,
 ) {
+    val placeholder = stringResource(R.string.balance_hidden_placeholder)
     FinancialStat(
         modifier = modifier,
         label = stringResource(R.string.filter_income),
-        value = formatSignedCurrency(income, currencyCode),
+        value = if (hideBalance) placeholder else formatSignedCurrency(income, currencyCode),
         color = LocalFinanceExtendedColors.current.positive,
         icon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null) },
     )
     FinancialStat(
         modifier = modifier,
         label = stringResource(R.string.filter_expense),
-        value = if (expenses.signum() == 0) {
-            formatCurrency(BigDecimal.ZERO, currencyCode)
-        } else {
-            formatSignedCurrency(expenses.negate(), currencyCode)
+        value = when {
+            hideBalance -> placeholder
+            expenses.signum() == 0 -> formatCurrency(BigDecimal.ZERO, currencyCode)
+            else -> formatSignedCurrency(expenses.negate(), currencyCode)
         },
         color = LocalFinanceExtendedColors.current.negative,
         valueColor = if (expenses.signum() == 0) MaterialTheme.colorScheme.onSurfaceVariant else LocalFinanceExtendedColors.current.negative,

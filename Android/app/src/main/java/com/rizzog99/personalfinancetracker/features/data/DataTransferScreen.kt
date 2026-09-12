@@ -146,14 +146,15 @@ fun DataTransferScreen(onBack: () -> Unit) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
@@ -199,10 +200,11 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
             TopAppBar(
                 title = { Text(stringResource(R.string.import_export_title)) },
                 navigationIcon = { IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
-        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState())) {
             ImportWizard(file, existing, categories, onCancel, onImport)
