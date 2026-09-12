@@ -5,6 +5,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -21,6 +24,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -36,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -138,18 +144,21 @@ fun PersonalFinanceNavHost() {
     }
     val onMainDestination = currentDestination?.route in mainDestinations.map(MainDestination::route) &&
         !settingsVisible && !dashboardTransactionEditorVisible
+    // M3's "expanded" width-class breakpoint: a navigation rail replaces the bottom bar, and the
+    // rail carries the FAB in its header instead of the Scaffold's own FAB slot.
+    val isExpandedWidth = LocalConfiguration.current.screenWidthDp >= 840
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         floatingActionButton = {
-            if (onMainDestination) {
+            if (onMainDestination && !isExpandedWidth) {
                 FloatingActionButton(onClick = { dashboardTransactionEditorVisible = true }) {
                     Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_transaction))
                 }
             }
         },
         bottomBar = {
-            if (onMainDestination) {
+            if (onMainDestination && !isExpandedWidth) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                     mainDestinations.forEach { destination ->
                         val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
@@ -175,10 +184,37 @@ fun PersonalFinanceNavHost() {
             }
         },
     ) { padding ->
+        Row(modifier = Modifier.fillMaxSize().padding(padding)) {
+            if (onMainDestination && isExpandedWidth) {
+                NavigationRail(
+                    modifier = Modifier.fillMaxHeight(),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    header = {
+                        FloatingActionButton(onClick = { dashboardTransactionEditorVisible = true }) {
+                            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_transaction))
+                        }
+                    },
+                ) {
+                    mainDestinations.forEach { destination ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
+                        androidx.compose.material3.NavigationRailItem(
+                            selected = selected,
+                            onClick = { navigateToMainDestination(destination) },
+                            icon = { Icon(imageVector = destination.icon(), contentDescription = null) },
+                            label = { Text(stringResource(destination.labelRes)) },
+                            colors = NavigationRailItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            ),
+                        )
+                    }
+                }
+            }
         NavHost(
             navController = navController,
             startDestination = MainDestination.Home.route,
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.weight(1f),
             enterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { width -> tabTransitionDirection * width },
@@ -237,6 +273,7 @@ fun PersonalFinanceNavHost() {
             composable(MainDestination.DataTransfer.route) {
                 DataTransferScreen(onBack = navigateBackFromSecondary)
             }
+        }
         }
 
         if (settingsVisible) {
