@@ -118,6 +118,22 @@ fun DataTransferScreen(onBack: () -> Unit) {
         scope.launch { snackbarHostState.showSnackbar(context.getString(if (exported.isSuccess) R.string.export_complete else R.string.export_failed)) }
     }
 
+    importedFile?.let { file ->
+        ImportWizardScreen(
+            file = file,
+            existing = state.transactions,
+            categories = state.categories,
+            onCancel = { importedFile = null },
+            onImport = { transactions, selections ->
+                viewModel.import(transactions, selections) { success ->
+                    scope.launch { snackbarHostState.showSnackbar(context.getString(if (success) R.string.import_complete else R.string.import_failed)) }
+                    if (success) importedFile = null
+                }
+            },
+        )
+        return
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -168,10 +184,26 @@ fun DataTransferScreen(onBack: () -> Unit) {
                     importError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 }
             }
-            importedFile?.let { file -> CsvPreview(file, state.transactions, state.categories) { transactions, selections ->
-                viewModel.import(transactions, selections) { success -> scope.launch { snackbarHostState.showSnackbar(context.getString(if (success) R.string.import_complete else R.string.import_failed)) } }
-            } }
             importedWorkbook?.let { workbook -> SheetPicker(workbook) { sheet -> importedWorkbook = null; importedFile = sheet.file } }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>) -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.import_export_title)) },
+                navigationIcon = { IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+            )
+        },
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState())) {
+            ImportWizard(file, existing, categories, onCancel, onImport)
         }
     }
 }
@@ -188,7 +220,8 @@ private fun SheetPicker(workbook: XlsxImportService.Workbook, onSelect: (XlsxImp
 }
 
 @Composable
-private fun CsvPreview(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>) -> Unit) {
+private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>) -> Unit) {
+    var step by remember(file) { mutableStateOf(1) }
     var dateColumn by remember(file) { mutableStateOf(file.headers.matching("date", "period")) }
     var amountColumn by remember(file) { mutableStateOf(file.headers.matching("amount", "value")) }
     var categoryColumn by remember(file) { mutableStateOf(file.headers.matching("category")) }
@@ -196,7 +229,6 @@ private fun CsvPreview(file: CsvImportParser.CsvFile, existing: List<com.rizzog9
     var typeColumn by remember(file) { mutableStateOf(file.headers.matching("type", "income/expense")) }
     var dateFormat by remember(file) { mutableStateOf(TransactionImportMapper.supportedDateFormats.firstOrNull { format -> file.rows.firstOrNull()?.getOrNull(file.headers.indexOf(dateColumn ?: ""))?.let { runCatching { java.time.LocalDate.parse(it, java.time.format.DateTimeFormatter.ofPattern(format)) }.isSuccess || runCatching { java.time.LocalDateTime.parse(it, java.time.format.DateTimeFormatter.ofPattern(format)) }.isSuccess } == true } ?: "dd/MM/yyyy") }
     var signConvention by remember(file) { mutableStateOf(SignConvention.EXPENSES_NEGATIVE) }
-    val sample = file.rows.firstOrNull().orEmpty()
     val validation = if (dateColumn != null && amountColumn != null) runCatching { TransactionImportMapper.validate(file, CsvColumnMapping(dateColumn!!, amountColumn!!, categoryColumn, noteColumn, typeColumn, dateFormat, signConvention)) }.getOrNull() else null
     val mappedCategories = validation?.transactions.orEmpty().mapNotNull { it.categoryLabel.takeIf(String::isNotBlank) }.distinct()
     var categorySelections by remember(file, categoryColumn, categories) { mutableStateOf(mappedCategories.associateWith { label -> categories.firstOrNull { it.name.equals(label, true) }?.id }) }
@@ -206,30 +238,67 @@ private fun CsvPreview(file: CsvImportParser.CsvFile, existing: List<com.rizzog9
     val duplicates = resolved.filter { candidate -> existing.any { it.timestamp == candidate.timestamp && it.amount.compareTo(candidate.amount) == 0 && it.note == candidate.note } }
     val candidates = resolved - duplicates.toSet()
     var confirming by remember(file, dateColumn, amountColumn, categoryColumn, noteColumn, typeColumn, dateFormat, signConvention, categorySelections) { mutableStateOf(false) }
-    FinanceCard {
-        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.import_mapping_title, file.rows.size), style = MaterialTheme.typography.titleMedium)
-            MappingSelector(R.string.import_date_column, dateColumn, file.headers) { dateColumn = it }
-            MappingSelector(R.string.import_amount_column, amountColumn, file.headers) { amountColumn = it }
-            MappingSelector(R.string.import_category_column, categoryColumn, file.headers) { categoryColumn = it }
-            MappingSelector(R.string.import_note_column, noteColumn, file.headers) { noteColumn = it }
-            MappingSelector(R.string.import_type_column, typeColumn, file.headers) { typeColumn = it }
-            MappingSelector(R.string.import_date_format, dateFormat, TransactionImportMapper.supportedDateFormats) { dateFormat = it ?: dateFormat }
-            if (typeColumn == null) SignConventionSelector(signConvention) { signConvention = it }
-            Text(stringResource(R.string.import_sample), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
-            listOf(dateColumn, amountColumn, categoryColumn, noteColumn, typeColumn).filterNotNull().distinct().forEach { header ->
-                val value = sample.getOrNull(file.headers.indexOf(header)).orEmpty()
-                Text("$header: $value", style = MaterialTheme.typography.bodySmall)
+    val canContinue = dateColumn != null && amountColumn != null && validation != null
+    val title = when (step) { 1 -> R.string.import_map_columns; 2 -> R.string.import_map_categories; else -> R.string.import_preview_title }
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text(stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.import_step_of, step, 3), color = LocalFinancePalette.current.textMid)
+        }
+        when (step) {
+            1 -> {
+                Text(stringResource(R.string.import_columns_detail), color = LocalFinancePalette.current.textMid)
+                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.import_preview, file.rows.size), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                    Text(file.headers.joinToString(" · "), style = MaterialTheme.typography.labelSmall, maxLines = 1)
+                    file.rows.take(3).forEach { row -> Text(row.take(file.headers.size).joinToString(" · ").ifBlank { "—" }, style = MaterialTheme.typography.bodySmall, maxLines = 1) }
+                } }
+                Text(stringResource(R.string.import_required), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    MappingSelector(R.string.import_date_column, dateColumn, file.headers) { dateColumn = it }
+                    MappingSelector(R.string.import_amount_column, amountColumn, file.headers) { amountColumn = it }
+                } }
+                Text(stringResource(R.string.import_optional), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    MappingSelector(R.string.import_type_column, typeColumn, file.headers) { typeColumn = it }
+                    MappingSelector(R.string.import_category_column, categoryColumn, file.headers) { categoryColumn = it }
+                    MappingSelector(R.string.import_note_column, noteColumn, file.headers) { noteColumn = it }
+                } }
+                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    MappingSelector(R.string.import_date_format, dateFormat, TransactionImportMapper.supportedDateFormats) { dateFormat = it ?: dateFormat }
+                    if (typeColumn == null) SignConventionSelector(signConvention) { signConvention = it }
+                } }
             }
-            if (mappedCategories.isNotEmpty()) {
-                Text(stringResource(R.string.import_category_mapping), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
-                mappedCategories.forEach { label ->
-                    CategorySelector(label, categorySelections[label], categories) { selection -> categorySelections = categorySelections + (label to selection) }
+            2 -> {
+                Text(stringResource(R.string.import_categories_detail), color = LocalFinancePalette.current.textMid)
+                if (mappedCategories.isEmpty()) Text(stringResource(R.string.import_no_categories), color = LocalFinancePalette.current.textMid)
+                mappedCategories.groupBy { label -> if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) R.string.import_expenses else R.string.import_income }.forEach { (type, labels) ->
+                    Text(stringResource(type), color = LocalFinancePalette.current.textDim, style = MaterialTheme.typography.labelLarge)
+                    FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        labels.forEach { label -> CategorySelector(label, categorySelections[label], categories) { selection -> categorySelections = categorySelections + (label to selection) } }
+                    } }
                 }
             }
-            validation?.let {
-                Text(stringResource(R.string.import_ready_with_duplicates, candidates.size, duplicates.size, it.rejectedRows), color = LocalFinancePalette.current.textMid)
-                Button(onClick = { confirming = true }, enabled = candidates.isNotEmpty()) { Text(stringResource(R.string.import_transactions, candidates.size)) }
+            else -> {
+                FinanceCard { Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    ImportMetric(stringResource(R.string.import_total), validation?.transactions?.size ?: 0)
+                    ImportMetric(stringResource(R.string.import_new), candidates.size)
+                    ImportMetric(stringResource(R.string.import_duplicates), duplicates.size)
+                    ImportMetric(stringResource(R.string.import_errors), validation?.rejectedRows ?: 0)
+                } }
+                Text(stringResource(R.string.import_cannot_undo), color = LocalFinancePalette.current.textMid)
+                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    candidates.take(8).forEach { transaction -> Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column(modifier = Modifier.weight(1f)) { Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) }); Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = LocalFinancePalette.current.textMid) }
+                        Text(transaction.amount.toPlainString(), color = if (transaction.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinancePalette.current.positive)
+                    } }
+                } }
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            TextButton(onClick = { if (step == 1) onCancel() else step-- }) { Text(stringResource(if (step == 1) R.string.cancel else R.string.back)) }
+            Button(onClick = { if (step < 3) step++ else confirming = true }, enabled = if (step == 1) canContinue else candidates.isNotEmpty()) {
+                if (step < 3) Text(stringResource(R.string.continue_label)) else Text(stringResource(R.string.import_transactions, candidates.size))
             }
         }
     }
@@ -242,6 +311,12 @@ private fun CsvPreview(file: CsvImportParser.CsvFile, existing: List<com.rizzog9
             dismissButton = { TextButton(onClick = { confirming = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
+}
+
+@Composable
+private fun ImportMetric(label: String, value: Int) = Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+    Text(value.toString(), style = MaterialTheme.typography.headlineSmall)
+    Text(label, style = MaterialTheme.typography.labelSmall, color = LocalFinancePalette.current.textMid)
 }
 
 @Composable
