@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Check
@@ -113,6 +116,7 @@ import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
+import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
@@ -544,6 +548,7 @@ private fun ActivityContent(
             else -> items(state.visibleTransactions, key = FinanceTransaction::id) { transaction ->
                 TransactionRow(
                     transaction = transaction,
+                    categories = state.categories,
                     onEdit = { onEdit(transaction) },
                     onDelete = { onDelete(transaction) },
                 )
@@ -627,7 +632,15 @@ private fun ActivitySummaryAmount(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(label, style = MaterialTheme.typography.titleSmall, color = color)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(
+                imageVector = if (label == stringResource(R.string.filter_income)) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(20.dp),
+            )
+            Text(label, style = MaterialTheme.typography.titleSmall, color = color)
+        }
         Text(
             text = value,
             style = MaterialTheme.typography.titleMedium,
@@ -834,6 +847,7 @@ private fun Long.toUtcLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone
 @Composable
 private fun TransactionRow(
     transaction: FinanceTransaction,
+    categories: List<FinanceCategory>,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -844,6 +858,12 @@ private fun TransactionRow(
     }
     val largeText = LocalDensity.current.fontScale >= 1.3f
 
+    // categoryId is a row's foreign key, not an icon/color token — resolve the actual
+    // category first, matching the pattern used by Budgets/CategorySettings.
+    val category = categories.firstOrNull { it.id == transaction.categoryId }
+    val categoryColor = categoryColor(category?.colorToken ?: "categoryGray")
+    val categoryIcon = categoryIconFor(category?.iconToken ?: "")
+
     FinanceCard {
         if (largeText) {
             Column(
@@ -853,7 +873,21 @@ private fun TransactionRow(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Leading category icon in colored circle
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(categoryColor.copy(alpha = 0.14f), CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = categoryIcon,
+                            contentDescription = null,
+                            tint = categoryColor,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(transaction.note.ifBlank { transaction.categoryLabel })
                         Text(
@@ -883,6 +917,21 @@ private fun TransactionRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(role = Role.Button, onClick = onEdit),
+                leadingContent = {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(categoryColor.copy(alpha = 0.14f), CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = categoryIcon,
+                            contentDescription = null,
+                            tint = categoryColor,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                },
                 headlineContent = { Text(transaction.note.ifBlank { transaction.categoryLabel }) },
                 supportingContent = {
                     Text("${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}")
