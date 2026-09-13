@@ -2,6 +2,8 @@ package com.rizzog99.personalfinancetracker.features.data
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
@@ -9,18 +11,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileOpen
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -195,36 +203,6 @@ fun DataTransferScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>, (Boolean) -> Unit) -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.import_export_title)) },
-                navigationIcon = { IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState())) {
-            ImportWizard(file, existing, categories, onCancel, onImport)
-        }
-    }
-}
-
-@Composable
-private fun SheetPicker(workbook: XlsxImportService.Workbook, onSelect: (XlsxImportService.Sheet) -> Unit) {
-    FinanceCard {
-        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.import_choose_sheet), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.import_choose_sheet_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            workbook.sheets.forEach { sheet -> TextButton(onClick = { onSelect(sheet) }) { Text(sheet.name) } }
-        }
-    }
-}
-
-@Composable
-private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>, (Boolean) -> Unit) -> Unit) {
     var step by remember(file) { mutableStateOf(1) }
     var dateColumn by remember(file) { mutableStateOf(file.headers.matching("date", "period")) }
     var amountColumn by remember(file) { mutableStateOf(file.headers.matching("amount", "value")) }
@@ -243,77 +221,242 @@ private fun ImportWizard(file: CsvImportParser.CsvFile, existing: List<com.rizzo
     val candidates = resolved - duplicates.toSet()
     var importing by remember(file) { mutableStateOf(false) }
     var importFailed by remember(file) { mutableStateOf(false) }
+    var showHelp by remember { mutableStateOf(false) }
     val canContinue = dateColumn != null && amountColumn != null && validation != null
-    val title = when (step) { 1 -> R.string.import_map_columns; 2 -> R.string.import_map_categories; else -> R.string.import_preview_title }
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Text(stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-            Text(stringResource(R.string.import_step_of, step, 3), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        when (step) {
-            1 -> {
-                Text(stringResource(R.string.import_columns_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.import_preview, file.rows.size), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
-                    Text(file.headers.joinToString(" · "), style = MaterialTheme.typography.labelSmall, maxLines = 1)
-                    file.rows.take(3).forEach { row -> Text(row.take(file.headers.size).joinToString(" · ").ifBlank { "—" }, style = MaterialTheme.typography.bodySmall, maxLines = 1) }
-                } }
-                Text(stringResource(R.string.import_required), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
-                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    MappingSelector(R.string.import_date_column, dateColumn, file.headers) { dateColumn = it }
-                    MappingSelector(R.string.import_amount_column, amountColumn, file.headers) { amountColumn = it }
-                } }
-                Text(stringResource(R.string.import_optional), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
-                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    MappingSelector(R.string.import_type_column, typeColumn, file.headers) { typeColumn = it }
-                    MappingSelector(R.string.import_category_column, categoryColumn, file.headers) { categoryColumn = it }
-                    MappingSelector(R.string.import_note_column, noteColumn, file.headers) { noteColumn = it }
-                } }
-                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    MappingSelector(R.string.import_date_format, dateFormat, TransactionImportMapper.supportedDateFormats) { dateFormat = it ?: dateFormat }
-                    if (typeColumn == null) SignConventionSelector(signConvention) { signConvention = it }
-                } }
-            }
-            2 -> {
-                Text(stringResource(R.string.import_categories_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (mappedCategories.isEmpty()) Text(stringResource(R.string.import_no_categories), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                mappedCategories.groupBy { label -> if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) R.string.import_expenses else R.string.import_income }.forEach { (type, labels) ->
-                    Text(stringResource(type), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
-                    FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        labels.forEach { label -> CategorySelector(label, categorySelections[label], categories) { selection -> categorySelections = categorySelections + (label to selection) } }
-                    } }
+
+    val stepTitles = arrayOf(
+        R.string.import_map_columns,
+        R.string.import_map_categories,
+        R.string.import_preview_title,
+        R.string.import_confirm_title
+    )
+    val stepDetails = arrayOf(
+        R.string.import_columns_detail,
+        R.string.import_categories_detail,
+        R.string.import_cannot_undo,
+        R.string.import_cannot_undo
+    )
+
+    if (showHelp) {
+        AlertDialog(
+            onDismissRequest = { showHelp = false },
+            title = { Text(stringResource(stepTitles[step - 1])) },
+            text = { Text(stringResource(stepDetails[step - 1])) },
+            confirmButton = { TextButton(onClick = { showHelp = false }) { Text(stringResource(R.string.dismiss)) } },
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.import_export_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onCancel) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showHelp = true }) {
+                        Icon(Icons.Outlined.Info, stringResource(R.string.import_help))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+            )
+        },
+        bottomBar = {
+            Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
+                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, androidx.compose.ui.Alignment.End),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                ) {
+                    TextButton(onClick = { if (step == 1) onCancel() else step-- }) {
+                        Text(stringResource(if (step == 1) R.string.cancel else R.string.back))
+                    }
+                    Button(
+                        onClick = {
+                            if (step < 4) step++ else {
+                                importing = true
+                                importFailed = false
+                                onImport(candidates, categorySelections) { success -> importing = false; importFailed = !success }
+                            }
+                        },
+                        enabled = !importing && (when(step) {
+                            1 -> canContinue
+                            4 -> candidates.isNotEmpty()
+                            else -> true
+                        })
+                    ) {
+                        if (importing) Text(stringResource(R.string.importing_transactions))
+                        else if (step < 4) Text(stringResource(R.string.continue_label)) else Text(stringResource(R.string.import_transactions, candidates.size))
+                    }
+                }
+                if (importFailed) {
+                    Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
                 }
             }
-            else -> {
-                FinanceCard { Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    ImportMetric(stringResource(R.string.import_total), validation?.transactions?.size ?: 0)
-                    ImportMetric(stringResource(R.string.import_new), candidates.size)
-                    ImportMetric(stringResource(R.string.import_duplicates), duplicates.size)
-                    ImportMetric(stringResource(R.string.import_errors), validation?.rejectedRows ?: 0)
-                } }
-                Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                FinanceCard { Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    candidates.take(8).forEach { transaction -> Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Column(modifier = Modifier.weight(1f)) { Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) }); Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                        Text(transaction.amount.toPlainString(), color = if (transaction.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinanceExtendedColors.current.positive)
-                    } }
-                } }
-            }
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TextButton(onClick = { if (step == 1) onCancel() else step-- }) { Text(stringResource(if (step == 1) R.string.cancel else R.string.back)) }
-            Button(onClick = {
-                if (step < 3) step++ else {
-                    importing = true
-                    importFailed = false
-                    onImport(candidates, categorySelections) { success -> importing = false; importFailed = !success }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            // Step headline
+            Text(
+                stringResource(stepTitles[step - 1]),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.semantics { heading() }
+            )
+
+            // Progress track (4 segments)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                repeat(4) { index ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(4.dp)
+                            .background(
+                                color = if (index < step) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
+                                shape = RoundedCornerShape(2.dp)
+                            )
+                    )
                 }
-            }, enabled = !importing && (if (step == 1) canContinue else candidates.isNotEmpty())) {
-                if (importing) Text(stringResource(R.string.importing_transactions))
-                else if (step < 3) Text(stringResource(R.string.continue_label)) else Text(stringResource(R.string.import_transactions, candidates.size))
+            }
+
+            // Caption line
+            Text(
+                stringResource(R.string.import_step_of_rows, step, 4, file.rows.size),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Step content
+            when (step) {
+                1 -> {
+                    Text(stringResource(R.string.import_columns_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    FinanceCard {
+                        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(stringResource(R.string.import_preview, file.rows.size), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
+                            // Header row
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                file.headers.forEach { header ->
+                                    Text(header, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
+                                }
+                            }
+                            // Divider and sample rows
+                            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                            file.rows.take(2).forEach { row ->
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    row.take(file.headers.size).forEach { cell ->
+                                        Text(cell.ifBlank { "—" }, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f), maxLines = 1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Text(stringResource(R.string.import_required), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
+                    FinanceCard {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MappingSelectorListItem(R.string.import_date_column, dateColumn, file.headers) { dateColumn = it }
+                            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                            MappingSelectorListItem(R.string.import_amount_column, amountColumn, file.headers) { amountColumn = it }
+                        }
+                    }
+                    Text(stringResource(R.string.import_optional), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
+                    FinanceCard {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MappingSelectorListItem(R.string.import_type_column, typeColumn, file.headers) { typeColumn = it }
+                            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                            MappingSelectorListItem(R.string.import_category_column, categoryColumn, file.headers) { categoryColumn = it }
+                            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                            MappingSelectorListItem(R.string.import_note_column, noteColumn, file.headers) { noteColumn = it }
+                        }
+                    }
+                    FinanceCard {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MappingSelectorListItem(R.string.import_date_format, dateFormat, TransactionImportMapper.supportedDateFormats) { dateFormat = it ?: dateFormat }
+                            if (typeColumn == null) {
+                                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                                SignConventionSelectorListItem(signConvention) { signConvention = it }
+                            }
+                        }
+                    }
+                }
+                2 -> {
+                    Text(stringResource(R.string.import_categories_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (mappedCategories.isEmpty()) {
+                        Text(stringResource(R.string.import_no_categories), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        mappedCategories.groupBy { label -> if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) R.string.import_expenses else R.string.import_income }.forEach { (type, labels) ->
+                            Text(stringResource(type), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
+                            FinanceCard {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    labels.forEachIndexed { idx, label ->
+                                        if (idx > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                                        CategorySelectorListItem(label, categorySelections[label], categories) { selection -> categorySelections = categorySelections + (label to selection) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                3 -> {
+                    FinanceCard {
+                        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                            ImportMetric(stringResource(R.string.import_total), validation?.transactions?.size ?: 0)
+                            ImportMetric(stringResource(R.string.import_new), candidates.size)
+                            ImportMetric(stringResource(R.string.import_duplicates), duplicates.size)
+                            ImportMetric(stringResource(R.string.import_errors), validation?.rejectedRows ?: 0)
+                        }
+                    }
+                    Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    FinanceCard {
+                        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            candidates.take(8).forEach { transaction ->
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) })
+                                        Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                    Text(transaction.amount.toPlainString(), color = if (transaction.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinanceExtendedColors.current.positive)
+                                }
+                            }
+                        }
+                    }
+                }
+                4 -> {
+                    Text(stringResource(R.string.import_confirm_message, candidates.size), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
-        if (importFailed) Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error)
+    }
+}
+
+@Composable
+private fun SheetPicker(workbook: XlsxImportService.Workbook, onSelect: (XlsxImportService.Sheet) -> Unit) {
+    FinanceCard {
+        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.import_choose_sheet), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.import_choose_sheet_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            workbook.sheets.forEach { sheet -> TextButton(onClick = { onSelect(sheet) }) { Text(sheet.name) } }
+        }
     }
 }
 
@@ -324,46 +467,55 @@ private fun ImportMetric(label: String, value: Int) = Column(horizontalAlignment
 }
 
 @Composable
-private fun CategorySelector(label: String, selection: String?, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onSelected: (String?) -> Unit) {
+private fun CategorySelectorListItem(label: String, selection: String?, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onSelected: (String?) -> Unit) {
     var expanded by remember(label) { mutableStateOf(false) }
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-        Text(label, modifier = Modifier.weight(1f))
-        Box {
-            TextButton(onClick = { expanded = true }) { Text(categories.firstOrNull { it.id == selection }?.name ?: stringResource(R.string.import_create_category, label)) }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(text = { Text(stringResource(R.string.import_create_category, label)) }, onClick = { onSelected(null); expanded = false })
-                categories.forEach { category -> DropdownMenuItem(text = { Text(category.name) }, onClick = { onSelected(category.id); expanded = false }) }
-            }
+    Box {
+        ListItem(
+            headlineContent = { Text(label) },
+            trailingContent = {
+                Text(categories.firstOrNull { it.id == selection }?.name ?: stringResource(R.string.import_create_category, label), style = MaterialTheme.typography.bodySmall)
+            },
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(text = { Text(stringResource(R.string.import_create_category, label)) }, onClick = { onSelected(null); expanded = false })
+            categories.forEach { category -> DropdownMenuItem(text = { Text(category.name) }, onClick = { onSelected(category.id); expanded = false }) }
         }
     }
 }
 
 @Composable
-private fun SignConventionSelector(selected: SignConvention, onSelected: (SignConvention) -> Unit) {
+private fun SignConventionSelectorListItem(selected: SignConvention, onSelected: (SignConvention) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-        Text(stringResource(R.string.import_sign_convention), modifier = Modifier.weight(1f))
-        Box {
-            TextButton(onClick = { expanded = true }) { Text(stringResource(if (selected == SignConvention.EXPENSES_NEGATIVE) R.string.import_expenses_negative else R.string.import_expenses_positive)) }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(text = { Text(stringResource(R.string.import_expenses_negative)) }, onClick = { onSelected(SignConvention.EXPENSES_NEGATIVE); expanded = false })
-                DropdownMenuItem(text = { Text(stringResource(R.string.import_expenses_positive)) }, onClick = { onSelected(SignConvention.EXPENSES_POSITIVE); expanded = false })
-            }
+    Box {
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.import_sign_convention)) },
+            trailingContent = {
+                Text(stringResource(if (selected == SignConvention.EXPENSES_NEGATIVE) R.string.import_expenses_negative else R.string.import_expenses_positive), style = MaterialTheme.typography.bodySmall)
+            },
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(text = { Text(stringResource(R.string.import_expenses_negative)) }, onClick = { onSelected(SignConvention.EXPENSES_NEGATIVE); expanded = false })
+            DropdownMenuItem(text = { Text(stringResource(R.string.import_expenses_positive)) }, onClick = { onSelected(SignConvention.EXPENSES_POSITIVE); expanded = false })
         }
     }
 }
 
 @Composable
-private fun MappingSelector(labelRes: Int, selected: String?, headers: List<String>, onSelected: (String?) -> Unit) {
+private fun MappingSelectorListItem(labelRes: Int, selected: String?, headers: List<String>, onSelected: (String?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-        Text(stringResource(labelRes), modifier = Modifier.weight(1f))
-        Box {
-            TextButton(onClick = { expanded = true }) { Text(selected ?: stringResource(R.string.import_not_mapped)) }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(text = { Text(stringResource(R.string.import_not_mapped)) }, onClick = { onSelected(null); expanded = false })
-                headers.forEach { header -> DropdownMenuItem(text = { Text(header) }, onClick = { onSelected(header); expanded = false }) }
-            }
+    Box {
+        ListItem(
+            headlineContent = { Text(stringResource(labelRes)) },
+            trailingContent = {
+                Text(selected ?: stringResource(R.string.import_not_mapped), style = MaterialTheme.typography.bodySmall)
+            },
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(text = { Text(stringResource(R.string.import_not_mapped)) }, onClick = { onSelected(null); expanded = false })
+            headers.forEach { header -> DropdownMenuItem(text = { Text(header) }, onClick = { onSelected(header); expanded = false }) }
         }
     }
 }

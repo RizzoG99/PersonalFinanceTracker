@@ -79,6 +79,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -284,6 +285,176 @@ fun ActivityScreen(
                 recurringDeletionTransaction = null
                 scope.launch {
                     if (viewModel.delete(transaction)) showUndoDeletion(snackbarHostState, viewModel, transaction, application)
+                }
+            },
+            onDeleteThisAndFuture = {
+                recurringDeletionTransaction = null
+                scope.launch { viewModel.deleteThisAndFuture(transaction) }
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ActivityTwoPaneScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    onOpenSettings: () -> Unit = {},
+) {
+    val application = LocalContext.current.applicationContext as PersonalFinanceApplication
+    val viewModel: ActivityViewModel = viewModel(
+        factory = ActivityViewModel.factory(
+            transactionRepository = application.transactionRepository,
+            categoryRepository = application.categoryRepository,
+            recurrenceRepository = application.recurrenceRepository,
+        ),
+    )
+    val state by viewModel.uiState.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
+    val selected = selectedId?.let { id -> state.allTransactions.firstOrNull { it.id == id } }
+    var deletingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
+    var recurringDeletionTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
+    var recurringEditTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
+    var filtersVisible by remember { mutableStateOf(false) }
+    val savedMessage = stringResource(R.string.transaction_saved)
+    val updatedMessage = stringResource(R.string.transaction_updated)
+    val addedMessage = stringResource(R.string.transaction_added)
+
+    Scaffold(
+        topBar = {
+            MainTopBar(
+                title = stringResource(R.string.tab_activity),
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
+                onOpenSettings = onOpenSettings,
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) { innerPadding ->
+        Row(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            // Left pane: transaction list
+            ActivityContent(
+                state = state,
+                error = error,
+                onSearchChange = viewModel::updateSearch,
+                onTypeFilterChange = viewModel::updateTypeFilter,
+                onClearError = viewModel::clearError,
+                onClearFilters = viewModel::clearFilters,
+                onAdd = { selectedId = null },
+                onEdit = { selectedId = it.id },
+                onDelete = {
+                    if (it.recurrenceRuleId == null) deletingTransaction = it else recurringDeletionTransaction = it
+                },
+                modifier = Modifier.weight(1f),
+            )
+
+            // Right pane: transaction editor
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                TransactionEditorSheet(
+                    editingTransaction = selected,
+                    categories = state.categories,
+                    receiptMappingRepository = application.receiptMappingRepository,
+                    onDismiss = { selectedId = null },
+                    onSave = { transaction, recurrenceRule, receiptMerchant ->
+                        if (selected?.recurrenceRuleId != null) {
+                            recurringEditTransaction = transaction
+                        } else {
+                            val wasEditing = selected != null
+                            scope.launch {
+                                val saved = recurrenceRule?.let { viewModel.createRecurringTransaction(it) } ?: viewModel.save(transaction)
+                                if (saved) {
+                                    if (receiptMerchant != null && transaction.categoryId != null) {
+                                        application.receiptMappingRepository.remember(receiptMerchant, transaction.categoryId)
+                                    }
+                                    selectedId = null
+                                    snackbarHostState.showSnackbar(
+                                        message = if (wasEditing) updatedMessage else addedMessage,
+                                    )
+                                }
+                            }
+                        }
+                    },
+                )
+            }
+        }
+    }
+
+    if (filtersVisible) {
+        ActivityFiltersSheet(
+            filters = state.filters,
+            categories = state.categories,
+            onDismiss = { filtersVisible = false },
+            onApply = {
+                viewModel.updateFilters(it)
+                filtersVisible = false
+            },
+        )
+    }
+
+    recurringEditTransaction?.let { transaction ->
+        RecurringEditDialog(
+            onDismiss = { recurringEditTransaction = null },
+            onEditThisOnly = {
+                recurringEditTransaction = null
+                scope.launch {
+                    if (viewModel.save(transaction)) {
+                        selectedId = null
+                        snackbarHostState.showSnackbar(message = updatedMessage)
+                    }
+                }
+            },
+            onEditThisAndFuture = {
+                recurringEditTransaction = null
+                scope.launch {
+                    if (viewModel.updateThisAndFuture(transaction)) {
+                        selectedId = null
+                        snackbarHostState.showSnackbar(updatedMessage)
+                    }
+                }
+            },
+        )
+    }
+
+    deletingTransaction?.let { transaction ->
+        DeleteTransactionDialog(
+            onDismiss = { deletingTransaction = null },
+            onConfirm = {
+                deletingTransaction = null
+                scope.launch {
+                    if (viewModel.delete(transaction)) {
+                        selectedId = null
+                        val result = snackbarHostState.showSnackbar(
+                            message = application.getString(R.string.transaction_deleted),
+                            actionLabel = application.getString(R.string.undo),
+                        )
+                        if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
+                    }
+                }
+            },
+        )
+    }
+
+    recurringDeletionTransaction?.let { transaction ->
+        RecurringDeleteDialog(
+            onDismiss = { recurringDeletionTransaction = null },
+            onDeleteThisOnly = {
+                recurringDeletionTransaction = null
+                scope.launch {
+                    if (viewModel.delete(transaction)) {
+                        selectedId = null
+                        showUndoDeletion(snackbarHostState, viewModel, transaction, application)
+                    }
                 }
             },
             onDeleteThisAndFuture = {

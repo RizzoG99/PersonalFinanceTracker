@@ -53,6 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.features.activity.ActivityScreen
+import com.rizzog99.personalfinancetracker.features.activity.ActivityTwoPaneScreen
 import com.rizzog99.personalfinancetracker.features.activity.ActivityViewModel
 import com.rizzog99.personalfinancetracker.features.activity.TransactionEditorSheet
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsScreen
@@ -251,11 +252,19 @@ fun PersonalFinanceNavHost() {
                 )
             }
             composable(MainDestination.Activity.route) {
-                ActivityScreen(
-                    isDarkTheme = isDarkTheme,
-                    onToggleTheme = onToggleTheme,
-                    onOpenSettings = { settingsVisible = true },
-                )
+                if (isExpandedWidth) {
+                    ActivityTwoPaneScreen(
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = onToggleTheme,
+                        onOpenSettings = { settingsVisible = true },
+                    )
+                } else {
+                    ActivityScreen(
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = onToggleTheme,
+                        onOpenSettings = { settingsVisible = true },
+                    )
+                }
             }
             composable(MainDestination.Insights.route) {
                 InsightsScreen(

@@ -7,7 +7,9 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
-- Android: on tablets/large screens, the bottom tab bar is now a side navigation rail (with the add-transaction button in its header) instead of stretching the phone layout.
+- Android: on tablets/large screens, Activity now shows the transaction list and an inline editor side by side, and the bottom tab bar is a side navigation rail (with the add-transaction button in its header) instead of stretching the phone layout.
+- Android: the CSV/Excel import wizard now matches the app's Material 3 look — a clear 4-step progress bar, list-style column/category pickers, and a help button on each step.
+- Android: Insights now shows your financial health score as a circular gauge with a plain-language rating, and a bar chart for top spending categories.
 - Android: Settings now has a Security section (PIN lock + biometric unlock) and a Data section with "Back up now" / "Restore from backup" (any file-picker destination, including Google Drive) and "Delete all data".
 - Android: adopted a new Material 3 look (colors, type, shapes) with a light/dark theme toggle, a floating add-transaction button, and an undo option after saving.
 - Android: Add and Edit Transaction now open in a full-height editor with an amount-first layout, Income/Expenses selector, visual category cards, and Save in the top bar.

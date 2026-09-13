@@ -42,6 +42,7 @@
     <string name="import_map_categories">Mappa categorie</string>
     <string name="import_preview_title">Anteprima importazione</string>
     <string name="import_step_of">Passaggio %1$d di %2$d</string>
+    <string name="import_step_of_rows">Passaggio %1$d di %2$d · %3$d righe</string>
     <string name="import_columns_detail">Controlla l’anteprima del file, poi abbina le colonne obbligatorie e facoltative.</string>
     <string name="import_categories_detail">Abbina ogni categoria importata a una dell’app oppure creala.</string>
     <string name="import_required">OBBLIGATORIO</string>
@@ -75,6 +76,7 @@
     <string name="import_ready_with_duplicates">%1$d pronti · %2$d duplicati · %3$d rifiutati</string>
     <string name="import_confirm_title">Importare i movimenti?</string>
     <string name="import_confirm_message">%1$d movimenti verranno aggiunti all’attività. L’operazione non può essere annullata.</string>
+    <string name="import_help">Aiuto</string>
     <string name="import_transactions">Importa %1$d movimenti</string>
     <string name="importing_transactions">Importazione in corso…</string>
     <string name="import_complete">Movimenti importati.</string>
@@ -123,6 +125,11 @@
     <string name="health_score_detail">Come stanno andando le tue finanze</string>
     <string name="health_score_empty">Aggiungi transazioni per sbloccare il Punteggio finanziario.</string>
     <string name="health_score_value">%1$d / 100</string>
+    <string name="health_score_label">PUNTEGGIO</string>
+    <string name="health_score_band_poor">Richiede attenzione</string>
+    <string name="health_score_band_fair">Sta migliorando</string>
+    <string name="health_score_band_good">Solido con margini di crescita</string>
+    <string name="health_score_band_excellent">Finanze eccellenti</string>
     <string name="foundation_placeholder">Questa schermata è pronta per raggiungere la parità con iOS.</string>
     <string name="loading">Caricamento delle tue finanze</string>
     <string name="empty_state_title">Non c’è ancora nulla</string>

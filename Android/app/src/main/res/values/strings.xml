@@ -42,6 +42,7 @@
     <string name="import_map_categories">Map categories</string>
     <string name="import_preview_title">Import preview</string>
     <string name="import_step_of">Step %1$d of %2$d</string>
+    <string name="import_step_of_rows">Step %1$d of %2$d · %3$d rows</string>
     <string name="import_columns_detail">Check the file preview, then match the required and optional columns.</string>
     <string name="import_categories_detail">Match each imported category to one in the app, or create it.</string>
     <string name="import_required">REQUIRED</string>
@@ -75,6 +76,7 @@
     <string name="import_ready_with_duplicates">%1$d ready · %2$d duplicates · %3$d rejected</string>
     <string name="import_confirm_title">Import transactions?</string>
     <string name="import_confirm_message">%1$d transactions will be added to your activity. This can’t be undone.</string>
+    <string name="import_help">Help</string>
     <string name="import_transactions">Import %1$d transactions</string>
     <string name="importing_transactions">Importing…</string>
     <string name="import_complete">Transactions imported.</string>
@@ -123,6 +125,11 @@
     <string name="health_score_detail">How your finances are doing</string>
     <string name="health_score_empty">Add transactions to unlock your Health Score.</string>
     <string name="health_score_value">%1$d / 100</string>
+    <string name="health_score_label">SCORE</string>
+    <string name="health_score_band_poor">Needs attention</string>
+    <string name="health_score_band_fair">Getting better</string>
+    <string name="health_score_band_good">Solid with room to grow</string>
+    <string name="health_score_band_excellent">Excellent health</string>
     <string name="foundation_placeholder">This screen is ready for its parity implementation.</string>
     <string name="loading">Loading your finances</string>
     <string name="empty_state_title">Nothing here yet</string>
