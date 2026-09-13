@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,6 +82,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -103,6 +103,7 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -234,13 +235,6 @@ private fun InsightsContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
-            Text(
-                stringResource(R.string.insights_title),
-                style = MaterialTheme.typography.displaySmall,
-                modifier = Modifier.semantics { heading() },
-            )
-        }
-        item {
             GoalsSection(
                 goals = state.goals,
                 currencyCode = state.currencyCode,
@@ -276,10 +270,16 @@ private fun InsightsContent(
             }
         } else {
             item {
-                SpendingChart(
-                    categories = state.categorySpending.take(5),
-                    currencyCode = state.currencyCode,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    state.categorySpending.take(5).forEachIndexed { index, category ->
+                        CategoryTrendRow(
+                            category = category,
+                            share = category.amount.shareOf(state.categorySpending),
+                            currencyCode = state.currencyCode,
+                            accent = categoryPaletteColor(index),
+                        )
+                    }
+                }
             }
         }
     }
@@ -389,23 +389,39 @@ private fun GoalCard(
                 }
             }
             Text(progress.goal.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleSmall)
-            androidx.compose.material3.LinearProgressIndicator(
-                progress = { fraction },
-                modifier = Modifier.fillMaxWidth(),
+            FlatProgressTrack(
+                fraction = fraction,
                 color = accent,
-                trackColor = MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier.fillMaxWidth().height(6.dp),
             )
-            Text(
-                text = stringResource(
-                    R.string.goal_progress,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
                     formatCurrency(progress.currentAmount, currencyCode),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accent,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                )
+                Text(
+                    " / ",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
                     formatCurrency(progress.goal.targetAmount, currencyCode),
-                ),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    "${(fraction * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
         }
     }
 }
@@ -460,7 +476,7 @@ private fun HealthSection(health: FinancialHealth?) {
             } else {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -486,6 +502,7 @@ private fun HealthSection(health: FinancialHealth?) {
                             )
                         }
                     }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         health.components.forEach { component ->
                             Row(
@@ -498,16 +515,17 @@ private fun HealthSection(health: FinancialHealth?) {
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.bodySmall,
                                 )
-                                androidx.compose.material3.LinearProgressIndicator(
-                                    progress = { component.score.toFloat() / component.max },
-                                    modifier = Modifier.width(80.dp).height(4.dp),
+                                FlatProgressTrack(
+                                    fraction = component.score.toFloat() / component.max,
                                     color = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.outlineVariant,
+                                    modifier = Modifier.width(80.dp).height(5.dp),
                                 )
                                 Text(
                                     "${component.score}/${component.max}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier.width(40.dp),
                                 )
                             }
                         }
@@ -518,9 +536,38 @@ private fun HealthSection(health: FinancialHealth?) {
     }
 }
 
+/**
+ * A plain, fixed-size progress track: solid fill over a solid track, no gaps or stop indicators.
+ * M3's `LinearProgressIndicator` inserts a leading gap before the active segment at intermediate
+ * progress values, which shifts the bar out of alignment with fully-filled tracks next to it —
+ * this replaces it wherever several tracks need to start at the same x (e.g. the Health Score
+ * breakdown), matching the design's plain `ProgressTrack` component.
+ */
+@Composable
+private fun FlatProgressTrack(
+    fraction: Float,
+    color: Color,
+    modifier: Modifier = Modifier,
+    trackColor: Color = MaterialTheme.colorScheme.outlineVariant,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(50))
+            .background(trackColor),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(50))
+                .background(color),
+        )
+    }
+}
+
 @Composable
 private fun HealthScoreGauge(score: Int, modifier: Modifier = Modifier) {
-    val strokeWidth = 6.dp
+    val strokeWidth = 16.dp
     val scoreFloat = (score / 100f).coerceIn(0f, 1f)
     val gaugeColor = MaterialTheme.colorScheme.primary
     val trackColor = MaterialTheme.colorScheme.outlineVariant
@@ -569,6 +616,7 @@ private fun HealthScoreGauge(score: Int, modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.displaySmall,
                 color = gaugeColor,
                 fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 stringResource(R.string.health_score_label),
@@ -589,76 +637,69 @@ private fun healthScoreBand(score: Int): String = stringResource(
     },
 )
 
+/** One category's spend and its share of this period's total — the design's "Category Trends" row. */
 @Composable
-private fun SpendingChart(
-    categories: List<CategorySpending>,
+private fun CategoryTrendRow(
+    category: CategorySpending,
+    share: Int,
     currencyCode: String,
+    accent: Color,
 ) {
-    val maxAmount = categories.maxOfOrNull { it.amount } ?: BigDecimal.ZERO
-
     FinanceCard {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                categories.forEach { category ->
-                    val fraction = if (maxAmount > BigDecimal.ZERO) {
-                        (category.amount / maxAmount).toFloat().coerceIn(0f, 1f)
-                    } else {
-                        0f
-                    }
-
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.Bottom,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(fraction.coerceAtLeast(0.1f))
-                                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                                .background(MaterialTheme.colorScheme.primary),
-                        )
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                categories.forEach { category ->
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Text(
-                            category.label,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center,
-                        )
-                        Text(
-                            formatCurrency(category.amount, currencyCode),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = LocalFinanceExtendedColors.current.negative,
-                        )
-                    }
-                }
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(accent),
+            )
+            Text(
+                category.label,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    formatCurrency(category.amount, currencyCode),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    stringResource(R.string.insights_category_share, share),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
+}
+
+/** Percent this amount represents of the total across all categories, rounded down. */
+private fun BigDecimal.shareOf(categories: List<CategorySpending>): Int {
+    val total = categories.fold(BigDecimal.ZERO) { acc, item -> acc + item.amount }
+    if (total <= BigDecimal.ZERO) return 0
+    return divide(total, 4, RoundingMode.DOWN).multiply(BigDecimal(100)).toInt()
+}
+
+@Composable
+private fun categoryPaletteColor(index: Int): Color {
+    val extended = LocalFinanceExtendedColors.current
+    val palette = listOf(
+        extended.categoryIndigo,
+        extended.categoryGreen,
+        extended.categoryAmber,
+        extended.categoryPink,
+        extended.categoryPurple,
+        extended.categoryTeal,
+        extended.categoryGray,
+    )
+    return palette[index.coerceAtLeast(0) % palette.size]
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -925,11 +966,10 @@ private fun GoalDetailSheet(
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            androidx.compose.material3.LinearProgressIndicator(
-                progress = { fraction },
-                modifier = Modifier.fillMaxWidth(),
+            FlatProgressTrack(
+                fraction = fraction,
                 color = accent,
-                trackColor = MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier.fillMaxWidth().height(6.dp),
             )
             OutlinedTextField(
                 value = contribution,

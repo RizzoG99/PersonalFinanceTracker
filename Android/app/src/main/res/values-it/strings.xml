@@ -17,9 +17,9 @@
     <string name="empty_dashboard_title">Inizia a tenere traccia</string>
     <string name="empty_dashboard_message">Aggiungi una transazione per vedere saldo e riepilogo delle spese.</string>
     <string name="go_to_activity">Vai ad Attività</string>
-    <string name="insights_title">Analisi</string>
     <string name="insights_spending">Spese</string>
     <string name="insights_spending_detail">Per categoria nel periodo finanziario corrente</string>
+    <string name="insights_category_share">%1$d%% del totale</string>
     <string name="insights_empty_spending">Aggiungi delle uscite per vedere dove vanno i tuoi soldi.</string>
     <string name="goals_title">Obiettivi</string>
     <string name="budgets_title">Budget</string>
