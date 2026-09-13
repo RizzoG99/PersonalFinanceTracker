@@ -269,4 +269,20 @@
     <string name="category_save_error">Non è stato possibile salvare la categoria. Riprova.</string>
     <string name="back">Indietro</string>
     <string name="apply_filters">Applica filtri</string>
+
+    <string name="financial_pulse_title">Impulso finanziario</string>
+    <string name="financial_pulse_complete">Il check-in di oggi è completo</string>
+    <string name="financial_pulse_incomplete">Aggiungi una transazione per completare il check-in di oggi</string>
+    <plurals name="financial_pulse_transactions">
+        <item quantity="one">%1$d movimento</item>
+        <item quantity="other">%1$d movimenti</item>
+    </plurals>
+    <plurals name="financial_pulse_streak">
+        <item quantity="one">%1$d giorno di fila</item>
+        <item quantity="other">%1$d giorni di fila</item>
+    </plurals>
+    <string name="daily_reminder_prompt">Attiva promemoria giornaliero</string>
+    <string name="daily_reminder_set">Attiva</string>
+    <string name="daily_reminder_notification_title">Impulso finanziario</string>
+    <string name="daily_reminder_notification_message">Registra i movimenti di oggi per tenere le tue finanze in ordine</string>
 </resources>

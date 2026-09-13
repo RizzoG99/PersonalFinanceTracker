@@ -269,4 +269,20 @@
     <string name="category_save_error">Couldn’t save the category. Try again.</string>
     <string name="back">Back</string>
     <string name="apply_filters">Apply filters</string>
+
+    <string name="financial_pulse_title">Financial Pulse</string>
+    <string name="financial_pulse_complete">Today\'s check-in is complete</string>
+    <string name="financial_pulse_incomplete">Add a transaction to complete today\'s check-in</string>
+    <plurals name="financial_pulse_transactions">
+        <item quantity="one">%1$d transaction</item>
+        <item quantity="other">%1$d transactions</item>
+    </plurals>
+    <plurals name="financial_pulse_streak">
+        <item quantity="one">%1$d day in a row</item>
+        <item quantity="other">%1$d days in a row</item>
+    </plurals>
+    <string name="daily_reminder_prompt">Set daily reminder</string>
+    <string name="daily_reminder_set">Set</string>
+    <string name="daily_reminder_notification_title">Financial Pulse</string>
+    <string name="daily_reminder_notification_message">Log today\'s transactions to keep your finances on track</string>
 </resources>

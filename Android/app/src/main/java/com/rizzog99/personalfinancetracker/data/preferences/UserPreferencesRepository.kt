@@ -24,6 +24,8 @@ class UserPreferencesRepository(private val context: Context) {
         val biometricEnabled = booleanPreferencesKey("biometric_enabled")
         val pinHash = stringPreferencesKey("pin_hash")
         val pinSalt = stringPreferencesKey("pin_salt")
+        val dailyReminderEnabled = booleanPreferencesKey("daily_reminder_enabled")
+        val pulsePromptDismissed = booleanPreferencesKey("pulse_prompt_dismissed")
     }
 
     val payCycleStartDay: Flow<Int> = context.userPreferencesDataStore.data.map {
@@ -53,6 +55,14 @@ class UserPreferencesRepository(private val context: Context) {
     /** Null when no PIN has been set — the app is unlocked without a gate. */
     val pinHash: Flow<String?> = context.userPreferencesDataStore.data.map { it[Keys.pinHash] }
     val pinSalt: Flow<String?> = context.userPreferencesDataStore.data.map { it[Keys.pinSalt] }
+
+    val dailyReminderEnabled: Flow<Boolean> = context.userPreferencesDataStore.data.map {
+        it[Keys.dailyReminderEnabled] ?: false
+    }
+
+    val pulsePromptDismissed: Flow<Boolean> = context.userPreferencesDataStore.data.map {
+        it[Keys.pulsePromptDismissed] ?: false
+    }
 
     suspend fun setLastBackupAt(instant: Instant) {
         context.userPreferencesDataStore.edit { it[Keys.lastBackupAt] = instant.toEpochMilli() }
@@ -91,5 +101,13 @@ class UserPreferencesRepository(private val context: Context) {
 
     suspend fun setHideBalance(hidden: Boolean) {
         context.userPreferencesDataStore.edit { it[Keys.hideBalance] = hidden }
+    }
+
+    suspend fun setDailyReminderEnabled(enabled: Boolean) {
+        context.userPreferencesDataStore.edit { it[Keys.dailyReminderEnabled] = enabled }
+    }
+
+    suspend fun setPulsePromptDismissed(dismissed: Boolean) {
+        context.userPreferencesDataStore.edit { it[Keys.pulsePromptDismissed] = dismissed }
     }
 }

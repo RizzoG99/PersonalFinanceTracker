@@ -73,6 +73,31 @@ fun HomeScreen(
     val hideBalance by application.preferencesRepository.hideBalance.collectAsState(initial = false)
     val scope = rememberCoroutineScope()
 
+    // POST_NOTIFICATIONS is a runtime permission from API 33 (Tiramisu); below that it's
+    // implicitly granted. Without it, WorkManager would enqueue a worker that can never
+    // actually post the reminder — request it before scheduling, not after.
+    val notificationPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            application.scheduleDailyReminder()
+            scope.launch { application.preferencesRepository.setDailyReminderEnabled(true) }
+        }
+    }
+    val onSetDailyReminder: () -> Unit = {
+        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                application,
+                android.Manifest.permission.POST_NOTIFICATIONS,
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            application.scheduleDailyReminder()
+            scope.launch { application.preferencesRepository.setDailyReminderEnabled(true) }
+        }
+    }
+
     Scaffold(
         topBar = {
             MainTopBar(
@@ -101,6 +126,10 @@ fun HomeScreen(
                 state = state,
                 hideBalance = hideBalance,
                 onViewActivity = onViewActivity,
+                onSetDailyReminder = onSetDailyReminder,
+                onDismissPrompt = {
+                    scope.launch { application.preferencesRepository.setPulsePromptDismissed(true) }
+                },
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -112,10 +141,13 @@ private fun HomeContent(
     state: HomeUiState,
     hideBalance: Boolean,
     onViewActivity: () -> Unit,
+    onSetDailyReminder: () -> Unit,
+    onDismissPrompt: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val metrics = requireNotNull(state.metrics)
     val period = requireNotNull(state.period)
+    val pulseMetrics = requireNotNull(state.pulseMetrics)
     val greeting = when (LocalTime.now().hour) {
         in 5..11 -> R.string.greeting_morning
         in 12..17 -> R.string.greeting_afternoon
@@ -139,6 +171,13 @@ private fun HomeContent(
             expenses = metrics.periodExpenses,
             currencyCode = state.currencyCode,
             hideBalance = hideBalance,
+        )
+        FinancialPulseCard(
+            metrics = pulseMetrics,
+            dailyReminderEnabled = state.dailyReminderEnabled,
+            pulsePromptDismissed = state.pulsePromptDismissed,
+            onSetDailyReminder = onSetDailyReminder,
+            onDismissPrompt = onDismissPrompt,
         )
         if (metrics.recentTransactions.isEmpty()) {
             EmptyDashboardCard(onViewActivity = onViewActivity)

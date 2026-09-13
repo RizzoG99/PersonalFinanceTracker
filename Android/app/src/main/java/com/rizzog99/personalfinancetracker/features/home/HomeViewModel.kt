@@ -10,7 +10,10 @@ import com.rizzog99.personalfinancetracker.domain.dashboard.DashboardMetrics
 import com.rizzog99.personalfinancetracker.domain.dashboard.DashboardMetricsCalculator
 import com.rizzog99.personalfinancetracker.domain.paycycle.FinancialPeriod
 import com.rizzog99.personalfinancetracker.domain.paycycle.PayCycleService
+import com.rizzog99.personalfinancetracker.domain.pulse.FinancialPulseMetrics
+import com.rizzog99.personalfinancetracker.domain.pulse.FinancialPulseCalculator
 import java.time.Clock
+import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +25,9 @@ data class HomeUiState(
     val metrics: DashboardMetrics? = null,
     val period: FinancialPeriod? = null,
     val currencyCode: String = "EUR",
+    val pulseMetrics: FinancialPulseMetrics? = null,
+    val dailyReminderEnabled: Boolean = false,
+    val pulsePromptDismissed: Boolean = false,
 )
 
 class HomeViewModel(
@@ -34,13 +40,20 @@ class HomeViewModel(
         transactionRepository.observeAll(),
         preferencesRepository.payCycleStartDay,
         preferencesRepository.baseCurrency,
-    ) { transactions, payCycleStartDay, currencyCode ->
+        preferencesRepository.dailyReminderEnabled,
+        preferencesRepository.pulsePromptDismissed,
+    ) { transactions, payCycleStartDay, currencyCode, dailyReminderEnabled, pulsePromptDismissed ->
         val period = PayCycleService.currentFinancialMonth(payCycleStartDay, clock)
+        val now = Instant.now(clock)
+        val pulseMetrics = FinancialPulseCalculator.calculate(transactions, now, zoneId)
         HomeUiState(
             isLoading = false,
             metrics = DashboardMetricsCalculator.calculate(transactions, period, zoneId),
             period = period,
             currencyCode = currencyCode,
+            pulseMetrics = pulseMetrics,
+            dailyReminderEnabled = dailyReminderEnabled,
+            pulsePromptDismissed = pulsePromptDismissed,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
