@@ -2,6 +2,7 @@ package com.rizzog99.personalfinancetracker.features.insights
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,6 +42,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +52,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -69,9 +73,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -267,16 +275,11 @@ private fun InsightsContent(
                 }
             }
         } else {
-            items(state.categorySpending.take(5), key = CategorySpending::label) { category ->
-                FinanceCard {
-                    Row(
-                        Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(category.label, modifier = Modifier.weight(1f))
-                        Text(formatCurrency(category.amount, state.currencyCode), color = LocalFinanceExtendedColors.current.negative)
-                    }
-                }
+            item {
+                SpendingChart(
+                    categories = state.categorySpending.take(5),
+                    currencyCode = state.currencyCode,
+                )
             }
         }
     }
@@ -303,8 +306,10 @@ private fun GoalsSection(
                 )
                 Text(stringResource(R.string.goals_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            IconButton(onClick = onAddGoal) {
-                Icon(Icons.Outlined.Add, stringResource(R.string.add_goal))
+            FilledTonalButton(onClick = onAddGoal) {
+                Icon(Icons.Outlined.Add, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.new_goal))
             }
         }
         if (goals.isEmpty()) {
@@ -407,11 +412,13 @@ private fun GoalCard(
 
 @Composable
 private fun PaceCard(insight: PaceInsight) {
-    val (icon, title, detail, color) = when (insight.direction) {
-        PaceDirection.UP -> listOf(Icons.Outlined.ArrowUpward, stringResource(R.string.pace_watch), stringResource(R.string.pace_watch_detail), LocalFinanceExtendedColors.current.negative)
-        PaceDirection.DOWN -> listOf(Icons.Outlined.ArrowDownward, stringResource(R.string.pace_under), stringResource(R.string.pace_under_detail), LocalFinanceExtendedColors.current.positive)
-        PaceDirection.FLAT -> listOf(Icons.Outlined.Equalizer, stringResource(R.string.pace_on_track), stringResource(R.string.pace_on_track_detail), MaterialTheme.colorScheme.primary)
-        PaceDirection.BUILDING -> listOf(Icons.Outlined.Equalizer, stringResource(R.string.pace_building), stringResource(R.string.pace_building_detail), MaterialTheme.colorScheme.primary)
+    data class PaceStyle(val icon: androidx.compose.ui.graphics.vector.ImageVector, val title: String, val detail: String, val color: Color)
+
+    val style = when (insight.direction) {
+        PaceDirection.UP -> PaceStyle(Icons.Outlined.ArrowUpward, stringResource(R.string.pace_watch), stringResource(R.string.pace_watch_detail), LocalFinanceExtendedColors.current.negative)
+        PaceDirection.DOWN -> PaceStyle(Icons.Outlined.ArrowDownward, stringResource(R.string.pace_under), stringResource(R.string.pace_under_detail), LocalFinanceExtendedColors.current.positive)
+        PaceDirection.FLAT -> PaceStyle(Icons.Outlined.Equalizer, stringResource(R.string.pace_on_track), stringResource(R.string.pace_on_track_detail), MaterialTheme.colorScheme.primary)
+        PaceDirection.BUILDING -> PaceStyle(Icons.Outlined.Equalizer, stringResource(R.string.pace_building), stringResource(R.string.pace_building_detail), MaterialTheme.colorScheme.primary)
     }
     FinanceCard {
         Row(
@@ -419,12 +426,25 @@ private fun PaceCard(insight: PaceInsight) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Icon(icon as androidx.compose.ui.graphics.vector.ImageVector, null, tint = color as Color, modifier = Modifier.size(32.dp))
+            Icon(style.icon, null, tint = style.color, modifier = Modifier.size(32.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title as String, style = MaterialTheme.typography.titleLarge)
-                Text(detail as String, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(style.title, style = MaterialTheme.typography.titleLarge)
+                Text(style.detail, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            insight.percent?.let { Text(stringResource(R.string.pace_percent, it), color = color, style = MaterialTheme.typography.titleMedium) }
+            insight.percent?.let {
+                Surface(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp)),
+                    color = style.color.copy(alpha = 0.15f),
+                ) {
+                    Text(
+                        stringResource(R.string.pace_percent, it),
+                        color = style.color,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
+            }
         }
     }
 }
@@ -438,22 +458,202 @@ private fun HealthSection(health: FinancialHealth?) {
             if (health == null) {
                 Text(stringResource(R.string.health_score_empty), modifier = Modifier.fillMaxWidth().padding(24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
-                Row(Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("${health.score}", style = MaterialTheme.typography.displayMedium, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.health_score_value, health.score), style = MaterialTheme.typography.titleLarge)
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        HealthScoreGauge(
+                            score = health.score,
+                            modifier = Modifier.size(120.dp),
+                        )
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                stringResource(R.string.health_score_value, health.score),
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Text(
+                                healthScoreBand(health.score),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         health.components.forEach { component ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(component.name, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    component.name,
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
                                 androidx.compose.material3.LinearProgressIndicator(
                                     progress = { component.score.toFloat() / component.max },
-                                    modifier = Modifier.width(90.dp),
+                                    modifier = Modifier.width(80.dp).height(4.dp),
                                     color = MaterialTheme.colorScheme.primary,
                                     trackColor = MaterialTheme.colorScheme.outlineVariant,
                                 )
-                                Text(" ${component.score}/${component.max}", style = MaterialTheme.typography.labelMedium)
+                                Text(
+                                    "${component.score}/${component.max}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HealthScoreGauge(score: Int, modifier: Modifier = Modifier) {
+    val strokeWidth = 6.dp
+    val scoreFloat = (score / 100f).coerceIn(0f, 1f)
+    val gaugeColor = MaterialTheme.colorScheme.primary
+    val trackColor = MaterialTheme.colorScheme.outlineVariant
+    val strokeWidthPx = strokeWidth.value
+    val scoreDescription = stringResource(R.string.health_score_value, score)
+
+    Box(
+        modifier = modifier
+            .clearAndSetSemantics { contentDescription = scoreDescription },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+        ) {
+            val inset = (strokeWidthPx * density) / 2
+            val arcSize = size.width - (inset * 2)
+
+            drawArc(
+                color = trackColor,
+                startAngle = -90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
+                size = androidx.compose.ui.geometry.Size(arcSize, arcSize),
+                style = Stroke(width = strokeWidthPx * density, cap = StrokeCap.Round),
+            )
+
+            drawArc(
+                color = gaugeColor,
+                startAngle = -90f,
+                sweepAngle = 360f * scoreFloat,
+                useCenter = false,
+                topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
+                size = androidx.compose.ui.geometry.Size(arcSize, arcSize),
+                style = Stroke(width = strokeWidthPx * density, cap = StrokeCap.Round),
+            )
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                "$score",
+                style = MaterialTheme.typography.displaySmall,
+                color = gaugeColor,
+                fontFamily = FontFamily.Monospace,
+            )
+            Text(
+                stringResource(R.string.health_score_label),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun healthScoreBand(score: Int): String = stringResource(
+    when {
+        score < 26 -> R.string.health_score_band_poor
+        score < 51 -> R.string.health_score_band_fair
+        score < 76 -> R.string.health_score_band_good
+        else -> R.string.health_score_band_excellent
+    },
+)
+
+@Composable
+private fun SpendingChart(
+    categories: List<CategorySpending>,
+    currencyCode: String,
+) {
+    val maxAmount = categories.maxOfOrNull { it.amount } ?: BigDecimal.ZERO
+
+    FinanceCard {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                categories.forEach { category ->
+                    val fraction = if (maxAmount > BigDecimal.ZERO) {
+                        (category.amount / maxAmount).toFloat().coerceIn(0f, 1f)
+                    } else {
+                        0f
+                    }
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(fraction.coerceAtLeast(0.1f))
+                                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                                .background(MaterialTheme.colorScheme.primary),
+                        )
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                categories.forEach { category ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            category.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            formatCurrency(category.amount, currencyCode),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = LocalFinanceExtendedColors.current.negative,
+                        )
                     }
                 }
             }
