@@ -101,6 +101,7 @@ import com.rizzog99.personalfinancetracker.ui.components.SheetDragHandle
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
+import com.rizzog99.personalfinancetracker.ui.theme.CardShape
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -313,7 +314,11 @@ private fun GoalsSection(
             }
         }
         if (goals.isEmpty()) {
-            FinanceCard {
+            androidx.compose.material3.OutlinedCard(
+                shape = CardShape,
+                colors = androidx.compose.material3.CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            ) {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp, horizontal = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -323,12 +328,18 @@ private fun GoalsSection(
                         Icons.Outlined.Flag,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(40.dp),
                     )
-                    Text(stringResource(R.string.set_first_goal), style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        stringResource(R.string.set_first_goal),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
                     Text(
                         stringResource(R.string.goals_empty_message),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }

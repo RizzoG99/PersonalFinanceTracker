@@ -16,6 +16,7 @@ number that shipped it.
 - Android: swipe a transaction left in Activity to delete it, instead of a separate trash icon on every single row.
 - Android: Insights no longer repeats its own title under the top bar, each savings goal's progress row now shows the saved amount, target, and percent the way the design intends, the Health Score card has a divider before its breakdown, and per-category spending is shown as a labeled list with each category's share of the period instead of a bar chart.
 - Android: fixed the Health Score ring being a thin outline instead of the intended bold band, and fixed its breakdown bars (Savings rate, Stability, Budget, Subscriptions) not lining up with each other — a bar for a value under 100% used to start further right than a full bar. The same fix applies to goal progress bars.
+- Android: the "Set your first goal" empty state is now an outlined card with a centered title and message, matching the design, instead of a plain gray card with left-aligned text.
 - Android: Home now shows a Financial Pulse card — today's transaction count, your current daily streak, and an optional daily reminder notification to log transactions.
 - Android: Settings now has a Security section (PIN lock + biometric unlock) and a Data section with "Back up now" / "Restore from backup" (any file-picker destination, including Google Drive) and "Delete all data".
 - Android: adopted a new Material 3 look (colors, type, shapes) with a light/dark theme toggle, a floating add-transaction button, and an undo option after saving.
