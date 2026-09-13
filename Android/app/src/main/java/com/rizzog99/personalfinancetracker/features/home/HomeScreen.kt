@@ -1,6 +1,7 @@
 package com.rizzog99.personalfinancetracker.features.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -8,11 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
@@ -37,20 +39,22 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
+import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
+import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
-import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
+import androidx.compose.ui.text.font.FontWeight
 import java.math.BigDecimal
 import java.time.LocalTime
 import kotlinx.coroutines.launch
@@ -67,6 +71,7 @@ fun HomeScreen(
         factory = HomeViewModel.factory(
             transactionRepository = application.transactionRepository,
             preferencesRepository = application.preferencesRepository,
+            categoryRepository = application.categoryRepository,
         ),
     )
     val state by viewModel.uiState.collectAsState()
@@ -101,7 +106,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             MainTopBar(
-                title = stringResource(R.string.tab_home),
+                title = stringResource(R.string.home_title),
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 onOpenSettings = onOpenSettings,
@@ -161,8 +166,7 @@ private fun HomeContent(
     ) {
         Text(
             text = stringResource(greeting),
-            style = MaterialTheme.typography.displaySmall,
-            modifier = Modifier.semantics { heading() },
+            style = MaterialTheme.typography.bodyLarge,
         )
         BalanceCard(
             totalBalance = formatCurrency(metrics.totalBalance, state.currencyCode),
@@ -182,10 +186,21 @@ private fun HomeContent(
         if (metrics.recentTransactions.isEmpty()) {
             EmptyDashboardCard(onViewActivity = onViewActivity)
         } else {
-            RecentTransactionsCard(
-                transactions = metrics.recentTransactions,
-                onViewActivity = onViewActivity,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.recent_transactions).uppercase(),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f).semantics { heading() },
+                    )
+                    TextButton(onClick = onViewActivity) { Text(stringResource(R.string.view_activity)) }
+                }
+                RecentTransactionsCard(
+                    transactions = metrics.recentTransactions,
+                    categories = state.categories,
+                )
+            }
         }
     }
 }
@@ -199,10 +214,9 @@ private fun BalanceCard(
     currencyCode: String,
     hideBalance: Boolean,
 ) {
-    val hasPeriodTransactions = income.signum() != 0 || expenses.signum() != 0
     val useVerticalStats = LocalDensity.current.fontScale >= 1.3f
     val placeholder = stringResource(R.string.balance_hidden_placeholder)
-    FinanceCard {
+    FinanceCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -210,52 +224,39 @@ private fun BalanceCard(
             Text(
                 text = stringResource(R.string.total_balance),
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.primary,
             )
             Text(
                 text = if (hideBalance) placeholder else totalBalance,
-                style = MaterialTheme.typography.displaySmall,
-                fontFamily = FontFamily.Monospace,
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Text(
-                text = stringResource(R.string.current_financial_period),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
             Text(
                 text = periodLabel,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.primary,
             )
-            if (hasPeriodTransactions) {
-                if (useVerticalStats) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        PeriodStats(
-                            income = income,
-                            expenses = expenses,
-                            currencyCode = currencyCode,
-                            hideBalance = hideBalance,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                } else {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        PeriodStats(
-                            income = income,
-                            expenses = expenses,
-                            currencyCode = currencyCode,
-                            hideBalance = hideBalance,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+            if (useVerticalStats) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    PeriodStats(
+                        income = income,
+                        expenses = expenses,
+                        currencyCode = currencyCode,
+                        hideBalance = hideBalance,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             } else {
-                Text(
-                    text = stringResource(R.string.no_transactions_this_period),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    PeriodStats(
+                        income = income,
+                        expenses = expenses,
+                        currencyCode = currencyCode,
+                        hideBalance = hideBalance,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
@@ -274,8 +275,9 @@ private fun PeriodStats(
         modifier = modifier,
         label = stringResource(R.string.filter_income),
         value = if (hideBalance) placeholder else formatSignedCurrency(income, currencyCode),
-        color = LocalFinanceExtendedColors.current.positive,
-        icon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null) },
+        contentColor = LocalFinanceExtendedColors.current.positive,
+        containerColor = LocalFinanceExtendedColors.current.positiveContainer,
+        icon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null, modifier = Modifier.size(18.dp)) },
     )
     FinancialStat(
         modifier = modifier,
@@ -285,9 +287,10 @@ private fun PeriodStats(
             expenses.signum() == 0 -> formatCurrency(BigDecimal.ZERO, currencyCode)
             else -> formatSignedCurrency(expenses.negate(), currencyCode)
         },
-        color = LocalFinanceExtendedColors.current.negative,
+        contentColor = LocalFinanceExtendedColors.current.negative,
+        containerColor = LocalFinanceExtendedColors.current.negativeContainer,
         valueColor = if (expenses.signum() == 0) MaterialTheme.colorScheme.onSurfaceVariant else LocalFinanceExtendedColors.current.negative,
-        icon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null) },
+        icon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null, modifier = Modifier.size(18.dp)) },
     )
 }
 
@@ -295,27 +298,27 @@ private fun PeriodStats(
 private fun FinancialStat(
     label: String,
     value: String,
-    color: androidx.compose.ui.graphics.Color,
-    valueColor: androidx.compose.ui.graphics.Color = color,
+    contentColor: androidx.compose.ui.graphics.Color,
+    containerColor: androidx.compose.ui.graphics.Color,
+    valueColor: androidx.compose.ui.graphics.Color = contentColor,
     icon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(20.dp)
     Column(
         modifier = modifier
-            .border(1.dp, color.copy(alpha = 0.38f), shape)
-            .background(color.copy(alpha = 0.14f), shape)
+            .background(containerColor, shape)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             androidx.compose.runtime.CompositionLocalProvider(
-                androidx.compose.material3.LocalContentColor provides color,
+                androidx.compose.material3.LocalContentColor provides contentColor,
                 content = icon,
             )
-            Text(label, style = MaterialTheme.typography.titleSmall, color = color)
+            Text(label, style = MaterialTheme.typography.titleSmall, color = contentColor)
         }
-        Text(value, style = MaterialTheme.typography.titleMedium, color = valueColor, fontFamily = FontFamily.Monospace)
+        Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = valueColor)
     }
 }
 
@@ -340,38 +343,46 @@ private fun EmptyDashboardCard(onViewActivity: () -> Unit) {
 @Composable
 private fun RecentTransactionsCard(
     transactions: List<FinanceTransaction>,
-    onViewActivity: () -> Unit,
+    categories: List<FinanceCategory>,
 ) {
     FinanceCard {
         Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = stringResource(R.string.recent_transactions),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f).semantics { heading() },
-                )
-                TextButton(onClick = onViewActivity) { Text(stringResource(R.string.view_activity)) }
-            }
-            Spacer(Modifier.height(4.dp))
             transactions.forEachIndexed { index, transaction ->
                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                RecentTransactionRow(transaction)
+                val category = categories.firstOrNull { it.id == transaction.categoryId }
+                RecentTransactionRow(transaction, category)
             }
         }
     }
 }
 
 @Composable
-private fun RecentTransactionRow(transaction: FinanceTransaction) {
+private fun RecentTransactionRow(transaction: FinanceTransaction, category: FinanceCategory?) {
     val isIncome = transaction.amount >= java.math.BigDecimal.ZERO
+    val categoryColor = categoryColor(category?.colorToken ?: "categoryGray")
+    val categoryIcon = categoryIconFor(category?.iconToken ?: "")
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(categoryColor.copy(alpha = 0.14f), CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = categoryIcon,
+                contentDescription = null,
+                tint = categoryColor,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+        Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(transaction.note.ifBlank { transaction.categoryLabel }, style = MaterialTheme.typography.bodyLarge)
             Text(
-                text = "${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}",
+                text = transaction.categoryLabel,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -381,7 +392,6 @@ private fun RecentTransactionRow(transaction: FinanceTransaction) {
             text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
             style = MaterialTheme.typography.titleSmall,
             color = if (isIncome) LocalFinanceExtendedColors.current.positive else LocalFinanceExtendedColors.current.negative,
-            fontFamily = FontFamily.Monospace,
         )
     }
 }

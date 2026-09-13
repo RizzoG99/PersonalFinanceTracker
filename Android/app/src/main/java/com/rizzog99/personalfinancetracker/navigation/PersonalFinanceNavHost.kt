@@ -6,6 +6,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -185,7 +186,9 @@ fun PersonalFinanceNavHost() {
             }
         },
     ) { padding ->
-        Row(modifier = Modifier.fillMaxSize().padding(padding)) {
+        // Own the system-bar insets here so nested Scaffolds (each screen's own TopAppBar)
+        // don't re-apply them and double the top/bottom padding.
+        Row(modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
             if (onMainDestination && isExpandedWidth) {
                 NavigationRail(
                     modifier = Modifier.fillMaxHeight(),

@@ -7,10 +7,13 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Android: fixed extra empty space above the top bar and below the bottom tab bar on Home, Activity and Insights, and closed a gap between Home's real look and its design — the balance card now uses the intended tinted background and bolder amount, income/expense pills are solid instead of washed out, the Financial Pulse card's stats read as chips with a filled check when today's check-in is complete, and "Recent transactions" sits above its own card like the design.
 - Android: on tablets/large screens, Activity now shows the transaction list and an inline editor side by side, and the bottom tab bar is a side navigation rail (with the add-transaction button in its header) instead of stretching the phone layout.
 - Android: the CSV/Excel import wizard now matches the app's Material 3 look — a clear 4-step progress bar, list-style column/category pickers, and a help button on each step.
 - Android: Insights now shows your financial health score as a circular gauge with a plain-language rating, and a bar chart for top spending categories.
 - Android: Activity's transaction rows now show each transaction's own category icon and color; the income/expense summary chips got directional arrows to match Home.
+- Android: Activity now groups transactions under "Today"/"Yesterday"/date headers with each row's time instead of repeating the full date on every row, shows a repeat icon on recurring transactions, and the income/expense summary cards are solid-colored like the design instead of a washed-out tint.
+- Android: swipe a transaction left in Activity to delete it, instead of a separate trash icon on every single row.
 - Android: Home now shows a Financial Pulse card — today's transaction count, your current daily streak, and an optional daily reminder notification to log transactions.
 - Android: Settings now has a Security section (PIN lock + biometric unlock) and a Data section with "Back up now" / "Restore from backup" (any file-picker destination, including Google Drive) and "Delete all data".
 - Android: adopted a new Material 3 look (colors, type, shapes) with a light/dark theme toggle, a floating add-transaction button, and an undo option after saving.

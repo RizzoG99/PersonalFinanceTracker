@@ -1,21 +1,28 @@
 package com.rizzog99.personalfinancetracker.features.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.TaskAlt
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.pulse.FinancialPulseMetrics
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 
 @Composable
 fun FinancialPulseCard(
@@ -37,6 +45,7 @@ fun FinancialPulseCard(
     onDismissPrompt: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val complete = metrics.todayTransactionCount > 0
     FinanceCard(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
@@ -47,22 +56,36 @@ fun FinancialPulseCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.CheckCircle,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
+                // Matches the design doc's markup exactly: a 40dp circle (var(--pos-c) / mint),
+                // holding a single 24dp check_circle glyph tinted var(--pos) (dark green). The
+                // glyph's checkmark is a cutout in its own fill path, so the mint background shows
+                // through it — that's what gives the nested-circle look, not a second icon layer.
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            if (complete) LocalFinanceExtendedColors.current.positiveContainer else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                            CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = if (complete) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = if (complete) LocalFinanceExtendedColors.current.positive else MaterialTheme.colorScheme.primary,
+                    )
+                }
                 Text(
                     text = stringResource(R.string.financial_pulse_title),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f).semantics { heading() },
+                    modifier = Modifier.weight(1f).padding(start = 12.dp).semantics { heading() },
                 )
             }
 
             // Status text
             Text(
-                text = if (metrics.todayTransactionCount > 0) {
+                text = if (complete) {
                     stringResource(R.string.financial_pulse_complete)
                 } else {
                     stringResource(R.string.financial_pulse_incomplete)
@@ -71,40 +94,54 @@ fun FinancialPulseCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
-            // Transaction count row
-            PulseStatRow(
-                icon = { Icon(Icons.Outlined.TaskAlt, contentDescription = null) },
-                label = pluralStringResource(
-                    id = R.plurals.financial_pulse_transactions,
-                    count = metrics.todayTransactionCount,
-                    metrics.todayTransactionCount,
-                ),
-            )
-
-            // Streak row
-            PulseStatRow(
-                icon = { Icon(Icons.Outlined.LocalFireDepartment, contentDescription = null) },
-                label = pluralStringResource(
-                    id = R.plurals.financial_pulse_streak,
-                    count = metrics.streakDays,
-                    metrics.streakDays,
-                ),
-            )
+            // Stat chips, side by side like the transaction-count/streak pair in the design.
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                PulseStatChip(
+                    icon = {
+                        Icon(
+                            Icons.Outlined.TaskAlt,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    },
+                    label = pluralStringResource(
+                        id = R.plurals.financial_pulse_transactions,
+                        count = metrics.todayTransactionCount,
+                        metrics.todayTransactionCount,
+                    ),
+                    modifier = Modifier.weight(1f),
+                )
+                PulseStatChip(
+                    icon = {
+                        Icon(
+                            Icons.Outlined.LocalFireDepartment,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    },
+                    label = pluralStringResource(
+                        id = R.plurals.financial_pulse_streak,
+                        count = metrics.streakDays,
+                        metrics.streakDays,
+                    ),
+                    modifier = Modifier.weight(1f),
+                )
+            }
 
             // Daily reminder prompt (only if not enabled and not dismissed)
             if (!dailyReminderEnabled && !pulsePromptDismissed) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.NotificationsActive,
                         contentDescription = null,
-                        modifier = Modifier.padding(end = 0.dp),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = stringResource(R.string.daily_reminder_prompt),
@@ -112,11 +149,15 @@ fun FinancialPulseCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f),
                     )
-                    TextButton(onClick = onSetDailyReminder) {
+                    FilledTonalButton(onClick = onSetDailyReminder) {
                         Text(stringResource(R.string.daily_reminder_set))
                     }
                     IconButton(onClick = onDismissPrompt, modifier = Modifier.padding(end = 0.dp)) {
-                        Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.dismiss))
+                        Icon(
+                            Icons.Outlined.Close,
+                            contentDescription = stringResource(R.string.dismiss),
+                            modifier = Modifier.size(18.dp),
+                        )
                     }
                 }
             }
@@ -125,7 +166,7 @@ fun FinancialPulseCard(
 }
 
 @Composable
-private fun PulseStatRow(
+private fun PulseStatChip(
     icon: @Composable () -> Unit,
     label: String,
     modifier: Modifier = Modifier,
@@ -133,7 +174,9 @@ private fun PulseStatRow(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {
         icon()
         Text(

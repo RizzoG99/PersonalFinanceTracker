@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
+import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
+import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.dashboard.DashboardMetrics
 import com.rizzog99.personalfinancetracker.domain.dashboard.DashboardMetricsCalculator
 import com.rizzog99.personalfinancetracker.domain.paycycle.FinancialPeriod
@@ -25,6 +27,7 @@ data class HomeUiState(
     val metrics: DashboardMetrics? = null,
     val period: FinancialPeriod? = null,
     val currencyCode: String = "EUR",
+    val categories: List<FinanceCategory> = emptyList(),
     val pulseMetrics: FinancialPulseMetrics? = null,
     val dailyReminderEnabled: Boolean = false,
     val pulsePromptDismissed: Boolean = false,
@@ -33,10 +36,13 @@ data class HomeUiState(
 class HomeViewModel(
     transactionRepository: TransactionRepository,
     preferencesRepository: UserPreferencesRepository,
+    categoryRepository: CategoryRepository,
     private val clock: Clock = Clock.systemDefaultZone(),
     private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
-    val uiState: StateFlow<HomeUiState> = combine(
+    // combine() only has typed overloads up to 5 flows; nest the category flow rather than
+    // widen every arg to Array<Any?> for one extra source.
+    private val dashboardState = combine(
         transactionRepository.observeAll(),
         preferencesRepository.payCycleStartDay,
         preferencesRepository.baseCurrency,
@@ -55,14 +61,21 @@ class HomeViewModel(
             dailyReminderEnabled = dailyReminderEnabled,
             pulsePromptDismissed = pulsePromptDismissed,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
+    }
+
+    val uiState: StateFlow<HomeUiState> = combine(
+        dashboardState,
+        categoryRepository.observeAll(),
+    ) { state, categories -> state.copy(categories = categories) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     companion object {
         fun factory(
             transactionRepository: TransactionRepository,
             preferencesRepository: UserPreferencesRepository,
+            categoryRepository: CategoryRepository,
         ) = viewModelFactory {
-            initializer { HomeViewModel(transactionRepository, preferencesRepository) }
+            initializer { HomeViewModel(transactionRepository, preferencesRepository, categoryRepository) }
         }
     }
 }

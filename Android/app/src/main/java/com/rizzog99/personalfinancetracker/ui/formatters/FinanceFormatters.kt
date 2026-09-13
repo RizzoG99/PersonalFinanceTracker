@@ -31,6 +31,13 @@ fun formatTransactionDate(timestamp: Instant): String = DateTimeFormatter
     .withZone(ZoneId.systemDefault())
     .format(timestamp)
 
+/** Time-of-day only, e.g. for a row already grouped under a "Today"/date section header. */
+fun formatTransactionTime(timestamp: Instant): String = DateTimeFormatter
+    .ofLocalizedTime(FormatStyle.SHORT)
+    .withLocale(Locale.getDefault())
+    .withZone(ZoneId.systemDefault())
+    .format(timestamp)
+
 fun formatPeriod(start: LocalDate, endInclusive: LocalDate): String = DateTimeFormatter
     .ofLocalizedDate(FormatStyle.MEDIUM)
     .withLocale(Locale.getDefault())

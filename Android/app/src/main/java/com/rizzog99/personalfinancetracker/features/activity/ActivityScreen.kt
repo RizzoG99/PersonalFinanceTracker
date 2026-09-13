@@ -45,6 +45,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Tune
@@ -73,6 +74,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -96,6 +100,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -123,6 +128,7 @@ import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
+import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionTime
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
 import java.io.File
@@ -487,13 +493,7 @@ private fun ActivityContent(
         contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item {
-            Text(
-                text = stringResource(R.string.activity_title),
-                style = MaterialTheme.typography.displaySmall,
-                modifier = Modifier.semantics { heading() },
-            )
-        }
+        // No in-content "Activity" heading — the top bar's own title already says it, per design.
         item {
             TextField(
                 value = state.searchText,
@@ -504,9 +504,9 @@ private fun ActivityContent(
                 singleLine = true,
                 shape = RoundedCornerShape(28.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
@@ -545,13 +545,40 @@ private fun ActivityContent(
                     onClearFilters()
                 })
             }
-            else -> items(state.visibleTransactions, key = FinanceTransaction::id) { transaction ->
-                TransactionRow(
-                    transaction = transaction,
-                    categories = state.categories,
-                    onEdit = { onEdit(transaction) },
-                    onDelete = { onDelete(transaction) },
-                )
+            else -> {
+                // Already date-descending from the DAO, so grouping by date preserves order —
+                // no re-sort needed, and each date is contiguous. One LazyColumn item per day
+                // (header + its rows together) so the design's tight, flat row rhythm isn't
+                // pulled apart by the outer list's 12dp inter-item spacing.
+                val today = LocalDate.now()
+                val yesterday = today.minusDays(1)
+                val grouped = state.visibleTransactions.groupBy {
+                    it.timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
+                }
+                grouped.forEach { (date, transactionsForDate) ->
+                    item(key = "day-$date") {
+                        Column {
+                            Text(
+                                text = when (date) {
+                                    today -> stringResource(R.string.date_group_today)
+                                    yesterday -> stringResource(R.string.date_group_yesterday)
+                                    else -> formatTransactionDate(transactionsForDate.first().timestamp)
+                                },
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 4.dp),
+                            )
+                            transactionsForDate.forEach { transaction ->
+                                TransactionRow(
+                                    transaction = transaction,
+                                    categories = state.categories,
+                                    onEdit = { onEdit(transaction) },
+                                    onDelete = { onDelete(transaction) },
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -602,6 +629,7 @@ private fun ActivitySummaryCards(
         label = stringResource(R.string.filter_income),
         value = formatSignedCurrency(income, currencyCode),
         color = LocalFinanceExtendedColors.current.positive,
+        containerColor = LocalFinanceExtendedColors.current.positiveContainer,
     )
     ActivitySummaryAmount(
         modifier = modifier,
@@ -612,6 +640,7 @@ private fun ActivitySummaryCards(
             formatSignedCurrency(expenses.negate(), currencyCode)
         },
         color = LocalFinanceExtendedColors.current.negative,
+        containerColor = LocalFinanceExtendedColors.current.negativeContainer,
         valueColor = if (expenses.signum() == 0) MaterialTheme.colorScheme.onSurfaceVariant else LocalFinanceExtendedColors.current.negative,
     )
 }
@@ -621,31 +650,31 @@ private fun ActivitySummaryAmount(
     label: String,
     value: String,
     color: Color,
+    containerColor: Color,
     valueColor: Color = color,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(20.dp)
+    val shape = RoundedCornerShape(18.dp)
     Column(
         modifier = modifier
-            .border(1.dp, color.copy(alpha = 0.38f), shape)
-            .background(color.copy(alpha = 0.14f), shape)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+            .background(containerColor, shape)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Icon(
                 imageVector = if (label == stringResource(R.string.filter_income)) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(16.dp),
             )
-            Text(label, style = MaterialTheme.typography.titleSmall, color = color)
+            Text(label, style = MaterialTheme.typography.labelMedium, color = color)
         }
         Text(
             text = value,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
             color = valueColor,
-            fontFamily = FontFamily.Monospace,
         )
     }
 }
@@ -844,6 +873,7 @@ private fun LocalDate.toUtcStartOfDayMillis(): Long = atStartOfDay(ZoneOffset.UT
 
 private fun Long.toUtcLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TransactionRow(
     transaction: FinanceTransaction,
@@ -864,17 +894,52 @@ private fun TransactionRow(
     val categoryColor = categoryColor(category?.colorToken ?: "categoryGray")
     val categoryIcon = categoryIconFor(category?.iconToken ?: "")
 
-    FinanceCard {
+    val isRecurring = transaction.recurrenceRuleId != null
+
+    // Swipe-left-to-delete is the Android convention (Gmail, Files, most list apps) where iOS
+    // uses a swipe-revealed action button. confirmValueChange always returns false so the row
+    // springs back to Settled after every swipe — onDelete() opens the existing confirm dialog
+    // (a plain confirm, or the recurring this/this-and-future choice), and the row actually
+    // leaves the list only once that confirms and the transaction is gone from state; if the
+    // user cancels, the row is simply back where it started.
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) onDelete()
+            false
+        },
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Icon(
+                    Icons.Outlined.Delete,
+                    contentDescription = stringResource(R.string.delete_transaction),
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+        },
+    ) {
+        // Rows sit flat on the screen background (no per-row card) with a date-section header
+        // above them, matching the design — so the subtitle only needs the time, not the date.
         if (largeText) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
                     .clickable(role = Role.Button, onClick = onEdit)
-                    .padding(16.dp),
+                    .padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Leading category icon in colored circle
                     Box(
                         modifier = Modifier
                             .size(40.dp)
@@ -889,9 +954,19 @@ private fun TransactionRow(
                         )
                     }
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(transaction.note.ifBlank { transaction.categoryLabel })
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(transaction.note.ifBlank { transaction.categoryLabel })
+                            if (isRecurring) {
+                                Icon(
+                                    Icons.Outlined.Repeat,
+                                    contentDescription = stringResource(R.string.repeat_transaction),
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                         Text(
-                            text = "${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}",
+                            text = "${transaction.categoryLabel} · ${formatTransactionTime(transaction.timestamp)}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -899,17 +974,9 @@ private fun TransactionRow(
                     Spacer(Modifier.width(12.dp))
                     Text(
                         text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
+                        style = MaterialTheme.typography.titleMedium,
                         color = amountColor,
-                        fontFamily = FontFamily.Monospace,
                     )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    IconButton(onClick = onDelete) {
-                        Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_transaction))
-                    }
                 }
             }
         } else {
@@ -917,6 +984,9 @@ private fun TransactionRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(role = Role.Button, onClick = onEdit),
+                // Opaque, not transparent: this sits directly above the swipe-reveal's red
+                // delete background in the same Box, so it must fully occlude it when settled.
+                colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 leadingContent = {
                     Box(
                         modifier = Modifier
@@ -932,22 +1002,28 @@ private fun TransactionRow(
                         )
                     }
                 },
-                headlineContent = { Text(transaction.note.ifBlank { transaction.categoryLabel }) },
-                supportingContent = {
-                    Text("${transaction.categoryLabel} · ${formatTransactionDate(transaction.timestamp)}")
-                },
-                trailingContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
-                            color = amountColor,
-                            fontFamily = FontFamily.Monospace,
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        IconButton(onClick = onDelete) {
-                            Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete_transaction))
+                headlineContent = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(transaction.note.ifBlank { transaction.categoryLabel })
+                        if (isRecurring) {
+                            Icon(
+                                Icons.Outlined.Repeat,
+                                contentDescription = stringResource(R.string.repeat_transaction),
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
+                },
+                supportingContent = {
+                    Text("${transaction.categoryLabel} · ${formatTransactionTime(transaction.timestamp)}")
+                },
+                trailingContent = {
+                    Text(
+                        text = formatSignedCurrency(transaction.amount, transaction.currencyCode),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = amountColor,
+                    )
                 },
             )
         }

@@ -3,6 +3,7 @@ package com.rizzog99.personalfinancetracker.ui.theme
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -42,7 +43,12 @@ fun PersonalFinanceTheme(
         SideEffect {
             view.context.findActivity()?.window?.let { window ->
                 window.statusBarColor = colorScheme.surface.toArgb()
-                window.navigationBarColor = colorScheme.surface.toArgb()
+                // Transparent, not colorScheme.surface: an opaque color here paints solid behind
+                // the gesture-nav inset regardless of what Compose draws there, which left a
+                // visible seam under the bottom NavigationBar's own surfaceContainer fill.
+                // Edge-to-edge (decorFitsSystemWindows = false) already lets Compose's
+                // inset-aware NavigationBar paint that area itself.
+                window.navigationBarColor = AndroidColor.TRANSPARENT
                 WindowCompat.getInsetsController(window, view).apply {
                     isAppearanceLightStatusBars = !darkTheme
                     isAppearanceLightNavigationBars = !darkTheme
