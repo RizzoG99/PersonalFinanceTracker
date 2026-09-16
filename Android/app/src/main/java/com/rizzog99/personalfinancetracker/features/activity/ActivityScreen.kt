@@ -371,7 +371,7 @@ fun ActivityTwoPaneScreen(
                     .fillMaxHeight()
                     .background(MaterialTheme.colorScheme.surface)
             ) {
-                TransactionEditorSheet(
+                TransactionEditorContent(
                     editingTransaction = selected,
                     categories = state.categories,
                     receiptMappingRepository = application.receiptMappingRepository,
@@ -1064,7 +1064,8 @@ private fun NoResultsState(onClear: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+/** Modal presentation for phones: slides up as a full-height bottom sheet. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionEditorSheet(
     editingTransaction: FinanceTransaction?,
@@ -1072,6 +1073,34 @@ fun TransactionEditorSheet(
     receiptMappingRepository: com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository,
     onDismiss: () -> Unit,
     onSave: (FinanceTransaction, NewRecurrenceRule?, String?) -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        TransactionEditorContent(
+            editingTransaction = editingTransaction,
+            categories = categories,
+            receiptMappingRepository = receiptMappingRepository,
+            onDismiss = onDismiss,
+            onSave = onSave,
+            modifier = Modifier.fillMaxHeight(0.9f),
+        )
+    }
+}
+
+/** The editor itself, with no sheet/dialog chrome — for embedding directly in a layout (the
+ * tablet two-pane layout's always-visible right pane). Use [TransactionEditorSheet] for the
+ * modal phone presentation. */
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun TransactionEditorContent(
+    editingTransaction: FinanceTransaction?,
+    categories: List<FinanceCategory>,
+    receiptMappingRepository: com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository,
+    onDismiss: () -> Unit,
+    onSave: (FinanceTransaction, NewRecurrenceRule?, String?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var amountText by remember(editingTransaction) {
         mutableStateOf(editingTransaction?.amount?.abs()?.toPlainString().orEmpty())
@@ -1186,10 +1215,8 @@ fun TransactionEditorSheet(
             receiptMerchant,
         )
     }
-    androidx.activity.compose.BackHandler(onBack = onDismiss)
-
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
