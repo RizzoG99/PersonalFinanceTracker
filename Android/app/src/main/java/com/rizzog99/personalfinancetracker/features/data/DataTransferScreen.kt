@@ -13,27 +13,39 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileOpen
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -45,11 +57,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
@@ -58,10 +73,20 @@ import com.rizzog99.personalfinancetracker.domain.export.CsvExportService
 import com.rizzog99.personalfinancetracker.domain.export.XlsxExportService
 import com.rizzog99.personalfinancetracker.domain.import.CsvImportParser
 import com.rizzog99.personalfinancetracker.domain.import.CsvColumnMapping
+import com.rizzog99.personalfinancetracker.domain.import.RecurringCandidate
+import com.rizzog99.personalfinancetracker.domain.import.RecurringImportDetector
 import com.rizzog99.personalfinancetracker.domain.import.TransactionImportMapper
 import com.rizzog99.personalfinancetracker.domain.import.SignConvention
 import com.rizzog99.personalfinancetracker.domain.import.XlsxImportService
+import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
+import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
+import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
+import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
+import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import kotlinx.coroutines.launch
 
@@ -71,7 +96,7 @@ fun DataTransferScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val application = context.applicationContext as PersonalFinanceApplication
     val viewModel: DataTransferViewModel = viewModel(
-        factory = DataTransferViewModel.factory(application.transactionRepository, application.categoryRepository),
+        factory = DataTransferViewModel.factory(application.transactionRepository, application.categoryRepository, application.recurrenceRepository),
     )
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -132,14 +157,15 @@ fun DataTransferScreen(onBack: () -> Unit) {
             categories = state.categories,
             onCancel = { importedFile = null },
             onImport = { transactions, selections, finished ->
-                viewModel.import(transactions, selections) { success ->
-                    if (success) {
-                        importedFile = null
+                viewModel.import(transactions, selections) { resolved ->
+                    if (resolved != null) {
                         scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.import_complete)) }
                     }
-                    finished(success)
+                    finished(resolved)
                 }
             },
+            onAddRecurrenceRules = { rules, finished -> viewModel.addRecurrenceRules(rules, finished) },
+            onFinish = { importedFile = null },
         )
         return
     }
@@ -199,10 +225,17 @@ fun DataTransferScreen(onBack: () -> Unit) {
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onCancel: () -> Unit, onImport: (List<com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction>, Map<String, String?>, (Boolean) -> Unit) -> Unit) {
+private fun ImportWizardScreen(
+    file: CsvImportParser.CsvFile,
+    existing: List<FinanceTransaction>,
+    categories: List<FinanceCategory>,
+    onCancel: () -> Unit,
+    onImport: (List<FinanceTransaction>, Map<String, String?>, (List<FinanceTransaction>?) -> Unit) -> Unit,
+    onAddRecurrenceRules: (List<NewRecurrenceRule>, (Boolean) -> Unit) -> Unit,
+    onFinish: () -> Unit,
+) {
     var step by remember(file) { mutableStateOf(1) }
     var dateColumn by remember(file) { mutableStateOf(file.headers.matching("date", "period")) }
     var amountColumn by remember(file) { mutableStateOf(file.headers.matching("amount", "value")) }
@@ -213,7 +246,8 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
     var signConvention by remember(file) { mutableStateOf(SignConvention.EXPENSES_NEGATIVE) }
     val validation = if (dateColumn != null && amountColumn != null) runCatching { TransactionImportMapper.validate(file, CsvColumnMapping(dateColumn!!, amountColumn!!, categoryColumn, noteColumn, typeColumn, dateFormat, signConvention)) }.getOrNull() else null
     val mappedCategories = validation?.transactions.orEmpty().mapNotNull { it.categoryLabel.takeIf(String::isNotBlank) }.distinct()
-    var categorySelections by remember(file, categoryColumn, categories) { mutableStateOf(mappedCategories.associateWith { label -> categories.firstOrNull { it.name.equals(label, true) }?.id }) }
+    fun autoMatch() = mappedCategories.associateWith { label -> categories.firstOrNull { it.name.equals(label, true) }?.id }
+    var categorySelections by remember(file, categoryColumn, categories) { mutableStateOf(autoMatch()) }
     val resolved = validation?.transactions.orEmpty().map { transaction ->
         categorySelections[transaction.categoryLabel]?.let { id -> categories.firstOrNull { it.id == id } }?.let { category -> transaction.copy(categoryId = category.id, categoryLabel = category.name) } ?: transaction
     }
@@ -221,20 +255,26 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
     val candidates = resolved - duplicates.toSet()
     var importing by remember(file) { mutableStateOf(false) }
     var importFailed by remember(file) { mutableStateOf(false) }
+    var importedTransactions by remember(file) { mutableStateOf<List<FinanceTransaction>?>(null) }
     var showHelp by remember { mutableStateOf(false) }
     val canContinue = dateColumn != null && amountColumn != null && validation != null
+
+    val recurringCandidates = remember(importedTransactions) { importedTransactions?.let(RecurringImportDetector::detect).orEmpty() }
+    var selectedRules by remember(recurringCandidates) { mutableStateOf(recurringCandidates.indices.toSet()) }
+    var addingRules by remember { mutableStateOf(false) }
+    var addRulesFailed by remember { mutableStateOf(false) }
 
     val stepTitles = arrayOf(
         R.string.import_map_columns,
         R.string.import_map_categories,
         R.string.import_preview_title,
-        R.string.import_confirm_title
+        R.string.import_recurring_title,
     )
     val stepDetails = arrayOf(
         R.string.import_columns_detail,
         R.string.import_categories_detail,
         R.string.import_cannot_undo,
-        R.string.import_cannot_undo
+        R.string.import_recurring_detail,
     )
 
     if (showHelp) {
@@ -251,13 +291,19 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
             TopAppBar(
                 title = { Text(stringResource(R.string.import_export_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onCancel) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                    when (step) {
+                        1 -> IconButton(onClick = onCancel) { Icon(Icons.Outlined.Close, stringResource(R.string.cancel)) }
+                        2, 3 -> IconButton(onClick = { step-- }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
+                        else -> {}
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showHelp = true }) {
-                        Icon(Icons.Outlined.Info, stringResource(R.string.import_help))
+                    when (step) {
+                        1 -> IconButton(onClick = { showHelp = true }) { Icon(Icons.Outlined.Info, stringResource(R.string.import_help)) }
+                        2 -> FilledTonalButton(onClick = { categorySelections = autoMatch() }, modifier = Modifier.padding(end = 8.dp)) {
+                            Text(stringResource(R.string.import_auto_match))
+                        }
+                        else -> {}
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -266,36 +312,91 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
         bottomBar = {
             Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
                 HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, androidx.compose.ui.Alignment.End),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                ) {
-                    TextButton(onClick = { if (step == 1) onCancel() else step-- }) {
-                        Text(stringResource(if (step == 1) R.string.cancel else R.string.back))
-                    }
-                    Button(
-                        onClick = {
-                            if (step < 4) step++ else {
-                                importing = true
-                                importFailed = false
-                                onImport(candidates, categorySelections) { success -> importing = false; importFailed = !success }
-                            }
-                        },
-                        enabled = !importing && (when(step) {
-                            1 -> canContinue
-                            4 -> candidates.isNotEmpty()
-                            else -> true
-                        })
+                if (step < 4) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (importing) Text(stringResource(R.string.importing_transactions))
-                        else if (step < 4) Text(stringResource(R.string.continue_label)) else Text(stringResource(R.string.import_transactions, candidates.size))
+                        TextButton(onClick = { if (step == 1) onCancel() else step-- }) {
+                            Text(stringResource(if (step == 1) R.string.cancel else R.string.back))
+                        }
+                        Button(
+                            onClick = {
+                                if (step < 3) step++ else {
+                                    importing = true
+                                    importFailed = false
+                                    onImport(candidates, categorySelections) { result ->
+                                        importing = false
+                                        if (result != null) {
+                                            importedTransactions = result
+                                            step = 4
+                                        } else {
+                                            importFailed = true
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier.height(56.dp),
+                            shape = RoundedCornerShape(50),
+                            enabled = !importing && (when (step) {
+                                1 -> canContinue
+                                3 -> candidates.isNotEmpty()
+                                else -> true
+                            }),
+                        ) {
+                            if (importing) Text(stringResource(R.string.importing_transactions))
+                            else if (step < 3) Text(stringResource(R.string.continue_label)) else Text(stringResource(R.string.import_transactions, candidates.size))
+                        }
                     }
-                }
-                if (importFailed) {
-                    Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
+                    if (importFailed) {
+                        Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (recurringCandidates.isNotEmpty()) {
+                            TextButton(onClick = onFinish, enabled = !addingRules) { Text(stringResource(R.string.import_skip)) }
+                            Button(
+                                onClick = {
+                                    addingRules = true
+                                    addRulesFailed = false
+                                    val rules = selectedRules.map { index ->
+                                        val candidate = recurringCandidates[index]
+                                        NewRecurrenceRule(
+                                            frequency = candidate.frequency,
+                                            interval = candidate.interval,
+                                            startDate = candidate.nextDate,
+                                            amount = candidate.amount,
+                                            note = candidate.note,
+                                            categoryLabel = candidate.categoryLabel,
+                                            categoryId = candidate.categoryId,
+                                            currencyCode = candidate.currencyCode,
+                                        )
+                                    }
+                                    onAddRecurrenceRules(rules) { success ->
+                                        addingRules = false
+                                        if (success) onFinish() else addRulesFailed = true
+                                    }
+                                },
+                                modifier = Modifier.height(56.dp),
+                                shape = RoundedCornerShape(50),
+                                enabled = !addingRules && selectedRules.isNotEmpty(),
+                            ) {
+                                Text(pluralStringResource(R.plurals.import_add_rules_button, selectedRules.size, selectedRules.size))
+                            }
+                        } else {
+                            Button(onClick = onFinish, modifier = Modifier.height(56.dp), shape = RoundedCornerShape(50)) {
+                                Text(stringResource(R.string.import_done))
+                            }
+                        }
+                    }
+                    if (addRulesFailed) {
+                        Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
+                    }
                 }
             }
         },
@@ -352,19 +453,30 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
                     Text(stringResource(R.string.import_columns_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     FinanceCard {
                         Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(stringResource(R.string.import_preview, file.rows.size), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
+                            Text(stringResource(R.string.import_preview_label), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                             // Header row
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
                                 file.headers.forEach { header ->
-                                    Text(header, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
+                                    Text(
+                                        header.uppercase(),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.weight(1f),
+                                    )
                                 }
                             }
-                            // Divider and sample rows
-                            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
-                            file.rows.take(2).forEach { row ->
+                            file.rows.take(3).forEach { row ->
+                                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     row.take(file.headers.size).forEach { cell ->
-                                        Text(cell.ifBlank { "—" }, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f), maxLines = 1)
+                                        Text(cell.ifBlank { "—" }, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                                     }
                                 }
                             }
@@ -393,7 +505,15 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
                             MappingSelectorListItem(R.string.import_date_format, dateFormat, TransactionImportMapper.supportedDateFormats) { dateFormat = it ?: dateFormat }
                             if (typeColumn == null) {
                                 HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
-                                SignConventionSelectorListItem(signConvention) { signConvention = it }
+                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(stringResource(R.string.import_sign_convention), style = MaterialTheme.typography.bodyMedium)
+                                    SignConventionSegmentedButton(signConvention) { signConvention = it }
+                                    Text(
+                                        stringResource(if (signConvention == SignConvention.EXPENSES_NEGATIVE) R.string.import_sign_detail_negative else R.string.import_sign_detail_positive),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                             }
                         }
                     }
@@ -403,6 +523,12 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
                     if (mappedCategories.isEmpty()) {
                         Text(stringResource(R.string.import_no_categories), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
+                        val matchedCount = mappedCategories.count { categorySelections[it] != null }
+                        Text(
+                            stringResource(R.string.import_categories_matched, matchedCount, mappedCategories.size),
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
                         mappedCategories.groupBy { label -> if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) R.string.import_expenses else R.string.import_income }.forEach { (type, labels) ->
                             Text(stringResource(type), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
                             FinanceCard {
@@ -425,24 +551,73 @@ private fun ImportWizardScreen(file: CsvImportParser.CsvFile, existing: List<com
                             ImportMetric(stringResource(R.string.import_errors), validation?.rejectedRows ?: 0)
                         }
                     }
-                    Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    }
                     FinanceCard {
-                        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             candidates.take(8).forEach { transaction ->
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) })
-                                        Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                val category = categories.firstOrNull { it.id == transaction.categoryId }
+                                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Box(
+                                        modifier = Modifier.size(40.dp).clip(CircleShape).background(categoryColor(category?.colorToken ?: "categoryGray").copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Icon(categoryIconFor(category?.iconToken ?: "tag"), contentDescription = null, tint = categoryColor(category?.colorToken ?: "categoryGray"), modifier = Modifier.size(20.dp))
                                     }
-                                    Text(transaction.amount.toPlainString(), color = if (transaction.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinanceExtendedColors.current.positive)
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) }, fontWeight = FontWeight.Bold)
+                                        Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                                    }
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text(
+                                            formatCurrency(transaction.amount, transaction.currencyCode),
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (transaction.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinanceExtendedColors.current.positive,
+                                        )
+                                        Text(formatTransactionDate(transaction.timestamp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
                                 }
                             }
                         }
                     }
                 }
                 4 -> {
-                    Text(stringResource(R.string.import_confirm_message, candidates.size), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(LocalFinanceExtendedColors.current.positiveContainer, RoundedCornerShape(16.dp))
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = LocalFinanceExtendedColors.current.positive)
+                        Text(
+                            stringResource(R.string.import_imported_count, importedTransactions?.size ?: 0),
+                            color = LocalFinanceExtendedColors.current.positive,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    if (recurringCandidates.isEmpty()) {
+                        Text(stringResource(R.string.import_recurring_none), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Text(stringResource(R.string.import_recurring_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        FinanceCard {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                recurringCandidates.forEachIndexed { index, candidate ->
+                                    if (index > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                                    RecurringCandidateRow(
+                                        candidate = candidate,
+                                        category = categories.firstOrNull { it.id == candidate.categoryId },
+                                        checked = index in selectedRules,
+                                        onCheckedChange = { checked -> selectedRules = if (checked) selectedRules + index else selectedRules - index },
+                                    )
+                                }
+                            }
+                        }
+                        Text(stringResource(R.string.import_rules_note), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
         }
@@ -467,14 +642,12 @@ private fun ImportMetric(label: String, value: Int) = Column(horizontalAlignment
 }
 
 @Composable
-private fun CategorySelectorListItem(label: String, selection: String?, categories: List<com.rizzog99.personalfinancetracker.domain.category.FinanceCategory>, onSelected: (String?) -> Unit) {
+private fun CategorySelectorListItem(label: String, selection: String?, categories: List<FinanceCategory>, onSelected: (String?) -> Unit) {
     var expanded by remember(label) { mutableStateOf(false) }
     Box {
         ListItem(
             headlineContent = { Text(label) },
-            trailingContent = {
-                Text(categories.firstOrNull { it.id == selection }?.name ?: stringResource(R.string.import_create_category, label), style = MaterialTheme.typography.bodySmall)
-            },
+            trailingContent = { MappingTrailingValue(categories.firstOrNull { it.id == selection }?.name ?: stringResource(R.string.import_create_category, label)) },
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -484,20 +657,21 @@ private fun CategorySelectorListItem(label: String, selection: String?, categori
     }
 }
 
+/** iOS's sign picker becomes an outlined segmented control with a check on the selected option. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SignConventionSelectorListItem(selected: SignConvention, onSelected: (SignConvention) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        ListItem(
-            headlineContent = { Text(stringResource(R.string.import_sign_convention)) },
-            trailingContent = {
-                Text(stringResource(if (selected == SignConvention.EXPENSES_NEGATIVE) R.string.import_expenses_negative else R.string.import_expenses_positive), style = MaterialTheme.typography.bodySmall)
-            },
-            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
-        )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(text = { Text(stringResource(R.string.import_expenses_negative)) }, onClick = { onSelected(SignConvention.EXPENSES_NEGATIVE); expanded = false })
-            DropdownMenuItem(text = { Text(stringResource(R.string.import_expenses_positive)) }, onClick = { onSelected(SignConvention.EXPENSES_POSITIVE); expanded = false })
+private fun SignConventionSegmentedButton(selected: SignConvention, onSelected: (SignConvention) -> Unit) {
+    val options = listOf(SignConvention.EXPENSES_NEGATIVE to R.string.import_expenses_negative, SignConvention.EXPENSES_POSITIVE to R.string.import_expenses_positive)
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        options.forEachIndexed { index, (convention, labelRes) ->
+            SegmentedButton(
+                selected = selected == convention,
+                onClick = { onSelected(convention) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                icon = { if (selected == convention) Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(18.dp)) },
+            ) {
+                Text(stringResource(labelRes))
+            }
         }
     }
 }
@@ -508,15 +682,59 @@ private fun MappingSelectorListItem(labelRes: Int, selected: String?, headers: L
     Box {
         ListItem(
             headlineContent = { Text(stringResource(labelRes)) },
-            trailingContent = {
-                Text(selected ?: stringResource(R.string.import_not_mapped), style = MaterialTheme.typography.bodySmall)
-            },
+            trailingContent = { MappingTrailingValue(selected ?: stringResource(R.string.import_not_mapped)) },
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(text = { Text(stringResource(R.string.import_not_mapped)) }, onClick = { onSelected(null); expanded = false })
             headers.forEach { header -> DropdownMenuItem(text = { Text(header) }, onClick = { onSelected(header); expanded = false }) }
         }
+    }
+}
+
+/** A picker row's trailing value: primary-indigo text plus a drop-down caret instead of a chevron push. */
+@Composable
+private fun MappingTrailingValue(text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+    }
+}
+
+@Composable
+private fun RecurringCandidateRow(candidate: RecurringCandidate, category: FinanceCategory?, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    val accent = categoryColor(category?.colorToken ?: "categoryGray")
+    val cadence = when (candidate.frequency) {
+        RecurrenceFrequency.WEEKLY -> if (candidate.interval == 1) stringResource(R.string.cadence_weekly) else stringResource(R.string.cadence_weekly_n, candidate.interval)
+        RecurrenceFrequency.MONTHLY -> if (candidate.interval == 1) stringResource(R.string.cadence_monthly) else stringResource(R.string.cadence_monthly_n, candidate.interval)
+        RecurrenceFrequency.YEARLY -> stringResource(R.string.cadence_yearly)
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Checkbox(checked = checked, onCheckedChange = onCheckedChange)
+        Box(
+            modifier = Modifier.size(36.dp).clip(CircleShape).background(accent.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(categoryIconFor(category?.iconToken ?: "tag"), contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(candidate.note.ifBlank { candidate.categoryLabel }, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(
+                stringResource(R.string.import_starts, cadence, formatTransactionDate(candidate.nextDate)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(stringResource(R.string.import_seen_times, candidate.occurrences), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text(
+            formatCurrency(candidate.amount, candidate.currencyCode),
+            fontWeight = FontWeight.Bold,
+            color = if (candidate.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinanceExtendedColors.current.positive,
+        )
     }
 }
 

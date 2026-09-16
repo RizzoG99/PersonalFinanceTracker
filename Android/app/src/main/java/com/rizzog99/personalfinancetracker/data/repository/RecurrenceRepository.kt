@@ -17,6 +17,14 @@ import java.util.UUID
 
 interface RecurrenceRepository {
     suspend fun createAndMaterialize(rule: NewRecurrenceRule): RecurrenceRule
+
+    /**
+     * Inserts the rule without materializing anything immediately — for a rule whose first
+     * occurrence is scheduled in the future (e.g. detected from a CSV import), so nothing is
+     * backdated or pre-created ahead of its date. [materializeDue] (run on app start) picks it
+     * up once that date actually arrives.
+     */
+    suspend fun create(rule: NewRecurrenceRule): RecurrenceRule
     suspend fun materializeDue(through: Instant = Instant.now(), zoneId: ZoneId = ZoneId.systemDefault())
     suspend fun updateThisAndFuture(occurrence: FinanceTransaction)
 }
@@ -31,6 +39,13 @@ class RoomRecurrenceRepository(
             database.recurrenceRuleDao().insert(entity)
             materialize(entity, rule.startDate, ZoneId.systemDefault())
         }
+        return entity.toDomain()
+    }
+
+    override suspend fun create(rule: NewRecurrenceRule): RecurrenceRule {
+        require(rule.interval > 0) { "A recurrence interval must be positive." }
+        val entity = rule.toEntity()
+        database.recurrenceRuleDao().insert(entity)
         return entity.toDomain()
     }
 
