@@ -310,7 +310,7 @@ private fun GoalsSection(
             FilledTonalButton(onClick = onAddGoal) {
                 Icon(Icons.Outlined.Add, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.new_goal))
+                Text(stringResource(R.string.new_goal), fontWeight = FontWeight.Bold)
             }
         }
         if (goals.isEmpty()) {
