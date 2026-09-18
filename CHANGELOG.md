@@ -9,6 +9,8 @@ number that shipped it.
 ## Unreleased
 - Fixed the Face ID prompt that could still appear over the lock screen when the phone auto-locked with the app open. The app now only asks when it is actually coming back from the background, or right after you unlock the phone with it in front.
 - The privacy cover now hides the keyboard too: backgrounding the app with the amount field open no longer leaves the keypad on screen over the cover, or in the app switcher. Coming back puts the cursor straight back in the field you were typing in.
+- Importing a CSV now recognises far more category names, so fewer rows arrive asking you to create a category you already have. English names, plurals and accented spellings are matched properly, and fuel, rent, bills, phone and bank-fee categories now find the right home instead of landing somewhere odd — "Petrol" used to be filed under Pets.
+- Scan Categories (in Settings) now lets you pair up Fuel, Coffee & drinks, Clothing, Phone and Bank fees separately, instead of lumping fuel in with transport. CSV imports now respect those pairings too, which they previously ignored — so if you have told the app which category is yours for groceries, an import uses it.
 
 ## 92 — 2026-09-07
 - Switching to another app and coming straight back no longer asks for Face ID every time. The app now only asks again if you were away for more than 30 seconds — so copying figures out of another app, or checking a message mid-entry, stops costing an unlock each time. Locking the phone's screen still ends that grace immediately, and force-quitting the app always asks.
