@@ -43,6 +43,23 @@ class ImportPipelineTest {
         assertEquals(BigDecimal("-50"), result.transactions.single().amount)
     }
 
+    /**
+     * The counts on Import Preview have to add up to the file's rows. Transfers are dropped on
+     * purpose, but reporting them nowhere made 1826 rows arrive as 1634 with "0 Errors" — which
+     * reads as data going missing rather than transfers being skipped.
+     */
+    @Test
+    fun `mapper reports how many transfer rows it skipped`() {
+        val file = CsvImportParser.parse(
+            "Date,Type,Amount\n2026-05-21,Transfer,100\n2026-05-22,Giroconto,20\n2026-05-23,Expense,50",
+        )
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", type = "Type", dateFormat = "yyyy-MM-dd"))
+
+        assertEquals(1, result.transactions.size)
+        assertEquals(2, result.skippedTransfers)
+        assertEquals(0, result.rejectedRows)
+    }
+
     @Test
     fun `removingLeadingEmoji strips a leading emoji and its trailing space`() {
         assertEquals("Spesa", "🛒 Spesa".removingLeadingEmoji())

@@ -611,6 +611,15 @@ private fun ImportWizardScreen(
                         Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(stringResource(R.string.import_cannot_undo), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
+                    // Without this the tiles simply do not add up to the file's row count, and the
+                    // missing rows read as data quietly going astray rather than transfers skipped.
+                    val skipped = validation?.skippedTransfers ?: 0
+                    if (skipped > 0) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.import_transfers_skipped, skipped), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                     FinanceCard {
                         Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             candidates.take(8).forEach { transaction ->

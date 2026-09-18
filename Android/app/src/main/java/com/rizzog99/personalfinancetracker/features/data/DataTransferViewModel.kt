@@ -1,5 +1,6 @@
 package com.rizzog99.personalfinancetracker.features.data
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -9,6 +10,7 @@ import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
+import com.rizzog99.personalfinancetracker.domain.import.ImportCategoryPlanner
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,9 +37,29 @@ class DataTransferViewModel(
     fun import(transactions: List<FinanceTransaction>, categorySelections: Map<String, String?>, onFinished: (List<FinanceTransaction>?) -> Unit) = viewModelScope.launch {
         val result = runCatching {
             val known = uiState.value.categories.associateBy(FinanceCategory::id).toMutableMap()
-            val created = categorySelections.filterValues { it == null }.keys.associateWith { label ->
-                val type = if (transactions.any { it.categoryLabel == label && it.amount.signum() < 0 }) TransactionType.EXPENSE else TransactionType.INCOME
-                categoryRepository.add(NewCategory(name = label.forCategoryName(), iconToken = "tag", type = type)).also { known[it.id] = it }
+            // One category per name the database would consider distinct, not one per CSV label.
+            // Creating one each made a file containing both "Regali" and "🎁 Regali" abort on the
+            // unique (normalizedName, type) index and fail the entire import. See ImportCategoryPlanner.
+            val plan = ImportCategoryPlanner.plan(
+                labels = categorySelections.filterValues { it == null }.keys,
+                existing = known.values.toList(),
+                typeOf = { label ->
+                    if (transactions.any { it.categoryLabel == label && it.amount.signum() < 0 }) {
+                        TransactionType.EXPENSE
+                    } else {
+                        TransactionType.INCOME
+                    }
+                },
+            )
+            val created = mutableMapOf<String, FinanceCategory>()
+            plan.reuseExisting.forEach { (label, id) ->
+                known[id]?.let { created[label] = it }
+            }
+            plan.create.forEach { planned ->
+                val category = categoryRepository.add(
+                    NewCategory(name = planned.name, iconToken = "tag", type = planned.type),
+                ).also { known[it.id] = it }
+                planned.labels.forEach { created[it] = category }
             }
             val resolved = transactions.map { transaction ->
                 categorySelections[transaction.categoryLabel]?.let(known::get)?.let { category ->
@@ -47,6 +69,9 @@ class DataTransferViewModel(
             repository.insertBatch(resolved)
             resolved
         }
+        // The failure used to vanish here, leaving only "Couldn't import transactions" on screen and
+        // nothing in the log to work from. Whatever else happens, the cause reaches logcat.
+        result.exceptionOrNull()?.let { Log.e("DataTransferViewModel", "CSV import failed", it) }
         onFinished(result.getOrNull())
     }
 
@@ -61,6 +86,3 @@ class DataTransferViewModel(
     }
 }
 
-private fun String.forCategoryName(): String = filter { character ->
-    character.isLetterOrDigit() || character.isWhitespace() || character in setOf('&', '/', '-', '\'', '.', ',', '(', ')')
-}.trim().ifBlank { "Other" }

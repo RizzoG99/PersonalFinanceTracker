@@ -23,6 +23,12 @@ enum class SignConvention { SIGNED, ALL_EXPENSES, ALL_INCOME }
 data class ImportValidationResult(
     val transactions: List<FinanceTransaction>,
     val rejectedRows: Int,
+    /**
+     * Account moves, dropped on purpose rather than counted as income or expense. Reported
+     * separately because they are not errors, but they do explain why fewer transactions come out
+     * than the file has rows — which previously looked like rows silently going missing.
+     */
+    val skippedTransfers: Int = 0,
 )
 
 object TransactionImportMapper {
@@ -40,10 +46,11 @@ object TransactionImportMapper {
         val dateIndex = requireNotNull(indexes["date"])
         val amountIndex = requireNotNull(indexes["amount"])
         var rejected = 0
+        var skippedTransfers = 0
         val transactions = file.rows.mapNotNull { row ->
             val type = indexes["type"]?.let { row.getOrNull(it).orEmpty() }.orEmpty()
             // Transfer rows represent account moves, not income/expense — skip like iOS does.
-            if (type.isTransferType()) return@mapNotNull null
+            if (type.isTransferType()) { skippedTransfers++; return@mapNotNull null }
             runCatching {
                 val timestamp = parseDate(row[dateIndex], mapping.dateFormat)
                 var amount = parseAmount(row[amountIndex])
@@ -62,7 +69,7 @@ object TransactionImportMapper {
                 )
             }.getOrElse { rejected++; null }
         }
-        return ImportValidationResult(transactions, rejected)
+        return ImportValidationResult(transactions, rejected, skippedTransfers)
     }
 
     private fun parseDate(value: String, pattern: String) = runCatching {

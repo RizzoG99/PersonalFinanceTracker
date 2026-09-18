@@ -336,4 +336,5 @@
     <string name="scan_category_pet">Animali</string>
     <string name="scan_category_gift">Regali</string>
     <string name="scan_category_fees">Spese bancarie</string>
+    <string name="import_transfers_skipped">%1$d righe di trasferimento ignorate: i giroconti non vengono importati come entrate o uscite.</string>
 </resources>

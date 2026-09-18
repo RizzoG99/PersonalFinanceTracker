@@ -82,6 +82,24 @@ class RoomCategoryRepositoryTest {
         assertEquals(original.currencyCode, updated.currencyCode)
     }
 
+    /**
+     * The database half of the import failure. `forCategoryName` strips emoji, so a CSV containing
+     * both "Regali" and "🎁 Regali" asked for the same category twice; the second insert aborts and,
+     * because the importer wrapped the whole thing in one runCatching, took all 1634 transactions
+     * with it under the message "Couldn't import transactions. Try again."
+     *
+     * The constraint is correct and stays. `ImportCategoryPlanner` is what stops the importer
+     * walking into it — see `ImportCategoryPlannerTest`.
+     */
+    @Test(expected = android.database.sqlite.SQLiteConstraintException::class)
+    fun `rejects a second category whose name differs only by emoji and case`() {
+        runBlocking {
+            repository.add(NewCategory(name = "Regali", iconToken = "gift", type = TransactionType.EXPENSE))
+            // What "🎁 Regali" becomes once forCategoryName() has dropped the emoji.
+            repository.add(NewCategory(name = "Regali", iconToken = "tag", type = TransactionType.EXPENSE))
+        }
+    }
+
     @Test(expected = android.database.sqlite.SQLiteConstraintException::class)
     fun `rejects an update that duplicates a category in its type`() {
         runBlocking {

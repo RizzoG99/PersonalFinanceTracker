@@ -336,4 +336,5 @@
     <string name="scan_category_pet">Pets</string>
     <string name="scan_category_gift">Gifts</string>
     <string name="scan_category_fees">Bank fees</string>
+    <string name="import_transfers_skipped">%1$d transfer rows skipped — account moves are not imported as income or expense.</string>
 </resources>
