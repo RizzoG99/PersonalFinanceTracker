@@ -582,7 +582,7 @@ final class TransactionListViewModel {
     func reconcilePendingCategoryDrafts(validCategories: [String]) {
         let valid = Set(validCategories)
         pendingCategoryDrafts = pendingCategoryDrafts.filter {
-            valid.contains($0.key) && categoryResolutionSelections[$0.key] == "__new__"
+            valid.contains($0.key) && categoryResolutionSelections[$0.key] == CategoryAutoMapper.newSentinel
         }
     }
 
@@ -701,7 +701,7 @@ final class TransactionListViewModel {
         guard let file = csvFile else { return }
         // Build UUID resolution only for existing categories; "__new__" entries will have nil UUID
         let uuidResolution: [String: UUID?] = categoryResolutionSelections.mapValues { sel in
-            sel == "__new__" ? nil : UUID(uuidString: sel)
+            sel == CategoryAutoMapper.newSentinel ? nil : UUID(uuidString: sel)
         }
         let mapping = columnMapping
 
@@ -768,7 +768,7 @@ final class TransactionListViewModel {
             // Step 1: Create any new categories that need to be created
             var newCategoryPersistentIds: [String: PersistentIdentifier] = [:]
             for (csvCatName, selection) in categoryResolutionSelections {
-                guard selection == "__new__" else { continue }
+                guard selection == CategoryAutoMapper.newSentinel else { continue }
                 let draft = pendingCategoryDrafts[csvCatName]
                     ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
                 let categoryInput = CategoryInput(
@@ -802,7 +802,7 @@ final class TransactionListViewModel {
             // Matched on name AND type: "Other" can now exist for both Expense and Income,
             // so name alone could bind an Income row to the Expense category.
             for (csvCatName, selection) in categoryResolutionSelections {
-                guard selection == "__new__" else { continue }
+                guard selection == CategoryAutoMapper.newSentinel else { continue }
                 let createdDraft = pendingCategoryDrafts[csvCatName]
                     ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
                 if let catSnapshot = updatedCategories.first(where: {
@@ -816,7 +816,7 @@ final class TransactionListViewModel {
             // "__new__" selections are stored as the just-created category's UUID.
             if let signature = currentImportSignature {
                 var resolvedSelections = categoryResolutionSelections
-                for (csvCatName, selection) in resolvedSelections where selection == "__new__" {
+                for (csvCatName, selection) in resolvedSelections where selection == CategoryAutoMapper.newSentinel {
                     let createdDraft = pendingCategoryDrafts[csvCatName]
                         ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
                     if let created = updatedCategories.first(where: {

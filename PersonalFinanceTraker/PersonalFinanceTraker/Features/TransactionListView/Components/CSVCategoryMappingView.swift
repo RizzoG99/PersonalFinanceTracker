@@ -26,8 +26,6 @@ struct CSVCategoryMappingView: View {
         showsStepActions ? "Map Categories" : "Import"
     }
 
-    private let newSentinel = "__new__"
-
     private var allMapped: Bool {
         csvCategories.allSatisfy { selections[$0] != nil }
     }
@@ -132,7 +130,7 @@ struct CSVCategoryMappingView: View {
                     .map { $0.value },
                 onSave: { savedDraft in
                     viewModel.pendingCategoryDrafts[savedDraft.csvCategory] = savedDraft
-                    selections[savedDraft.csvCategory] = newSentinel
+                    selections[savedDraft.csvCategory] = CategoryAutoMapper.newSentinel
                 }
             )
         }
@@ -153,7 +151,7 @@ struct CSVCategoryMappingView: View {
 
             Menu {
                 let knownType = categoryTypes[csv]
-                let filtered = filteredCategories(for: knownType).sorted { $0.name < $1.name }
+                let filtered = CategoryAutoMapper.pool(for: knownType, in: availableCategories).sorted { $0.name < $1.name }
 
                 if knownType == nil {
                     // Type unknown — show both sections
@@ -190,19 +188,19 @@ struct CSVCategoryMappingView: View {
                     configureNewCategory(for: csv)
                 } label: {
                     Label {
-                        if selections[csv] == newSentinel {
+                        if selections[csv] == CategoryAutoMapper.newSentinel {
                             Text("Edit \"\(createName(for: csv))\"")
                         } else {
                             Text("Create \"\(createName(for: csv))\"")
                         }
                     } icon: {
-                        Image(systemName: selections[csv] == newSentinel ? "pencil" : "plus.circle")
+                        Image(systemName: selections[csv] == CategoryAutoMapper.newSentinel ? "pencil" : "plus.circle")
                     }
                 }
             } label: {
                 HStack(spacing: 4) {
                     if let sel = selections[csv] {
-                        if sel == newSentinel {
+                        if sel == CategoryAutoMapper.newSentinel {
                             Group {
                                 if let draft = viewModel.pendingCategoryDrafts[csv] {
                                     Text(draft.name)
@@ -238,12 +236,6 @@ struct CSVCategoryMappingView: View {
     private func createName(for csv: String) -> String {
         let stripped = csv.removingLeadingEmoji.trimmingCharacters(in: .whitespaces)
         return stripped.isEmpty ? csv : stripped
-    }
-
-    /// Returns categories filtered to the matching type, or all if type is unknown.
-    private func filteredCategories(for type: TransactionType?) -> [CategorySnapshot] {
-        guard let type else { return availableCategories }
-        return availableCategories.filter { $0.transactionType == type }
     }
 
     // MARK: - Actions

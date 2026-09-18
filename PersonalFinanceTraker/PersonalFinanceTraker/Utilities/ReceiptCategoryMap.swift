@@ -24,10 +24,14 @@ import Foundation
 /// A spending concept a receipt can be recognized as, independent of what the user calls it.
 /// Raw values are the canonical keywords `CategoryAutoMapper` already uses, so a keyword coming out
 /// of the local table or an Apple Maps POI maps straight onto one of these.
+///
+/// Cases may be added but never renamed or removed: the raw value is the `UserDefaults` key the
+/// user's saved pairing is stored under, so renaming one silently discards their choice.
 enum ReceiptCategoryConcept: String, CaseIterable, Identifiable, Sendable {
     case restaurant, grocer, transport, travel, shopping
     case health, fitness, beauty, entertain
     case edu, house, util, pet, gift
+    case gas, coffee, cloth, phone, fees
 
     var id: String { rawValue }
 
@@ -37,7 +41,9 @@ enum ReceiptCategoryConcept: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .restaurant: "Eating out"
         case .grocer: "Groceries"
-        case .transport: "Transport & fuel"
+        // No longer "Transport & fuel": fuel is its own concept now. Display only — the raw value
+        // stays "transport", so a pairing saved under the old title is untouched.
+        case .transport: "Transport"
         case .travel: "Travel"
         case .shopping: "Shopping"
         case .health: "Health & pharmacy"
@@ -49,6 +55,11 @@ enum ReceiptCategoryConcept: String, CaseIterable, Identifiable, Sendable {
         case .util: "Bills"
         case .pet: "Pets"
         case .gift: "Gifts"
+        case .gas: "Fuel"
+        case .coffee: "Coffee & drinks"
+        case .cloth: "Clothing"
+        case .phone: "Phone"
+        case .fees: "Bank fees"
         }
     }
 
@@ -68,6 +79,11 @@ enum ReceiptCategoryConcept: String, CaseIterable, Identifiable, Sendable {
         case .util: "bolt"
         case .pet: "pawprint"
         case .gift: "gift"
+        case .gas: "fuelpump"
+        case .coffee: "cup.and.saucer"
+        case .cloth: "tshirt"
+        case .phone: "iphone"
+        case .fees: "creditcard"
         }
     }
 }
@@ -82,7 +98,14 @@ enum ReceiptCategoryMap {
     }
 
     static func categoryId(for concept: ReceiptCategoryConcept) -> UUID? {
-        stored[concept.rawValue].flatMap(UUID.init(uuidString:))
+        if let own = stored[concept.rawValue].flatMap(UUID.init(uuidString:)) { return own }
+        // ponytail: `gas` was split out of `transport`, so a fuel-station receipt now asks for a
+        // concept nobody has ever been shown a picker for. Fall back to the pairing the user made
+        // back when one row covered "Transport & fuel", rather than silently dropping to name
+        // matching. Self-heals the moment they pick a Fuel category; delete this once the new
+        // concept has been shipping long enough that nobody is still on the old row alone.
+        guard concept == .gas else { return nil }
+        return stored[ReceiptCategoryConcept.transport.rawValue].flatMap(UUID.init(uuidString:))
     }
 
     static func setCategoryId(_ id: UUID?, for concept: ReceiptCategoryConcept) {
