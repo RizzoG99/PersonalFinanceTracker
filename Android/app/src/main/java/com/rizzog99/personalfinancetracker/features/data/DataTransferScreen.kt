@@ -256,9 +256,13 @@ private fun ImportWizardScreen(
     var signConvention by remember(file) { mutableStateOf(SignConvention.SIGNED) }
     val validation = if (dateColumn != null && amountColumn != null) runCatching { TransactionImportMapper.validate(file, CsvColumnMapping(dateColumn!!, amountColumn!!, categoryColumn, noteColumn, typeColumn, dateFormat, signConvention)) }.getOrNull() else null
     val mappedCategories = validation?.transactions.orEmpty().mapNotNull { it.categoryLabel.takeIf(String::isNotBlank) }.distinct()
-    fun autoMatch() = mappedCategories.associateWith { label ->
-        val type = if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) TransactionType.EXPENSE else TransactionType.INCOME
-        CategoryAutoMapper.bestMatch(label, categories.filter { it.type == type })?.id
+    // Mirrors iOS's CategoryAutoMapper.resolve: a choice already made outranks a guess, so
+    // re-running this fills in the gaps instead of discarding what the user picked by hand.
+    fun autoMatch(existing: Map<String, String?> = emptyMap()) = mappedCategories.associateWith { label ->
+        existing[label] ?: run {
+            val type = if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) TransactionType.EXPENSE else TransactionType.INCOME
+            CategoryAutoMapper.bestMatch(label, categories.filter { it.type == type })?.id
+        }
     }
     var categorySelections by remember(file, categoryColumn, categories) { mutableStateOf(autoMatch()) }
     val resolved = validation?.transactions.orEmpty().map { transaction ->
@@ -313,7 +317,7 @@ private fun ImportWizardScreen(
                 actions = {
                     when (step) {
                         1 -> IconButton(onClick = { showHelp = true }) { Icon(Icons.Outlined.Info, stringResource(R.string.import_help)) }
-                        2 -> FilledTonalButton(onClick = { categorySelections = autoMatch() }, modifier = Modifier.padding(end = 8.dp)) {
+                        2 -> FilledTonalButton(onClick = { categorySelections = autoMatch(categorySelections) }, modifier = Modifier.padding(end = 8.dp)) {
                             Text(stringResource(R.string.import_auto_match))
                         }
                         else -> {}
