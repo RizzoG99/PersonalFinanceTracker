@@ -77,11 +77,18 @@ colour relationships, and states; Android retains Material navigation, sheets, a
   Settings. Pixel 7 dark-appearance QA covered the full-height opening state, long amount entry
   with aligned EUR marker, visible category selection, and a successful Save through the top bar.
   Italian, light-appearance, large-text, and manual TalkBack checks remain open.
-- 2026-09-07: Activity’s no-transaction state now uses a lower, centered FinanceCard with a
-  decorative accent, clear title, and centered supporting copy. The persistent Add FAB remains
-  visible rather than duplicating a primary action inside the card. Pixel 7 dark-appearance QA
-  covered the card, search and filter controls, and the unobstructed FAB. Italian,
-  light-appearance, large-text, and manual TalkBack checks remain open.
+- 2026-09-18: The CSV import wizard's Map Categories step now labels each section with its count
+  (e.g. "Expenses (4)") and a footer summarizing how many categories matched automatically vs. will
+  be created; Import Preview's Total/New/Duplicates/Errors are now colored tiles (indigo/green/
+  neutral) instead of plain numbers, mirroring the design mockups. The amount-sign choice is now a
+  3-way Signed/All expenses/All income control (was a 2-way negative/positive toggle), and rows
+  identified as account transfers are excluded from import, matching iOS's CSVColumnMapper. A Pixel
+  7a emulator light-appearance walkthrough covered all 4 wizard steps end-to-end with a real CSV
+  (column mapping with Type mapped, category counts/footer, colored preview tiles, successful
+  import, and the recurring-transactions step). Dark-appearance QA for these specific screens could
+  not be completed this session — the emulator became unresponsive mid-check — though the badge
+  colors reuse `LocalFinanceExtendedColors` tokens already verified in dark appearance on Home.
+  Manually exercising the 3-way sign control and Italian/large-text checks remain open.
 
 Track the remaining manual TalkBack check in Android issue #92; keep issue #93 open until that
 check is complete.

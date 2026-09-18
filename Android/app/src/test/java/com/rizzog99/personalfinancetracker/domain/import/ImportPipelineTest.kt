@@ -19,11 +19,36 @@ class ImportPipelineTest {
     }
 
     @Test
-    fun `mapper accepts European thousands notation and selected positive expense signs`() {
+    fun `mapper accepts European thousands notation and forces amounts to expense sign`() {
         val file = CsvImportParser.parse("Date;Amount\n2026-05-21;1.234,50")
-        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", dateFormat = "yyyy-MM-dd", signConvention = SignConvention.EXPENSES_POSITIVE))
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", dateFormat = "yyyy-MM-dd", signConvention = SignConvention.ALL_EXPENSES))
 
         assertEquals(BigDecimal("-1234.50"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `mapper forces amounts to income sign under ALL_INCOME convention`() {
+        val file = CsvImportParser.parse("Date,Amount\n2026-05-21,-42.00")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", dateFormat = "yyyy-MM-dd", signConvention = SignConvention.ALL_INCOME))
+
+        assertEquals(BigDecimal("42.00"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `mapper skips transfer rows like iOS does`() {
+        val file = CsvImportParser.parse("Date,Type,Amount\n2026-05-21,Transfer,100\n2026-05-22,Expense,50")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", type = "Type", dateFormat = "yyyy-MM-dd"))
+
+        assertEquals(1, result.transactions.size)
+        assertEquals(BigDecimal("-50"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `removingLeadingEmoji strips a leading emoji and its trailing space`() {
+        assertEquals("Spesa", "🛒 Spesa".removingLeadingEmoji())
+        assertEquals("Moto", "🏍️ Moto".removingLeadingEmoji())
+        assertEquals("Coffee", "Coffee".removingLeadingEmoji())
+        assertEquals("☕", "☕".removingLeadingEmoji())
     }
 
     @Test

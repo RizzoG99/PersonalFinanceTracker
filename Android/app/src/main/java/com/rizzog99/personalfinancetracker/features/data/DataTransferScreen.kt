@@ -4,19 +4,25 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -39,6 +45,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -71,6 +78,7 @@ import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.export.CsvExportService
 import com.rizzog99.personalfinancetracker.domain.export.XlsxExportService
+import com.rizzog99.personalfinancetracker.domain.import.CategoryAutoMapper
 import com.rizzog99.personalfinancetracker.domain.import.CsvImportParser
 import com.rizzog99.personalfinancetracker.domain.import.CsvColumnMapping
 import com.rizzog99.personalfinancetracker.domain.import.RecurringCandidate
@@ -78,9 +86,11 @@ import com.rizzog99.personalfinancetracker.domain.import.RecurringImportDetector
 import com.rizzog99.personalfinancetracker.domain.import.TransactionImportMapper
 import com.rizzog99.personalfinancetracker.domain.import.SignConvention
 import com.rizzog99.personalfinancetracker.domain.import.XlsxImportService
+import com.rizzog99.personalfinancetracker.domain.import.removingLeadingEmoji
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
+import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
@@ -243,10 +253,13 @@ private fun ImportWizardScreen(
     var noteColumn by remember(file) { mutableStateOf(file.headers.matching("note", "description")) }
     var typeColumn by remember(file) { mutableStateOf(file.headers.matching("type", "income/expense")) }
     var dateFormat by remember(file) { mutableStateOf(TransactionImportMapper.supportedDateFormats.firstOrNull { format -> file.rows.firstOrNull()?.getOrNull(file.headers.indexOf(dateColumn ?: ""))?.let { runCatching { java.time.LocalDate.parse(it, java.time.format.DateTimeFormatter.ofPattern(format)) }.isSuccess || runCatching { java.time.LocalDateTime.parse(it, java.time.format.DateTimeFormatter.ofPattern(format)) }.isSuccess } == true } ?: "dd/MM/yyyy") }
-    var signConvention by remember(file) { mutableStateOf(SignConvention.EXPENSES_NEGATIVE) }
+    var signConvention by remember(file) { mutableStateOf(SignConvention.SIGNED) }
     val validation = if (dateColumn != null && amountColumn != null) runCatching { TransactionImportMapper.validate(file, CsvColumnMapping(dateColumn!!, amountColumn!!, categoryColumn, noteColumn, typeColumn, dateFormat, signConvention)) }.getOrNull() else null
     val mappedCategories = validation?.transactions.orEmpty().mapNotNull { it.categoryLabel.takeIf(String::isNotBlank) }.distinct()
-    fun autoMatch() = mappedCategories.associateWith { label -> categories.firstOrNull { it.name.equals(label, true) }?.id }
+    fun autoMatch() = mappedCategories.associateWith { label ->
+        val type = if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) TransactionType.EXPENSE else TransactionType.INCOME
+        CategoryAutoMapper.bestMatch(label, categories.filter { it.type == type })?.id
+    }
     var categorySelections by remember(file, categoryColumn, categories) { mutableStateOf(autoMatch()) }
     val resolved = validation?.transactions.orEmpty().map { transaction ->
         categorySelections[transaction.categoryLabel]?.let { id -> categories.firstOrNull { it.id == id } }?.let { category -> transaction.copy(categoryId = category.id, categoryLabel = category.name) } ?: transaction
@@ -454,29 +467,53 @@ private fun ImportWizardScreen(
                     FinanceCard {
                         Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(stringResource(R.string.import_preview_label), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-                            // Header row
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                file.headers.forEach { header ->
-                                    Text(
-                                        header.uppercase(),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.weight(1f),
-                                    )
-                                }
+                            // Wide files (many columns) scroll horizontally instead of squeezing every
+                            // column to 1/N of the screen width, which forced headers onto several lines.
+                            val sampleRows = file.rows.take(3)
+                            val columnAlignments = file.headers.indices.map { index ->
+                                val samples = sampleRows.mapNotNull { it.getOrNull(index) }.filter(String::isNotBlank)
+                                val looksNumeric = samples.isNotEmpty() && samples.all { it.replace(",", ".").toDoubleOrNull() != null }
+                                if (looksNumeric) TextAlign.End else TextAlign.Start
                             }
-                            file.rows.take(3).forEach { row ->
-                                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    row.take(file.headers.size).forEach { cell ->
-                                        Text(cell.ifBlank { "—" }, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            Column(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                                Column(modifier = Modifier.width(IntrinsicSize.Max)) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(8.dp))
+                                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    ) {
+                                        file.headers.forEachIndexed { index, header ->
+                                            Text(
+                                                header.uppercase(),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                textAlign = columnAlignments[index],
+                                                modifier = Modifier.width(PreviewColumnWidth),
+                                            )
+                                        }
+                                    }
+                                    sampleRows.forEach { row ->
+                                        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest, modifier = Modifier.fillMaxWidth())
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        ) {
+                                            row.take(file.headers.size).forEachIndexed { index, cell ->
+                                                Text(
+                                                    cell.ifBlank { "—" },
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    textAlign = columnAlignments[index],
+                                                    modifier = Modifier.width(PreviewColumnWidth),
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -509,7 +546,13 @@ private fun ImportWizardScreen(
                                     Text(stringResource(R.string.import_sign_convention), style = MaterialTheme.typography.bodyMedium)
                                     SignConventionSegmentedButton(signConvention) { signConvention = it }
                                     Text(
-                                        stringResource(if (signConvention == SignConvention.EXPENSES_NEGATIVE) R.string.import_sign_detail_negative else R.string.import_sign_detail_positive),
+                                        stringResource(
+                                            when (signConvention) {
+                                                SignConvention.SIGNED -> R.string.import_sign_detail_signed
+                                                SignConvention.ALL_EXPENSES -> R.string.import_sign_detail_all_expenses
+                                                SignConvention.ALL_INCOME -> R.string.import_sign_detail_all_income
+                                            }
+                                        ),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -524,32 +567,34 @@ private fun ImportWizardScreen(
                         Text(stringResource(R.string.import_no_categories), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
                         val matchedCount = mappedCategories.count { categorySelections[it] != null }
-                        Text(
-                            stringResource(R.string.import_categories_matched, matchedCount, mappedCategories.size),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                        mappedCategories.groupBy { label -> if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) R.string.import_expenses else R.string.import_income }.forEach { (type, labels) ->
-                            Text(stringResource(type), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
+                        val newCount = mappedCategories.size - matchedCount
+                        mappedCategories.groupBy { label -> if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) TransactionType.EXPENSE else TransactionType.INCOME }.forEach { (type, labels) ->
+                            Text(stringResource(if (type == TransactionType.EXPENSE) R.string.import_expenses else R.string.import_income, labels.size), color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.labelLarge)
+                            val categoriesForType = categories.filter { it.type == type }
                             FinanceCard {
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     labels.forEachIndexed { idx, label ->
                                         if (idx > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
-                                        CategorySelectorListItem(label, categorySelections[label], categories) { selection -> categorySelections = categorySelections + (label to selection) }
+                                        CategorySelectorListItem(label, categorySelections[label], categoriesForType) { selection -> categorySelections = categorySelections + (label to selection) }
                                     }
                                 }
                             }
                         }
+                        Text(
+                            stringResource(R.string.import_categories_footer, matchedCount, pluralStringResource(R.plurals.import_categories_new, newCount, newCount)),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
                     }
                 }
                 3 -> {
-                    FinanceCard {
-                        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            ImportMetric(stringResource(R.string.import_total), validation?.transactions?.size ?: 0)
-                            ImportMetric(stringResource(R.string.import_new), candidates.size)
-                            ImportMetric(stringResource(R.string.import_duplicates), duplicates.size)
-                            ImportMetric(stringResource(R.string.import_errors), validation?.rejectedRows ?: 0)
-                        }
+                    val neutralContainer = MaterialTheme.colorScheme.surfaceContainerHighest
+                    val neutralContent = MaterialTheme.colorScheme.onSurfaceVariant
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ImportMetric(stringResource(R.string.import_total), validation?.transactions?.size ?: 0, MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
+                        ImportMetric(stringResource(R.string.import_new), candidates.size, LocalFinanceExtendedColors.current.positiveContainer, LocalFinanceExtendedColors.current.positive)
+                        ImportMetric(stringResource(R.string.import_duplicates), duplicates.size, neutralContainer, neutralContent)
+                        ImportMetric(stringResource(R.string.import_errors), validation?.rejectedRows ?: 0, neutralContainer, neutralContent)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -636,32 +681,48 @@ private fun SheetPicker(workbook: XlsxImportService.Workbook, onSelect: (XlsxImp
 }
 
 @Composable
-private fun ImportMetric(label: String, value: Int) = Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-    Text(value.toString(), style = MaterialTheme.typography.headlineSmall)
-    Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun RowScope.ImportMetric(label: String, value: Int, containerColor: androidx.compose.ui.graphics.Color, contentColor: androidx.compose.ui.graphics.Color) {
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .background(containerColor, RoundedCornerShape(12.dp))
+            .padding(vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(value.toString(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = contentColor)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = contentColor)
+    }
 }
 
 @Composable
 private fun CategorySelectorListItem(label: String, selection: String?, categories: List<FinanceCategory>, onSelected: (String?) -> Unit) {
     var expanded by remember(label) { mutableStateOf(false) }
+    // The CSV's own emoji stays on the row label, but the name offered for a new category is
+    // stripped of it — the emoji doesn't get saved as part of the category name either.
+    val createName = label.removingLeadingEmoji().trim().ifBlank { label }
     Box {
         ListItem(
             headlineContent = { Text(label) },
-            trailingContent = { MappingTrailingValue(categories.firstOrNull { it.id == selection }?.name ?: stringResource(R.string.import_create_category, label)) },
+            trailingContent = { MappingTrailingValue(categories.firstOrNull { it.id == selection }?.name ?: stringResource(R.string.import_create_category, createName)) },
+            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(text = { Text(stringResource(R.string.import_create_category, label)) }, onClick = { onSelected(null); expanded = false })
+            DropdownMenuItem(text = { Text(stringResource(R.string.import_create_category, createName)) }, onClick = { onSelected(null); expanded = false })
             categories.forEach { category -> DropdownMenuItem(text = { Text(category.name) }, onClick = { onSelected(category.id); expanded = false }) }
         }
     }
 }
 
-/** iOS's sign picker becomes an outlined segmented control with a check on the selected option. */
+/** iOS's sign convention menu becomes an outlined segmented control with a check on the selected option. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SignConventionSegmentedButton(selected: SignConvention, onSelected: (SignConvention) -> Unit) {
-    val options = listOf(SignConvention.EXPENSES_NEGATIVE to R.string.import_expenses_negative, SignConvention.EXPENSES_POSITIVE to R.string.import_expenses_positive)
+    val options = listOf(
+        SignConvention.SIGNED to R.string.import_sign_signed,
+        SignConvention.ALL_EXPENSES to R.string.import_sign_all_expenses,
+        SignConvention.ALL_INCOME to R.string.import_sign_all_income,
+    )
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         options.forEachIndexed { index, (convention, labelRes) ->
             SegmentedButton(
@@ -683,6 +744,7 @@ private fun MappingSelectorListItem(labelRes: Int, selected: String?, headers: L
         ListItem(
             headlineContent = { Text(stringResource(labelRes)) },
             trailingContent = { MappingTrailingValue(selected ?: stringResource(R.string.import_not_mapped)) },
+            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -741,3 +803,5 @@ private fun RecurringCandidateRow(candidate: RecurringCandidate, category: Finan
 private fun List<String>.matching(vararg names: String): String? = firstOrNull { header ->
     names.any { name -> header.contains(name, ignoreCase = true) }
 }
+
+private val PreviewColumnWidth = 88.dp

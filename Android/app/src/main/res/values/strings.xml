@@ -47,13 +47,19 @@
     <string name="import_categories_detail">Match each imported category to one in the app, or create it.</string>
     <string name="import_required">REQUIRED</string>
     <string name="import_optional">OPTIONAL</string>
-    <string name="import_expenses">EXPENSES</string>
-    <string name="import_income">INCOME</string>
+    <string name="import_expenses">EXPENSES (%1$d)</string>
+    <string name="import_income">INCOME (%1$d)</string>
     <string name="import_no_categories">This file has no category column to map.</string>
     <string name="import_categories_matched">%1$d of %2$d matched automatically</string>
+    <string name="import_categories_footer">%1$d matched automatically, %2$s</string>
+    <plurals name="import_categories_new">
+        <item quantity="one">%1$d new category</item>
+        <item quantity="other">%1$d new categories</item>
+    </plurals>
     <string name="import_auto_match">Auto-match</string>
-    <string name="import_sign_detail_negative">Amounts keep the sign as written in the file.</string>
-    <string name="import_sign_detail_positive">Expense amounts will be flipped to negative.</string>
+    <string name="import_sign_detail_signed">Amounts keep the sign as written in the file.</string>
+    <string name="import_sign_detail_all_expenses">Every amount will be imported as an expense.</string>
+    <string name="import_sign_detail_all_income">Every amount will be imported as an income.</string>
     <string name="import_total">Total</string>
     <string name="import_new">New</string>
     <string name="import_duplicates">Duplicates</string>
@@ -88,8 +94,9 @@
     <string name="import_type_column">Type</string>
     <string name="import_date_format">Date format</string>
     <string name="import_sign_convention">Amount signs</string>
-    <string name="import_expenses_negative">Expenses are negative</string>
-    <string name="import_expenses_positive">Expenses are positive</string>
+    <string name="import_sign_signed">Signed</string>
+    <string name="import_sign_all_expenses">All expenses</string>
+    <string name="import_sign_all_income">All income</string>
     <string name="import_category_mapping">CATEGORY MATCHING</string>
     <string name="import_create_category">Create “%1$s”</string>
     <string name="import_not_mapped">Not mapped</string>

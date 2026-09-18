@@ -47,13 +47,19 @@
     <string name="import_categories_detail">Abbina ogni categoria importata a una dell’app oppure creala.</string>
     <string name="import_required">OBBLIGATORIO</string>
     <string name="import_optional">FACOLTATIVO</string>
-    <string name="import_expenses">SPESE</string>
-    <string name="import_income">ENTRATE</string>
+    <string name="import_expenses">SPESE (%1$d)</string>
+    <string name="import_income">ENTRATE (%1$d)</string>
     <string name="import_no_categories">Questo file non ha una colonna categoria da mappare.</string>
     <string name="import_categories_matched">%1$d di %2$d abbinate automaticamente</string>
+    <string name="import_categories_footer">%1$d abbinate automaticamente, %2$s</string>
+    <plurals name="import_categories_new">
+        <item quantity="one">%1$d nuova categoria</item>
+        <item quantity="other">%1$d nuove categorie</item>
+    </plurals>
     <string name="import_auto_match">Abbina automaticamente</string>
-    <string name="import_sign_detail_negative">Gli importi mantengono il segno scritto nel file.</string>
-    <string name="import_sign_detail_positive">Gli importi di spesa verranno invertiti in negativo.</string>
+    <string name="import_sign_detail_signed">Gli importi mantengono il segno scritto nel file.</string>
+    <string name="import_sign_detail_all_expenses">Ogni importo verrà importato come spesa.</string>
+    <string name="import_sign_detail_all_income">Ogni importo verrà importato come entrata.</string>
     <string name="import_total">Totale</string>
     <string name="import_new">Nuovi</string>
     <string name="import_duplicates">Duplicati</string>
@@ -88,8 +94,9 @@
     <string name="import_type_column">Tipo</string>
     <string name="import_date_format">Formato data</string>
     <string name="import_sign_convention">Segni degli importi</string>
-    <string name="import_expenses_negative">Le spese sono negative</string>
-    <string name="import_expenses_positive">Le spese sono positive</string>
+    <string name="import_sign_signed">Con segno</string>
+    <string name="import_sign_all_expenses">Tutte spese</string>
+    <string name="import_sign_all_income">Tutte entrate</string>
     <string name="import_category_mapping">ABBINAMENTO CATEGORIE</string>
     <string name="import_create_category">Crea “%1$s”</string>
     <string name="import_not_mapped">Non mappata</string>
