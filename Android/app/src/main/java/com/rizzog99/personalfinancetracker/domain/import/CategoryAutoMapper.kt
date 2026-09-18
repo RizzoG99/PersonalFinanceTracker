@@ -1,5 +1,6 @@
 package com.rizzog99.personalfinancetracker.domain.import
 
+import com.rizzog99.personalfinancetracker.data.preferences.categoryIdForConcept
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 
 /**
@@ -181,13 +182,42 @@ object CategoryAutoMapper {
     }
 
     /**
-     * 1. Exact name match (emoji-tolerant).
-     * 2. Most-keyword-overlap match (multilingual synonyms, inflections via prefix match).
-     * 3. Substring fallback.
+     * The single canonical concept a name belongs to, e.g. "ristorante" -> "restaurant".
      *
-     * iOS has a tier between 1 and 2 that consults the user's own concept-to-category pairing from
-     * Settings. Android has no equivalent screen yet, so there is nothing to consult here.
+     * Filtered to real canonical keys: [canonicalKeywords] also returns the raw tokens it was
+     * given, so "bar" would otherwise answer "bar" instead of the concept it belongs to. Sorted so
+     * a name hitting two concepts answers the same way every time, and the same way as iOS.
      */
-    fun bestMatch(csv: String, pool: List<FinanceCategory>): FinanceCategory? =
-        exactMatch(csv, pool) ?: heuristicMatch(csv, pool)
+    fun canonicalConcept(text: String): String? =
+        canonicalKeywords(text).filter { it in synonyms.keys }.minOrNull()
+
+    /**
+     * 1. Exact name match (emoji-tolerant) — the tier that cannot be wrong.
+     * 2. The user's own concept-to-category pairing from Scan Categories, if they set one.
+     * 3. Most-keyword-overlap match (multilingual synonyms, inflections via prefix match).
+     * 4. Substring fallback.
+     *
+     * [conceptPairings] is concept key -> category id. Passed in rather than read here, because on
+     * Android it lives in DataStore and cannot be read synchronously; iOS reads the equivalent map
+     * inline. Tier order is the same on both.
+     */
+    fun bestMatch(
+        csv: String,
+        pool: List<FinanceCategory>,
+        conceptPairings: Map<String, String> = emptyMap(),
+    ): FinanceCategory? =
+        exactMatch(csv, pool)
+            ?: pairedMatch(csv, pool, conceptPairings)
+            ?: heuristicMatch(csv, pool)
+
+    private fun pairedMatch(
+        csv: String,
+        pool: List<FinanceCategory>,
+        conceptPairings: Map<String, String>,
+    ): FinanceCategory? {
+        if (conceptPairings.isEmpty()) return null
+        val concept = canonicalConcept(csv) ?: return null
+        val categoryId = conceptPairings.categoryIdForConcept(concept) ?: return null
+        return pool.firstOrNull { it.id == categoryId }
+    }
 }

@@ -312,4 +312,28 @@
     <string name="daily_reminder_set">Attiva</string>
     <string name="daily_reminder_notification_title">Impulso finanziario</string>
     <string name="daily_reminder_notification_message">Registra i movimenti di oggi per tenere le tue finanze in ordine</string>
+    <!-- Categorie scansione: l'abbinamento concetto -> categoria scelto dall'utente -->
+    <string name="scan_categories_title">Categorie scansione</string>
+    <string name="scan_categories_description">Abbina ogni tipo di spesa a una delle tue categorie. Le scansioni e gli import CSV useranno la tua scelta invece di indovinare dal nome della categoria.</string>
+    <string name="scan_categories_automatic">Automatica</string>
+    <string name="scan_categories_entry">Categorie scansione</string>
+    <string name="scan_category_restaurant">Mangiare fuori</string>
+    <string name="scan_category_grocer">Spesa</string>
+    <string name="scan_category_transport">Trasporti</string>
+    <string name="scan_category_gas">Carburante</string>
+    <string name="scan_category_coffee">Bar e bevande</string>
+    <string name="scan_category_travel">Viaggi</string>
+    <string name="scan_category_shopping">Acquisti</string>
+    <string name="scan_category_cloth">Abbigliamento</string>
+    <string name="scan_category_health">Salute e farmacia</string>
+    <string name="scan_category_fitness">Palestra</string>
+    <string name="scan_category_beauty">Bellezza e benessere</string>
+    <string name="scan_category_entertain">Intrattenimento</string>
+    <string name="scan_category_edu">Istruzione</string>
+    <string name="scan_category_house">Casa</string>
+    <string name="scan_category_util">Bollette</string>
+    <string name="scan_category_phone">Telefono</string>
+    <string name="scan_category_pet">Animali</string>
+    <string name="scan_category_gift">Regali</string>
+    <string name="scan_category_fees">Spese bancarie</string>
 </resources>

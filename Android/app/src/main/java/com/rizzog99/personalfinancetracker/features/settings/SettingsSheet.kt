@@ -74,6 +74,7 @@ private enum class DataConfirmation { RESTORE, DELETE_ALL }
 fun SettingsSheet(
     onDismiss: () -> Unit,
     onOpenCategories: () -> Unit,
+    onOpenScanCategories: () -> Unit,
     onOpenBudgets: () -> Unit,
     onOpenDataTransfer: () -> Unit,
 ) {
@@ -265,6 +266,19 @@ fun SettingsSheet(
                     .clickable(role = Role.Button, onClick = onOpenCategories),
                 headlineContent = { Text(stringResource(R.string.categories)) },
                 supportingContent = { Text(stringResource(R.string.categories_settings_detail)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
+                    )
+                },
+            )
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onOpenScanCategories),
+                headlineContent = { Text(stringResource(R.string.scan_categories_entry)) },
+                supportingContent = { Text(stringResource(R.string.scan_categories_description)) },
                 trailingContent = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowForward,

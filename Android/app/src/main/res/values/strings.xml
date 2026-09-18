@@ -312,4 +312,28 @@
     <string name="daily_reminder_set">Set</string>
     <string name="daily_reminder_notification_title">Financial Pulse</string>
     <string name="daily_reminder_notification_message">Log today\'s transactions to keep your finances on track</string>
+    <!-- Scan Categories: the user's own concept -> category pairing -->
+    <string name="scan_categories_title">Scan Categories</string>
+    <string name="scan_categories_description">Pair each kind of purchase with one of your categories. Scans and CSV imports use your choice instead of guessing from the category name.</string>
+    <string name="scan_categories_automatic">Automatic</string>
+    <string name="scan_categories_entry">Scan Categories</string>
+    <string name="scan_category_restaurant">Eating out</string>
+    <string name="scan_category_grocer">Groceries</string>
+    <string name="scan_category_transport">Transport</string>
+    <string name="scan_category_gas">Fuel</string>
+    <string name="scan_category_coffee">Coffee &amp; drinks</string>
+    <string name="scan_category_travel">Travel</string>
+    <string name="scan_category_shopping">Shopping</string>
+    <string name="scan_category_cloth">Clothing</string>
+    <string name="scan_category_health">Health &amp; pharmacy</string>
+    <string name="scan_category_fitness">Fitness</string>
+    <string name="scan_category_beauty">Beauty &amp; wellbeing</string>
+    <string name="scan_category_entertain">Entertainment</string>
+    <string name="scan_category_edu">Education</string>
+    <string name="scan_category_house">Home</string>
+    <string name="scan_category_util">Bills</string>
+    <string name="scan_category_phone">Phone</string>
+    <string name="scan_category_pet">Pets</string>
+    <string name="scan_category_gift">Gifts</string>
+    <string name="scan_category_fees">Bank fees</string>
 </resources>

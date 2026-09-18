@@ -109,6 +109,10 @@ fun DataTransferScreen(onBack: () -> Unit) {
         factory = DataTransferViewModel.factory(application.transactionRepository, application.categoryRepository, application.recurrenceRepository),
     )
     val state by viewModel.uiState.collectAsState()
+    // The user's own concept -> category pairings, consulted by auto-match before it starts
+    // guessing from category names.
+    val conceptPairings by application.receiptCategoryMapRepository.pairings
+        .collectAsState(initial = emptyMap())
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var importedFile by remember { mutableStateOf<CsvImportParser.CsvFile?>(null) }
@@ -165,6 +169,7 @@ fun DataTransferScreen(onBack: () -> Unit) {
             file = file,
             existing = state.transactions,
             categories = state.categories,
+            conceptPairings = conceptPairings,
             onCancel = { importedFile = null },
             onImport = { transactions, selections, finished ->
                 viewModel.import(transactions, selections) { resolved ->
@@ -241,6 +246,8 @@ private fun ImportWizardScreen(
     file: CsvImportParser.CsvFile,
     existing: List<FinanceTransaction>,
     categories: List<FinanceCategory>,
+    /** concept key -> category id, the user's own pairings from Scan Categories. */
+    conceptPairings: Map<String, String>,
     onCancel: () -> Unit,
     onImport: (List<FinanceTransaction>, Map<String, String?>, (List<FinanceTransaction>?) -> Unit) -> Unit,
     onAddRecurrenceRules: (List<NewRecurrenceRule>, (Boolean) -> Unit) -> Unit,
@@ -261,10 +268,10 @@ private fun ImportWizardScreen(
     fun autoMatch(existing: Map<String, String?> = emptyMap()) = mappedCategories.associateWith { label ->
         existing[label] ?: run {
             val type = if (validation?.transactions?.firstOrNull { it.categoryLabel == label }?.amount?.signum() ?: -1 < 0) TransactionType.EXPENSE else TransactionType.INCOME
-            CategoryAutoMapper.bestMatch(label, categories.filter { it.type == type })?.id
+            CategoryAutoMapper.bestMatch(label, categories.filter { it.type == type }, conceptPairings)?.id
         }
     }
-    var categorySelections by remember(file, categoryColumn, categories) { mutableStateOf(autoMatch()) }
+    var categorySelections by remember(file, categoryColumn, categories, conceptPairings) { mutableStateOf(autoMatch()) }
     val resolved = validation?.transactions.orEmpty().map { transaction ->
         categorySelections[transaction.categoryLabel]?.let { id -> categories.firstOrNull { it.id == id } }?.let { category -> transaction.copy(categoryId = category.id, categoryLabel = category.name) } ?: transaction
     }

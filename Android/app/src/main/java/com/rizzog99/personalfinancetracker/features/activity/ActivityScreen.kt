@@ -108,6 +108,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.text.KeyboardOptions
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
+import com.rizzog99.personalfinancetracker.domain.import.CategoryAutoMapper
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
@@ -1102,6 +1103,10 @@ private fun TransactionEditorContent(
     onSave: (FinanceTransaction, NewRecurrenceRule?, String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Collected here rather than threaded through TransactionEditorSheet: only the receipt path
+    // needs it, and every caller of the sheet would otherwise have to carry it.
+    val conceptPairings by (LocalContext.current.applicationContext as PersonalFinanceApplication)
+        .receiptCategoryMapRepository.pairings.collectAsState(initial = emptyMap())
     var amountText by remember(editingTransaction) {
         mutableStateOf(editingTransaction?.amount?.abs()?.toPlainString().orEmpty())
     }
@@ -1168,7 +1173,7 @@ private fun TransactionEditorContent(
         if (!categoryTouched) {
             val mappedCategoryId = scan.merchant?.let { receiptMappingRepository.categoryIdFor(it) }
             val inferredCategory = categories.firstOrNull { it.id == mappedCategoryId }
-                ?: inferReceiptCategory(scan, categories, selectedType)
+                ?: inferReceiptCategory(scan, categories, selectedType, conceptPairings)
             if (inferredCategory != null) {
                 selectedType = inferredCategory.type
                 selectedCategoryId = inferredCategory.id
@@ -1767,23 +1772,44 @@ private fun ReceiptCaptureAction(
     }
 }
 
+/**
+ * Merchant substring -> a keyword the synonym table already knows. Deliberately small: a merchant
+ * directory is out of scope, this only bridges a brand name to a generic concept.
+ */
+private val receiptMerchantKeywords: List<Pair<String, String>> = listOf(
+    "supermerc" to "spesa", "market" to "spesa", "alimentari" to "spesa", "conad" to "spesa",
+    "coop" to "spesa", "lidl" to "spesa", "esselunga" to "spesa", "carrefour" to "spesa",
+    "farmacia" to "farmacia", "pharma" to "farmacia",
+    "eni" to "benzina", "q8" to "benzina", "ip " to "benzina", "fuel" to "benzina",
+    "benzina" to "benzina", "esso" to "benzina", "tamoil" to "benzina",
+    "bar" to "bar", "caffe" to "caffe", "coffee" to "coffee",
+    "gelateria" to "bar", "pasticceria" to "bar",
+    "ristor" to "ristorante", "pizzeria" to "ristorante", "trattoria" to "ristorante",
+    "palestra" to "palestra", "hotel" to "hotel",
+)
+
+/**
+ * Asks the user's own concept pairing from Scan Categories first — the only tier that cannot be
+ * wrong about what they meant — and only then matches the keyword against category *names* through
+ * the shared synonym table. Name matching alone can never reach a category the user invented or
+ * renamed, which is exactly why the pairing exists.
+ *
+ * Falls back to the first category of the right kind so a required field is never left empty.
+ */
 private fun inferReceiptCategory(
     scan: ReceiptScan,
     categories: List<FinanceCategory>,
     transactionType: TransactionType,
+    conceptPairings: Map<String, String>,
 ): FinanceCategory? {
-    val merchant = scan.merchant.orEmpty().lowercase()
-    val keywords = when {
-        listOf("supermerc", "market", "alimentari", "conad", "coop", "lidl", "esselunga").any(merchant::contains) -> listOf("grocer")
-        listOf("farmacia", "pharma").any(merchant::contains) -> listOf("pharmacy", "health")
-        listOf("eni", "q8", "ip ", "fuel", "benzina").any(merchant::contains) -> listOf("gas")
-        listOf("bar", "caffe", "coffee").any(merchant::contains) -> listOf("coffee", "restaurant")
-        listOf("ristor", "pizzeria", "trattoria").any(merchant::contains) -> listOf("restaurant", "takeout")
-        else -> emptyList()
+    val pool = categories.filter { it.type == transactionType }
+    // Padded so a trailing-space keyword like "ip " still matches a merchant that ends with it.
+    val merchant = " " + scan.merchant.orEmpty().lowercase() + " "
+    val keyword = receiptMerchantKeywords.firstOrNull { merchant.contains(it.first) }?.second
+    if (keyword != null) {
+        CategoryAutoMapper.bestMatch(keyword, pool, conceptPairings)?.let { return it }
     }
-    return categories.firstOrNull { category ->
-        category.type == transactionType && keywords.any(category.name.lowercase()::contains)
-    } ?: categories.firstOrNull { it.type == transactionType }
+    return pool.firstOrNull()
 }
 
 @Composable

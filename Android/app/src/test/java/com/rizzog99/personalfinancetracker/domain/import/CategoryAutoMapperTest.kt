@@ -127,6 +127,46 @@ class CategoryAutoMapperTest {
     }
 
     /**
+     * The whole point of Scan Categories: a category no keyword in the table can reach, because the
+     * user named it themselves. Without the pairing tier "Spesa" resolves to "Groceries" — a
+     * defensible guess that nonetheless overrides something the user stated outright.
+     */
+    @Test
+    fun `the user's own pairing beats the keyword heuristic`() {
+        val gelati = category("Gelati", TransactionType.EXPENSE)
+        val pool = expensePool + gelati
+        assertEquals(
+            "Gelati",
+            CategoryAutoMapper.bestMatch("Spesa", pool, mapOf("grocer" to gelati.id))?.name,
+        )
+    }
+
+    @Test
+    fun `an exact name match still beats the user's pairing`() {
+        val gelati = category("Gelati", TransactionType.EXPENSE)
+        val pool = expensePool + gelati
+        assertEquals(
+            "Groceries",
+            CategoryAutoMapper.bestMatch("Groceries", pool, mapOf("grocer" to gelati.id))?.name,
+        )
+    }
+
+    /**
+     * `gas` was split out of `transport` when the table was aligned with iOS, so a fuel receipt now
+     * asks for a concept nobody has been shown a picker for. Someone who paired the old combined
+     * "Transport & fuel" row keeps that answer until they pick a Fuel category of their own.
+     */
+    @Test
+    fun `a fuel keyword falls back to a stored transport pairing`() {
+        val myFuel = category("Distributore", TransactionType.EXPENSE)
+        val pool = expensePool + myFuel
+        assertEquals(
+            "Distributore",
+            CategoryAutoMapper.bestMatch("Benzina", pool, mapOf("transport" to myFuel.id))?.name,
+        )
+    }
+
+    /**
      * A category the app has no answer for must stay unmatched. Guessing here is worse than
      * prompting: a wrong mapping looks exactly as settled as a right one.
      */

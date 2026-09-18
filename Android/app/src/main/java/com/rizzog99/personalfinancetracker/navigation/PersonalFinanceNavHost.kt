@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -58,6 +59,7 @@ import com.rizzog99.personalfinancetracker.features.activity.ActivityTwoPaneScre
 import com.rizzog99.personalfinancetracker.features.activity.ActivityViewModel
 import com.rizzog99.personalfinancetracker.features.activity.TransactionEditorSheet
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsScreen
+import com.rizzog99.personalfinancetracker.features.settings.ScanCategoriesRoute
 import com.rizzog99.personalfinancetracker.features.budgets.BudgetsScreen
 import com.rizzog99.personalfinancetracker.features.data.DataTransferScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
@@ -74,6 +76,7 @@ private sealed class MainDestination(
     data object Activity : MainDestination("activity", R.string.tab_activity)
     data object Insights : MainDestination("insights", R.string.tab_insights)
     data object Categories : MainDestination("categories", R.string.category_settings_title)
+    data object ScanCategories : MainDestination("scan-categories", R.string.scan_categories_title)
     data object Budgets : MainDestination("budgets", R.string.budgets_title)
     data object DataTransfer : MainDestination("data-transfer", R.string.import_export_title)
 }
@@ -279,6 +282,9 @@ fun PersonalFinanceNavHost() {
             composable(MainDestination.Categories.route) {
                 CategorySettingsScreen(onBack = navigateBackFromSecondary)
             }
+            composable(MainDestination.ScanCategories.route) {
+                ScanCategoriesRoute(onBack = navigateBackFromSecondary)
+            }
             composable(MainDestination.Budgets.route) {
                 BudgetsScreen(onBack = navigateBackFromSecondary)
             }
@@ -294,6 +300,10 @@ fun PersonalFinanceNavHost() {
                 onOpenCategories = {
                     settingsVisible = false
                     navigateToSecondaryDestination(MainDestination.Categories)
+                },
+                onOpenScanCategories = {
+                    settingsVisible = false
+                    navigateToSecondaryDestination(MainDestination.ScanCategories)
                 },
                 onOpenBudgets = {
                     settingsVisible = false
@@ -343,6 +353,7 @@ private fun MainDestination.icon() = when (this) {
     MainDestination.Activity -> Icons.AutoMirrored.Outlined.List
     MainDestination.Insights -> Icons.Outlined.Insights
     MainDestination.Categories -> Icons.Outlined.Category
+    MainDestination.ScanCategories -> Icons.Outlined.DocumentScanner
     MainDestination.Budgets -> Icons.Outlined.Savings
     MainDestination.DataTransfer -> Icons.Outlined.SwapVert
 }
