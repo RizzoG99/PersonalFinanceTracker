@@ -10,6 +10,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.rizzog99.personalfinancetracker.data.backup.BackupRepository
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
+import com.rizzog99.personalfinancetracker.data.preferences.ImportProfileRepository
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.CreditCardRepository
@@ -50,6 +51,10 @@ class PersonalFinanceApplication : Application() {
 
     val preferencesRepository: UserPreferencesRepository by lazy {
         UserPreferencesRepository(this)
+    }
+
+    val importProfileRepository: ImportProfileRepository by lazy {
+        ImportProfileRepository(this)
     }
 
     val transactionRepository: TransactionRepository by lazy {
