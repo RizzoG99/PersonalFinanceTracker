@@ -50,6 +50,9 @@ interface RecurrenceRuleDao {
 
     @Update(onConflict = OnConflictStrategy.ABORT)
     suspend fun update(rule: RecurrenceRuleEntity)
+
+    @Query("UPDATE recurrence_rules SET categoryId = NULL WHERE categoryId = :categoryId")
+    suspend fun clearCategoryReference(categoryId: String)
 }
 
 @Dao

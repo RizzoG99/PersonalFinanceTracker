@@ -41,7 +41,10 @@ class RoomCategoryRepository(
     }
 
     override suspend fun delete(id: String) {
-        dao.delete(id)
+        database.withTransaction {
+            database.recurrenceRuleDao().clearCategoryReference(id)
+            dao.delete(id)
+        }
     }
 
     override suspend fun seedDefaultsIfEmpty() {

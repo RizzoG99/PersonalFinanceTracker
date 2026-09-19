@@ -6,10 +6,15 @@ import androidx.test.core.app.ApplicationProvider
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
+import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
+import java.math.BigDecimal
+import java.time.Instant
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -112,5 +117,33 @@ class RoomCategoryRepositoryTest {
 
             repository.update(groceries.copy(name = " dining "))
         }
+    }
+
+    @Test
+    fun `AC-05 deleting a category nullifies links while preserving transaction snapshots`() = runBlocking {
+        val category = repository.add(
+            NewCategory(name = "Coffee", iconToken = "cup.and.saucer", type = TransactionType.EXPENSE),
+        )
+        val recurrenceRepository = RoomRecurrenceRepository(database)
+        val transactionRepository = RoomTransactionRepository(database)
+        val rule = recurrenceRepository.createAndMaterialize(
+            NewRecurrenceRule(
+                frequency = RecurrenceFrequency.MONTHLY,
+                interval = 1,
+                startDate = Instant.parse("2026-09-01T10:00:00Z"),
+                amount = BigDecimal("-3.75"),
+                note = "Espresso",
+                categoryLabel = "Coffee snapshot",
+                categoryId = category.id,
+                currencyCode = "EUR",
+            ),
+        )
+
+        repository.delete(category.id)
+
+        val transaction = transactionRepository.observeAll().first().single()
+        assertNull(transaction.categoryId)
+        assertEquals("Coffee snapshot", transaction.categoryLabel)
+        assertNull(database.recurrenceRuleDao().get(rule.id)?.categoryId)
     }
 }
