@@ -212,7 +212,8 @@
     <string name="delete_all_data">Elimina tutti i dati</string>
     <string name="delete_all_data_confirm_message">Questo elimina definitivamente ogni transazione, categoria, budget e obiettivo su questo dispositivo. Non è reversibile.</string>
     <string name="dismiss">Chiudi</string>
-    <string name="clear_filters">Cancella ricerca e filtri</string>
+    <string name="clear_filters">Cancella filtri</string>
+    <string name="clear_search_and_filters">Cancella ricerca e filtri</string>
     <string name="no_matching_transactions">Nessuna transazione corrispondente</string>
     <string name="no_matching_transactions_message">Prova un’altra ricerca o cancella i filtri.</string>
     <string name="amount">Importo</string>
@@ -296,6 +297,8 @@
     <string name="category_save_error">Non è stato possibile salvare la categoria. Riprova.</string>
     <string name="back">Indietro</string>
     <string name="apply_filters">Applica filtri</string>
+    <string name="filter_any_category">Qualsiasi categoria</string>
+    <string name="choose_type_for_categories">Scegli Entrate o Uscite per filtrare per categoria.</string>
 
     <string name="financial_pulse_title">Impulso finanziario</string>
     <string name="financial_pulse_complete">Il check-in di oggi è completo</string>

@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
@@ -63,6 +64,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -173,6 +175,11 @@ fun ActivityScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 onOpenSettings = onOpenSettings,
+                screenActions = {
+                    IconButton(onClick = { filtersVisible = true }) {
+                        Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
+                    }
+                },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -185,7 +192,7 @@ fun ActivityScreen(
             onSearchChange = viewModel::updateSearch,
             onTypeFilterChange = viewModel::updateTypeFilter,
             onClearError = viewModel::clearError,
-            onClearFilters = viewModel::clearFilters,
+            onClearSearchAndFilters = viewModel::clearSearchAndFilters,
             onAdd = { isCreating = true },
             onEdit = { editingTransaction = it },
             onDelete = {
@@ -198,8 +205,12 @@ fun ActivityScreen(
     if (filtersVisible) {
         ActivityFiltersSheet(
             filters = state.filters,
-            categories = state.categories,
+            categoryLabels = state.filterCategoryLabels,
             onDismiss = { filtersVisible = false },
+            onClear = {
+                viewModel.clearFilters()
+                filtersVisible = false
+            },
             onApply = {
                 viewModel.updateFilters(it)
                 filtersVisible = false
@@ -342,6 +353,11 @@ fun ActivityTwoPaneScreen(
                 isDarkTheme = isDarkTheme,
                 onToggleTheme = onToggleTheme,
                 onOpenSettings = onOpenSettings,
+                screenActions = {
+                    IconButton(onClick = { filtersVisible = true }) {
+                        Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
+                    }
+                },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -356,7 +372,7 @@ fun ActivityTwoPaneScreen(
                 onSearchChange = viewModel::updateSearch,
                 onTypeFilterChange = viewModel::updateTypeFilter,
                 onClearError = viewModel::clearError,
-                onClearFilters = viewModel::clearFilters,
+                onClearSearchAndFilters = viewModel::clearSearchAndFilters,
                 onAdd = { selectedId = null },
                 onEdit = { selectedId = it.id },
                 onDelete = {
@@ -404,8 +420,12 @@ fun ActivityTwoPaneScreen(
     if (filtersVisible) {
         ActivityFiltersSheet(
             filters = state.filters,
-            categories = state.categories,
+            categoryLabels = state.filterCategoryLabels,
             onDismiss = { filtersVisible = false },
+            onClear = {
+                viewModel.clearFilters()
+                filtersVisible = false
+            },
             onApply = {
                 viewModel.updateFilters(it)
                 filtersVisible = false
@@ -483,7 +503,7 @@ private fun ActivityContent(
     onSearchChange: (String) -> Unit,
     onTypeFilterChange: (TransactionTypeFilter) -> Unit,
     onClearError: () -> Unit,
-    onClearFilters: () -> Unit,
+    onClearSearchAndFilters: () -> Unit,
     onAdd: () -> Unit,
     onEdit: (FinanceTransaction) -> Unit,
     onDelete: (FinanceTransaction) -> Unit,
@@ -541,10 +561,7 @@ private fun ActivityContent(
                 EmptyStateWithAction(onAdd = onAdd)
             }
             state.visibleTransactions.isEmpty() -> item {
-                NoResultsState(onClear = {
-                    onSearchChange("")
-                    onClearFilters()
-                })
+                NoResultsState(onClear = onClearSearchAndFilters)
             }
             else -> {
                 // Already date-descending from the DAO, so grouping by date preserves order —
@@ -705,11 +722,12 @@ private fun TransactionTypeFilters(
 @Composable
 private fun ActivityFiltersSheet(
     filters: TransactionFilters,
-    categories: List<FinanceCategory>,
+    categoryLabels: List<String>,
     onDismiss: () -> Unit,
+    onClear: () -> Unit,
     onApply: (TransactionFilters) -> Unit,
 ) {
-    var selectedCategories by remember(filters) { mutableStateOf(filters.categories) }
+    var selectedCategory by remember(filters) { mutableStateOf(filters.category) }
     var selectedDateRange by remember(filters) { mutableStateOf(filters.dateRange) }
     var minimum by remember(filters) { mutableStateOf(filters.amountMin?.toPlainString().orEmpty()) }
     var maximum by remember(filters) { mutableStateOf(filters.amountMax?.toPlainString().orEmpty()) }
@@ -773,34 +791,38 @@ private fun ActivityFiltersSheet(
                 Text(stringResource(R.string.recurring_only))
             }
             Text(stringResource(R.string.categories), style = MaterialTheme.typography.titleMedium)
-            categories.forEach { category ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().clickable {
-                        selectedCategories = if (category.name in selectedCategories) {
-                            selectedCategories - category.name
-                        } else {
-                            selectedCategories + category.name
-                        }
-                    },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(
-                        checked = category.name in selectedCategories,
-                        onCheckedChange = { checked ->
-                            selectedCategories = if (checked) selectedCategories + category.name else selectedCategories - category.name
-                        },
-                    )
-                    Text(category.name)
+            if (filters.type == TransactionTypeFilter.ALL) {
+                Text(
+                    text = stringResource(R.string.choose_type_for_categories),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                listOf<String?>(null).plus(categoryLabels).forEach { categoryLabel ->
+                    val selected = selectedCategory == categoryLabel
+                    val label = categoryLabel ?: stringResource(R.string.filter_any_category)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = selected,
+                                onClick = { selectedCategory = categoryLabel },
+                                role = Role.RadioButton,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = selected, onClick = null)
+                        Text(label)
+                    }
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = { onApply(TransactionFilters()) }) { Text(stringResource(R.string.clear_filters)) }
+                TextButton(onClick = onClear) { Text(stringResource(R.string.clear_filters)) }
                 Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = {
                         onApply(
                             filters.copy(
-                                categories = selectedCategories,
+                                category = selectedCategory,
                                 dateRange = selectedDateRange,
                                 amountMin = minimumAmount,
                                 amountMax = maximumAmount,
@@ -1061,7 +1083,7 @@ private fun NoResultsState(onClear: () -> Unit) {
             modifier = Modifier.semantics { heading() },
         )
         Text(stringResource(R.string.no_matching_transactions_message))
-        OutlinedButton(onClick = onClear) { Text(stringResource(R.string.clear_filters)) }
+        OutlinedButton(onClick = onClear) { Text(stringResource(R.string.clear_search_and_filters)) }
     }
 }
 

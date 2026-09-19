@@ -22,7 +22,7 @@ sealed interface SearchDateRange {
 
 data class TransactionFilters(
     val type: TransactionTypeFilter = TransactionTypeFilter.ALL,
-    val categories: Set<String> = emptySet(),
+    val category: String? = null,
     val dateRange: SearchDateRange? = null,
     val amountMin: BigDecimal? = null,
     val amountMax: BigDecimal? = null,
@@ -37,7 +37,7 @@ data class TransactionFilters(
     }
 
     val isActive: Boolean
-        get() = type != TransactionTypeFilter.ALL || categories.isNotEmpty() || dateRange != null ||
+        get() = type != TransactionTypeFilter.ALL || category != null || dateRange != null ||
             amountMin != null || amountMax != null || recurringOnly
 }
 
@@ -72,7 +72,7 @@ private fun FinanceTransaction.matchesFilters(
         TransactionTypeFilter.INCOME -> if (amount <= BigDecimal.ZERO) return false
         TransactionTypeFilter.EXPENSE -> if (amount >= BigDecimal.ZERO) return false
     }
-    if (filters.categories.isNotEmpty() && categoryLabel !in filters.categories) return false
+    if (filters.category != null && categoryLabel != filters.category) return false
     if (dateBounds != null && timestamp !in dateBounds) return false
     if (filters.amountMin != null && amount.abs() < filters.amountMin) return false
     if (filters.amountMax != null && amount.abs() > filters.amountMax) return false

@@ -32,7 +32,7 @@ class TransactionFiltersTest {
             searchText = "",
             filters = TransactionFilters(
                 type = TransactionTypeFilter.EXPENSE,
-                categories = setOf("Music"),
+                category = "Music",
                 amountMin = BigDecimal("9"),
                 amountMax = BigDecimal("10"),
                 recurringOnly = true,
@@ -42,6 +42,25 @@ class TransactionFiltersTest {
         )
 
         assertEquals(listOf("recurring"), result.map { it.id })
+    }
+
+    @Test
+    fun `AC-02 same category label remains scoped to the selected transaction type`() {
+        val sameLabelTransactions = listOf(
+            transaction("income-gift", "2026-09-01T09:00:00Z", "100", "", "Gift"),
+            transaction("expense-gift", "2026-09-01T10:00:00Z", "-25", "", "Gift"),
+        )
+
+        fun idsFor(type: TransactionTypeFilter) = TransactionSearch.filter(
+            transactions = sameLabelTransactions,
+            searchText = "",
+            filters = TransactionFilters(type = type, category = "Gift"),
+            zoneId = zoneId,
+            clock = clock,
+        ).map(FinanceTransaction::id)
+
+        assertEquals(listOf("income-gift"), idsFor(TransactionTypeFilter.INCOME))
+        assertEquals(listOf("expense-gift"), idsFor(TransactionTypeFilter.EXPENSE))
     }
 
     @Test
