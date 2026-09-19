@@ -265,7 +265,7 @@
     <string name="amount_range">Amount range</string>
     <string name="minimum_amount">Minimum amount</string>
     <string name="maximum_amount">Maximum amount</string>
-    <string name="invalid_amount_range">Enter valid amounts with a minimum no greater than the maximum.</string>
+    <string name="invalid_amount_range">Enter amounts of zero or more, with the minimum no greater than the maximum.</string>
     <string name="recurring_only">Recurring only</string>
     <string name="categories">Categories</string>
     <string name="categories_settings_detail">Create and edit transaction categories</string>
@@ -299,6 +299,7 @@
     <string name="apply_filters">Apply filters</string>
     <string name="filter_any_category">Any category</string>
     <string name="choose_type_for_categories">Choose Income or Expense to filter by category.</string>
+    <string name="filter_category_cleared">The selected category is not available with these filters and was cleared.</string>
 
     <string name="financial_pulse_title">Financial Pulse</string>
     <string name="financial_pulse_complete">Today\'s check-in is complete</string>

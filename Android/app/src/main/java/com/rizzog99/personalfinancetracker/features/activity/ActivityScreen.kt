@@ -206,6 +206,8 @@ fun ActivityScreen(
         ActivityFiltersSheet(
             filters = state.filters,
             categoryLabels = state.filterCategoryLabels,
+            transactions = state.allTransactions,
+            searchText = state.searchText,
             onDismiss = { filtersVisible = false },
             onClear = {
                 viewModel.clearFilters()
@@ -421,6 +423,8 @@ fun ActivityTwoPaneScreen(
         ActivityFiltersSheet(
             filters = state.filters,
             categoryLabels = state.filterCategoryLabels,
+            transactions = state.allTransactions,
+            searchText = state.searchText,
             onDismiss = { filtersVisible = false },
             onClear = {
                 viewModel.clearFilters()
@@ -720,6 +724,8 @@ private fun TransactionTypeFilters(
 private fun ActivityFiltersSheet(
     filters: TransactionFilters,
     categoryLabels: List<String>,
+    transactions: List<FinanceTransaction>,
+    searchText: String,
     onDismiss: () -> Unit,
     onClear: () -> Unit,
     onApply: (TransactionFilters) -> Unit,
@@ -730,11 +736,28 @@ private fun ActivityFiltersSheet(
     var maximum by remember(filters) { mutableStateOf(filters.amountMax?.toPlainString().orEmpty()) }
     var recurringOnly by remember(filters) { mutableStateOf(filters.recurringOnly) }
     var customDateRangeVisible by remember { mutableStateOf(false) }
-    val minimumAmount = minimum.replace(',', '.').toBigDecimalOrNull()
-    val maximumAmount = maximum.replace(',', '.').toBigDecimalOrNull()
-    val amountsValid = (minimum.isBlank() || minimumAmount != null) &&
-        (maximum.isBlank() || maximumAmount != null) &&
-        (minimumAmount == null || maximumAmount == null || minimumAmount <= maximumAmount)
+    var categorySelectionCleared by remember(filters) { mutableStateOf(false) }
+    val amountRange = validateActivityAmountRange(minimum, maximum)
+    val zoneId = remember { ZoneId.systemDefault() }
+    val draft = resolveActivityFilterDraft(
+        transactions = transactions,
+        searchText = searchText,
+        appliedFilters = filters,
+        selectedCategory = selectedCategory,
+        selectedDateRange = selectedDateRange,
+        amountRange = amountRange,
+        recurringOnly = recurringOnly,
+        zoneId = zoneId,
+    )
+    val stagedCategoryLabels = draft?.categoryLabels ?: categoryLabels
+    val categoryWasInvalidated = draft?.categoryWasInvalidated == true
+
+    LaunchedEffect(categoryWasInvalidated) {
+        if (categoryWasInvalidated) {
+            selectedCategory = null
+            categorySelectionCleared = true
+        }
+    }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -772,6 +795,10 @@ private fun ActivityFiltersSheet(
                 onValueChange = { minimum = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.minimum_amount)) },
+                isError = amountRange.minimumHasError,
+                supportingText = {
+                    if (amountRange.minimumHasError) Text(stringResource(R.string.invalid_amount_range))
+                },
                 singleLine = true,
             )
             OutlinedTextField(
@@ -779,8 +806,10 @@ private fun ActivityFiltersSheet(
                 onValueChange = { maximum = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.maximum_amount)) },
-                isError = !amountsValid,
-                supportingText = { if (!amountsValid) Text(stringResource(R.string.invalid_amount_range)) },
+                isError = amountRange.maximumHasError,
+                supportingText = {
+                    if (amountRange.maximumHasError) Text(stringResource(R.string.invalid_amount_range))
+                },
                 singleLine = true,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -794,7 +823,14 @@ private fun ActivityFiltersSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
-                listOf<String?>(null).plus(categoryLabels).forEach { categoryLabel ->
+                if (categorySelectionCleared) {
+                    Text(
+                        text = stringResource(R.string.filter_category_cleared),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                listOf<String?>(null).plus(stagedCategoryLabels).forEach { categoryLabel ->
                     val selected = selectedCategory == categoryLabel
                     val label = categoryLabel ?: stringResource(R.string.filter_any_category)
                     Row(
@@ -802,7 +838,10 @@ private fun ActivityFiltersSheet(
                             .fillMaxWidth()
                             .selectable(
                                 selected = selected,
-                                onClick = { selectedCategory = categoryLabel },
+                                onClick = {
+                                    selectedCategory = categoryLabel
+                                    categorySelectionCleared = false
+                                },
                                 role = Role.RadioButton,
                             ),
                         verticalAlignment = Alignment.CenterVertically,
@@ -817,17 +856,9 @@ private fun ActivityFiltersSheet(
                 Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = {
-                        onApply(
-                            filters.copy(
-                                category = selectedCategory,
-                                dateRange = selectedDateRange,
-                                amountMin = minimumAmount,
-                                amountMax = maximumAmount,
-                                recurringOnly = recurringOnly,
-                            ),
-                        )
+                        draft?.let { onApply(it.filters) }
                     },
-                    enabled = amountsValid,
+                    enabled = draft != null && !categoryWasInvalidated,
                 ) { Text(stringResource(R.string.apply_filters)) }
             }
         }

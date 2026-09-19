@@ -38,6 +38,34 @@ class ActivityFilterCopyTest {
         )
     }
 
+    @Test
+    fun `AC-02 AC-05 and AC-07 English validation explains rejected filter changes`() {
+        val context = localizedContext(Locale.ENGLISH)
+
+        assertEquals(
+            "Enter amounts of zero or more, with the minimum no greater than the maximum.",
+            context.getString(R.string.invalid_amount_range),
+        )
+        assertEquals(
+            "The selected category is not available with these filters and was cleared.",
+            context.getString(R.string.filter_category_cleared),
+        )
+    }
+
+    @Test
+    fun `AC-02 AC-05 and AC-07 Italian validation explains rejected filter changes`() {
+        val context = localizedContext(Locale.ITALIAN)
+
+        assertEquals(
+            "Inserisci importi pari o superiori a zero, con il minimo non superiore al massimo.",
+            context.getString(R.string.invalid_amount_range),
+        )
+        assertEquals(
+            "La categoria selezionata non è disponibile con questi filtri ed è stata rimossa.",
+            context.getString(R.string.filter_category_cleared),
+        )
+    }
+
     private fun localizedContext(locale: Locale): Context {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val configuration = Configuration(context.resources.configuration).apply { setLocale(locale) }

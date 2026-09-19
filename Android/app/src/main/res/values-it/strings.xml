@@ -265,7 +265,7 @@
     <string name="amount_range">Intervallo di importo</string>
     <string name="minimum_amount">Importo minimo</string>
     <string name="maximum_amount">Importo massimo</string>
-    <string name="invalid_amount_range">Inserisci importi validi, con il minimo non superiore al massimo.</string>
+    <string name="invalid_amount_range">Inserisci importi pari o superiori a zero, con il minimo non superiore al massimo.</string>
     <string name="recurring_only">Solo ricorrenti</string>
     <string name="categories">Categorie</string>
     <string name="categories_settings_detail">Crea e modifica le categorie delle transazioni</string>
@@ -299,6 +299,7 @@
     <string name="apply_filters">Applica filtri</string>
     <string name="filter_any_category">Qualsiasi categoria</string>
     <string name="choose_type_for_categories">Scegli Entrate o Uscite per filtrare per categoria.</string>
+    <string name="filter_category_cleared">La categoria selezionata non è disponibile con questi filtri ed è stata rimossa.</string>
 
     <string name="financial_pulse_title">Impulso finanziario</string>
     <string name="financial_pulse_complete">Il check-in di oggi è completo</string>

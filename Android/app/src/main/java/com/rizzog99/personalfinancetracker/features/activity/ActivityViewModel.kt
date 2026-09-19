@@ -10,6 +10,7 @@ import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionSearch
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
@@ -95,6 +96,79 @@ internal fun availableActivityCategoryLabels(
         .map { it.key }
 }
 
+internal data class ActivityAmountRangeValidation(
+    val minimum: BigDecimal?,
+    val maximum: BigDecimal?,
+    val minimumHasError: Boolean,
+    val maximumHasError: Boolean,
+) {
+    val isValid: Boolean
+        get() = !minimumHasError && !maximumHasError
+}
+
+internal fun validateActivityAmountRange(
+    minimumText: String,
+    maximumText: String,
+): ActivityAmountRangeValidation {
+    fun String.amountOrNull(): BigDecimal? = replace(',', '.').toBigDecimalOrNull()
+
+    val minimum = minimumText.amountOrNull()
+    val maximum = maximumText.amountOrNull()
+    val minimumIsMalformed = minimumText.isNotBlank() && minimum == null
+    val maximumIsMalformed = maximumText.isNotBlank() && maximum == null
+    val minimumIsNegative = minimum != null && minimum < BigDecimal.ZERO
+    val maximumIsNegative = maximum != null && maximum < BigDecimal.ZERO
+    val rangeIsReversed = minimum != null && maximum != null &&
+        !minimumIsNegative && !maximumIsNegative && minimum > maximum
+
+    return ActivityAmountRangeValidation(
+        minimum = minimum,
+        maximum = maximum,
+        minimumHasError = minimumIsMalformed || minimumIsNegative || rangeIsReversed,
+        maximumHasError = maximumIsMalformed || maximumIsNegative || rangeIsReversed,
+    )
+}
+
+internal data class ActivityFilterDraft(
+    val filters: TransactionFilters,
+    val categoryLabels: List<String>,
+    val categoryWasInvalidated: Boolean,
+)
+
+internal fun resolveActivityFilterDraft(
+    transactions: List<FinanceTransaction>,
+    searchText: String,
+    appliedFilters: TransactionFilters,
+    selectedCategory: String?,
+    selectedDateRange: SearchDateRange?,
+    amountRange: ActivityAmountRangeValidation,
+    recurringOnly: Boolean,
+    zoneId: ZoneId,
+    clock: Clock = Clock.system(zoneId),
+): ActivityFilterDraft? {
+    if (!amountRange.isValid) return null
+
+    val stagedFilters = appliedFilters.copy(
+        category = null,
+        dateRange = selectedDateRange,
+        amountMin = amountRange.minimum,
+        amountMax = amountRange.maximum,
+        recurringOnly = recurringOnly,
+    )
+    val categoryLabels = availableActivityCategoryLabels(
+        transactions = transactions,
+        selection = ActivityFilterSelection(searchText = searchText, filters = stagedFilters),
+        zoneId = zoneId,
+        clock = clock,
+    )
+    val effectiveCategory = selectedCategory?.takeIf(categoryLabels::contains)
+    return ActivityFilterDraft(
+        filters = stagedFilters.copy(category = effectiveCategory),
+        categoryLabels = categoryLabels,
+        categoryWasInvalidated = selectedCategory != null && effectiveCategory == null,
+    )
+}
+
 class ActivityViewModel(
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
@@ -118,21 +192,18 @@ class ActivityViewModel(
             selection = selection,
             zoneId = zoneId,
         )
-        val effectiveFilters = selection.filters.copy(
-            category = selection.filters.category?.takeIf(filterCategoryLabels::contains),
-        )
         ActivityUiState(
             allTransactions = allTransactions,
             visibleTransactions = TransactionSearch.filter(
                 transactions = allTransactions,
                 searchText = selection.searchText,
-                filters = effectiveFilters,
+                filters = selection.filters,
                 zoneId = zoneId,
             ),
             categories = allCategories,
             filterCategoryLabels = filterCategoryLabels,
             searchText = selection.searchText,
-            filters = effectiveFilters,
+            filters = selection.filters,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActivityUiState())
 

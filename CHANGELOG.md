@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Android: Activity filters now reject negative amount limits without crashing, and category choices update while you change date, amount, or recurring filters. If a selected category no longer matches, the sheet clears it visibly before you apply the filters.
 - Android: fixed importing a CSV failing outright with "Couldn't import transactions" and saving nothing. If the file used the same category name twice in ways the app treats as identical — most often one row with an emoji and one without, like "Regali" and "🎁 Regali" — the app tried to create that category twice and the whole import was abandoned. It now creates it once and puts both sets of rows in it.
 - Android: Import Preview now says how many rows were skipped as transfers. Account moves have always been left out on purpose, but nothing said so, so a 1,826-row file arriving as 1,634 transactions with "0 Errors" looked like rows had gone missing.
 - Android: new **Settings > Scan Categories** screen. Pair each kind of purchase (eating out, groceries, fuel, pharmacy...) with one of your own categories, once, and both receipt scans and CSV imports use your choice from then on. This matters if you renamed a category or created your own: until now the app had to guess from the category's *name*, so a category called something it didn't recognise was never picked. Anything left on "Automatic" keeps working exactly as before.
