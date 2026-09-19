@@ -13,6 +13,7 @@ import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionSearch
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
+import java.math.BigDecimal
 import java.time.Clock
 import java.time.ZoneId
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,24 @@ data class ActivityUiState(
     val filterCategoryLabels: List<String> = emptyList(),
     val searchText: String = "",
     val filters: TransactionFilters = TransactionFilters(),
+)
+
+internal data class ActivitySummaryTotals(
+    val income: BigDecimal,
+    val expenses: BigDecimal,
+)
+
+internal fun calculateActivitySummaryTotals(
+    transactions: List<FinanceTransaction>,
+): ActivitySummaryTotals = ActivitySummaryTotals(
+    income = transactions
+        .asSequence()
+        .filter { it.amount > BigDecimal.ZERO }
+        .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount },
+    expenses = transactions
+        .asSequence()
+        .filter { it.amount < BigDecimal.ZERO }
+        .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount.abs() },
 )
 
 internal data class ActivityFilterSelection(

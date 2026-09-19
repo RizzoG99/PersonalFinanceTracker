@@ -3,6 +3,7 @@ package com.rizzog99.personalfinancetracker.features.activity
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
+import com.rizzog99.personalfinancetracker.domain.transaction.TransactionSearch
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
 import java.math.BigDecimal
 import java.time.Clock
@@ -72,6 +73,29 @@ class ActivityFilterSelectionTest {
     @Test
     fun `AC-09 no-results recovery clears search and structured filters`() {
         assertEquals(ActivityFilterSelection(), populatedSelection().clearSearchAndFilters())
+    }
+
+    @Test
+    fun `AC-08 summary totals use exactly the filtered visible dataset`() {
+        val transactions = listOf(
+            transaction("trip-income", "100.00", "Refund", "Rome trip"),
+            transaction("trip-expense", "-25.50", "Travel", "Rome trip"),
+            transaction("other-income", "50.00", "Gift", "Birthday"),
+            transaction("trip-zero", "0", "Other", "Rome trip"),
+        )
+        val visibleTransactions = TransactionSearch.filter(
+            transactions = transactions,
+            searchText = "trip",
+            filters = TransactionFilters(),
+            zoneId = zoneId,
+            clock = clock,
+        )
+
+        assertEquals(listOf("trip-income", "trip-expense", "trip-zero"), visibleTransactions.map { it.id })
+        assertEquals(
+            ActivitySummaryTotals(income = BigDecimal("100.00"), expenses = BigDecimal("25.50")),
+            calculateActivitySummaryTotals(visibleTransactions),
+        )
     }
 
     private fun populatedSelection() = ActivityFilterSelection(

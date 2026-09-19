@@ -604,18 +604,15 @@ private fun ActivityContent(
 
 @Composable
 private fun ActivitySummary(transactions: List<FinanceTransaction>) {
-    val income = transactions.filter { it.amount > BigDecimal.ZERO }
-        .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount }
-    val expenses = transactions.filter { it.amount < BigDecimal.ZERO }
-        .fold(BigDecimal.ZERO) { total, transaction -> total + transaction.amount.abs() }
+    val totals = calculateActivitySummaryTotals(transactions)
     val currencyCode = transactions.first().currencyCode
     val useVerticalCards = LocalDensity.current.fontScale >= 1.3f
 
     if (useVerticalCards) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ActivitySummaryCards(
-                income = income,
-                expenses = expenses,
+                income = totals.income,
+                expenses = totals.expenses,
                 currencyCode = currencyCode,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -626,8 +623,8 @@ private fun ActivitySummary(transactions: List<FinanceTransaction>) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             ActivitySummaryCards(
-                income = income,
-                expenses = expenses,
+                income = totals.income,
+                expenses = totals.expenses,
                 currencyCode = currencyCode,
                 modifier = Modifier.weight(1f),
             )
