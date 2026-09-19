@@ -40,6 +40,12 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
+    // MigrationTestHelper reads the exported schema JSON through the app context's assets, and
+    // Robolectric points that at the *app* variant's merged assets — not the test source set. The
+    // Room Gradle plugin only wires schemas into androidTest, so the debug variant has to carry
+    // them for the Robolectric migration tests to find them. Debug-only; release is untouched.
+    sourceSets["debug"].assets.srcDir("$projectDir/schemas")
 }
 
 dependencies {
@@ -69,6 +75,7 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.room:room-testing:2.6.1")
     testImplementation("org.robolectric:robolectric:4.13")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

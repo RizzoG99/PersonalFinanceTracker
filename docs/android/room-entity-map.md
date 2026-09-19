@@ -2,13 +2,27 @@
 
 ## Decision summary
 
-Android v1 uses Room for durable financial records and DataStore for app and device preferences. Repositories expose domain models and suspend/`Flow` APIs; feature ViewModels never depend on Room entities or DAOs directly. The current Room schema is version 2; its version-1 migration adds the normalized category name used for iOS-matched uniqueness.
+Android v1 uses Room for durable financial records and DataStore for app and device preferences. Repositories expose domain models and suspend/`Flow` APIs; feature ViewModels never depend on Room entities or DAOs directly.
 
 This maps the current iOS SwiftData schema without reproducing SwiftData implementation details. iOS-to-Android onboarding migration is deferred to enhancement #87 and does not shape the Android v1 primary keys.
 
+## Schema versions
+
+The active Room schema is **version 3**. Every version is exported to `Android/app/schemas/com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase/` and validated by `RoomMigrationTest`.
+
+| Version | Change | Migration |
+| --- | --- | --- |
+| 1 | Initial eight-table schema. Categories are unique on `(name, type)`. | — |
+| 2 | Adds `categories.normalizedName` and moves uniqueness to `(normalizedName, type)`, so case and surrounding whitespace can no longer create duplicates. | `MIGRATION_1_2` adds the column, backfills it through `CategoryNameValidator.normalized`, and replaces the index. The backfill runs in Kotlin rather than as `lower(trim(name))` because SQLite's `trim()` strips only U+0020 and its `lower()` is ASCII-only on Android, which would store a value the app never computes. |
+| 3 | No structural change. `credit_cards` was briefly dropped from the entity set inside an unreleased development window and restored with its original columns, so `3.json` and `2.json` carry the same `identityHash`. | `MIGRATION_2_3` is deliberately empty. `RoomMigrationTest` asserts the two exported identity hashes still match, so the no-op cannot silently become wrong. |
+
+Migrations are registered once, in `PersonalFinanceDatabase.MIGRATIONS`; `PersonalFinanceApplication` and the migration tests both read that list. Destructive fallback is never enabled — a missing or failing migration refuses to open the database and leaves the source file recoverable.
+
+A database created fresh at version 3 during the credit-card exclusion window has no `credit_cards` table and fails Room's identity check after the restore. No such database was ever distributed; a developer who has one reinstalls.
+
 ## Database
 
-`PersonalFinanceDatabase` starts at schema version 1 and contains the following Room entities:
+`PersonalFinanceDatabase` contains the following Room entities:
 
 | Android entity | Primary key | iOS source | Relationships and notes |
 | --- | --- | --- | --- |
@@ -32,11 +46,11 @@ All multi-record writes, recurring-occurrence materialization, import batches, a
 - Timestamps use `Instant` in the domain layer and epoch milliseconds in Room. Calendar-sensitive logic uses the user’s current `ZoneId` and is covered by pay-cycle and daylight-saving tests.
 - UUIDs are stored as strings. Android generates a UUID for every newly created transaction; this creates a stable local identity without depending on a Room row ID.
 - Enums such as category type and recurrence frequency use stable lowercase string values. Android presentation labels are localized separately.
-- Lists in the forecast cache are encoded through explicit Room converters and are not used as a financial source of truth.
+- The forecast cache stores its day values as a JSON array of `[day, "amount"]` pairs in `dayValuesJson`, encoded and decoded in `RoomInsightRepository`. Day order stays stable and each amount stays an exact decimal string. There are no Room `TypeConverter`s; every column is already a primitive or a canonical string.
 
 ## Preferences and device state
 
-`UserPreferencesDataStore` stores settings that should not be normalised into the financial database:
+`UserPreferencesRepository` stores settings that should not be normalised into the financial database:
 
 - Pay-cycle start day, constrained to 1 through 28.
 - Base currency, profile name, theme preference, health-score preference, and reminder preference.
@@ -47,19 +61,22 @@ Biometric enrollment, PIN verifier material, failed-attempt counters, encryption
 
 ## Repository boundary
 
-| Repository | Responsibilities |
-| --- | --- |
-| `TransactionRepository` | Transaction CRUD, activity paging/search, batch insert, recurrence linkage, and delete-all transactions. |
-| `CategoryRepository` | Category CRUD, default-category seeding, and category-budget data. |
-| `GoalRepository` | Goal CRUD and goal-linked transaction queries. |
-| `CreditCardRepository` | Credit-card CRUD and utilization data. |
-| `RecurrenceRepository` | Rule CRUD, active-rule queries, occurrence materialization, and future-occurrence cleanup. |
-| `InsightRepository` | Health-score history and forecast-cache persistence. Financial calculations remain pure domain services. |
-| `ReceiptMappingRepository` | Learned merchant-to-category mappings. |
-| `PreferencesRepository` | Typed `Flow` access to DataStore preferences and validated updates. |
-| `BackupRepository` | Maps domain data and relevant preferences into Android backup payloads. It does not expose DAOs to cloud code. |
+Every repository below is an interface with a single `Room*` implementation, constructed in `PersonalFinanceApplication`.
 
-Repositories return immutable domain models and `Flow` streams for observed data. They are injected into ViewModels; DAOs remain implementation details. Search/filter semantics move into query specifications so the Android Activity list can match iOS type, category, date, amount, and recurring filters without loading the entire database into a ViewModel.
+| Repository | DAOs | Responsibilities |
+| --- | --- | --- |
+| `TransactionRepository` | `TransactionDao`, `RecurrenceRuleDao` | Observe all transactions, upsert, delete, atomic batch insert, and close a recurrence rule while deleting this-and-future occurrences. |
+| `CategoryRepository` | `CategoryDao`, `RecurrenceRuleDao` | Category CRUD with name validation and budget encoding, default-category seeding, and clearing recurrence references on delete. |
+| `GoalRepository` | `GoalDao` | Goal CRUD. Progress stays derived from linked transactions. |
+| `CreditCardRepository` | `CreditCardDao` | Credit-card CRUD, listed by name like the frozen sort descriptor. |
+| `RecurrenceRepository` | `RecurrenceRuleDao`, `TransactionDao` | Rule creation, occurrence materialization, and this-and-future updates. It intentionally exposes no read method; rules are read through the DAO. |
+| `InsightRepository` | `HealthScoreSnapshotDao`, `DailyForecastCacheDao` | Health-score history and forecast-cache persistence. Financial calculations remain pure domain services. |
+| `ReceiptMappingRepository` | `MerchantCategoryMappingDao` | Learned merchant-to-category mappings, keyed on a merchant name normalized exactly as the frozen inferrer normalizes it. |
+| `UserPreferencesRepository` | — | Typed `Flow` access to DataStore preferences and validated updates. |
+| `ReceiptCategoryMapRepository` | — | Receipt concept-to-category overrides, in DataStore rather than Room. |
+| `BackupRepository` | via the repositories above | Maps domain data and relevant preferences into Android backup payloads. It does not expose DAOs to cloud code. |
+
+Repositories return immutable domain models and `Flow` streams for observed data. They are injected into ViewModels; DAOs remain implementation details. Activity type, category, date, amount, and recurring filter semantics live in `TransactionFilters` in the domain layer and are applied to the observed transaction stream, matching iOS `SearchFilters.matches`.
 
 ## Android v1 implementation order
 

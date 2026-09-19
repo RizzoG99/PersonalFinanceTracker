@@ -44,10 +44,7 @@ class PersonalFinanceApplication : Application() {
 
     val database: PersonalFinanceDatabase by lazy {
         Room.databaseBuilder(this, PersonalFinanceDatabase::class.java, "personal_finance.db")
-            .addMigrations(
-                PersonalFinanceDatabase.MIGRATION_1_2,
-                PersonalFinanceDatabase.MIGRATION_2_3,
-            )
+            .addMigrations(*PersonalFinanceDatabase.MIGRATIONS)
             .build()
     }
 

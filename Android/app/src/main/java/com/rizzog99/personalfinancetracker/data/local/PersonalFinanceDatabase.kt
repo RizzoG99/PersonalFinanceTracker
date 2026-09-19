@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.migration.Migration
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.rizzog99.personalfinancetracker.domain.category.CategoryNameValidator
 
 @Database(
     entities = [
@@ -35,9 +36,7 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
                 db.execSQL(
                     "ALTER TABLE categories ADD COLUMN normalizedName TEXT NOT NULL DEFAULT ''",
                 )
-                db.execSQL(
-                    "UPDATE categories SET normalizedName = lower(trim(name))",
-                )
+                backfillNormalizedNames(db)
                 db.execSQL("DROP INDEX IF EXISTS index_categories_name_type")
                 db.execSQL(
                     "CREATE UNIQUE INDEX IF NOT EXISTS index_categories_normalizedName_type " +
@@ -53,6 +52,33 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
          */
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) = Unit
+        }
+
+        /**
+         * The one registration point. `PersonalFinanceApplication` and the migration tests both read
+         * this, so a new migration cannot reach production without the suite covering it.
+         */
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+
+        /**
+         * Backfilled in Kotlin rather than with `lower(trim(name))`. SQLite's `trim()` strips only
+         * U+0020 and its `lower()` is ASCII-only on Android's build, so the SQL version could store
+         * a value the app would never compute — and `(normalizedName, type)` then stops catching the
+         * duplicates the column exists to catch.
+         */
+        private fun backfillNormalizedNames(db: SupportSQLiteDatabase) {
+            val names = mutableListOf<Pair<String, String>>()
+            db.query("SELECT id, name FROM categories").use { cursor ->
+                while (cursor.moveToNext()) {
+                    names += cursor.getString(0) to cursor.getString(1)
+                }
+            }
+            names.forEach { (id, name) ->
+                db.execSQL(
+                    "UPDATE categories SET normalizedName = ? WHERE id = ?",
+                    arrayOf(CategoryNameValidator.normalized(name), id),
+                )
+            }
         }
     }
 }

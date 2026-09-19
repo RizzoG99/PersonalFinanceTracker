@@ -75,4 +75,21 @@ class RoomReceiptMappingRepositoryTest {
 
         assertNull(repository.categoryIdFor("Lidl"))
     }
+
+    /**
+     * The frozen `trimmingCharacters(in: .whitespaces)` trims `Zs` plus tab and leaves line breaks
+     * in place; Kotlin's `String.trim()` would strip them too and key the row differently. Both
+     * directions are asserted, because a test that only checked spaces and tabs would also pass
+     * against the unaligned implementation.
+     */
+    @Test
+    fun `AC-05_7 trimming covers the frozen whitespace set and stops there`() = runBlocking {
+        repository.remember(" Bennet ", "groceries")
+        assertEquals("spaces and tabs trim", "groceries", repository.categoryIdFor("\t Bennet "))
+
+        repository.remember("Bennet\n", "household")
+        assertEquals("a newline is part of the key, as on iOS", "household", repository.categoryIdFor("bennet\n"))
+        assertEquals("groceries", repository.categoryIdFor("Bennet"))
+        assertEquals(2, database.merchantCategoryMappingDao().count())
+    }
 }
