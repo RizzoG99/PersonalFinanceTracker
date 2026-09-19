@@ -13,6 +13,7 @@ import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
 import java.time.Instant
 import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 internal val Context.userPreferencesDataStore by preferencesDataStore(name = "user_preferences")
@@ -34,8 +35,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val hideBalance = booleanPreferencesKey("hide_balance")
         val lastBackupAt = longPreferencesKey("last_backup_at")
         val biometricEnabled = booleanPreferencesKey("biometric_enabled")
-        val pinHash = stringPreferencesKey("pin_hash")
-        val pinSalt = stringPreferencesKey("pin_salt")
         val dailyReminderEnabled = booleanPreferencesKey("daily_reminder_enabled")
         val dailyReminderHour = intPreferencesKey("daily_reminder_hour")
         val dailyReminderMinute = intPreferencesKey("daily_reminder_minute")
@@ -50,8 +49,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             hideBalance,
             lastBackupAt,
             biometricEnabled,
-            pinHash,
-            pinSalt,
             dailyReminderEnabled,
             dailyReminderHour,
             dailyReminderMinute,
@@ -84,10 +81,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     val biometricEnabled: Flow<Boolean> = dataStore.data.map {
         it[Keys.biometricEnabled] ?: false
     }
-
-    /** Null when no PIN has been set — the app is unlocked without a gate. */
-    val pinHash: Flow<String?> = dataStore.data.map { it[Keys.pinHash] }
-    val pinSalt: Flow<String?> = dataStore.data.map { it[Keys.pinSalt] }
 
     val dailyReminderEnabled: Flow<Boolean> = dataStore.data.map {
         it[Keys.dailyReminderEnabled] ?: false
@@ -131,18 +124,24 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         dataStore.edit { it[Keys.biometricEnabled] = enabled }
     }
 
-    suspend fun setPin(hash: String, salt: String) {
-        dataStore.edit {
-            it[Keys.pinHash] = hash
-            it[Keys.pinSalt] = salt
-        }
+    /**
+     * The pre-#128 `pin_hash` / `pin_salt` pair, or null when neither key is present. Returned raw
+     * — possibly half a pair, possibly blank — because deciding what an incomplete pair means
+     * belongs to the migration, not here. This and [removeLegacyPinEntry] are the only code left
+     * that touches these keys: they are migration input, never an authentication input, and they
+     * are deliberately absent from [Keys] so the AC-06 inventory stays free of secret material.
+     */
+    internal suspend fun legacyPinEntry(): Pair<String?, String?>? {
+        val preferences = dataStore.data.first()
+        val hash = preferences[LegacyPinKeys.hash]
+        val salt = preferences[LegacyPinKeys.salt]
+        return if (hash == null && salt == null) null else hash to salt
     }
 
-    suspend fun clearPin() {
+    internal suspend fun removeLegacyPinEntry() {
         dataStore.edit {
-            it.remove(Keys.pinHash)
-            it.remove(Keys.pinSalt)
-            it[Keys.biometricEnabled] = false
+            it.remove(LegacyPinKeys.hash)
+            it.remove(LegacyPinKeys.salt)
         }
     }
 
@@ -195,6 +194,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     suspend fun setHealthScoreIgnoreSubscriptions(ignore: Boolean) {
         dataStore.edit { it[Keys.healthScoreIgnoreSubscriptions] = ignore }
+    }
+
+    /** Not part of [Keys]: these are legacy keys to be removed, not preferences this store owns. */
+    internal object LegacyPinKeys {
+        val hash = stringPreferencesKey("pin_hash")
+        val salt = stringPreferencesKey("pin_salt")
     }
 
     private companion object {

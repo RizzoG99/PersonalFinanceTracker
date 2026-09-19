@@ -207,6 +207,7 @@
     <string name="last_backed_up">Last backed up %1$s</string>
     <string name="backup_complete">Backup saved</string>
     <string name="backup_failed">Backup failed</string>
+    <string name="pin_save_failed">Could not save the PIN on this device</string>
     <string name="restore_complete">Backup restored</string>
     <string name="restore_failed">Restore failed — the file may not be a Personal Finance Tracker backup</string>
     <string name="delete_all_data">Delete all data</string>

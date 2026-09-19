@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
+import com.rizzog99.personalfinancetracker.data.security.PinLock
 import com.rizzog99.personalfinancetracker.domain.security.PinCodec
 import com.rizzog99.personalfinancetracker.features.security.PinSetupScreen
 import java.time.format.DateTimeFormatter
@@ -89,8 +90,8 @@ fun SettingsSheet(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val pinHash by application.preferencesRepository.pinHash.collectAsState(initial = null)
-    val pinSalt by application.preferencesRepository.pinSalt.collectAsState(initial = null)
+    val pinLock by application.pinLockRepository.state.collectAsState()
+    val pinSet = pinLock is PinLock.Set
     val biometricEnabled by application.preferencesRepository.biometricEnabled.collectAsState(initial = false)
     val lastBackupAt by application.preferencesRepository.lastBackupAt.collectAsState(initial = null)
 
@@ -102,6 +103,7 @@ fun SettingsSheet(
     val backupCompleteMessage = stringResource(R.string.backup_complete)
     val restoreFailedMessage = stringResource(R.string.restore_failed)
     val restoreCompleteMessage = stringResource(R.string.restore_complete)
+    val pinSaveFailedMessage = stringResource(R.string.pin_save_failed)
 
     val createBackupDocument = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -133,8 +135,13 @@ fun SettingsSheet(
             onPinCreated = { pin ->
                 val salt = PinCodec.randomSalt()
                 scope.launch {
-                    application.preferencesRepository.setPin(PinCodec.hash(pin, salt), salt)
+                    // Secure storage can refuse (Keystore unavailable). Say so instead of
+                    // dismissing as if the PIN had been set.
+                    val saved = runCatching {
+                        application.pinLockRepository.setPin(PinCodec.hash(pin, salt), salt)
+                    }
                     securityFlow = null
+                    if (saved.isFailure) snackbarHostState.showSnackbar(pinSaveFailedMessage)
                 }
             },
         )
@@ -378,8 +385,8 @@ fun SettingsSheet(
                 headlineContent = { Text(stringResource(R.string.biometric_unlock)) },
                 trailingContent = {
                     Switch(
-                        checked = biometricEnabled && pinHash != null,
-                        enabled = pinHash != null,
+                        checked = biometricEnabled && pinSet,
+                        enabled = pinSet,
                         onCheckedChange = { checked ->
                             scope.launch { application.preferencesRepository.setBiometricEnabled(checked) }
                         },
@@ -390,10 +397,10 @@ fun SettingsSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(role = Role.Button) {
-                        securityFlow = if (pinHash == null) SecurityFlow.SET_PIN else SecurityFlow.CHANGE_PIN
+                        securityFlow = if (pinSet) SecurityFlow.CHANGE_PIN else SecurityFlow.SET_PIN
                     },
                 leadingContent = { Icon(Icons.Outlined.Pin, contentDescription = null) },
-                headlineContent = { Text(stringResource(if (pinHash == null) R.string.set_pin else R.string.change_pin)) },
+                headlineContent = { Text(stringResource(if (pinSet) R.string.change_pin else R.string.set_pin)) },
                 supportingContent = { Text(stringResource(R.string.pin_enabled_detail)) },
                 trailingContent = {
                     Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)

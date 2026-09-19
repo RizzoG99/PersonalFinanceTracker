@@ -25,6 +25,8 @@ import com.rizzog99.personalfinancetracker.data.repository.RoomRecurrenceReposit
 import com.rizzog99.personalfinancetracker.data.repository.RoomReceiptMappingRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
+import com.rizzog99.personalfinancetracker.data.security.KeystorePinSecretStore
+import com.rizzog99.personalfinancetracker.data.security.PinLockRepository
 import com.rizzog99.personalfinancetracker.work.DailyReminderWorker
 import com.rizzog99.personalfinancetracker.work.ReminderScheduler
 import java.time.LocalTime
@@ -50,6 +52,11 @@ class PersonalFinanceApplication : Application() {
 
     val importProfileRepository: ImportProfileRepository by lazy {
         ImportProfileRepository(this)
+    }
+
+    /** PIN material lives in Keystore-backed storage, never in the preferences DataStore (#128). */
+    val pinLockRepository: PinLockRepository by lazy {
+        PinLockRepository(KeystorePinSecretStore(this), preferencesRepository)
     }
 
     val transactionRepository: TransactionRepository by lazy {
@@ -95,6 +102,9 @@ class PersonalFinanceApplication : Application() {
         applicationScope.launch {
             categoryRepository.seedDefaultsIfEmpty()
         }
+        // Before anything can read the lock state: migrates a pre-#128 PIN out of the preferences
+        // DataStore, then resolves PinLock.Unknown into the real state.
+        applicationScope.launch { pinLockRepository.load() }
         // The stored time, not a constant: a reminder the user moved has to survive a relaunch.
         applicationScope.launch { applyDailyReminder() }
         createNotificationChannel()

@@ -15,6 +15,9 @@ import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.repository.RoomCategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomGoalRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
+import com.rizzog99.personalfinancetracker.data.security.FakePinSecretStore
+import com.rizzog99.personalfinancetracker.data.security.PinSecret
+import com.rizzog99.personalfinancetracker.data.security.migrateLegacyPin
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
@@ -81,8 +84,6 @@ class UserPreferencesPersistenceTest {
         assertEquals(false, repository.hideBalance.first())
         assertNull(repository.lastBackupAt.first())
         assertEquals(false, repository.biometricEnabled.first())
-        assertNull(repository.pinHash.first())
-        assertNull(repository.pinSalt.first())
         assertEquals(false, repository.dailyReminderEnabled.first())
         // #129 AC-01: the frozen-iOS default, not Android's old hardcoded 20:00.
         assertEquals(LocalTime.of(21, 0), repository.dailyReminderTime.first())
@@ -361,11 +362,13 @@ class UserPreferencesPersistenceTest {
     }
 
     @Test
-    fun `AC-06 no non-secret preference name collides with device-only secret material`() {
-        val nonSecret = DOCUMENTED_KEYS - SECURITY_KEYS
+    fun `AC-06 no preference name collides with device-only secret material`() {
         val secretish = listOf("pin", "hash", "salt", "token", "key", "credential", "secret", "password", "passphrase", "drive")
 
-        nonSecret.forEach { name ->
+        // No subtraction and no exception list: every documented key faces the needles. #128 moved
+        // `pin_hash`/`pin_salt` into Keystore-backed storage, so the whole surface is non-secret —
+        // `biometric_enabled` is a state boolean, which is what frozen iOS keeps in UserDefaults too.
+        DOCUMENTED_KEYS.forEach { name ->
             secretish.forEach { needle ->
                 assertTrue(
                     "Preference '$name' looks like secret material; secret storage belongs to #80, not this store",
@@ -373,9 +376,30 @@ class UserPreferencesPersistenceTest {
                 )
             }
         }
-        // The two keys this store does hold that iOS keeps in the Keychain instead. Pinned here so
-        // the divergence stays visible and cannot quietly grow. See #118 D-02 / #80.
-        assertEquals(setOf("pin_hash", "pin_salt"), SECURITY_KEYS - "biometric_enabled")
+    }
+
+    @Test
+    fun `AC-06 a legacy PIN is migrated out and leaves no trace in the serialized file`() = runBlocking {
+        val store = openStore()
+        val repository = UserPreferencesRepository(store)
+        // Exactly what a pre-#128 development install holds.
+        store.edit {
+            it[UserPreferencesRepository.LegacyPinKeys.hash] = "3f1c legacy hash"
+            it[UserPreferencesRepository.LegacyPinKeys.salt] = "9ab7 legacy salt"
+        }
+        repository.setUserFullName("Katherine Johnson")
+        assertTrue("precondition: the bytes really are on disk", file.readBytes().decodeToString().contains("legacy hash"))
+
+        val secrets = FakePinSecretStore()
+        migrateLegacyPin(secrets, repository)
+
+        assertEquals(PinSecret("3f1c legacy hash", "9ab7 legacy salt"), secrets.read())
+        // Not just absent from the parsed map: absent from the protobuf on disk.
+        val bytes = file.readBytes().decodeToString()
+        listOf("pin_hash", "pin_salt", "legacy hash", "legacy salt").forEach { needle ->
+            assertTrue("'$needle' is still serialized in the preferences file", !bytes.contains(needle))
+        }
+        assertTrue("unrelated preferences were cleared", bytes.contains("Katherine Johnson"))
     }
 
     @Test
@@ -397,9 +421,14 @@ class UserPreferencesPersistenceTest {
             ),
         )
 
-        // A store holding every preference, secret keys included, is live while the export runs.
-        val repository = UserPreferencesRepository(openStore())
-        repository.setPin("a-pin-hash", "a-pin-salt")
+        // A store holding every preference is live while the export runs, and — as a pre-#128
+        // install would still have — a legacy PIN pair alongside them.
+        val store = openStore()
+        val repository = UserPreferencesRepository(store)
+        store.edit {
+            it[UserPreferencesRepository.LegacyPinKeys.hash] = "a-pin-hash"
+            it[UserPreferencesRepository.LegacyPinKeys.salt] = "a-pin-salt"
+        }
         repository.setBiometricEnabled(true)
         repository.setUserFullName("Annie Easley")
 
@@ -413,7 +442,9 @@ class UserPreferencesPersistenceTest {
             json.keys().asSequence().toSet(),
         )
         val text = archive.toString(Charsets.UTF_8.name())
-        (DOCUMENTED_KEYS + listOf("a-pin-hash", "a-pin-salt", "Annie Easley")).forEach { needle ->
+        // The two PIN literals stay named explicitly: they left DOCUMENTED_KEYS with #128, and this
+        // check must not quietly stop covering them.
+        (DOCUMENTED_KEYS + listOf("pin_hash", "pin_salt", "a-pin-hash", "a-pin-salt", "Annie Easley")).forEach { needle ->
             assertTrue("Backup archive leaked '$needle'", !text.contains(needle))
         }
     }
@@ -455,8 +486,6 @@ class UserPreferencesPersistenceTest {
             "hide_balance",
             "last_backup_at",
             "biometric_enabled",
-            "pin_hash",
-            "pin_salt",
             "daily_reminder_enabled",
             "daily_reminder_hour",
             "daily_reminder_minute",
@@ -465,7 +494,5 @@ class UserPreferencesPersistenceTest {
             "health_score_ignore_subscriptions",
             "import_profiles_v1",
         )
-
-        val SECURITY_KEYS = setOf("pin_hash", "pin_salt", "biometric_enabled")
     }
 }
