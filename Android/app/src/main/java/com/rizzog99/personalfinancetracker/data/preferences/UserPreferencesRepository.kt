@@ -4,24 +4,61 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
+import java.io.IOException
 import java.time.Instant
 import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 internal val Context.userPreferencesDataStore by preferencesDataStore(name = "user_preferences")
 
-class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
+class UserPreferencesRepository(
+    private val dataStore: DataStore<Preferences>,
+    private val onUnreadable: () -> Unit = {},
+) {
 
     /** Production path: the one process-wide store named `user_preferences`. */
-    constructor(context: Context) : this(context.userPreferencesDataStore)
+    constructor(context: Context, onUnreadable: () -> Unit = {}) :
+        this(context.userPreferencesDataStore, onUnreadable)
+
+    /**
+     * The single read source behind every preference below (#131).
+     *
+     * An unparseable `user_preferences.preferences_pb` raises `CorruptionException` — an
+     * `IOException` — on `dataStore.data`. Left uncaught it killed the process: measured on
+     * `emulator-5554` before this catch existed, a launch died with
+     * `FATAL EXCEPTION: DefaultDispatcher-worker-8 / CorruptionException: Unable to parse
+     * preferences proto`, on every launch, with no way back into the app.
+     *
+     * So the failure is reported once, here, and the flows stay total by falling back to empty
+     * preferences. The defaults are never *shown* as if they were the user's — [onUnreadable]
+     * puts the app into its recovery state — they only keep collectors alive while that happens.
+     *
+     * What this cannot catch, stated rather than papered over: a damaged file whose bytes still
+     * *parse* as a protobuf. It yields an empty preference map and is then indistinguishable from
+     * a store that was never written — no exception exists to observe. Injecting 4 KB of
+     * `/dev/urandom` hit exactly that case during the #109 audit and looked like a silent reset.
+     * Detecting it would need a checksum or version marker written alongside the preferences,
+     * which is a storage-format change and belongs with #118, not here.
+     *
+     * No `ReplaceFileCorruptionHandler` is installed on purpose: that handler's job is to
+     * overwrite the damaged file, which is the destructive fallback this app refuses. Nothing here
+     * writes, so the user's file survives whatever went wrong with it.
+     */
+    private val readable: Flow<Preferences> = dataStore.data.catch { cause ->
+        if (cause !is IOException) throw cause
+        onUnreadable()
+        emit(emptyPreferences())
+    }
 
     /**
      * Every key this repository can write. Declared as a list rather than only as properties so a
@@ -58,31 +95,31 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         )
     }
 
-    val payCycleStartDay: Flow<Int> = dataStore.data.map {
+    val payCycleStartDay: Flow<Int> = readable.map {
         (it[Keys.payCycleStartDay] ?: 1).coerceIn(1, 28)
     }
 
-    val baseCurrency: Flow<String> = dataStore.data.map {
+    val baseCurrency: Flow<String> = readable.map {
         it[Keys.baseCurrency] ?: "EUR"
     }
 
-    val themeMode: Flow<ThemeMode> = dataStore.data.map {
+    val themeMode: Flow<ThemeMode> = readable.map {
         it[Keys.themeMode]?.let { name -> runCatching { ThemeMode.valueOf(name) }.getOrNull() } ?: ThemeMode.SYSTEM
     }
 
-    val hideBalance: Flow<Boolean> = dataStore.data.map {
+    val hideBalance: Flow<Boolean> = readable.map {
         it[Keys.hideBalance] ?: false
     }
 
-    val lastBackupAt: Flow<Instant?> = dataStore.data.map {
+    val lastBackupAt: Flow<Instant?> = readable.map {
         it[Keys.lastBackupAt]?.let(Instant::ofEpochMilli)
     }
 
-    val biometricEnabled: Flow<Boolean> = dataStore.data.map {
+    val biometricEnabled: Flow<Boolean> = readable.map {
         it[Keys.biometricEnabled] ?: false
     }
 
-    val dailyReminderEnabled: Flow<Boolean> = dataStore.data.map {
+    val dailyReminderEnabled: Flow<Boolean> = readable.map {
         it[Keys.dailyReminderEnabled] ?: false
     }
 
@@ -92,14 +129,14 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
      * the user flies somewhere else. `21:00` is the frozen-iOS default (#129 AC-01) and lives only
      * here, so nothing downstream can re-declare it.
      */
-    val dailyReminderTime: Flow<LocalTime> = dataStore.data.map {
+    val dailyReminderTime: Flow<LocalTime> = readable.map {
         LocalTime.of(
             (it[Keys.dailyReminderHour] ?: DEFAULT_REMINDER_HOUR).coerceIn(0, 23),
             (it[Keys.dailyReminderMinute] ?: DEFAULT_REMINDER_MINUTE).coerceIn(0, 59),
         )
     }
 
-    val pulsePromptDismissed: Flow<Boolean> = dataStore.data.map {
+    val pulsePromptDismissed: Flow<Boolean> = readable.map {
         it[Keys.pulsePromptDismissed] ?: false
     }
 
@@ -107,12 +144,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
      * The profile name, empty when never set — frozen iOS reads `user_full_name` as
      * `string(forKey:) ?? ""`, so an absent key is the default rather than a stored blank.
      */
-    val userFullName: Flow<String> = dataStore.data.map {
+    val userFullName: Flow<String> = readable.map {
         it[Keys.userFullName] ?: ""
     }
 
     /** Health-score preference; frozen iOS default is `bool(forKey:)`, i.e. false. */
-    val healthScoreIgnoreSubscriptions: Flow<Boolean> = dataStore.data.map {
+    val healthScoreIgnoreSubscriptions: Flow<Boolean> = readable.map {
         it[Keys.healthScoreIgnoreSubscriptions] ?: false
     }
 

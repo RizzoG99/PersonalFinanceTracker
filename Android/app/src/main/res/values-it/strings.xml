@@ -163,6 +163,10 @@
     <string name="empty_state_message">Aggiungi la tua prima transazione per iniziare a tenere traccia delle finanze.</string>
     <string name="error_state_title">Si è verificato un problema</string>
     <string name="retry">Riprova</string>
+    <string name="stored_data_unavailable_title">Impossibile aprire i tuoi dati</string>
+    <string name="stored_data_unavailable_database">Il file che contiene le tue transazioni, i tuoi obiettivi e lo storico è danneggiato, quindi l\'app non può mostrarli.</string>
+    <string name="stored_data_unavailable_preferences">Il file che contiene le tue impostazioni è danneggiato, quindi l\'app non può applicarle.</string>
+    <string name="stored_data_unavailable_reassurance">Non è stato eliminato nulla. Il tuo file è ancora su questo dispositivo, esattamente com\'era. Prova a riaprire l\'app oppure ripristina un backup.</string>
     <string name="add_transaction">Aggiungi transazione</string>
     <string name="settings_title">Impostazioni</string>
     <string name="done">Fine</string>

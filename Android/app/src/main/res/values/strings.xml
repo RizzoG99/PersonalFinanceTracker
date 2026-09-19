@@ -163,6 +163,10 @@
     <string name="empty_state_message">Add your first transaction to start tracking your finances.</string>
     <string name="error_state_title">Something went wrong</string>
     <string name="retry">Try again</string>
+    <string name="stored_data_unavailable_title">Your saved data couldn\'t be opened</string>
+    <string name="stored_data_unavailable_database">The file holding your transactions, goals and history is damaged, so the app can\'t show them.</string>
+    <string name="stored_data_unavailable_preferences">The file holding your settings is damaged, so the app can\'t apply them.</string>
+    <string name="stored_data_unavailable_reassurance">Nothing has been deleted. Your file is still on this device exactly as it was. Try reopening the app, or restore a backup.</string>
     <string name="add_transaction">Add transaction</string>
     <string name="settings_title">Settings</string>
     <string name="done">Done</string>

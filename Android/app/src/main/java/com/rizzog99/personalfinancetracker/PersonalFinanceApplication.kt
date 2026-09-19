@@ -7,7 +7,9 @@ import android.os.Build
 import androidx.room.Room
 import androidx.work.WorkManager
 import com.rizzog99.personalfinancetracker.data.backup.BackupRepository
+import com.rizzog99.personalfinancetracker.data.local.NonDestructiveOpenHelperFactory
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
+import com.rizzog99.personalfinancetracker.data.local.StartupFailure
 import com.rizzog99.personalfinancetracker.data.preferences.ImportProfileRepository
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
@@ -33,6 +35,9 @@ import java.time.LocalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -40,14 +45,46 @@ import kotlinx.coroutines.sync.withLock
 class PersonalFinanceApplication : Application() {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    private val _startupFailure = MutableStateFlow<StartupFailure?>(null)
+
+    /**
+     * Set when stored data could not be opened (#130, #131). The composition watches this and
+     * explains the failure instead of rendering defaults or an empty account.
+     *
+     * Only ever moves from `null` to a failure: once the app has told the user its data is
+     * unreadable, a later flow that happens to fall back to empty preferences must not quietly
+     * put the shell back.
+     */
+    val startupFailure: StateFlow<StartupFailure?> = _startupFailure.asStateFlow()
+
+    private val _databaseProbed = MutableStateFlow(false)
+
+    /**
+     * False until the database has been opened once on a background thread. The composition holds
+     * on the plain app background until it flips, so nothing on the main thread can open the store
+     * — and crash on it — before [startupFailure] has had its chance to say what went wrong.
+     */
+    val databaseProbed: StateFlow<Boolean> = _databaseProbed.asStateFlow()
+
+    private fun reportStartupFailure(failure: StartupFailure) {
+        _startupFailure.compareAndSet(null, failure)
+    }
+
     val database: PersonalFinanceDatabase by lazy {
         Room.databaseBuilder(this, PersonalFinanceDatabase::class.java, "personal_finance.db")
             .addMigrations(*PersonalFinanceDatabase.MIGRATIONS)
+            // No fallbackToDestructiveMigration (a version mismatch must not wipe the store) and a
+            // helper that will not let the platform delete a corrupt one either (#130).
+            .openHelperFactory(
+                NonDestructiveOpenHelperFactory(
+                    onCorruption = { reportStartupFailure(StartupFailure.DATABASE) },
+                ),
+            )
             .build()
     }
 
     val preferencesRepository: UserPreferencesRepository by lazy {
-        UserPreferencesRepository(this)
+        UserPreferencesRepository(this) { reportStartupFailure(StartupFailure.PREFERENCES) }
     }
 
     val importProfileRepository: ImportProfileRepository by lazy {
@@ -99,8 +136,20 @@ class PersonalFinanceApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Deliberately the *first* touch of the database, so an unopenable store surfaces here —
+        // a corrupt file, or a version with no registered migration path. Reported rather than
+        // rethrown: an uncaught throw is an immediate crash on every launch, and a crash loop
+        // explains no more to the user than the silent wipe this replaced (#130).
+        //
+        // [databaseProbed] is what makes "first" true rather than hopeful. Without it this is a
+        // race the UI can win: a composable collecting a Room flow opens the database on the main
+        // thread, and a downgrade then dies as `FATAL EXCEPTION: main` before this coroutine has
+        // reported anything. Measured, not theorised — that is exactly what a `user_version` of 99
+        // did before the gate existed.
         applicationScope.launch {
-            categoryRepository.seedDefaultsIfEmpty()
+            runCatching { categoryRepository.seedDefaultsIfEmpty() }
+                .onFailure { reportStartupFailure(StartupFailure.DATABASE) }
+            _databaseProbed.value = true
         }
         // Before anything can read the lock state: migrates a pre-#128 PIN out of the preferences
         // DataStore, then resolves PinLock.Unknown into the real state.
