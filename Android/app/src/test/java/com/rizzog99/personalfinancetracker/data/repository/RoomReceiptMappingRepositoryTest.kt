@@ -7,6 +7,7 @@ import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,10 +33,46 @@ class RoomReceiptMappingRepositoryTest {
     }
 
     @Test
-    fun `merchant mapping is normalized and remembers the latest category`() = runBlocking {
+    fun `AC-05_1 surrounding whitespace addresses the same mapping`() = runBlocking {
+        repository.remember("  Conad  ", "groceries")
+
+        assertEquals("groceries", repository.categoryIdFor("Conad"))
+        assertEquals("groceries", repository.categoryIdFor("\tConad\t"))
+        assertEquals(1, database.merchantCategoryMappingDao().count())
+    }
+
+    @Test
+    fun `AC-05_2 case differences address the same mapping`() = runBlocking {
+        repository.remember("CONAD", "groceries")
+
+        assertEquals("groceries", repository.categoryIdFor("conad"))
+        assertEquals("groceries", repository.categoryIdFor("Conad"))
+        assertEquals(1, database.merchantCategoryMappingDao().count())
+    }
+
+    @Test
+    fun `AC-05_3 accented and unaccented merchants stay distinct like the frozen contract`() = runBlocking {
         repository.remember("  Caffè Roma  ", "coffee")
         repository.remember("CAFFE ROMA", "restaurants")
 
-        assertEquals("restaurants", repository.categoryIdFor("caffè roma"))
+        assertEquals("coffee", repository.categoryIdFor("caffè roma"))
+        assertEquals("restaurants", repository.categoryIdFor("Caffe Roma"))
+        assertEquals(2, database.merchantCategoryMappingDao().count())
+    }
+
+    @Test
+    fun `AC-05_4 relearning a known merchant upserts rather than accumulating`() = runBlocking {
+        repository.remember("Esselunga", "groceries")
+        repository.remember("esselunga ", "household")
+
+        assertEquals("household", repository.categoryIdFor("ESSELUNGA"))
+        assertEquals(1, database.merchantCategoryMappingDao().count())
+    }
+
+    @Test
+    fun `AC-05_5 an unknown merchant has no mapping`() = runBlocking {
+        repository.remember("Conad", "groceries")
+
+        assertNull(repository.categoryIdFor("Lidl"))
     }
 }

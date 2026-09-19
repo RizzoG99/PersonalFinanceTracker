@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "7cec73e7f1a3cbd92a889a25dcb6e99f",
+    "identityHash": "242bade537dd714aee94c8dae90d69f2",
     "entities": [
       {
         "tableName": "transactions",
@@ -359,6 +359,62 @@
         "foreignKeys": []
       },
       {
+        "tableName": "credit_cards",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `lastFour` TEXT NOT NULL, `balanceDecimal` TEXT NOT NULL, `limitDecimal` TEXT NOT NULL, `colorToken` TEXT NOT NULL, `currencyCode` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastFour",
+            "columnName": "lastFour",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "balanceDecimal",
+            "columnName": "balanceDecimal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "limitDecimal",
+            "columnName": "limitDecimal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "colorToken",
+            "columnName": "colorToken",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currencyCode",
+            "columnName": "currencyCode",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
         "tableName": "health_score_snapshots",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `timestampEpochMillis` INTEGER NOT NULL, `score` INTEGER NOT NULL, `savingsScore` INTEGER NOT NULL, `stabilityScore` INTEGER NOT NULL, `adherenceScore` INTEGER NOT NULL, `subscriptionScore` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
@@ -482,7 +538,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7cec73e7f1a3cbd92a889a25dcb6e99f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '242bade537dd714aee94c8dae90d69f2')"
     ]
   }
 }

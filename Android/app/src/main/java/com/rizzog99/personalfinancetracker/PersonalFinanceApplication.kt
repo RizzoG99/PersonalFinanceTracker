@@ -12,12 +12,16 @@ import com.rizzog99.personalfinancetracker.data.backup.BackupRepository
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
+import com.rizzog99.personalfinancetracker.data.repository.CreditCardRepository
 import com.rizzog99.personalfinancetracker.data.repository.GoalRepository
+import com.rizzog99.personalfinancetracker.data.repository.InsightRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.preferences.ReceiptCategoryMapRepository
 import com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomCategoryRepository
+import com.rizzog99.personalfinancetracker.data.repository.RoomCreditCardRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomGoalRepository
+import com.rizzog99.personalfinancetracker.data.repository.RoomInsightRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomRecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomReceiptMappingRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
@@ -65,6 +69,14 @@ class PersonalFinanceApplication : Application() {
 
     val recurrenceRepository: RecurrenceRepository by lazy {
         RoomRecurrenceRepository(database)
+    }
+
+    val creditCardRepository: CreditCardRepository by lazy {
+        RoomCreditCardRepository(database)
+    }
+
+    val insightRepository: InsightRepository by lazy {
+        RoomInsightRepository(database)
     }
 
     val receiptMappingRepository: ReceiptMappingRepository by lazy {

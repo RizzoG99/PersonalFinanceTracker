@@ -68,6 +68,21 @@ data class TransactionEntity(
     val recurrenceRuleId: String?,
 )
 
+/**
+ * Mirrors the frozen `CreditCardModel`, which declares no SwiftData relationship: deleting a card
+ * must leave every other record untouched. Hence no foreign keys here either.
+ */
+@Entity(tableName = "credit_cards")
+data class CreditCardEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val lastFour: String,
+    val balanceDecimal: String,
+    val limitDecimal: String,
+    val colorToken: String,
+    val currencyCode: String,
+)
+
 @Entity(tableName = "health_score_snapshots")
 data class HealthScoreSnapshotEntity(
     @PrimaryKey val id: String,

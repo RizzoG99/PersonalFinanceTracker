@@ -2,7 +2,6 @@ package com.rizzog99.personalfinancetracker.data.repository
 
 import com.rizzog99.personalfinancetracker.data.local.MerchantCategoryMappingEntity
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
-import java.text.Normalizer
 import java.util.Locale
 
 interface ReceiptMappingRepository {
@@ -26,7 +25,9 @@ class RoomReceiptMappingRepository(
     }
 }
 
-fun String.normalizedMerchant(): String = Normalizer.normalize(this, Normalizer.Form.NFD)
-    .replace("\\p{M}".toRegex(), "")
-    .trim()
-    .lowercase(Locale.ROOT)
+/**
+ * Same normalization on write and read, matching the frozen `ReceiptCategoryInferrer.normalize`:
+ * trim and lowercase, nothing else. Accents are part of the merchant name — folding them made
+ * "Caffè Roma" and "Caffe Roma" collide on the primary key, so learning one destroyed the other.
+ */
+fun String.normalizedMerchant(): String = trim().lowercase(Locale.ROOT)

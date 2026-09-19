@@ -56,9 +56,58 @@ interface RecurrenceRuleDao {
 }
 
 @Dao
+interface CreditCardDao {
+    @Query("SELECT * FROM credit_cards ORDER BY name COLLATE NOCASE")
+    fun observeAll(): Flow<List<CreditCardEntity>>
+
+    @Query("SELECT * FROM credit_cards WHERE id = :id")
+    suspend fun get(id: String): CreditCardEntity?
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(card: CreditCardEntity)
+
+    @Update(onConflict = OnConflictStrategy.ABORT)
+    suspend fun update(card: CreditCardEntity)
+
+    @Query("DELETE FROM credit_cards WHERE id = :id")
+    suspend fun delete(id: String)
+}
+
+@Dao
+interface HealthScoreSnapshotDao {
+    @Query("SELECT * FROM health_score_snapshots ORDER BY timestampEpochMillis DESC LIMIT :limit")
+    suspend fun recent(limit: Int): List<HealthScoreSnapshotEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(snapshot: HealthScoreSnapshotEntity)
+}
+
+@Dao
+interface DailyForecastCacheDao {
+    @Query("SELECT * FROM daily_forecast_cache LIMIT 1")
+    suspend fun get(): DailyForecastCacheEntity?
+
+    @Query("SELECT COUNT(*) FROM daily_forecast_cache")
+    suspend fun count(): Int
+
+    /**
+     * The frozen `TransactionActor.saveForecastCache` deletes every existing row before inserting,
+     * so the cache is a singleton. The fixed primary key plus REPLACE gives the same guarantee.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(cache: DailyForecastCacheEntity)
+
+    @Query("DELETE FROM daily_forecast_cache")
+    suspend fun clear()
+}
+
+@Dao
 interface MerchantCategoryMappingDao {
     @Query("SELECT categoryId FROM merchant_category_mappings WHERE normalizedMerchant = :normalizedMerchant")
     suspend fun categoryIdFor(normalizedMerchant: String): String?
+
+    @Query("SELECT COUNT(*) FROM merchant_category_mappings")
+    suspend fun count(): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(mapping: MerchantCategoryMappingEntity)

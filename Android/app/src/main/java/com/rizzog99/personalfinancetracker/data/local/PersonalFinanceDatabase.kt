@@ -11,6 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CategoryEntity::class,
         GoalEntity::class,
         RecurrenceRuleEntity::class,
+        CreditCardEntity::class,
         HealthScoreSnapshotEntity::class,
         DailyForecastCacheEntity::class,
         MerchantCategoryMappingEntity::class,
@@ -23,6 +24,9 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun goalDao(): GoalDao
     abstract fun recurrenceRuleDao(): RecurrenceRuleDao
+    abstract fun creditCardDao(): CreditCardDao
+    abstract fun healthScoreSnapshotDao(): HealthScoreSnapshotDao
+    abstract fun dailyForecastCacheDao(): DailyForecastCacheDao
     abstract fun merchantCategoryMappingDao(): MerchantCategoryMappingDao
 
     companion object {
@@ -43,8 +47,9 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
         }
 
         /**
-         * Credit cards are deliberately excluded from Android parity. Keep the legacy table inert
-         * rather than deleting any locally stored rows without an explicit user data-wipe request.
+         * No structural change. `credit_cards` was briefly dropped from the entity set and has been
+         * restored with its original v2 columns, so a v2 database already carries the table with
+         * byte-identical CREATE SQL and nothing needs to run here.
          */
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) = Unit
