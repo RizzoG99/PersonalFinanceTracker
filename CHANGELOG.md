@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Android: you can now choose when the daily reminder arrives. **Settings > Reminders** has the reminder switch and, once it's on, the time — tap it to pick any time of day. The reminder used to be fixed at 8:00 PM with no way to change it; it now defaults to 9:00 PM like iOS, and moving it takes effect straight away instead of leaving the old time still scheduled. Turning the reminder off cancels it, turning it back on uses the time you last chose, and your choice survives closing the app.
 - Android: receipt scanning no longer mixes up two shops whose names differ only by an accent. Learning a category for "Caffè Roma" used to overwrite the one already learned for "Caffe Roma", so the next scan of one of them came back with the other's category. They are now kept apart, matching iOS. Spelling and spacing are still ignored, so "  CONAD " and "Conad" remain the same shop.
 - Android: deleting a category no longer leaves recurring transactions tied to a category that no longer exists. Existing transaction names and recurrence history stay intact, and future occurrences continue without the deleted link.
 - Android: Activity filters now reject negative amount limits without crashing, and category choices update while you change date, amount, or recurring filters. If a selected category no longer matches, the sheet clears it visibly before you apply the filters.

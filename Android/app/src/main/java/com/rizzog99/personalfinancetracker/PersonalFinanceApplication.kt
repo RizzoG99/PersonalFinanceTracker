@@ -5,8 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.room.Room
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.rizzog99.personalfinancetracker.data.backup.BackupRepository
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
@@ -28,11 +26,8 @@ import com.rizzog99.personalfinancetracker.data.repository.RoomReceiptMappingRep
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.work.DailyReminderWorker
-import java.time.LocalDate
+import com.rizzog99.personalfinancetracker.work.ReminderScheduler
 import java.time.LocalTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -100,6 +95,8 @@ class PersonalFinanceApplication : Application() {
         applicationScope.launch {
             categoryRepository.seedDefaultsIfEmpty()
         }
+        // The stored time, not a constant: a reminder the user moved has to survive a relaunch.
+        applicationScope.launch { applyDailyReminder() }
         createNotificationChannel()
         materializeRecurringTransactions()
     }
@@ -118,28 +115,24 @@ class PersonalFinanceApplication : Application() {
         }
     }
 
-    fun scheduleDailyReminder() {
-        // Schedule for 8:00 PM (20:00) local time
-        val reminderTime = LocalTime.of(20, 0)
-        val now = ZonedDateTime.now(ZoneId.systemDefault())
-        var nextReminder = now.withHour(reminderTime.hour).withMinute(reminderTime.minute).withSecond(0)
-
-        // If the time has already passed today, schedule for tomorrow
-        if (nextReminder.isBefore(now)) {
-            nextReminder = nextReminder.plusDays(1)
+    /** Turns the daily reminder on or off, and brings the enqueued work in line with it. */
+    fun setDailyReminderEnabled(enabled: Boolean) {
+        applicationScope.launch {
+            preferencesRepository.setDailyReminderEnabled(enabled)
+            applyDailyReminder()
         }
+    }
 
-        val initialDelay = java.time.Duration.between(now, nextReminder).seconds
-        val workRequest = PeriodicWorkRequestBuilder<DailyReminderWorker>(
-            1,
-            TimeUnit.DAYS,
-        ).setInitialDelay(initialDelay, TimeUnit.SECONDS).build()
+    /** Stores a new reminder time; an enabled reminder is rescheduled onto it (#129 AC-04). */
+    fun setDailyReminderTime(time: LocalTime) {
+        applicationScope.launch {
+            preferencesRepository.setDailyReminderTime(time)
+            applyDailyReminder()
+        }
+    }
 
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            DailyReminderWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest,
-        )
+    private suspend fun applyDailyReminder() {
+        ReminderScheduler.apply(WorkManager.getInstance(this), preferencesRepository)
     }
 
     /**

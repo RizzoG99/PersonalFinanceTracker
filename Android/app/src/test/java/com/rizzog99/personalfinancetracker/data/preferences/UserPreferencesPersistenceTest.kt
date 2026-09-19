@@ -21,6 +21,7 @@ import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.time.Instant
+import java.time.LocalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -83,6 +84,8 @@ class UserPreferencesPersistenceTest {
         assertNull(repository.pinHash.first())
         assertNull(repository.pinSalt.first())
         assertEquals(false, repository.dailyReminderEnabled.first())
+        // #129 AC-01: the frozen-iOS default, not Android's old hardcoded 20:00.
+        assertEquals(LocalTime.of(21, 0), repository.dailyReminderTime.first())
         assertEquals(false, repository.pulsePromptDismissed.first())
         assertEquals("", repository.userFullName.first())
         assertEquals(false, repository.healthScoreIgnoreSubscriptions.first())
@@ -103,6 +106,7 @@ class UserPreferencesPersistenceTest {
         repository.setHideBalance(true)
         repository.setLastBackupAt(Instant.ofEpochMilli(-86_400_000))
         repository.setDailyReminderEnabled(true)
+        repository.setDailyReminderTime(LocalTime.of(23, 59))
         repository.setPulsePromptDismissed(true)
         repository.setUserFullName("  Zoë  Van Der Berg-O'Neill 名前  ")
         repository.setHealthScoreIgnoreSubscriptions(true)
@@ -115,6 +119,7 @@ class UserPreferencesPersistenceTest {
         assertEquals(true, reopened.hideBalance.first())
         assertEquals(Instant.ofEpochMilli(-86_400_000), reopened.lastBackupAt.first())
         assertEquals(true, reopened.dailyReminderEnabled.first())
+        assertEquals(LocalTime.of(23, 59), reopened.dailyReminderTime.first())
         assertEquals(true, reopened.pulsePromptDismissed.first())
         assertEquals("Zoë  Van Der Berg-O'Neill 名前", reopened.userFullName.first())
         assertEquals(true, reopened.healthScoreIgnoreSubscriptions.first())
@@ -127,12 +132,60 @@ class UserPreferencesPersistenceTest {
         repository.setPayCycleStartDay(1)
         repository.setLastBackupAt(Instant.EPOCH)
         repository.setThemeMode(ThemeMode.LIGHT)
+        repository.setDailyReminderTime(LocalTime.MIDNIGHT)
 
         val reopened = UserPreferencesRepository(restart())
 
         assertEquals(1, reopened.payCycleStartDay.first())
         assertEquals(Instant.EPOCH, reopened.lastBackupAt.first())
         assertEquals(ThemeMode.LIGHT, reopened.themeMode.first())
+        // 00:00 is a stored value, not the absent-key default — the default is 21:00.
+        assertEquals(LocalTime.of(0, 0), reopened.dailyReminderTime.first())
+    }
+
+    @Test
+    fun `AC-03 and #129 out of range reminder hours and minutes normalize deterministically`() = runBlocking {
+        val store = openStore()
+        val repository = UserPreferencesRepository(store)
+
+        repository.setDailyReminderTime(LocalTime.of(7, 30))
+        assertEquals(LocalTime.of(7, 30), repository.dailyReminderTime.first())
+
+        // Only reachable from another build or a hand-edited store: LocalTime cannot hold these.
+        store.edit {
+            it[UserPreferencesRepository.Keys.dailyReminderHour] = 24
+            it[UserPreferencesRepository.Keys.dailyReminderMinute] = 60
+        }
+        assertEquals(LocalTime.of(23, 59), repository.dailyReminderTime.first())
+
+        store.edit {
+            it[UserPreferencesRepository.Keys.dailyReminderHour] = -1
+            it[UserPreferencesRepository.Keys.dailyReminderMinute] = Int.MIN_VALUE
+        }
+        assertEquals(LocalTime.of(0, 0), repository.dailyReminderTime.first())
+
+        // A half-written pair reads as the default for the missing half, never as a crash.
+        store.edit { it.remove(UserPreferencesRepository.Keys.dailyReminderMinute) }
+        assertEquals(LocalTime.of(0, 0), repository.dailyReminderTime.first())
+        store.edit { it.remove(UserPreferencesRepository.Keys.dailyReminderHour) }
+        assertEquals(LocalTime.of(21, 0), repository.dailyReminderTime.first())
+    }
+
+    @Test
+    fun `AC-03 and #129 a reminder hour stored as text is rejected loudly, not read as a wrong time`() = runBlocking {
+        val store = openStore()
+        val repository = UserPreferencesRepository(store)
+        repository.setBaseCurrency("DKK")
+
+        store.edit { it[stringPreferencesKey("daily_reminder_hour")] = "nine" }
+
+        assertThrows(ClassCastException::class.java) {
+            runBlocking { repository.dailyReminderTime.first() }
+        }
+        assertEquals("DKK", repository.baseCurrency.first())
+
+        repository.setDailyReminderTime(LocalTime.of(9, 5))
+        assertEquals(LocalTime.of(9, 5), repository.dailyReminderTime.first())
     }
 
     @Test
@@ -207,6 +260,7 @@ class UserPreferencesPersistenceTest {
             add { repository.setHideBalance(true) }
             add { repository.setLastBackupAt(Instant.ofEpochMilli(1_700_000_000_000)) }
             add { repository.setDailyReminderEnabled(true) }
+            add { repository.setDailyReminderTime(LocalTime.of(6, 45)) }
             add { repository.setPulsePromptDismissed(true) }
             add { repository.setHealthScoreIgnoreSubscriptions(true) }
             add { repository.setUserFullName("Grace Hopper") }
@@ -223,6 +277,7 @@ class UserPreferencesPersistenceTest {
         assertEquals(true, repository.hideBalance.first())
         assertEquals(Instant.ofEpochMilli(1_700_000_000_000), repository.lastBackupAt.first())
         assertEquals(true, repository.dailyReminderEnabled.first())
+        assertEquals(LocalTime.of(6, 45), repository.dailyReminderTime.first())
         assertEquals(true, repository.pulsePromptDismissed.first())
         assertEquals(true, repository.healthScoreIgnoreSubscriptions.first())
         assertTrue(repository.userFullName.first() in names + "Grace Hopper")
@@ -403,6 +458,8 @@ class UserPreferencesPersistenceTest {
             "pin_hash",
             "pin_salt",
             "daily_reminder_enabled",
+            "daily_reminder_hour",
+            "daily_reminder_minute",
             "pulse_prompt_dismissed",
             "user_full_name",
             "health_score_ignore_subscriptions",

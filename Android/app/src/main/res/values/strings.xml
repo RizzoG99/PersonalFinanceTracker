@@ -314,6 +314,11 @@
     </plurals>
     <string name="daily_reminder_prompt">Set daily reminder</string>
     <string name="daily_reminder_set">Set</string>
+    <string name="reminders_section">Reminders</string>
+    <string name="daily_reminder">Daily reminder</string>
+    <string name="daily_reminder_detail">A nudge to log today\'s spending.</string>
+    <string name="reminder_time">Time</string>
+    <string name="reminder_time_description">Reminder time, %1$s</string>
     <string name="daily_reminder_notification_title">Financial Pulse</string>
     <string name="daily_reminder_notification_message">Log today\'s transactions to keep your finances on track</string>
     <!-- Scan Categories: the user's own concept -> category pairing -->

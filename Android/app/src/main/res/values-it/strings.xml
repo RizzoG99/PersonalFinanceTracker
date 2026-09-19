@@ -314,6 +314,11 @@
     </plurals>
     <string name="daily_reminder_prompt">Attiva promemoria giornaliero</string>
     <string name="daily_reminder_set">Attiva</string>
+    <string name="reminders_section">Promemoria</string>
+    <string name="daily_reminder">Promemoria giornaliero</string>
+    <string name="daily_reminder_detail">Un invito a registrare le spese di oggi.</string>
+    <string name="reminder_time">Orario</string>
+    <string name="reminder_time_description">Orario del promemoria, %1$s</string>
     <string name="daily_reminder_notification_title">Impulso finanziario</string>
     <string name="daily_reminder_notification_message">Registra i movimenti di oggi per tenere le tue finanze in ordine</string>
     <!-- Categorie scansione: l'abbinamento concetto -> categoria scelto dall'utente -->

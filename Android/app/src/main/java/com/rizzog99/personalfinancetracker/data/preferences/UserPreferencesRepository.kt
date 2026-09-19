@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
 import java.time.Instant
+import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -36,6 +37,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val pinHash = stringPreferencesKey("pin_hash")
         val pinSalt = stringPreferencesKey("pin_salt")
         val dailyReminderEnabled = booleanPreferencesKey("daily_reminder_enabled")
+        val dailyReminderHour = intPreferencesKey("daily_reminder_hour")
+        val dailyReminderMinute = intPreferencesKey("daily_reminder_minute")
         val pulsePromptDismissed = booleanPreferencesKey("pulse_prompt_dismissed")
         val userFullName = stringPreferencesKey("user_full_name")
         val healthScoreIgnoreSubscriptions = booleanPreferencesKey("health_score_ignore_subscriptions")
@@ -50,6 +53,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             pinHash,
             pinSalt,
             dailyReminderEnabled,
+            dailyReminderHour,
+            dailyReminderMinute,
             pulsePromptDismissed,
             userFullName,
             healthScoreIgnoreSubscriptions,
@@ -86,6 +91,19 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     val dailyReminderEnabled: Flow<Boolean> = dataStore.data.map {
         it[Keys.dailyReminderEnabled] ?: false
+    }
+
+    /**
+     * When the daily reminder fires, as local wall-clock time. Stored as two ints rather than an
+     * instant or a formatted string so it never drifts with the timezone: 21:00 means 21:00 after
+     * the user flies somewhere else. `21:00` is the frozen-iOS default (#129 AC-01) and lives only
+     * here, so nothing downstream can re-declare it.
+     */
+    val dailyReminderTime: Flow<LocalTime> = dataStore.data.map {
+        LocalTime.of(
+            (it[Keys.dailyReminderHour] ?: DEFAULT_REMINDER_HOUR).coerceIn(0, 23),
+            (it[Keys.dailyReminderMinute] ?: DEFAULT_REMINDER_MINUTE).coerceIn(0, 59),
+        )
     }
 
     val pulsePromptDismissed: Flow<Boolean> = dataStore.data.map {
@@ -148,6 +166,14 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         dataStore.edit { it[Keys.dailyReminderEnabled] = enabled }
     }
 
+    /** Normalized on write as well as on read, so a value from another build cannot resurrect. */
+    suspend fun setDailyReminderTime(time: LocalTime) {
+        dataStore.edit {
+            it[Keys.dailyReminderHour] = time.hour.coerceIn(0, 23)
+            it[Keys.dailyReminderMinute] = time.minute.coerceIn(0, 59)
+        }
+    }
+
     suspend fun setPulsePromptDismissed(dismissed: Boolean) {
         dataStore.edit { it[Keys.pulsePromptDismissed] = dismissed }
     }
@@ -169,5 +195,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     suspend fun setHealthScoreIgnoreSubscriptions(ignore: Boolean) {
         dataStore.edit { it[Keys.healthScoreIgnoreSubscriptions] = ignore }
+    }
+
+    private companion object {
+        const val DEFAULT_REMINDER_HOUR = 21
+        const val DEFAULT_REMINDER_MINUTE = 0
     }
 }

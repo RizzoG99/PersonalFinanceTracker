@@ -46,6 +46,7 @@ import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
+import com.rizzog99.personalfinancetracker.features.settings.rememberDailyReminderEnabler
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
@@ -78,30 +79,9 @@ fun HomeScreen(
     val hideBalance by application.preferencesRepository.hideBalance.collectAsState(initial = false)
     val scope = rememberCoroutineScope()
 
-    // POST_NOTIFICATIONS is a runtime permission from API 33 (Tiramisu); below that it's
-    // implicitly granted. Without it, WorkManager would enqueue a worker that can never
-    // actually post the reminder — request it before scheduling, not after.
-    val notificationPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        if (granted) {
-            application.scheduleDailyReminder()
-            scope.launch { application.preferencesRepository.setDailyReminderEnabled(true) }
-        }
-    }
-    val onSetDailyReminder: () -> Unit = {
-        if (android.os.Build.VERSION.SDK_INT >= 33 &&
-            androidx.core.content.ContextCompat.checkSelfPermission(
-                application,
-                android.Manifest.permission.POST_NOTIFICATIONS,
-            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            application.scheduleDailyReminder()
-            scope.launch { application.preferencesRepository.setDailyReminderEnabled(true) }
-        }
-    }
+    // Same path as the Settings switch, so the prompt schedules at the stored time too.
+    val setDailyReminderEnabled = rememberDailyReminderEnabler(application)
+    val onSetDailyReminder: () -> Unit = { setDailyReminderEnabled(true) }
 
     Scaffold(
         topBar = {

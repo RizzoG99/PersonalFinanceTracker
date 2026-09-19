@@ -301,6 +301,14 @@ fun SettingsSheet(
             )
 
             Text(
+                text = stringResource(R.string.reminders_section),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.semantics { heading() },
+            )
+            DailyReminderSection(application)
+
+            Text(
                 text = stringResource(R.string.data_section),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.outline,
