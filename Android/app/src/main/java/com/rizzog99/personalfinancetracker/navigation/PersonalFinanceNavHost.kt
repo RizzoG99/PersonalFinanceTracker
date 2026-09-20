@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -89,8 +90,11 @@ private val mainDestinations = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonalFinanceNavHost() {
-    val navController = rememberNavController()
+fun PersonalFinanceNavHost(
+    // The only seam #110's tests need: they drive the *production* graph and read its real back
+    // queue, instead of rebuilding a test-only graph that could drift away from this one.
+    navController: NavHostController = rememberNavController(),
+) {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val transactionEditorViewModel: ActivityViewModel = viewModel(

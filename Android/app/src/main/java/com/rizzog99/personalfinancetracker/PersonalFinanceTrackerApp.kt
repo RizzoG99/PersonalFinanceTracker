@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -55,22 +56,30 @@ fun PersonalFinanceTrackerApp() {
             }
             return@PersonalFinanceTheme
         }
-        when (val lock = pinLock) {
+        // `unlocked` means "this process is past the app-lock gate", which is why the shell below
+        // has exactly *one* call site. Two would not do: `pinLock` is a flow, not a launch-time
+        // snapshot, so saving a PIN from Settings flips it to `Set` mid-session, and a
+        // `PersonalFinanceNavHost()` in a second `when` branch is a different composition group —
+        // the shell would be torn down and rebuilt at Home, losing the destination the user was on
+        // (#132). Frozen iOS keeps its shell mounted across the whole lock cycle for the same
+        // reason.
+        val lock = pinLock
+        when {
             // Reading the secret means a file read plus a Keystore decrypt. Hold on the plain app
             // background until that answers, rather than flashing the dashboard at someone the
             // lock screen is about to stop.
-            PinLock.Unknown -> Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {}
-            is PinLock.Set -> if (unlocked) {
+            !unlocked && lock is PinLock.Unknown ->
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {}
+            !unlocked && lock is PinLock.Set -> PinUnlockScreen(
+                expectedHash = lock.secret.hash,
+                expectedSalt = lock.secret.salt,
+                biometricEnabled = biometricEnabled,
+                onUnlocked = { unlocked = true },
+            )
+            else -> {
+                SideEffect { unlocked = true }
                 PersonalFinanceNavHost()
-            } else {
-                PinUnlockScreen(
-                    expectedHash = lock.secret.hash,
-                    expectedSalt = lock.secret.salt,
-                    biometricEnabled = biometricEnabled,
-                    onUnlocked = { unlocked = true },
-                )
             }
-            PinLock.NotSet -> PersonalFinanceNavHost()
         }
     }
 }
