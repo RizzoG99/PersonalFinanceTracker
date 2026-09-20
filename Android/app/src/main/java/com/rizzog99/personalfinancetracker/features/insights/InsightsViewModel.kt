@@ -17,11 +17,18 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 
 data class CategorySpending(val label: String, val amount: BigDecimal)
 
@@ -33,6 +40,8 @@ data class FinancialHealth(val score: Int, val components: List<HealthComponent>
 
 data class InsightsUiState(
     val isLoading: Boolean = true,
+    /** See [com.rizzog99.personalfinancetracker.features.home.HomeUiState.isError] (#111, #133). */
+    val isError: Boolean = false,
     val period: FinancialPeriod? = null,
     val currencyCode: String = "EUR",
     val income: BigDecimal = BigDecimal.ZERO,
@@ -43,6 +52,7 @@ data class InsightsUiState(
     val categorySpending: List<CategorySpending> = emptyList(),
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class InsightsViewModel(
     private val transactionRepository: TransactionRepository,
     private val goalRepository: GoalRepository,
@@ -50,7 +60,17 @@ class InsightsViewModel(
     private val clock: Clock = Clock.systemDefaultZone(),
     private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
-    val uiState: StateFlow<InsightsUiState> = combine(
+    /** See `HomeViewModel.retries` — same `flatMapLatest` guarantee (#111 AC-05). */
+    private val retries = MutableStateFlow(0)
+
+    val uiState: StateFlow<InsightsUiState> = retries.flatMapLatest { insights() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InsightsUiState())
+
+    fun retry() {
+        retries.update { it + 1 }
+    }
+
+    private fun insights(): Flow<InsightsUiState> = combine(
         transactionRepository.observeAll(),
         goalRepository.observeAll(),
         preferencesRepository.payCycleStartDay,
@@ -88,7 +108,9 @@ class InsightsViewModel(
                 .map { (label, items) -> CategorySpending(label, items.fold(BigDecimal.ZERO) { total, item -> total + item.amount.abs() }) }
                 .sortedByDescending(CategorySpending::amount),
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InsightsUiState())
+    }
+        .onStart { emit(InsightsUiState(isLoading = true)) }
+        .catch { emit(InsightsUiState(isLoading = false, isError = true)) }
 
     companion object {
         fun factory(

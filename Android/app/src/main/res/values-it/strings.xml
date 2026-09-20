@@ -162,6 +162,8 @@
     <string name="empty_state_title">Non c’è ancora nulla</string>
     <string name="empty_state_message">Aggiungi la tua prima transazione per iniziare a tenere traccia delle finanze.</string>
     <string name="error_state_title">Si è verificato un problema</string>
+    <string name="error_state_message">Non siamo riusciti a caricare le tue finanze in questo momento. Non è stato eliminato nulla: i tuoi dati sono ancora su questo dispositivo.</string>
+    <string name="activity_update_failed">Non è stato possibile salvare la modifica. Non è stato cambiato nulla: riapri la transazione e riprova.</string>
     <string name="retry">Riprova</string>
     <string name="stored_data_unavailable_title">Impossibile aprire i tuoi dati</string>
     <string name="stored_data_unavailable_database">Il file che contiene le tue transazioni, i tuoi obiettivi e lo storico è danneggiato, quindi l\'app non può mostrarli.</string>

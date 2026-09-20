@@ -3,6 +3,7 @@ package com.rizzog99.personalfinancetracker.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -20,31 +21,75 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rizzog99.personalfinancetracker.R
 
+/**
+ * Work is in progress and nothing is known yet (#111 AC-01).
+ *
+ * The live region sits on the **label**, not on the surrounding column. On the column it announced
+ * nothing — the column carries no text of its own — while still being a region TalkBack watches for
+ * change. On the label it announces the words once, when the label enters the tree, and stays
+ * silent through the recompositions the spinner's animation causes, because the string never
+ * changes. Indeterminate progress semantics come from `CircularProgressIndicator` itself.
+ *
+ * The caller owns the height: [LoadingState] fills its width and wraps, so Home and Insights pass
+ * `fillMaxSize()` to centre it in a whole screen while Activity drops it into a list item.
+ */
 @Composable
-fun LoadingState(modifier: Modifier = Modifier) {
+fun LoadingState(
+    modifier: Modifier = Modifier,
+    message: String = stringResource(R.string.loading),
+) {
     Column(
-        modifier = modifier.fillMaxSize().semantics { liveRegion = LiveRegionMode.Polite },
+        modifier = modifier.fillMaxWidth().padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         CircularProgressIndicator()
-        Text(stringResource(R.string.loading), modifier = Modifier.padding(top = 16.dp))
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .semantics { liveRegion = LiveRegionMode.Polite },
+        )
     }
 }
 
+/**
+ * There is genuinely nothing to show (#111 AC-02, AC-03).
+ *
+ * [title] and [message] are required rather than defaulted: a first-run ledger and a filter that
+ * matched nothing are different states with different copy, and a shared default is how the two
+ * quietly become one. [action] is a slot so each caller keeps its own verb and its own button
+ * emphasis — "Add transaction" and "Clear search and filters" are not interchangeable.
+ *
+ * This composable holds no state. Whether the ledger is empty, or merely filtered to nothing, is
+ * decided in the ViewModel and passed here already resolved.
+ */
 @Composable
 fun EmptyState(
-    title: String = stringResource(R.string.empty_state_title),
-    message: String = stringResource(R.string.empty_state_message),
+    title: String,
+    message: String,
     modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null,
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier.fillMaxWidth().padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-        Text(message, modifier = Modifier.padding(top = 8.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+        )
+        action?.invoke()
     }
 }
 
@@ -95,23 +140,45 @@ fun StoredDataUnavailableState(
     }
 }
 
+/**
+ * Something failed and trying again can plausibly fix it (#111 AC-04, AC-05).
+ *
+ * [message] is required. A title alone ("Something went wrong") names that a failure happened but
+ * not what the user lost or kept, and this screen's whole job is to be the alternative to a lie —
+ * a spinner that never resolves, or an empty ledger that isn't empty.
+ *
+ * [message] is a caller-supplied string, which is the point: it comes from a string resource, never
+ * from `Throwable.message`. Frozen iOS draws the same line in
+ * `EditAddTransactionView` — "Not `error.localizedDescription`: a capture failure is a raw
+ * AVFoundationErrorDomain code … that means nothing to a user reading it."
+ *
+ * Stateless by construction. Re-entering the error state after a failed retry, and not running two
+ * retries at once, are the ViewModel's job — this composable only reports the tap.
+ */
 @Composable
 fun ErrorState(
+    message: String,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String = stringResource(R.string.error_state_title),
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier.fillMaxWidth().padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = stringResource(R.string.error_state_title),
+            text = title,
             style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
-        Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text(stringResource(R.string.retry))
-        }
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
     }
 }

@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
@@ -125,7 +126,10 @@ import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFil
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
+import com.rizzog99.personalfinancetracker.ui.components.EmptyState
+import com.rizzog99.personalfinancetracker.ui.components.ErrorState
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
@@ -193,6 +197,7 @@ fun ActivityScreen(
             onTypeFilterChange = viewModel::updateTypeFilter,
             onClearError = viewModel::clearError,
             onClearSearchAndFilters = viewModel::clearSearchAndFilters,
+            onRetry = viewModel::retry,
             onAdd = { isCreating = true },
             onEdit = { editingTransaction = it },
             onDelete = {
@@ -375,6 +380,7 @@ fun ActivityTwoPaneScreen(
                 onTypeFilterChange = viewModel::updateTypeFilter,
                 onClearError = viewModel::clearError,
                 onClearSearchAndFilters = viewModel::clearSearchAndFilters,
+                onRetry = viewModel::retry,
                 onAdd = { selectedId = null },
                 onEdit = { selectedId = it.id },
                 onDelete = {
@@ -500,14 +506,24 @@ fun ActivityTwoPaneScreen(
     }
 }
 
+/**
+ * The list body, including the loading / error / first-run-empty / no-results branch below.
+ *
+ * `internal` rather than `private` so the #111 state tests can host **this** composable — the one
+ * that ships — with fabricated `ActivityUiState` values, instead of a copy of its `when` that could
+ * drift from it. The branch order is the thing worth protecting: resolving `allTransactions
+ * .isEmpty()` before `isError` is exactly the #133 defect, and only a test that renders this
+ * composable can catch that reordering.
+ */
 @Composable
-private fun ActivityContent(
+internal fun ActivityContent(
     state: ActivityUiState,
-    error: String?,
+    @StringRes error: Int?,
     onSearchChange: (String) -> Unit,
     onTypeFilterChange: (TransactionTypeFilter) -> Unit,
     onClearError: () -> Unit,
     onClearSearchAndFilters: () -> Unit,
+    onRetry: () -> Unit,
     onAdd: () -> Unit,
     onEdit: (FinanceTransaction) -> Unit,
     onDelete: (FinanceTransaction) -> Unit,
@@ -544,14 +560,22 @@ private fun ActivityContent(
                 onSelected = onTypeFilterChange,
             )
         }
-        if (error != null) {
+        // Suppressed while the whole read has failed: the two channels are independent — the banner
+        // reports a failed *write* (or a failed category seed), `state.isError` a failed *read* —
+        // and a store broken enough to fail both would otherwise stack a Dismiss banner on top of
+        // the full-screen Retry state, offering two different recoveries for one problem. The
+        // full-screen state wins because it is the one with a working next action.
+        if (error != null && !state.isError) {
             item {
                 FinanceCard {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(error, modifier = Modifier.weight(1f))
+                        // A resource id, not the throwable's text (#135). Dismiss rather than
+                        // Retry is deliberate: the failed write's operand is not retained past the
+                        // call, so there is nothing a Retry button could re-run — see #135's D-02.
+                        Text(stringResource(error), modifier = Modifier.weight(1f))
                         TextButton(onClick = onClearError) { Text(stringResource(R.string.dismiss)) }
                     }
                 }
@@ -561,6 +585,19 @@ private fun ActivityContent(
             item { ActivitySummary(transactions = state.visibleTransactions) }
         }
         when {
+            // Order matters. `isError` is checked before `allTransactions.isEmpty()` because a
+            // failed read also leaves the list empty — resolving them the other way round is
+            // exactly the defect in #133: onboarding copy shown for a ledger that is still intact.
+            state.isLoading -> item {
+                LoadingState(modifier = Modifier.padding(vertical = 56.dp))
+            }
+            state.isError -> item {
+                ErrorState(
+                    message = stringResource(R.string.error_state_message),
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(vertical = 56.dp),
+                )
+            }
             state.allTransactions.isEmpty() -> item {
                 EmptyStateWithAction(onAdd = onAdd)
             }
@@ -1081,38 +1118,38 @@ private fun TransactionRow(
     }
 }
 
+/**
+ * The ledger is genuinely empty — a first run (#111 AC-02).
+ *
+ * Both this and [NoResultsState] now render through the shared [EmptyState] rather than repeating
+ * its column. They keep their own copy and their own button emphasis, which is the whole
+ * distinction: this one says the ledger is empty and offers to start it; the other says the *query*
+ * is empty and offers to widen it. Sharing the primitive is what puts the production screens on the
+ * same component the #111 tests exercise; sharing the copy would undo AC-02 and AC-03.
+ */
 @Composable
 private fun EmptyStateWithAction(onAdd: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 56.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.empty_state_title),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.semantics { heading() },
-        )
-        Text(stringResource(R.string.empty_state_message))
-        Button(onClick = onAdd) { Text(stringResource(R.string.add_transaction)) }
-    }
+    EmptyState(
+        title = stringResource(R.string.empty_state_title),
+        message = stringResource(R.string.empty_state_message),
+        modifier = Modifier.padding(vertical = 56.dp),
+        action = { Button(onClick = onAdd) { Text(stringResource(R.string.add_transaction)) } },
+    )
 }
 
+/** Data exists, the query matched none of it (#111 AC-03). */
 @Composable
 private fun NoResultsState(onClear: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 56.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.no_matching_transactions),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.semantics { heading() },
-        )
-        Text(stringResource(R.string.no_matching_transactions_message))
-        OutlinedButton(onClick = onClear) { Text(stringResource(R.string.clear_search_and_filters)) }
-    }
+    EmptyState(
+        title = stringResource(R.string.no_matching_transactions),
+        message = stringResource(R.string.no_matching_transactions_message),
+        modifier = Modifier.padding(vertical = 56.dp),
+        action = {
+            OutlinedButton(onClick = onClear) {
+                Text(stringResource(R.string.clear_search_and_filters))
+            }
+        },
+    )
 }
 
 /** Modal presentation for phones: slides up as a full-height bottom sheet. */

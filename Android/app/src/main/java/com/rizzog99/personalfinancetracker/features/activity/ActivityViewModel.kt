@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
@@ -17,14 +18,28 @@ import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFil
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.ZoneId
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
 
 data class ActivityUiState(
+    val isLoading: Boolean = true,
+    /**
+     * The ledger could not be read (#111 AC-02, #133).
+     *
+     * Kept separate from `allTransactions.isEmpty()` on purpose. Collapsed into one value, a failed
+     * read renders as "Nothing here yet — add your first transaction", which invites someone whose
+     * ledger is intact on disk to start a new one.
+     */
+    val isError: Boolean = false,
     val allTransactions: List<FinanceTransaction> = emptyList(),
     val visibleTransactions: List<FinanceTransaction> = emptyList(),
     val categories: List<FinanceCategory> = emptyList(),
@@ -169,53 +184,84 @@ internal fun resolveActivityFilterDraft(
     )
 }
 
+/** What the repositories answered, before any search or filter is applied. */
+private data class ActivityLedger(
+    val transactions: List<FinanceTransaction> = emptyList(),
+    val categories: List<FinanceCategory> = emptyList(),
+    val isLoading: Boolean = true,
+    val isError: Boolean = false,
+)
+
+@OptIn(ExperimentalCoroutinesApi::class)
 class ActivityViewModel(
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
     private val recurrenceRepository: RecurrenceRepository,
     private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
-    private val transactions = MutableStateFlow<List<FinanceTransaction>>(emptyList())
-    private val categories = MutableStateFlow<List<FinanceCategory>>(emptyList())
     private val filterSelection = MutableStateFlow(ActivityFilterSelection())
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
+    /** A string resource id, never text. See [showError]. */
+    private val _error = MutableStateFlow<Int?>(null)
+    val error: StateFlow<Int?> = _error
+
+    /** See `HomeViewModel.retries` — same `flatMapLatest` guarantee (#111 AC-05). */
+    private val retries = MutableStateFlow(0)
+
+    /**
+     * The ledger is read here rather than pushed into two `MutableStateFlow`s from `init`.
+     *
+     * The old shape collected both repository flows in `init` with no `catch`, so a read failure
+     * escaped `viewModelScope` onto Android's uncaught handler — and the state it left behind was
+     * an empty ledger, indistinguishable from a first run (#133).
+     *
+     * Kept deliberately separate from [filterSelection]: the user's search text and filters live in
+     * their own flow, so moving through loading, error and back leaves them exactly as they were.
+     */
+    private val ledger: Flow<ActivityLedger> = retries.flatMapLatest {
+        combine(
+            transactionRepository.observeAll(),
+            categoryRepository.observeAll(),
+        ) { transactions, categories ->
+            ActivityLedger(transactions = transactions, categories = categories, isLoading = false)
+        }
+            .onStart {
+                // Best-effort: failing to seed defaults costs the starter categories, not the
+                // ledger, so it reports itself and lets the read continue.
+                runCatching { categoryRepository.seedDefaultsIfEmpty() }.onFailure { showError() }
+                emit(ActivityLedger(isLoading = true))
+            }
+            .catch { emit(ActivityLedger(isLoading = false, isError = true)) }
+    }
 
     val uiState: StateFlow<ActivityUiState> = combine(
-        transactions,
-        categories,
+        ledger,
         filterSelection,
-    ) { allTransactions, allCategories, selection ->
+    ) { ledger, selection ->
         val filterCategoryLabels = availableActivityCategoryLabels(
-            transactions = allTransactions,
+            transactions = ledger.transactions,
             selection = selection,
             zoneId = zoneId,
         )
         ActivityUiState(
-            allTransactions = allTransactions,
+            isLoading = ledger.isLoading,
+            isError = ledger.isError,
+            allTransactions = ledger.transactions,
             visibleTransactions = TransactionSearch.filter(
-                transactions = allTransactions,
+                transactions = ledger.transactions,
                 searchText = selection.searchText,
                 filters = selection.filters,
                 zoneId = zoneId,
             ),
-            categories = allCategories,
+            categories = ledger.categories,
             filterCategoryLabels = filterCategoryLabels,
             searchText = selection.searchText,
             filters = selection.filters,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActivityUiState())
 
-    init {
-        viewModelScope.launch {
-            runCatching { categoryRepository.seedDefaultsIfEmpty() }
-                .onFailure(::showError)
-            categoryRepository.observeAll().collect { categories.value = it }
-        }
-        viewModelScope.launch {
-            transactionRepository.observeAll().collect { transactions.value = it }
-        }
+    fun retry() {
+        retries.update { it + 1 }
     }
 
     fun updateSearch(text: String) {
@@ -240,30 +286,43 @@ class ActivityViewModel(
 
     suspend fun save(transaction: FinanceTransaction): Boolean = runCatching {
         transactionRepository.upsert(transaction)
-    }.onFailure(::showError).isSuccess
+    }.onFailure { showError() }.isSuccess
 
     suspend fun createRecurringTransaction(rule: NewRecurrenceRule): Boolean = runCatching {
         recurrenceRepository.createAndMaterialize(rule)
-    }.onFailure(::showError).isSuccess
+    }.onFailure { showError() }.isSuccess
 
     suspend fun updateThisAndFuture(transaction: FinanceTransaction): Boolean = runCatching {
         recurrenceRepository.updateThisAndFuture(transaction)
-    }.onFailure(::showError).isSuccess
+    }.onFailure { showError() }.isSuccess
 
     suspend fun delete(transaction: FinanceTransaction): Boolean = runCatching {
         transactionRepository.delete(transaction.id)
-    }.onFailure(::showError).isSuccess
+    }.onFailure { showError() }.isSuccess
 
     suspend fun deleteThisAndFuture(transaction: FinanceTransaction): Boolean = runCatching {
         transactionRepository.deleteThisAndFuture(requireNotNull(transaction.recurrenceRuleId), transaction.timestamp)
-    }.onFailure(::showError).isSuccess
+    }.onFailure { showError() }.isSuccess
 
     fun clearError() {
         _error.value = null
     }
 
-    private fun showError(throwable: Throwable) {
-        _error.value = throwable.message ?: "Unable to update transactions."
+    /**
+     * Publishes a string **resource id**, never the throwable's own text (#111 AC-04, #135).
+     *
+     * `Throwable.message` on a Room write failure is the SQLite driver's string: an exception class
+     * name, an error code, the SQL, and the absolute path of the user's finance database — shown in
+     * English whatever the device locale. Frozen iOS refuses the same thing for the same reason, in
+     * `EditAddTransactionView`: "Not `error.localizedDescription`: a capture failure is a raw
+     * AVFoundationErrorDomain code … that means nothing to a user reading it."
+     *
+     * ponytail: one string for every write path. They all mean the same thing to the person reading
+     * it — the change did not stick and nothing was altered. Split it when a path needs a genuinely
+     * different next action, not to mirror the exception taxonomy.
+     */
+    private fun showError() {
+        _error.value = R.string.activity_update_failed
     }
 
     companion object {

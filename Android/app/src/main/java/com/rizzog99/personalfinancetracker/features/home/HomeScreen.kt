@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -47,6 +48,7 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.features.settings.rememberDailyReminderEnabler
+import com.rizzog99.personalfinancetracker.ui.components.ErrorState
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
@@ -106,7 +108,14 @@ fun HomeScreen(
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) { innerPadding ->
         when {
-            state.isLoading -> LoadingState(modifier = Modifier.padding(innerPadding))
+            state.isLoading -> LoadingState(
+                modifier = Modifier.padding(innerPadding).fillMaxSize(),
+            )
+            state.isError -> ErrorState(
+                message = stringResource(R.string.error_state_message),
+                onRetry = viewModel::retry,
+                modifier = Modifier.padding(innerPadding).fillMaxSize(),
+            )
             else -> HomeContent(
                 state = state,
                 hideBalance = hideBalance,

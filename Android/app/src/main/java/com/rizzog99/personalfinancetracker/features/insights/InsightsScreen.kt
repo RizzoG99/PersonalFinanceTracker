@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -95,7 +96,9 @@ import com.rizzog99.personalfinancetracker.domain.goal.FinanceGoal
 import com.rizzog99.personalfinancetracker.domain.goal.NewGoal
 import com.rizzog99.personalfinancetracker.domain.money.AmountInput
 import com.rizzog99.personalfinancetracker.ui.components.AppBackground
+import com.rizzog99.personalfinancetracker.ui.components.ErrorState
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
 import com.rizzog99.personalfinancetracker.ui.components.SheetDragHandle
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
@@ -147,12 +150,25 @@ fun InsightsScreen(
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) { padding ->
-        InsightsContent(
-            state = state,
-            onAddGoal = { creatingGoal = true },
-            onSelectGoal = { selectedGoal = it },
-            modifier = Modifier.padding(padding),
-        )
+        // Insights used to render its content unconditionally, so the loading state's placeholder
+        // zeroes — €0 income, €0 expenses, no category spending — were shown with the authority of
+        // real figures on every cold entry to the tab (#134).
+        when {
+            state.isLoading -> LoadingState(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+            )
+            state.isError -> ErrorState(
+                message = stringResource(R.string.error_state_message),
+                onRetry = viewModel::retry,
+                modifier = Modifier.padding(padding).fillMaxSize(),
+            )
+            else -> InsightsContent(
+                state = state,
+                onAddGoal = { creatingGoal = true },
+                onSelectGoal = { selectedGoal = it },
+                modifier = Modifier.padding(padding),
+            )
+        }
     }
 
     if (creatingGoal) {
