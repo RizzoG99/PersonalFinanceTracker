@@ -1,10 +1,6 @@
 package com.rizzog99.personalfinancetracker.ui
 
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.Configuration
-import android.content.res.Resources
-import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,20 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.SemanticsNode
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.features.activity.ActivityContent
@@ -62,28 +51,19 @@ class UiStateCaptureTest {
     @get:Rule
     val rule = createComposeRule()
 
-    private val outputDir: File
-        get() = File(
-            InstrumentationRegistry.getInstrumentation().targetContext
-                .getExternalFilesDir(null),
-            "ui-states",
-        ).apply { mkdirs() }
+    private val outputDir: File get() = CaptureHarness.outputDir("ui-states")
 
     /** One row of the matrix: an appearance/locale/width/font-scale combination. */
-    private data class Cell(
-        val id: String,
-        val locale: Locale? = null,
-        val widthDp: Int = 411,
-        val theme: ThemeMode = ThemeMode.LIGHT,
-        val fontScale: Float = 1f,
-    )
-
     private val cells = listOf(
-        Cell("en-light-compact"),
-        Cell("it-light-compact", locale = Locale.ITALIAN),
-        Cell("en-dark-compact", theme = ThemeMode.DARK),
-        Cell("en-light-wide", widthDp = 900),
-        Cell("it-light-compact-large-text", locale = Locale.ITALIAN, fontScale = 2.0f),
+        CaptureHarness.Cell("en-light-compact"),
+        CaptureHarness.Cell("it-light-compact", locale = Locale.ITALIAN),
+        CaptureHarness.Cell("en-dark-compact", theme = ThemeMode.DARK),
+        CaptureHarness.Cell("en-light-wide", widthDp = 900),
+        CaptureHarness.Cell(
+            "it-light-compact-large-text",
+            locale = Locale.ITALIAN,
+            fontScale = 2.0f,
+        ),
     )
 
     /** One column of the matrix: a state the production `when` can resolve to. */
@@ -138,7 +118,7 @@ class UiStateCaptureTest {
 
         rule.setContent {
             val current = cell.value
-            val context = localeContext(LocalContext.current, current.locale)
+            val context = CaptureHarness.localeContext(LocalContext.current, current.locale)
             val configuration = Configuration(context.resources.configuration).apply {
                 screenWidthDp = current.widthDp
                 fontScale = current.fontScale
@@ -171,13 +151,13 @@ class UiStateCaptureTest {
         hosts.forEach { hostId ->
             host.value = hostId
             statesFor(hostId).forEach { (stateId, state) ->
-                cells.forEach { c ->
+                cells.forEach { c: CaptureHarness.Cell ->
                     cell.value = c
                     uiState.value = state
                     rule.waitForIdle()
                     val name = "$hostId--$stateId--${c.id}"
-                    writePng(name)
-                    writeSemantics(name)
+                    CaptureHarness.writePng(rule, outputDir, name)
+                    CaptureHarness.writeSemantics(rule, outputDir, name)
                     index.append(
                         "$hostId,$stateId,${c.id},${c.locale?.language ?: "en"},${c.widthDp}," +
                             "${c.theme},${c.fontScale},$name.png,$name.txt\n",
@@ -221,52 +201,8 @@ class UiStateCaptureTest {
         }
     }
 
-    private fun writePng(name: String) {
-        val bitmap = rule.onRoot().captureToImage().asAndroidBitmap()
-        File(outputDir, "$name.png").outputStream().use {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
-        }
-    }
 
-    /**
-     * The hierarchy half of the matrix: every readable string with its bounds, so a reviewer can
-     * check for zero-size actions and clipped copy without eyeballing a PNG.
-     */
-    private fun writeSemantics(name: String) {
-        val out = StringBuilder()
-        fun walk(node: SemanticsNode, depth: Int) {
-            val text = node.config.getOrNull(SemanticsProperties.Text)?.joinToString { it.text }
-            val description = node.config.getOrNull(SemanticsProperties.ContentDescription)
-                ?.joinToString()
-            val heading = node.config.getOrNull(SemanticsProperties.Heading) != null
-            val progress = node.config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
-            val live = node.config.getOrNull(SemanticsProperties.LiveRegion)
-            if (text != null || description != null || progress != null) {
-                out.append(" ".repeat(depth * 2))
-                    .append("text=").append(text)
-                    .append(" desc=").append(description)
-                    .append(" heading=").append(heading)
-                    .append(" progress=").append(progress)
-                    .append(" liveRegion=").append(live)
-                    .append(" bounds=").append(node.boundsInRoot)
-                    .append(" touch=").append(node.touchBoundsInRoot)
-                    .append('\n')
-            }
-            node.children.forEach { walk(it, depth + 1) }
-        }
-        walk(rule.onRoot(useUnmergedTree = true).fetchSemanticsNode(), 0)
-        File(outputDir, "$name.txt").writeText(out.toString())
-    }
 
-    private fun localeContext(base: Context, locale: Locale?): Context = locale?.let {
-        val localized = base.createConfigurationContext(
-            Configuration(base.resources.configuration)
-                .apply { setLocales(android.os.LocaleList(it)) },
-        )
-        object : ContextWrapper(base) {
-            override fun getResources(): Resources = localized.resources
-        }
-    } ?: base
 
     private companion object {
         fun sample() = FinanceTransaction(

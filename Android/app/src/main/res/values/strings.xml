@@ -157,7 +157,6 @@
     <string name="health_score_band_fair">Getting better</string>
     <string name="health_score_band_good">Solid with room to grow</string>
     <string name="health_score_band_excellent">Excellent health</string>
-    <string name="foundation_placeholder">This screen is ready for its parity implementation.</string>
     <string name="loading">Loading your finances</string>
     <string name="empty_state_title">Nothing here yet</string>
     <string name="empty_state_message">Add your first transaction to start tracking your finances.</string>

@@ -157,7 +157,6 @@
     <string name="health_score_band_fair">Sta migliorando</string>
     <string name="health_score_band_good">Solido con margini di crescita</string>
     <string name="health_score_band_excellent">Finanze eccellenti</string>
-    <string name="foundation_placeholder">Questa schermata è pronta per raggiungere la parità con iOS.</string>
     <string name="loading">Caricamento delle tue finanze</string>
     <string name="empty_state_title">Non c’è ancora nulla</string>
     <string name="empty_state_message">Aggiungi la tua prima transazione per iniziare a tenere traccia delle finanze.</string>
