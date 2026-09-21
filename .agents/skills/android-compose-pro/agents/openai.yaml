@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Compose Pro"
+  short_description: "Reviews and improves Android Compose UI."
+  default_prompt: "Use $android-compose-pro to review or improve this Android Compose interface."

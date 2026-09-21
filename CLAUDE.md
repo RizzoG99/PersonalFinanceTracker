@@ -10,7 +10,7 @@ This repository is configured for both Claude Code and Codex.
 - `.claude/skills` and `.codex/skills` contain relative symlinks for native discovery. Edit only `.agents/skills`; when adding a shared skill, add a symlink for each supported agent.
 - Keep shared project facts aligned between this file and `AGENTS.md`; keep tool-specific instructions in the file for that tool.
 
-For every new or materially changed user-facing view, use `$swiftui-pro` before implementation. Inspect the two closest existing screens/components and follow its `references/design.md` preflight and quality gate. Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
+For every new or materially changed user-facing view, use `$swiftui-pro` for iOS SwiftUI or `$android-compose-pro` for Android Compose before implementation. Inspect the two closest existing screens/components and follow the selected skill's `references/design.md` preflight and quality gate. Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility font scaling and screen-reader semantics. Report any check that could not be run.
 
 ## Changelog
 

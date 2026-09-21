@@ -1,0 +1,104 @@
+package com.rizzog99.personalfinancetracker.domain.import
+
+import com.rizzog99.personalfinancetracker.domain.export.XlsxExportService
+import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import java.math.BigDecimal
+import java.time.Instant
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+class ImportPipelineTest {
+    @Test
+    fun `csv parser preserves quoted delimiter and mapper applies expense type`() {
+        val file = CsvImportParser.parse("Period,Category,Note,Income/Expense,Amount\n21/05/2026,Food,\"Lunch, downtown\",Expense,11.37")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Period", "Amount", "Category", "Note", "Income/Expense"))
+
+        assertEquals(0, result.rejectedRows)
+        assertEquals("Lunch, downtown", result.transactions.single().note)
+        assertEquals(BigDecimal("-11.37"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `mapper accepts European thousands notation and forces amounts to expense sign`() {
+        val file = CsvImportParser.parse("Date;Amount\n2026-05-21;1.234,50")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", dateFormat = "yyyy-MM-dd", signConvention = SignConvention.ALL_EXPENSES))
+
+        assertEquals(BigDecimal("-1234.50"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `mapper forces amounts to income sign under ALL_INCOME convention`() {
+        val file = CsvImportParser.parse("Date,Amount\n2026-05-21,-42.00")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", dateFormat = "yyyy-MM-dd", signConvention = SignConvention.ALL_INCOME))
+
+        assertEquals(BigDecimal("42.00"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `mapper skips transfer rows like iOS does`() {
+        val file = CsvImportParser.parse("Date,Type,Amount\n2026-05-21,Transfer,100\n2026-05-22,Expense,50")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", type = "Type", dateFormat = "yyyy-MM-dd"))
+
+        assertEquals(1, result.transactions.size)
+        assertEquals(BigDecimal("-50"), result.transactions.single().amount)
+    }
+
+    /**
+     * The counts on Import Preview have to add up to the file's rows. Transfers are dropped on
+     * purpose, but reporting them nowhere made 1826 rows arrive as 1634 with "0 Errors" — which
+     * reads as data going missing rather than transfers being skipped.
+     */
+    @Test
+    fun `mapper reports how many transfer rows it skipped`() {
+        val file = CsvImportParser.parse(
+            "Date,Type,Amount\n2026-05-21,Transfer,100\n2026-05-22,Giroconto,20\n2026-05-23,Expense,50",
+        )
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", type = "Type", dateFormat = "yyyy-MM-dd"))
+
+        assertEquals(1, result.transactions.size)
+        assertEquals(2, result.skippedTransfers)
+        assertEquals(0, result.rejectedRows)
+    }
+
+    @Test
+    fun `removingLeadingEmoji strips a leading emoji and its trailing space`() {
+        assertEquals("Spesa", "🛒 Spesa".removingLeadingEmoji())
+        assertEquals("Moto", "🏍️ Moto".removingLeadingEmoji())
+        assertEquals("Coffee", "Coffee".removingLeadingEmoji())
+        assertEquals("☕", "☕".removingLeadingEmoji())
+    }
+
+    @Test
+    fun `mapper recognizes abbreviated Italian export type`() {
+        val file = CsvImportParser.parse("Date,Type,Amount\n2026-05-21,Exp.,330")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", type = "Type", dateFormat = "yyyy-MM-dd"))
+
+        assertEquals(BigDecimal("-330"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `mapper rejects invalid dates and amounts while retaining valid rows`() {
+        val file = CsvImportParser.parse("Date,Amount\nnot-a-date,10\n2026-05-21,not-money\n2026-05-22,12")
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", dateFormat = "yyyy-MM-dd"))
+
+        assertEquals(2, result.rejectedRows)
+        assertEquals(BigDecimal("12"), result.transactions.single().amount)
+    }
+
+    @Test
+    fun `xlsx export round trips into the common mapping pipeline`() {
+        val bytes = XlsxExportService.generate(listOf(transaction("Lunch, downtown", BigDecimal("-11.37"))))
+        val file = XlsxImportService.read(bytes)
+
+        assertEquals(listOf("Date", "Amount", "Currency", "Category", "Note", "Type"), file.headers)
+        assertEquals("Lunch, downtown", file.rows.single()[4])
+        val result = TransactionImportMapper.validate(file, CsvColumnMapping("Date", "Amount", "Category", "Note", "Type", "yyyy-MM-dd HH:mm:ss"))
+        assertEquals(0, result.rejectedRows)
+        assertEquals(BigDecimal("-11.37"), result.transactions.single().amount)
+    }
+
+    private fun transaction(note: String, amount: BigDecimal) = FinanceTransaction(
+        id = "id", timestamp = Instant.parse("2026-05-21T00:00:00Z"), amount = amount,
+        categoryId = "food", categoryLabel = "Food", note = note, currencyCode = "EUR", goalId = null, recurrenceRuleId = null,
+    )
+}
