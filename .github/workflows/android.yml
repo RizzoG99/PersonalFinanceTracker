@@ -73,9 +73,6 @@ jobs:
             Android/app/build/reports/tests/testDebugUnitTest/**
           if-no-files-found: warn
           retention-days: 14
-      - name: Intentional #114 failure-propagation proof
-        run: exit 1
-
   lint:
     name: Android lint
     runs-on: ubuntu-24.04
