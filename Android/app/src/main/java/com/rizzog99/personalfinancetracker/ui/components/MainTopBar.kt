@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -15,6 +16,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.rizzog99.personalfinancetracker.R
 
 /**
@@ -31,11 +34,14 @@ fun MainTopBar(
     screenActions: @Composable () -> Unit = {},
 ) {
     TopAppBar(
-        title = { Text(title) },
+        title = { Text(title, modifier = Modifier.semantics { heading() }) },
         actions = {
             Row {
                 screenActions()
-                IconButton(onClick = onToggleTheme) {
+                IconToggleButton(
+                    checked = isDarkTheme,
+                    onCheckedChange = { onToggleTheme() },
+                ) {
                     Icon(
                         imageVector = if (isDarkTheme) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
                         contentDescription = stringResource(R.string.toggle_theme),

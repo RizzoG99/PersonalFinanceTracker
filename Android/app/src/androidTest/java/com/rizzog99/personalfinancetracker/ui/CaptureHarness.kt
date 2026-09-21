@@ -7,6 +7,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.captureToImage
@@ -78,12 +79,26 @@ object CaptureHarness {
             val progress = node.config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
             val live = node.config.getOrNull(SemanticsProperties.LiveRegion)
             val selected = node.config.getOrNull(SemanticsProperties.Selected)
-            if (text != null || description != null || progress != null) {
+            val role = node.config.getOrNull(SemanticsProperties.Role)
+            val toggle = node.config.getOrNull(SemanticsProperties.ToggleableState)
+            val disabled = node.config.getOrNull(SemanticsProperties.Disabled) != null
+            val focused = node.config.getOrNull(SemanticsProperties.Focused)
+            val clickable = node.config.getOrNull(SemanticsActions.OnClick) != null
+            if (
+                text != null || description != null || heading || progress != null || live != null ||
+                selected != null || role != null || toggle != null || disabled || focused != null ||
+                clickable
+            ) {
                 out.append(" ".repeat(depth * 2))
                     .append("text=").append(text)
                     .append(" desc=").append(description)
                     .append(" heading=").append(heading)
                     .append(" selected=").append(selected)
+                    .append(" role=").append(role)
+                    .append(" toggle=").append(toggle)
+                    .append(" disabled=").append(disabled)
+                    .append(" focused=").append(focused)
+                    .append(" clickable=").append(clickable)
                     .append(" progress=").append(progress)
                     .append(" liveRegion=").append(live)
                     .append(" bounds=").append(node.boundsInRoot)

@@ -95,10 +95,18 @@ class FoundationLocaleRecreationTest {
         with(en) { rule.assertOnly(homeTab) }
 
         setAppLocale(Locale.ITALIAN)
+        rule.waitUntil(10_000) {
+            runCatching { rule.onAllNodes(it.tab(it.activityTab)).fetchSemanticsNodes().size == 1 }
+                .getOrDefault(false)
+        }
         rule.onNode(it.tab(it.activityTab)).assert(hasText(it.activityTab))
         rule.onAllNodes(en.tab(en.activityTab)).assertCountIsZero("English tab label after EN→IT")
 
         setAppLocale(Locale.ENGLISH)
+        rule.waitUntil(10_000) {
+            runCatching { rule.onAllNodes(en.tab(en.activityTab)).fetchSemanticsNodes().size == 1 }
+                .getOrDefault(false)
+        }
         rule.onNode(en.tab(en.activityTab)).assert(hasText(en.activityTab))
         rule.onAllNodes(it.tab(it.activityTab)).assertCountIsZero("Italian tab label after IT→EN")
     }

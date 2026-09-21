@@ -18,6 +18,7 @@ import com.rizzog99.personalfinancetracker.data.local.StartupFailure
 import com.rizzog99.personalfinancetracker.data.security.PinLock
 import com.rizzog99.personalfinancetracker.features.security.PinUnlockScreen
 import com.rizzog99.personalfinancetracker.navigation.PersonalFinanceNavHost
+import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.StoredDataUnavailableState
 import com.rizzog99.personalfinancetracker.ui.theme.PersonalFinanceTheme
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
@@ -39,7 +40,11 @@ fun PersonalFinanceTrackerApp() {
         // Otherwise a screen collecting a Room flow opens it here instead, and an unopenable store
         // takes the process down as `FATAL EXCEPTION: main` before the branch below ever runs.
         if (!databaseProbed && startupFailure == null) {
-            Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {}
+            Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+                FoundationStartupLoadingState(
+                    message = stringResource(R.string.startup_loading_data),
+                )
+            }
             return@PersonalFinanceTheme
         }
         // Ahead of the lock: a store the app cannot read is not something a PIN prompt improves,
@@ -70,7 +75,11 @@ fun PersonalFinanceTrackerApp() {
             // background until that answers, rather than flashing the dashboard at someone the
             // lock screen is about to stop.
             !session.unlocked && lock is PinLock.Unknown ->
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {}
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+                    FoundationStartupLoadingState(
+                        message = stringResource(R.string.startup_loading_security),
+                    )
+                }
             !session.unlocked && lock is PinLock.Set -> PinUnlockScreen(
                 expectedHash = lock.secret.hash,
                 expectedSalt = lock.secret.salt,
@@ -83,6 +92,15 @@ fun PersonalFinanceTrackerApp() {
             }
         }
     }
+}
+
+/** The production startup status used by both privacy-preserving probe branches (#137). */
+@Composable
+internal fun FoundationStartupLoadingState(message: String) {
+    LoadingState(
+        message = message,
+        modifier = Modifier.fillMaxSize(),
+    )
 }
 
 /**

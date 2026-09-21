@@ -37,7 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -81,6 +85,7 @@ fun PinSetupScreen(
         pinLength = PIN_LENGTH,
         filledCount = entered.length,
         isError = error,
+        errorMessage = null,
         onDigit = { if (entered.length < PIN_LENGTH) entered += it },
         onBackspace = { if (entered.isNotEmpty()) entered = entered.dropLast(1) },
         onClose = onCancel,
@@ -107,7 +112,6 @@ fun PinUnlockScreen(
         } else {
             error = true
             delay(400)
-            error = false
             entered = ""
         }
     }
@@ -140,7 +144,11 @@ fun PinUnlockScreen(
         pinLength = PIN_LENGTH,
         filledCount = entered.length,
         isError = error,
-        onDigit = { if (entered.length < PIN_LENGTH) entered += it },
+        errorMessage = if (error) stringResource(R.string.pin_incorrect) else null,
+        onDigit = {
+            if (error) error = false
+            if (entered.length < PIN_LENGTH) entered += it
+        },
         onBackspace = { if (entered.isNotEmpty()) entered = entered.dropLast(1) },
         onClose = null,
     )
@@ -153,6 +161,7 @@ private fun PinScaffold(
     pinLength: Int,
     filledCount: Int,
     isError: Boolean,
+    errorMessage: String?,
     onDigit: (Char) -> Unit,
     onBackspace: () -> Unit,
     onClose: (() -> Unit)?,
@@ -185,8 +194,21 @@ private fun PinScaffold(
             }
             Spacer(Modifier.height(32.dp))
             PinDots(pinLength = pinLength, filledCount = filledCount, isError = isError)
+            if (errorMessage != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                )
+            }
             Spacer(Modifier.weight(1f))
-            PinKeypad(onDigit = onDigit, onBackspace = onBackspace)
+            PinKeypad(
+                onDigit = onDigit,
+                onBackspace = onBackspace,
+                backspaceEnabled = filledCount > 0,
+            )
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -210,7 +232,11 @@ private fun PinDots(pinLength: Int, filledCount: Int, isError: Boolean) {
 }
 
 @Composable
-private fun PinKeypad(onDigit: (Char) -> Unit, onBackspace: () -> Unit) {
+private fun PinKeypad(
+    onDigit: (Char) -> Unit,
+    onBackspace: () -> Unit,
+    backspaceEnabled: Boolean,
+) {
     val rows = listOf("123", "456", "789", " 0⌫")
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -222,7 +248,11 @@ private fun PinKeypad(onDigit: (Char) -> Unit, onBackspace: () -> Unit) {
                 row.forEach { char ->
                     when (char) {
                         ' ' -> Spacer(Modifier.size(72.dp))
-                        '⌫' -> IconButton(onClick = onBackspace, modifier = Modifier.size(72.dp)) {
+                        '⌫' -> IconButton(
+                            onClick = onBackspace,
+                            enabled = backspaceEnabled,
+                            modifier = Modifier.size(72.dp),
+                        ) {
                             Icon(Icons.AutoMirrored.Outlined.Backspace, contentDescription = stringResource(R.string.backspace))
                         }
                         else -> KeypadButton(digit = char, onClick = { onDigit(char) })
@@ -239,7 +269,10 @@ private fun KeypadButton(digit: Char, onClick: () -> Unit) {
         onClick = onClick,
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.size(72.dp).aspectRatio(1f),
+        modifier = Modifier
+            .size(72.dp)
+            .aspectRatio(1f)
+            .semantics { role = Role.Button },
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(digit.toString(), style = MaterialTheme.typography.headlineSmall)

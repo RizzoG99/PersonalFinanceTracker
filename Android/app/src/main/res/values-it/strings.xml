@@ -158,6 +158,8 @@
     <string name="health_score_band_good">Solido con margini di crescita</string>
     <string name="health_score_band_excellent">Finanze eccellenti</string>
     <string name="loading">Caricamento delle tue finanze</string>
+    <string name="startup_loading_data">Apertura dei tuoi dati</string>
+    <string name="startup_loading_security">Verifica della sicurezza dell’app</string>
     <string name="empty_state_title">Non c’è ancora nulla</string>
     <string name="empty_state_message">Aggiungi la tua prima transazione per iniziare a tenere traccia delle finanze.</string>
     <string name="error_state_title">Si è verificato un problema</string>
@@ -200,6 +202,7 @@
     <string name="pin_confirm_title">Conferma il PIN</string>
     <string name="pin_digits_hint">Inserisci %d cifre</string>
     <string name="pin_unlock_title">Inserisci il PIN</string>
+    <string name="pin_incorrect">PIN errato. Riprova.</string>
     <string name="backspace">Cancella cifra</string>
 
     <string name="data_section">Dati</string>
@@ -276,6 +279,7 @@
     <string name="categories">Categorie</string>
     <string name="categories_settings_detail">Crea e modifica le categorie delle transazioni</string>
     <string name="category_settings_title">Categorie</string>
+    <string name="category_loading">Caricamento delle categorie</string>
     <string name="expense_categories">CATEGORIE DI USCITA</string>
     <string name="income_categories">CATEGORIE DI ENTRATA</string>
     <string name="add_category">Aggiungi categoria</string>

@@ -158,6 +158,8 @@
     <string name="health_score_band_good">Solid with room to grow</string>
     <string name="health_score_band_excellent">Excellent health</string>
     <string name="loading">Loading your finances</string>
+    <string name="startup_loading_data">Opening your data</string>
+    <string name="startup_loading_security">Checking app security</string>
     <string name="empty_state_title">Nothing here yet</string>
     <string name="empty_state_message">Add your first transaction to start tracking your finances.</string>
     <string name="error_state_title">Something went wrong</string>
@@ -200,6 +202,7 @@
     <string name="pin_confirm_title">Confirm your PIN</string>
     <string name="pin_digits_hint">Enter %d digits</string>
     <string name="pin_unlock_title">Enter your PIN</string>
+    <string name="pin_incorrect">Incorrect PIN. Try again.</string>
     <string name="backspace">Delete digit</string>
 
     <string name="data_section">Data</string>
@@ -276,6 +279,7 @@
     <string name="categories">Categories</string>
     <string name="categories_settings_detail">Create and edit transaction categories</string>
     <string name="category_settings_title">Categories</string>
+    <string name="category_loading">Loading categories</string>
     <string name="expense_categories">EXPENSE CATEGORIES</string>
     <string name="income_categories">INCOME CATEGORIES</string>
     <string name="add_category">Add category</string>

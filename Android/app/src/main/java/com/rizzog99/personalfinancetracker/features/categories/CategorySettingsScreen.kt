@@ -64,6 +64,7 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
+import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import kotlinx.coroutines.launch
@@ -183,7 +184,7 @@ fun CategorySettingsScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun CategorySettingsContent(
+internal fun CategorySettingsContent(
     state: CategorySettingsUiState,
     onAdd: () -> Unit,
     onEdit: (FinanceCategory) -> Unit,
@@ -199,9 +200,8 @@ private fun CategorySettingsContent(
     ) {
         when {
             state.isLoading -> item {
-                Text(
-                    text = stringResource(R.string.loading),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                LoadingState(
+                    message = stringResource(R.string.category_loading),
                     modifier = Modifier.padding(vertical = 24.dp),
                 )
             }
