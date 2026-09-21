@@ -2,7 +2,6 @@ package com.rizzog99.personalfinancetracker.domain.pulse
 
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 
 data class FinancialPulseMetrics(
@@ -25,7 +24,7 @@ object FinancialPulseCalculator {
         now: Instant,
         zoneId: ZoneId,
     ): FinancialPulseMetrics {
-        val today = LocalDate.ofInstant(now, zoneId)
+        val today = now.atZone(zoneId).toLocalDate()
 
         // Count transactions for today
         val todayStart = today.atStartOfDay(zoneId).toInstant()
@@ -37,7 +36,7 @@ object FinancialPulseCalculator {
         // Build a set of dates with transactions for efficient lookup
         val datesWithTransactions = transactions.asSequence()
             .map { tx ->
-                LocalDate.ofInstant(tx.timestamp, zoneId)
+                tx.timestamp.atZone(zoneId).toLocalDate()
             }
             .toSet()
 

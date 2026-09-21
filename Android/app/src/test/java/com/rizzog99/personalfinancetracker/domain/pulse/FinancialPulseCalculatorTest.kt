@@ -98,10 +98,30 @@ class FinancialPulseCalculatorTest {
         assertEquals(2, result.streakDays)
     }
 
+    @Test
+    fun `AC-145-01 instant dates are evaluated in the supplied zone near midnight`() {
+        val rome = ZoneId.of("Europe/Rome")
+        val now = Instant.parse("2026-01-01T23:30:00Z") // Jan 2 in Rome.
+        val localToday = now.atZone(rome).toLocalDate()
+        val transactions = listOf(
+            createTransaction("today", localToday, rome),
+            createTransaction("yesterday", localToday.minusDays(1), rome),
+        )
+
+        val result = FinancialPulseCalculator.calculate(transactions, now, rome)
+
+        assertEquals(1, result.todayTransactionCount)
+        assertEquals(2, result.streakDays)
+    }
+
     private fun createTransaction(id: String, date: LocalDate): FinanceTransaction {
+        return createTransaction(id, date, zoneId)
+    }
+
+    private fun createTransaction(id: String, date: LocalDate, transactionZone: ZoneId): FinanceTransaction {
         return FinanceTransaction(
             id = id,
-            timestamp = date.atTime(10, 0).atZone(zoneId).toInstant(),
+            timestamp = date.atTime(10, 0).atZone(transactionZone).toInstant(),
             amount = BigDecimal("100.00"),
             note = "Test",
             categoryLabel = "Test",
