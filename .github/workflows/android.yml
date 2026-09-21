@@ -24,23 +24,23 @@ env:
 jobs:
   assemble:
     name: Assemble debug
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     defaults:
       run:
         working-directory: Android
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
       - name: Upload debug APK
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-apk-${{ github.run_id }}-${{ env.SOURCE_SHA }}
           path: Android/app/build/outputs/apk/debug/app-debug.apk
@@ -49,23 +49,23 @@ jobs:
 
   unit-tests:
     name: JVM unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     defaults:
       run:
         working-directory: Android
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run debug JVM tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace
       - name: Upload JVM JUnit results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-jvm-results-${{ github.run_id }}-${{ env.SOURCE_SHA }}
           path: |
@@ -76,23 +76,23 @@ jobs:
 
   lint:
     name: Android lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     defaults:
       run:
         working-directory: Android
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run debug lint
         run: ./gradlew :app:lintDebug --stacktrace
       - name: Upload lint reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-lint-${{ github.run_id }}-${{ env.SOURCE_SHA }}
           path: |
@@ -103,19 +103,19 @@ jobs:
 
   instrumentation:
     name: Instrumented tests (API ${{ matrix.api-level }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         api-level: [26, 34]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Enable KVM access
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
@@ -136,7 +136,7 @@ jobs:
           script: cd Android && ./gradlew :app:connectedDebugAndroidTest --stacktrace
       - name: Upload API ${{ matrix.api-level }} instrumentation evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-instrumentation-api-${{ matrix.api-level }}-${{ github.run_id }}-${{ env.SOURCE_SHA }}
           path: |
@@ -150,7 +150,7 @@ jobs:
     name: Required CI gate
     if: always()
     needs: [assemble, unit-tests, lint, instrumentation]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Require every Android gate
         env:
