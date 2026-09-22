@@ -513,6 +513,45 @@ struct TransactionListViewModelTests {
         #expect(vm.selectedIDs.count < vm.transactions.count)
     }
 
+    /// Regression test for issue #148: category chip filter was ignored by selectAllVisible
+    @Test @MainActor func selectAllVisibleRespectsCategoryFilter() async {
+        let vm = await makeLoadedVM()
+        // VM has: 3x Food (-50, -20, -15), 1x Beverages (-30), 1x Housing (-100), 1x Income (+1000)
+        let foodTransactions = vm.transactions.filter { $0.category == "Food" }
+        #expect(foodTransactions.count == 3, "Setup: expect 3 Food transactions")
+
+        // Set category filter to "Food"
+        vm.selectedCategory = "Food"
+        await vm.searchDebounceTask?.value
+
+        // Before the fix, filteredItems would still contain all transactions
+        // (not scoped by category), so selectAllVisible would select all of them.
+        // After the fix, it should only select the visible Food transactions.
+        vm.selectAllVisible()
+
+        // Assertion 1: the chip row must stay usable - all categories still offered
+        #expect(vm.filterCategories.count > 1,
+                "Selecting a chip must not collapse the chip row")
+
+        // Assertion 2: selected count must be 3 (Food transactions), not 6 (all transactions)
+        #expect(vm.selectedIDs.count == 3,
+                "Must select only 3 Food transactions, not all \(vm.transactions.count)")
+
+        // Assertion 3: no non-Food transactions are selected
+        let selectedSnapshots = vm.selectedSnapshots
+        for snapshot in selectedSnapshots {
+            #expect(snapshot.category == "Food",
+                    "Selected transaction '\(snapshot.note)' must have category Food, got \(snapshot.category)")
+        }
+
+        // Assertion 4: switching to another chip must drop the now-invisible
+        // selections, or the next bulk edit rewrites rows the user cannot see.
+        vm.selectedCategory = "Housing"
+        await vm.searchDebounceTask?.value
+        #expect(vm.selectedSnapshots.allSatisfy { $0.category == "Housing" },
+                "Switching chips must drop selections that are no longer visible, got \(vm.selectedSnapshots.map(\.category))")
+    }
+
     @Test @MainActor func filteringOutSelectedRowDropsIt() async {
         let vm = await makeLoadedVM()
         let id = vm.filteredItems.first { $0.note.localizedCaseInsensitiveContains("coffee") == false }!.id

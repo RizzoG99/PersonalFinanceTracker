@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- **Fixed a data-loss bug in bulk edit.** Filtering the Activity list by a category and tapping "Select All" was selecting *every* transaction in the list, not just the ones on screen — so changing the category afterwards rewrote transactions you could not see. "Select All" now selects exactly the rows shown. Relatedly, switching to a different category chip while rows are selected now drops the selections that are no longer visible, instead of carrying them along invisibly into the next bulk edit.
 - Fixed the Face ID prompt that could still appear over the lock screen when the phone auto-locked with the app open. The app now only asks when it is actually coming back from the background, or right after you unlock the phone with it in front.
 - The privacy cover now hides the keyboard too: backgrounding the app with the amount field open no longer leaves the keypad on screen over the cover, or in the app switcher. Coming back puts the cursor straight back in the field you were typing in.
 - Importing a CSV now recognises far more category names, so fewer rows arrive asking you to create a category you already have. English names, plurals and accented spellings are matched properly, and fuel, rent, bills, phone and bank-fee categories now find the right home instead of landing somewhere odd — "Petrol" used to be filed under Pets.

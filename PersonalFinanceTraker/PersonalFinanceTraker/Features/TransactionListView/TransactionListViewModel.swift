@@ -28,7 +28,10 @@ final class TransactionListViewModel {
 
     /// Category chip selection on the Activity screen; nil means "All"
     var selectedCategory: String? = nil {
-        didSet { recomputeDerivedFilterState() }
+        didSet {
+            recomputeDerivedFilterState()
+            intersectSelectionWithVisible()
+        }
     }
 
     /// Categories offered as filter chips, most-used first (stable within a data set).
@@ -48,12 +51,7 @@ final class TransactionListViewModel {
         filterCategories = counts.sorted { ($0.value, $1.key) > ($1.value, $0.key) }.map(\.key)
         effectiveCategory = selectedCategory.flatMap { filterCategories.contains($0) ? $0 : nil }
 
-        let scoped: [TransactionSnapshot]
-        if let category = effectiveCategory {
-            scoped = filteredItems.filter { $0.category == category }
-        } else {
-            scoped = filteredItems
-        }
+        let scoped = visibleItems
         var income = Decimal.zero
         var expenses = Decimal.zero
         for item in scoped {
@@ -112,8 +110,17 @@ final class TransactionListViewModel {
         if selectedIDs.contains(id) { selectedIDs.remove(id) } else { selectedIDs.insert(id) }
     }
 
+    /// Rows the Activity list actually renders: `filteredItems` narrowed by the
+    /// category chip, mirroring ActivityView's own `effectiveCategory` guard.
+    /// `filteredItems` stays category-free on purpose so `filterCategories` keeps
+    /// offering every chip.
+    private var visibleItems: [TransactionSnapshot] {
+        guard let category = effectiveCategory else { return filteredItems }
+        return filteredItems.filter { $0.category == category }
+    }
+
     func selectAllVisible() {
-        selectedIDs = Set(filteredItems.map(\.id))
+        selectedIDs = Set(visibleItems.map(\.id))
     }
 
     func deselectAll() {
@@ -127,7 +134,7 @@ final class TransactionListViewModel {
 
     private func intersectSelectionWithVisible() {
         guard !selectedIDs.isEmpty else { return }
-        let visible = Set(filteredItems.map(\.id))
+        let visible = Set(visibleItems.map(\.id))
         selectedIDs.formIntersection(visible)
     }
 
