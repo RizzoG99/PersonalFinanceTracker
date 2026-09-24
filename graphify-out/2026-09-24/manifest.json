@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift": {
-    "mtime": 1790264699.0770159,
-    "ast_hash": "73e0f6d1487fc237a6f1e829f0fbaf03",
+    "mtime": 1790262679.9792662,
+    "ast_hash": "49c75815bce6cc1a83fca9e3a91f5cd6",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/CurrencyService.swift": {
@@ -810,8 +810,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift": {
-    "mtime": 1790264703.665395,
-    "ast_hash": "20e9029e21ae5621a2a01870e5d13094",
+    "mtime": 1790264281.2256968,
+    "ast_hash": "af0659b3a3f0bc2202945957be0b73bb",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/StatisticalAverageService.swift": {
@@ -1125,8 +1125,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift": {
-    "mtime": 1790264719.6168592,
-    "ast_hash": "f970c2b307e8d2b94be09bc20618f60b",
+    "mtime": 1790264316.0074565,
+    "ast_hash": "2aab112531fbe3f6f1b6e153db7f149f",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/StatisticalAverageServiceTests.swift": {

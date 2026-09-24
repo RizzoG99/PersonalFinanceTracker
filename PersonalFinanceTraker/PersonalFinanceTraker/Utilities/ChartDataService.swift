@@ -14,23 +14,28 @@ class ChartDataService {
     init() {}
 
     func generateChartData(from items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [ChartDataPoint] {
-        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
-
         switch timePeriod {
         case .week:
+            let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
             return generateWeeklyData(from: filteredItems, referenceDate: referenceDate)
         case .month:
+            let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
             return generateMonthlyData(from: filteredItems, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         case .year:
-            return generateYearlyData(from: filteredItems, referenceDate: referenceDate)
+            // ponytail: unfiltered `items`, not run through filterItems — the .year pre-filter's
+            // `<= referenceDate` upper bound would empty out the in-progress-month bucket that
+            // generateYearlyData used to show (#154); each financial-month window filters itself,
+            // and skipping the pre-filter avoids scanning the full transaction list twice.
+            return generateYearlyData(from: items, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
         }
     }
 
     func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date = Date(), payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
         switch timePeriod {
         case .month:
-            let (start, end) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
-            return items.filter { $0.timestamp >= start && $0.timestamp <= end }
+            let start = PayCycleService.financialMonthStart(for: referenceDate, startDay: payCycleStartDay)
+            let end = Calendar.current.date(byAdding: .month, value: 1, to: start) ?? start
+            return items.filter { $0.timestamp >= start && $0.timestamp < end }
         default:
             let calendar = Calendar.current
             let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate
@@ -86,23 +91,22 @@ class ChartDataService {
         return data
     }
 
-    private func generateYearlyData(from items: [TransactionSnapshot], referenceDate: Date) -> [ChartDataPoint] {
+    // ponytail: 12 *complete* financial months, not the in-progress one — a month-to-date
+    // bucket next to 12 full-month ones always reads as a cliff (#154). Ask for 13 and drop the
+    // last (current) one instead of a separate "is this the last bucket" branch.
+    private func generateYearlyData(from items: [TransactionSnapshot], referenceDate: Date, payCycleStartDay: Int) -> [ChartDataPoint] {
         let calendar = Calendar.current
-        var data: [ChartDataPoint] = []
+        let months = PayCycleService.financialMonths(count: 13, before: referenceDate, startDay: payCycleStartDay, calendar: calendar).dropLast()
 
-        for i in 0..<12 {
-            let monthStart = calendar.date(byAdding: .month, value: -i, to: referenceDate) ?? referenceDate
-            let monthEnd = calendar.date(byAdding: .month, value: 1, to: monthStart) ?? monthStart
-
-            let monthItems = items.filter { $0.timestamp >= monthStart && $0.timestamp < monthEnd }
+        return months.map { month in
+            let monthEnd = calendar.date(byAdding: .month, value: 1, to: month.start) ?? month.start
+            let monthItems = items.filter { $0.timestamp >= month.start && $0.timestamp < monthEnd }
             let income = calculateIncome(from: monthItems)
             let expenses = calculateExpenses(from: monthItems)
-            let monthName = monthStart.formatted(.dateTime.month(.abbreviated))
+            let monthName = month.start.formatted(.dateTime.month(.abbreviated))
 
-            data.append(ChartDataPoint(period: monthName, income: income, expenses: expenses, date: monthStart))
+            return ChartDataPoint(period: monthName, income: income, expenses: expenses, date: month.start)
         }
-
-        return data.reversed()
     }
 
     private func calculateIncome(from items: [TransactionSnapshot]) -> Decimal {

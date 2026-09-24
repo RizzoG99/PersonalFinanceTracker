@@ -9,20 +9,45 @@ struct SpendingInsightService {
     let currencyService: CurrencyService
     let pieDataService: PieChartDataService
 
-    func heroInsight(expenseTransactions: [TransactionSnapshot], payCycleStartDay startDay: Int = 1) -> HeroInsight {
+    // ponytail: elapsed-day threshold below which "% change" is noise (one transaction can
+    // swing it wildly) rather than signal — raise it if early-month reports keep looking wrong.
+    private static let minElapsedDaysForPaceComparison = 7
+
+    func heroInsight(expenseTransactions: [TransactionSnapshot], payCycleStartDay startDay: Int = 1, referenceDate: Date = .now) -> HeroInsight {
         let calendar = Calendar.current
-        let now = Date.now
+        let now = referenceDate
         // Pay-cycle-aware, like categoryTrends — otherwise this and Category Trends can silently
         // disagree about what "this month" means for anyone with a non-default cycle start day.
         let startOfCurrentMonth = PayCycleService.financialMonthStart(for: now, startDay: startDay, calendar: calendar)
         let startOfLastMonth = calendar.date(byAdding: .month, value: -1, to: startOfCurrentMonth) ?? now
 
-        let currentTotal = sumExpenses(expenseTransactions.filter { $0.timestamp >= startOfCurrentMonth })
+        // #154: comparing "so far this month" against a *complete* last month guarantees a false
+        // "spending less" reading for ~80% of every month — cap last month at the same elapsed
+        // span so the two totals cover the same number of days.
+        let elapsed = now.timeIntervalSince(startOfCurrentMonth)
+        let lastMonthCutoff = startOfLastMonth.addingTimeInterval(elapsed)
+
+        // Also cap `currentTotal` at `now` — a future-dated transaction (a materialized recurring
+        // rule later this month) would otherwise widen this side only, reintroducing the same
+        // asymmetric-window bias in the opposite direction.
+        let currentTotal = sumExpenses(expenseTransactions.filter { $0.timestamp >= startOfCurrentMonth && $0.timestamp < now })
         let lastTotal = sumExpenses(expenseTransactions.filter {
-            $0.timestamp >= startOfLastMonth && $0.timestamp < startOfCurrentMonth
+            $0.timestamp >= startOfLastMonth && $0.timestamp < lastMonthCutoff
         })
 
         guard lastTotal > 0 else {
+            return HeroInsight(
+                title: String(localized: "Building your picture"),
+                subtitle: String(localized: "Keep logging to unlock insights"),
+                trendDirection: .flat
+            )
+        }
+
+        // Too little of the month has elapsed to say anything about pace — reuse the "not enough
+        // history" copy rather than "similar to last month", which is a claim this branch
+        // explicitly hasn't evaluated.
+        let elapsedDays = elapsed / 86400
+        guard elapsedDays >= Double(Self.minElapsedDaysForPaceComparison) else {
             return HeroInsight(
                 title: String(localized: "Building your picture"),
                 subtitle: String(localized: "Keep logging to unlock insights"),
@@ -55,15 +80,22 @@ struct SpendingInsightService {
         }
     }
 
-    func categoryTrends(expenseTransactions: [TransactionSnapshot], payCycleStartDay startDay: Int = 1) -> [CategoryTrend] {
+    func categoryTrends(expenseTransactions: [TransactionSnapshot], payCycleStartDay startDay: Int = 1, referenceDate: Date = .now) -> [CategoryTrend] {
         let calendar = Calendar.current
-        let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: .now) ?? .now
+        let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: referenceDate) ?? referenceDate
+
+        // #154: same partial-vs-full bias as heroInsight — cap last month's window at how far
+        // into the current financial month we are, so both pies cover the same span of days.
+        let startOfCurrentMonth = PayCycleService.financialMonthStart(for: referenceDate, startDay: startDay, calendar: calendar)
+        let elapsed = referenceDate.timeIntervalSince(startOfCurrentMonth)
+        let startOfLastMonth = PayCycleService.financialMonthStart(for: lastMonthRef, startDay: startDay, calendar: calendar)
+        let lastMonthCutoff = startOfLastMonth.addingTimeInterval(elapsed)
 
         let current = pieDataService.generatePieChartData(
-            from: expenseTransactions, for: .expenses, timePeriod: .month, payCycleStartDay: startDay
+            from: expenseTransactions, for: .expenses, timePeriod: .month, referenceDate: referenceDate, payCycleStartDay: startDay, upTo: referenceDate
         )
         let last = pieDataService.generatePieChartData(
-            from: expenseTransactions, for: .expenses, timePeriod: .month, referenceDate: lastMonthRef, payCycleStartDay: startDay
+            from: expenseTransactions, for: .expenses, timePeriod: .month, referenceDate: lastMonthRef, payCycleStartDay: startDay, upTo: lastMonthCutoff
         )
         let lastDict = Dictionary(last.map { ($0.category, $0.amount) }, uniquingKeysWith: { a, _ in a })
 

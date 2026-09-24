@@ -50,11 +50,12 @@ public class PieChartDataService {
         timePeriod: TimePeriod,
         referenceDate: Date = Date(),
         payCycleStartDay: Int = 1,
-        categories: [CategorySnapshot] = []
+        categories: [CategorySnapshot] = [],
+        upTo: Date? = nil
     ) -> [PieChartDataPoint] {
 
         // Filter items by time period and transaction type
-        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
+        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay, upTo: upTo)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
 
         // Group by category and calculate totals
@@ -136,12 +137,12 @@ public class PieChartDataService {
     ///   - referenceDate: Reference date for calculations
     ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Filtered array of items within the time period
-    private func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
+    private func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1, upTo: Date? = nil) -> [TransactionSnapshot] {
         let calendar = Calendar.current
         switch timePeriod {
         case .month:
             let start = PayCycleService.financialMonthStart(for: referenceDate, startDay: payCycleStartDay, calendar: calendar)
-            let end = calendar.date(byAdding: .month, value: 1, to: start) ?? start
+            let end = min(upTo ?? .distantFuture, calendar.date(byAdding: .month, value: 1, to: start) ?? start)
             return items.filter { $0.timestamp >= start && $0.timestamp < end }
         default:
             let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate

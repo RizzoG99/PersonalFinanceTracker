@@ -26,8 +26,11 @@ struct HeroInsightCard: View {
 
     private var displayTitle: String {
         switch insight.trendDirection {
-        case .down:  return "Under last month's pace"
-        case .up:    return "Watch your pace"
+        // `String(localized:)`, not a bare literal — `Text(_ content: String)` never looks the
+        // string up in the catalog, so these two cases silently stayed English regardless of
+        // device/app language until now.
+        case .down:  return String(localized: "Under last month's pace")
+        case .up:    return String(localized: "Watch your pace")
         case .flat:  return insight.title
         }
     }
