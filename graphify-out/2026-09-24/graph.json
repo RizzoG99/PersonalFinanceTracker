@@ -2443,7 +2443,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "categorysettings_icongridpicker",
-      "community": 302,
+      "community": 185,
       "norm_label": "icongridpicker.swift"
     },
     {
@@ -2453,7 +2453,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorysettings_icongridpicker_swift_swiftui",
-      "community": 302,
+      "community": 185,
       "norm_label": "swiftui"
     },
     {
@@ -2463,7 +2463,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "categorysettings_icongridpicker_icongridpicker",
-      "community": 302,
+      "community": 185,
       "norm_label": "icongridpicker"
     },
     {
@@ -2473,7 +2473,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorysettings_icongridpicker_swift_string",
-      "community": 302,
+      "community": 185,
       "norm_label": "string"
     },
     {
@@ -7913,7 +7913,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_forecastsection",
-      "community": 352,
+      "community": 185,
       "norm_label": "forecastsection.swift"
     },
     {
@@ -7923,7 +7923,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_forecastsection_swift_swiftui",
-      "community": 352,
+      "community": 185,
       "norm_label": "swiftui"
     },
     {
@@ -7933,7 +7933,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_forecastsection_forecastsection",
-      "community": 352,
+      "community": 185,
       "norm_label": "forecastsection"
     },
     {
@@ -7943,7 +7943,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_forecastsection_swift_spendingforecast",
-      "community": 352,
+      "community": 185,
       "norm_label": "spendingforecast"
     },
     {
@@ -8253,7 +8253,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_habitssection",
-      "community": 185,
+      "community": 355,
       "norm_label": "habitssection.swift"
     },
     {
@@ -8263,7 +8263,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_habitssection_swift_swiftui",
-      "community": 185,
+      "community": 355,
       "norm_label": "swiftui"
     },
     {
@@ -8273,7 +8273,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_habitssection_habitssection",
-      "community": 185,
+      "community": 355,
       "norm_label": "habitssection"
     },
     {
@@ -8283,7 +8283,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_habitssection_swift_habitobservation",
-      "community": 185,
+      "community": 355,
       "norm_label": "habitobservation"
     },
     {
@@ -9533,7 +9533,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_dailypoint",
-      "community": 273,
+      "community": 42,
       "norm_label": "dailypoint.swift"
     },
     {
@@ -9543,7 +9543,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_dailypoint_swift_foundation",
-      "community": 273,
+      "community": 42,
       "norm_label": "foundation"
     },
     {
@@ -9553,7 +9553,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "models_dailypoint_dailypoint",
-      "community": 273,
+      "community": 42,
       "norm_label": "dailypoint"
     },
     {
@@ -9563,7 +9563,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_dailypoint_swift_int",
-      "community": 273,
+      "community": 42,
       "norm_label": "int"
     },
     {
@@ -9573,7 +9573,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_dailypoint_swift_decimal",
-      "community": 273,
+      "community": 42,
       "norm_label": "decimal"
     },
     {
@@ -13433,7 +13433,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_importcategorydraft",
-      "community": 42,
+      "community": 273,
       "norm_label": "importcategorydraft.swift"
     },
     {
@@ -13443,7 +13443,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_importcategorydraft_swift_foundation",
-      "community": 42,
+      "community": 273,
       "norm_label": "foundation"
     },
     {
@@ -13453,7 +13453,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "components_importcategorydraft_importcategorydraft",
-      "community": 42,
+      "community": 273,
       "norm_label": "importcategorydraft"
     },
     {
@@ -13463,7 +13463,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_importcategorydraft_swift_string",
-      "community": 42,
+      "community": 273,
       "norm_label": "string"
     },
     {
@@ -13473,7 +13473,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_importcategorydraft_swift_transactiontype",
-      "community": 42,
+      "community": 273,
       "norm_label": "transactiontype"
     },
     {
@@ -13483,7 +13483,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "components_importcategorydraft_importcategorydraft_init",
-      "community": 42,
+      "community": 273,
       "norm_label": ".init()"
     },
     {
@@ -15683,7 +15683,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ipad_ipaddashboardgrid",
-      "community": 185,
+      "community": 302,
       "norm_label": "ipaddashboardgrid.swift"
     },
     {
@@ -15693,7 +15693,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipaddashboardgrid_swift_swiftui",
-      "community": 185,
+      "community": 302,
       "norm_label": "swiftui"
     },
     {
@@ -15703,7 +15703,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "ipad_ipaddashboardgrid_ipaddashboardgrid",
-      "community": 185,
+      "community": 302,
       "norm_label": "ipaddashboardgrid"
     },
     {
@@ -15713,7 +15713,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipaddashboardgrid_swift_bool",
-      "community": 185,
+      "community": 302,
       "norm_label": "bool"
     },
     {
@@ -21880,7 +21880,7 @@
       "label": ".filterItems()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L33",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_filteritems",
       "community": 14,
@@ -21890,7 +21890,7 @@
       "label": ".generateWeeklyData()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L50",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_generateweeklydata",
       "community": 14,
@@ -21900,7 +21900,7 @@
       "label": ".generateMonthlyData()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L72",
+      "source_location": "L71",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_generatemonthlydata",
       "community": 14,
@@ -21910,7 +21910,7 @@
       "label": ".generateYearlyData()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L97",
+      "source_location": "L96",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_generateyearlydata",
       "community": 14,
@@ -21920,7 +21920,7 @@
       "label": ".calculateIncome()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L112",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_calculateincome",
       "community": 14,
@@ -21930,7 +21930,7 @@
       "label": "Decimal",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L112",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_chartdataservice_swift_decimal",
       "community": 14,
@@ -21940,7 +21940,7 @@
       "label": ".calculateExpenses()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L118",
+      "source_location": "L117",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_calculateexpenses",
       "community": 14,
@@ -21950,7 +21950,7 @@
       "label": ".getRecentData()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L128",
+      "source_location": "L127",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_getrecentdata",
       "community": 14,
@@ -21960,7 +21960,7 @@
       "label": ".getSummaryStats()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/ChartDataService.swift",
-      "source_location": "L133",
+      "source_location": "L132",
       "_origin": "ast",
       "id": "utilities_chartdataservice_chartdataservice_getsummarystats",
       "community": 14,
@@ -27740,7 +27740,7 @@
       "label": ".categoryTrends()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift",
-      "source_location": "L83",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "utilities_spendinginsightservice_spendinginsightservice_categorytrends",
       "community": 9,
@@ -27750,7 +27750,7 @@
       "label": "CategoryTrend",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift",
-      "source_location": "L83",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_spendinginsightservice_swift_categorytrend",
       "community": 9,
@@ -27760,7 +27760,7 @@
       "label": ".habitObservations()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift",
-      "source_location": "L116",
+      "source_location": "L113",
       "_origin": "ast",
       "id": "utilities_spendinginsightservice_spendinginsightservice_habitobservations",
       "community": 9,
@@ -27770,7 +27770,7 @@
       "label": "HabitObservation",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift",
-      "source_location": "L116",
+      "source_location": "L113",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_spendinginsightservice_swift_habitobservation",
       "community": 9,
@@ -27780,7 +27780,7 @@
       "label": ".sumExpenses()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift",
-      "source_location": "L225",
+      "source_location": "L222",
       "_origin": "ast",
       "id": "utilities_spendinginsightservice_spendinginsightservice_sumexpenses",
       "community": 9,
@@ -27790,7 +27790,7 @@
       "label": "Decimal",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/SpendingInsightService.swift",
-      "source_location": "L225",
+      "source_location": "L222",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_spendinginsightservice_swift_decimal",
       "community": 9,
@@ -41010,7 +41010,7 @@
       "label": ".categoryTrendsFlatWhenPaceMatchesAcrossPartialMonth()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
-      "source_location": "L235",
+      "source_location": "L233",
       "_origin": "ast",
       "id": "utilities_spendinginsightservicetests_spendinginsightservicetests_categorytrendsflatwhenpacematchesacrosspartialmonth",
       "community": 111,
@@ -41020,7 +41020,7 @@
       "label": ".categoryTrendsExcludesFutureDatedTransactions()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
-      "source_location": "L249",
+      "source_location": "L247",
       "_origin": "ast",
       "id": "utilities_spendinginsightservicetests_spendinginsightservicetests_categorytrendsexcludesfuturedatedtransactions",
       "community": 111,
@@ -121664,9 +121664,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L247",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_categorytrendsexcludesfuturedatedtransactions"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_categorytrendsexcludesfuturedatedtransactions",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -121724,9 +121724,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L189",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_heroinsightexcludesfuturedatedtransactions"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_heroinsightexcludesfuturedatedtransactions",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -121867,9 +121867,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L249",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests_categorytrendsexcludesfuturedatedtransactions",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeservice"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeservice",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -121900,9 +121900,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L191",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests_heroinsightexcludesfuturedatedtransactions",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeservice"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeservice",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -122164,9 +122164,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L251",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests_categorytrendsexcludesfuturedatedtransactions",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeexpense"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeexpense",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -122197,9 +122197,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L193",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests_heroinsightexcludesfuturedatedtransactions",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeexpense"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_makeexpense",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -122373,9 +122373,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L250",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests_categorytrendsexcludesfuturedatedtransactions",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_fixeddate"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_fixeddate",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -122395,9 +122395,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/SpendingInsightServiceTests.swift",
       "source_location": "L192",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_spendinginsightservicetests_spendinginsightservicetests_heroinsightexcludesfuturedatedtransactions",
-      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_fixeddate"
+      "target": "utilities_spendinginsightservicetests_spendinginsightservicetests_fixeddate",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",

@@ -1,7 +1,7 @@
 # Graph Report - fix+154-partial-month-insights  (2026-09-24)
 
 ## Corpus Check
-- 408 files · ~3,086,651 words
+- 408 files · ~3,086,569 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -367,8 +367,8 @@
 - [[_COMMUNITY_Community 349|Community 349]]
 - [[_COMMUNITY_Community 350|Community 350]]
 - [[_COMMUNITY_Community 351|Community 351]]
-- [[_COMMUNITY_Community 352|Community 352]]
 - [[_COMMUNITY_Community 353|Community 353]]
+- [[_COMMUNITY_Community 355|Community 355]]
 - [[_COMMUNITY_Community 356|Community 356]]
 - [[_COMMUNITY_Community 357|Community 357]]
 - [[_COMMUNITY_Community 358|Community 358]]
@@ -586,7 +586,7 @@ Nodes (6): CategoryDetailRow, Color, Double, PieChartDataPoint, String, SwiftUI
 
 ### Community 42 - "Credit Score Card"
 Cohesion: 0.10
-Nodes (25): ImportCategoryDraft, FeatureDiscoveryManifest, Kind, video, Media, Onboarding, Page, Release (+17 more)
+Nodes (25): FeatureDiscoveryManifest, Kind, video, Media, Onboarding, Page, Release, ReleaseItem (+17 more)
 
 ### Community 43 - "Community 43"
 Cohesion: 0.23
@@ -1146,7 +1146,7 @@ Nodes (6): Content, SwiftUI, View, Void, PayCycleAware, View
 
 ### Community 185 - "Community 185"
 Cohesion: 0.05
-Nodes (35): BalanceCardView, GreetingHeaderView, HabitInsightRow, HabitsSection, ProfilePayCycleSection, ProfilePersonalInfoSection, RecentTransactionsSectionView, IPadDashboardGrid (+27 more)
+Nodes (35): IconGridPicker, BalanceCardView, ForecastSection, GreetingHeaderView, HabitInsightRow, ProfilePayCycleSection, ProfilePersonalInfoSection, RecentTransactionsSectionView (+27 more)
 
 ### Community 186 - "Community 186"
 Cohesion: 0.19
@@ -1489,8 +1489,8 @@ Cohesion: 0.33
 Nodes (5): DateFormatCheck, failed, needsColumn, parsed, SwiftUI
 
 ### Community 273 - "Community 273"
-Cohesion: 0.40
-Nodes (4): DailyPoint, Decimal, Foundation, Int
+Cohesion: 0.47
+Nodes (4): ImportCategoryDraft, Foundation, String, TransactionType
 
 ### Community 274 - "Community 274"
 Cohesion: 0.20
@@ -1606,7 +1606,7 @@ Nodes (7): Bindings, Data flow, shared state, and property wrappers, If the proj
 
 ### Community 302 - "Community 302"
 Cohesion: 0.50
-Nodes (3): IconGridPicker, String, SwiftUI
+Nodes (3): IPadDashboardGrid, Bool, SwiftUI
 
 ### Community 303 - "Community 303"
 Cohesion: 0.25
@@ -1756,13 +1756,13 @@ Nodes (3): ActivitySearchBar, String, SwiftUI
 Cohesion: 0.50
 Nodes (3): InsightsTopCategoryRow, PieChartDataPoint, SwiftUI
 
-### Community 352 - "Community 352"
-Cohesion: 0.50
-Nodes (3): ForecastSection, SpendingForecast, SwiftUI
-
 ### Community 353 - "Community 353"
 Cohesion: 0.17
 Nodes (10): IPadRootView, IPadSection, AppSettings, AppShellModels, Binding, Bool, PresentationDetent, ReceiptScan (+2 more)
+
+### Community 355 - "Community 355"
+Cohesion: 0.50
+Nodes (3): HabitsSection, HabitObservation, SwiftUI
 
 ### Community 356 - "Community 356"
 Cohesion: 0.50
@@ -1838,7 +1838,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `DateComponents` connect `Community 147` to `Community 321`, `Credit Card Edit Sheet`, `Insights KPI Card`, `App Navigation & Protocols`, `Community 74`, `Community 202`, `Community 140`, `Community 111`, `Community 144`, `Insights Empty State`, `CSV Export Service`, `Community 344`, `Community 345`, `Transaction Item View`?**
   _High betweenness centrality (0.083) - this node is a cross-community bridge._
-- **Why does `Sendable` connect `README` to `Community 130`, `Community 132`, `Community 135`, `Cryptographic PIN Service`, `Community 268`, `Profile & Toolbar UI`, `Community 143`, `Category Breakdown ViewModel`, `Community 290`, `Credit Score Card`, `Lock View Biometrics`, `Forecast Card`, `Community 313`, `Pie Chart Type Picker`, `Transaction Save Button`, `PIN Setup View`, `Community 73`, `Community 341`, `Profile Header`, `Community 88`, `Community 107`, `Community 365`, `Community 248`, `Community 127`?**
+- **Why does `Sendable` connect `README` to `Community 130`, `Community 132`, `Community 135`, `Cryptographic PIN Service`, `Community 268`, `Profile & Toolbar UI`, `Community 143`, `Community 273`, `Category Breakdown ViewModel`, `Community 290`, `Credit Score Card`, `Lock View Biometrics`, `Forecast Card`, `Community 313`, `Pie Chart Type Picker`, `Transaction Save Button`, `PIN Setup View`, `Community 73`, `Community 341`, `Profile Header`, `Community 88`, `Community 107`, `Community 365`, `Community 248`, `Community 127`?**
   _High betweenness centrality (0.074) - this node is a cross-community bridge._
 - **Why does `DashboardViewModel` connect `Community 103` to `Community 248`, `Community 213`?**
   _High betweenness centrality (0.047) - this node is a cross-community bridge._

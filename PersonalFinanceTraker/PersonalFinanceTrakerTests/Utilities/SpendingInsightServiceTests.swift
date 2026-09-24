@@ -158,4 +158,104 @@ struct SpendingInsightServiceTests {
         let obs = service.habitObservations(expenseTransactions: weekday + weekend)
         #expect(obs.contains { $0.sfSymbol == "briefcase" })
     }
+
+    // Fixed, DST-boundary-free calendar dates (April follows March, both regular-length months)
+    // so heroInsight's elapsed-time-interval cutoff and calendar-day offsets line up exactly.
+    private func fixedDate(day: Int, month: Int = 4, year: Int = 2024) -> Date {
+        Calendar.current.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    /// #154: identical daily pace in both months used to read as "spending 33% less" because
+    /// current-month-to-date (19 days) was compared against a *complete* last month (31 days).
+    /// The days-21/26 last-month expenses land *after* the elapsed cutoff (March 20) — the old,
+    /// uncapped code counted them (lastTotal 300 vs currentTotal 200 → "33% less"); the fix must
+    /// drop them so both sides cover the same 19 days and read flat. (March 21/26 avoid the
+    /// March-2024 US/EU DST boundaries around the 10th/31st, which would shift a day-20 cutoff.)
+    @Test("heroInsight: identical pace across a partial vs full month reads as flat, not a false decline")
+    func heroInsightFlatWhenPaceMatchesAcrossPartialMonth() {
+        let service = makeService()
+        let referenceDate = fixedDate(day: 20) // 19 days into April — well past the early-month guard
+        let currentMonth = [1, 6, 11, 16].map { makeExpense(amount: 50, on: fixedDate(day: $0)) }
+        let lastMonth = [1, 6, 11, 16, 21, 26].map { makeExpense(amount: 50, on: fixedDate(day: $0, month: 3)) }
+
+        let insight = service.heroInsight(expenseTransactions: currentMonth + lastMonth, referenceDate: referenceDate)
+        #expect(insight.trendDirection == .flat)
+        #expect(insight.title == String(localized: "On track this month"))
+    }
+
+    /// #154: a future-dated transaction (e.g. a materialized recurring rule later this month)
+    /// must not widen `currentTotal` beyond `referenceDate` — that would reintroduce the same
+    /// asymmetric-window bias in the opposite direction ("spending more" that hasn't happened yet).
+    @Test("heroInsight: a transaction dated after referenceDate is excluded from the current total")
+    func heroInsightExcludesFutureDatedTransactions() {
+        let service = makeService()
+        let referenceDate = fixedDate(day: 20)
+        let currentMonth = [makeExpense(amount: 50, on: fixedDate(day: 10))]
+        let futureDated = [makeExpense(amount: 5000, on: fixedDate(day: 25))] // after referenceDate
+        let lastMonth = [makeExpense(amount: 50, on: fixedDate(day: 10, month: 3))]
+
+        let insight = service.heroInsight(expenseTransactions: currentMonth + futureDated + lastMonth, referenceDate: referenceDate)
+        #expect(insight.trendDirection == .flat)
+        #expect(insight.title == String(localized: "On track this month"))
+    }
+
+    /// A genuine pace difference (half the spend) must still surface as `.down` — the fix
+    /// should stop the false signal without muting a real one.
+    @Test("heroInsight: a real pace drop still reads as down")
+    func heroInsightStillDetectsRealDecline() {
+        let service = makeService()
+        let referenceDate = fixedDate(day: 20)
+        let currentMonth = [makeExpense(amount: 100, on: fixedDate(day: 10))]
+        let lastMonth = [makeExpense(amount: 200, on: fixedDate(day: 10, month: 3))]
+
+        let insight = service.heroInsight(expenseTransactions: currentMonth + lastMonth, referenceDate: referenceDate)
+        #expect(insight.trendDirection == .down)
+    }
+
+    /// #154 edge case: very early in the month, both windows shrink to almost nothing and a
+    /// single transaction can otherwise swing the % wildly (e.g. "Spending 1500% more").
+    @Test("heroInsight: early-month noise stays flat instead of a wild swing")
+    func heroInsightStaysFlatInFirstFewDaysOfMonth() {
+        let service = makeService()
+        let referenceDate = fixedDate(day: 2) // 1 day elapsed — under the 7-day floor
+        let currentMonth = [makeExpense(amount: 500, on: fixedDate(day: 1))]
+        let lastMonth = [makeExpense(amount: 5, on: fixedDate(day: 1, month: 3))]
+
+        let insight = service.heroInsight(expenseTransactions: currentMonth + lastMonth, referenceDate: referenceDate)
+        #expect(insight.trendDirection == .flat)
+        // "Building your picture", not "similar to last month" — this branch hasn't evaluated
+        // pace at all, so it shouldn't claim to.
+        #expect(insight.title == String(localized: "Building your picture"))
+    }
+
+    /// #154: categoryTrends has the identical partial-vs-full bias as heroInsight, on the same
+    /// screen — identical pace per category must not read as a decline. The March 21/26 expenses
+    /// land after the elapsed cutoff; the old, uncapped `last` window counted them (300 vs 200 →
+    /// "down"), so this fails against the old code and passes only once both sides are capped.
+    @Test("categoryTrends: identical pace across a partial vs full month reads as flat")
+    func categoryTrendsFlatWhenPaceMatchesAcrossPartialMonth() {
+        let service = makeService()
+        let referenceDate = fixedDate(day: 20)
+        let currentMonth = [1, 6, 11, 16].map { makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: $0)) }
+        let lastMonth = [1, 6, 11, 16, 21, 26].map { makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: $0, month: 3)) }
+
+        let trends = service.categoryTrends(expenseTransactions: currentMonth + lastMonth, referenceDate: referenceDate)
+        let groceries = trends.first { $0.category.category == "🛒 Groceries" }
+        #expect(groceries?.direction == .flat)
+    }
+
+    /// #154: same future-dated-transaction hole as heroInsight — a materialized recurring rule
+    /// later this month must not inflate the current-month pie beyond `referenceDate`.
+    @Test("categoryTrends: a transaction dated after referenceDate is excluded from the current pie")
+    func categoryTrendsExcludesFutureDatedTransactions() {
+        let service = makeService()
+        let referenceDate = fixedDate(day: 20)
+        let currentMonth = [makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: 10))]
+        let futureDated = [makeExpense(amount: 5000, category: "🛒 Groceries", on: fixedDate(day: 25))]
+        let lastMonth = [makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: 10, month: 3))]
+
+        let trends = service.categoryTrends(expenseTransactions: currentMonth + futureDated + lastMonth, referenceDate: referenceDate)
+        let groceries = trends.first { $0.category.category == "🛒 Groceries" }
+        #expect(groceries?.direction == .flat)
+    }
 }
