@@ -449,10 +449,14 @@ struct TransactionListViewModelTests {
     }
 
     @Test @MainActor func searchMatchesTheLocalizedCategoryName() async throws {
+        // Categories are stored as "emoji label" in production (CategoryModel.name /
+        // TransactionModel.category) — a mock without the emoji prefix would pass even if
+        // the fix forgot to strip it before the catalog lookup, which is exactly what happened
+        // the first time this was "fixed".
         let mockRepo = MockTransactionRepository()
         mockRepo.stubbedTransactions = [
-            .test(amount: -50, note: "a", category: "Groceries"),
-            .test(amount: -20, note: "b", category: "Transport"),
+            .test(amount: -50, note: "a", category: "🛒 Groceries"),
+            .test(amount: -20, note: "b", category: "🚗 Transport"),
         ]
         let vm = await loadedVM(mockRepo)
 
@@ -470,7 +474,7 @@ struct TransactionListViewModelTests {
         vm.searchText = localized
         await vm.searchDebounceTask?.value
         #expect(vm.filteredItems.count == 1)
-        #expect(vm.filteredItems.first?.category == "Groceries")
+        #expect(vm.filteredItems.first?.category == "🛒 Groceries")
     }
 
     @Test @MainActor func filterCategoryIconsPreferTheCategorysOwnSymbol() async throws {

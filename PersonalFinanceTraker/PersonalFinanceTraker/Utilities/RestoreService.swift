@@ -12,10 +12,14 @@ enum RestoreService {
         try await repo.deleteAllTransactions()
         try await repo.deleteAllRecurrenceRules()
 
-        for input in BackupMapper.makeRecurrenceRuleInputs(from: payload.recurrenceRules) {
+        // Categories themselves are never deleted/restored — only transactions and rules —
+        // so relink against whatever already exists in the store.
+        let categories = try await repo.fetchCategories()
+
+        for input in BackupMapper.makeRecurrenceRuleInputs(from: payload.recurrenceRules, categories: categories) {
             try await repo.addRecurrenceRule(input)
         }
 
-        try await repo.addBatch(BackupMapper.makeTransactionInputs(from: payload.transactions))
+        try await repo.addBatch(BackupMapper.makeTransactionInputs(from: payload.transactions, categories: categories))
     }
 }
