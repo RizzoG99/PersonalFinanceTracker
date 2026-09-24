@@ -13,6 +13,7 @@ number that shipped it.
 - Scan Categories (in Settings) now lets you pair up Fuel, Coffee & drinks, Clothing, Phone and Bank fees separately, instead of lumping fuel in with transport. CSV imports now respect those pairings too, which they previously ignored — so if you have told the app which category is yours for groceries, an import uses it.
 - CSV import: tapping "Create new category" now sticks even if you close the setup sheet without saving, or step back and forward through the wizard. Before, the row quietly fell back to whichever existing category the app had guessed, so the new category was never created and its transactions ended up filed somewhere else — missing from the transaction detail and from Settings > Categories.
 - Searching your transactions now matches the category name as it is shown on screen, not just its English name. In Italian, typing "Spesa" now finds your grocery transactions.
+- The category picker in Add Transaction (the one behind "More…") now searches the names it shows you. Typing "Spesa" or "Affitto" used to return nothing — only the English name worked, which is not what the chips are labelled with.
 - Your own category icons now appear in the Insights category list and in the Activity category filter, instead of a generic tag. Categories you created or renamed used to lose their icon and colour in those two places.
 
 ## 92 — 2026-09-07

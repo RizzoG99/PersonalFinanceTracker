@@ -733,8 +733,21 @@ struct CategoryPickerSheet: View {
     }
 
     private var filtered: [CategorySnapshot] {
+        Self.matching(categories, search: search)
+    }
+
+    /// The chip renders `name.localizedCategoryDisplay`, so that is what people type ("Spesa",
+    /// not "Groceries"). Matching the raw stored name alone made every built-in category
+    /// unsearchable in any non-English locale (#150). The raw clause stays — the English key
+    /// is still a legitimate thing to type.
+    static func matching(_ categories: [CategorySnapshot], search: String) -> [CategorySnapshot] {
         guard !search.isEmpty else { return categories }
-        return categories.filter { $0.name.localizedCaseInsensitiveContains(search) }
+        // localizedStandardContains, not localizedCaseInsensitiveContains: it also ignores
+        // diacritics, so "perche" finds "Perché". Same comparison the Activity search uses.
+        return categories.filter {
+            $0.name.localizedStandardContains(search) ||
+            $0.name.localizedCategoryDisplay.localizedStandardContains(search)
+        }
     }
 
     var body: some View {
