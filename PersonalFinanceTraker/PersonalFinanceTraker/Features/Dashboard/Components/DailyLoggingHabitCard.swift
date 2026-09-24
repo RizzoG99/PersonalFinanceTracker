@@ -189,9 +189,12 @@ private struct DailyCheckInActionsView: View {
 }
 
 private struct DailyRepeatButton: View {
+    @Environment(AppSettings.self) private var settings: AppSettings?
     let template: QuickTransactionTemplate
     let isPrimary: Bool
     let action: () -> Void
+
+    private var amountHidden: Bool { settings?.hideAmounts ?? false }
 
     var body: some View {
         if isPrimary {
@@ -220,12 +223,18 @@ private struct DailyRepeatButton: View {
                     .bold()
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
+                    .privacyBlur()
             }
             .frame(maxWidth: .infinity)
         }
         .tint(.accentIndigo)
         .controlSize(.regular)
-        .accessibilityLabel(Text("Log \(template.displayLabel), \(template.signedDisplayAmount)"))
+        // Amount dropped from the label while hidden: this Button is a single
+        // accessibility element, so its own label overrides whatever .privacyBlur()
+        // does to the child Text — VoiceOver would otherwise still speak the real amount.
+        .accessibilityLabel(amountHidden
+            ? Text("Log \(template.displayLabel)")
+            : Text("Log \(template.displayLabel), \(template.signedDisplayAmount)"))
         .accessibilityInputLabels([
             Text("Log"),
             Text(template.displayLabel),
