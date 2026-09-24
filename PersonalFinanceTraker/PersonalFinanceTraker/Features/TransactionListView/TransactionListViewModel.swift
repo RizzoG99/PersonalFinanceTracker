@@ -203,12 +203,7 @@ final class TransactionListViewModel {
                 let textMatch = searchText.isEmpty || (
                     item.note.localizedStandardContains(searchText) ||
                     item.amount.description.localizedStandardContains(searchText) ||
-                    item.category.localizedStandardContains(searchText) ||
-                    // The row renders the localized name, so that is what people type. The raw
-                    // clause above stays: the English key is still a legitimate thing to search for.
-                    // Categories are stored as "emoji label" — strip the emoji first, same as every
-                    // other localizedCategoryDisplay call site, or the catalog lookup key never matches.
-                    item.category.removingLeadingEmoji.localizedCategoryDisplay.localizedStandardContains(searchText)
+                    item.category.matchesCategorySearch(searchText)
                 )
                 let filterMatch = filters.matches(item, dateBounds: dateBounds)
                 return textMatch && filterMatch
