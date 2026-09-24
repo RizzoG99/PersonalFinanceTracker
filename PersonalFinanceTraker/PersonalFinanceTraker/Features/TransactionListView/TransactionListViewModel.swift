@@ -36,6 +36,10 @@ final class TransactionListViewModel {
     /// SwiftUI re-evaluates the Activity body several times per keystroke while searching.
     private(set) var filterCategories: [String] = []
 
+    /// Saved SF Symbol per filter category, so the picker can show the icon the user chose
+    /// instead of `CategoryInfo`'s keyword guess, which only knows the seeded names (#153).
+    private(set) var filterCategoryIcons: [String: String] = [:]
+
     /// selectedCategory, ignored when it no longer exists in the current data (e.g. after a search)
     private(set) var effectiveCategory: String? = nil
 
@@ -47,6 +51,10 @@ final class TransactionListViewModel {
         let counts = Dictionary(grouping: filteredItems, by: \.category).mapValues(\.count)
         filterCategories = counts.sorted { ($0.value, $1.key) > ($1.value, $0.key) }.map(\.key)
         effectiveCategory = selectedCategory.flatMap { filterCategories.contains($0) ? $0 : nil }
+        filterCategoryIcons = Dictionary(
+            filteredItems.compactMap { item in item.categorySystemImage.map { (item.category, $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         let scoped: [TransactionSnapshot]
         if let category = effectiveCategory {
@@ -195,7 +203,10 @@ final class TransactionListViewModel {
                 let textMatch = searchText.isEmpty || (
                     item.note.localizedStandardContains(searchText) ||
                     item.amount.description.localizedStandardContains(searchText) ||
-                    item.category.localizedStandardContains(searchText)
+                    item.category.localizedStandardContains(searchText) ||
+                    // The row renders the localized name, so that is what people type. The raw
+                    // clause above stays: the English key is still a legitimate thing to search for.
+                    item.category.localizedCategoryDisplay.localizedStandardContains(searchText)
                 )
                 let filterMatch = filters.matches(item, dateBounds: dateBounds)
                 return textMatch && filterMatch
@@ -550,6 +561,12 @@ final class TransactionListViewModel {
         guard let saved = savedCategorySelections else { return }
         let validIds = Set(availableCategories.map { $0.id.uuidString })
         for category in csvCategories {
+            // A saved profile can only ever name an existing category, never "create a new one",
+            // so letting it win would silently undo that choice when the user steps back and
+            // forward through the wizard — the same way #149 lost it.
+            guard categoryResolutionSelections[category] != CategoryAutoMapper.newSentinel else {
+                continue
+            }
             if let selection = saved[category], validIds.contains(selection) {
                 categoryResolutionSelections[category] = selection
             }

@@ -448,6 +448,44 @@ struct TransactionListViewModelTests {
         #expect(vm.totalFilteredExpenses == 300)
     }
 
+    @Test @MainActor func searchMatchesTheLocalizedCategoryName() async throws {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = [
+            .test(amount: -50, note: "a", category: "Groceries"),
+            .test(amount: -20, note: "b", category: "Transport"),
+        ]
+        let vm = await loadedVM(mockRepo)
+
+        // The raw English key must keep working — the fix for #150 added a clause, it did
+        // not replace one.
+        vm.searchText = "Groceries"
+        await vm.searchDebounceTask?.value
+        #expect(vm.filteredItems.count == 1)
+
+        // The row renders the translated name, so that is what people type. Only observable
+        // in a localized run: `scripts/xcb test -testLanguage it`. In English the string
+        // catalog is the identity and there is nothing to assert.
+        let localized = "Groceries".localizedCategoryDisplay
+        guard localized != "Groceries" else { return }
+        vm.searchText = localized
+        await vm.searchDebounceTask?.value
+        #expect(vm.filteredItems.count == 1)
+        #expect(vm.filteredItems.first?.category == "Groceries")
+    }
+
+    @Test @MainActor func filterCategoryIconsPreferTheCategorysOwnSymbol() async throws {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = [
+            .test(amount: -50, note: "a", category: "Palestra", categorySystemImage: "figure.run"),
+            .test(amount: -20, note: "b", category: "Transport"),
+        ]
+        let vm = await loadedVM(mockRepo)
+
+        // Without this the filter menu showed CategoryInfo's generic fallback glyph (#153).
+        #expect(vm.filterCategoryIcons["Palestra"] == "figure.run")
+        #expect(vm.filterCategoryIcons["Transport"] == nil)
+    }
+
     @Test @MainActor func filterCategoriesSortedByFrequencyThenName() async throws {
         let mockRepo = MockTransactionRepository()
         mockRepo.stubbedTransactions = [
@@ -491,6 +529,23 @@ struct TransactionListViewModelTests {
 
         #expect(vm.categoryResolutionSelections["🍕 Food"] == food.id.uuidString)
         #expect(vm.categoryResolutionSelections["Ghost"] == nil)
+    }
+
+    @Test @MainActor func savedSelectionsDoNotOverrideACreateNewChoice() {
+        let vm = TransactionListViewModel(repo: MockTransactionRepository())
+        let food = CategorySnapshot.test(name: "Food")
+        vm.availableCategories = [food]
+        vm.csvCategories = ["auto"]
+        // The user tapped "Create new category" for this CSV column...
+        vm.categoryResolutionSelections["auto"] = CategoryAutoMapper.newSentinel
+        // ...and a stored profile from a previous import names an existing category.
+        vm.setSavedCategorySelectionsForTesting(["auto": food.id.uuidString])
+
+        vm.applySavedCategorySelections()
+
+        // Stepping back and forward through the wizard used to silently refile the rows
+        // under the guessed category, so the new one was never created (#149).
+        #expect(vm.categoryResolutionSelections["auto"] == CategoryAutoMapper.newSentinel)
     }
 
     // MARK: - Multi-select
