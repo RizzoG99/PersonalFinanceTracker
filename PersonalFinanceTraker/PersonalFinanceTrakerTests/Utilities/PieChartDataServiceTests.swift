@@ -13,6 +13,34 @@ struct PieChartDataServiceTests {
         .test(amount: amount, category: category)
     }
 
+    // MARK: - Category icon / colour passthrough (#153)
+
+    @Test func carriesTheLinkedCategorysOwnSymbol() {
+        let sut = PieChartDataService()
+        let txs = [TransactionSnapshot.test(
+            amount: -50, category: "Palestra", categorySystemImage: "figure.run"
+        )]
+        let result = sut.generatePieChartData(from: txs, for: .expenses, timePeriod: .week)
+        // CategoryInfo has no keyword for a user-created name, so without the passthrough
+        // the trends list and the filter menu fell back to a generic glyph.
+        #expect(result.first?.systemImage == "figure.run")
+    }
+
+    @Test func symbolIsNilWhenTransactionsHaveNoLinkedCategory() {
+        let sut = PieChartDataService()
+        let result = sut.generatePieChartData(from: [expense(10, category: "Food")], for: .expenses, timePeriod: .week)
+        #expect(result.first?.systemImage == nil)
+    }
+
+    @Test func usesTheLinkedCategorysColourTokenWhenNoCategoryListIsPassed() {
+        let sut = PieChartDataService()
+        let txs = [TransactionSnapshot.test(
+            amount: -50, category: "Palestra", categoryColorToken: "categoryGreen"
+        )]
+        let result = sut.generatePieChartData(from: txs, for: .expenses, timePeriod: .week)
+        #expect(result.first?.color == Color(categoryToken: "categoryGreen"))
+    }
+
     @Test func groupsByCategory() {
         let sut = PieChartDataService()
         let txs = [expense(50, category: "Food"), expense(30, category: "Transport")]

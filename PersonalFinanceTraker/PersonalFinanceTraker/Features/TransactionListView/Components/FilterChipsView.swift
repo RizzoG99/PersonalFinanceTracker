@@ -51,7 +51,7 @@ struct FilterChipsView: View {
                     Button {
                         vm.selectedCategory = category
                     } label: {
-                        Label(category.removingLeadingEmoji.localizedCategoryDisplay, systemImage: CategoryInfo.info(for: category).symbol)
+                        Label(category.removingLeadingEmoji.localizedCategoryDisplay, systemImage: vm.filterCategoryIcons[category] ?? CategoryInfo.info(for: category).symbol)
                     }
                 }
             } label: {

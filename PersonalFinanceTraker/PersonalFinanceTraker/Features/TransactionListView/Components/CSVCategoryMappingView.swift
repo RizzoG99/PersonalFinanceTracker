@@ -252,8 +252,37 @@ struct CSVCategoryMappingView: View {
     }
 
     private func configureNewCategory(for csv: String) {
-        categoryBeingConfigured = viewModel.pendingCategoryDrafts[csv]
+        let draft = viewModel.pendingCategoryDrafts[csv]
             ?? ImportCategoryDraft(csvCategory: csv, inferredType: categoryTypes[csv])
+        // Commit the intent on tap, not only on Save. The sheet's `onSave` used to be the sole
+        // writer of the sentinel, so a Cancel, a swipe-dismiss, or a Save the duplicate-name check
+        // had disabled left the row still holding whatever `autoMap()` had guessed. A CSV category
+        // "auto" guesses to the seeded "Public Transport" (the synonym table files "auto" under
+        // `transport`), so the import created nothing and quietly refiled the rows — the category
+        // was then missing from the transaction detail and from Settings (#149).
+        //
+        // The draft must be stored alongside the sentinel, not instead of it:
+        // `reconcilePendingCategoryDrafts` deletes any draft whose selection is not the sentinel.
+        if isSavableWithoutEditing(draft) {
+            viewModel.pendingCategoryDrafts[csv] = draft
+            selections[csv] = CategoryAutoMapper.newSentinel
+        }
+        categoryBeingConfigured = draft
+    }
+
+    /// Mirrors `ImportCategorySetupSheet`'s own Save gate. A name that sheet would refuse must not
+    /// be committed on tap, or a dismissed sheet would queue a category `confirmImport` then
+    /// creates as a duplicate — Step 1 there inserts unconditionally.
+    private func isSavableWithoutEditing(_ draft: ImportCategoryDraft) -> Bool {
+        let name = draft.name.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, CategoryNameValidator.isValid(name) else { return false }
+        let sameTypeNames = availableCategories
+            .filter { $0.transactionType == draft.type }
+            .map(\.name)
+            + viewModel.pendingCategoryDrafts.values
+                .filter { $0.csvCategory != draft.csvCategory && $0.type == draft.type }
+                .map(\.name)
+        return !CategoryNameValidator.isDuplicate(name, among: sameTypeNames)
     }
 
     private func autoMap() {

@@ -31,6 +31,35 @@ struct BackupModelsTests {
         #expect(inputs[0].recurrenceRuleId == ruleId)
     }
 
+    @Test func restoredTransactionRelinksCategoryModelByNameAndType() {
+        // categoryPersistentId can't survive a JSON round-trip, so restore has to re-resolve
+        // it — otherwise every restored transaction loses its category link forever and every
+        // custom icon falls back to the generic glyph (#153).
+        let food = CategorySnapshot.test(name: "Food", type: .expense)
+        let backups = [
+            BackupTransaction(timestamp: date(2026, 1, 1), amount: -10, note: "", category: "Food", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil),
+            BackupTransaction(timestamp: date(2026, 1, 2), amount: -10, note: "", category: "Unknown", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil),
+        ]
+
+        let inputs = BackupMapper.makeTransactionInputs(from: backups, categories: [food])
+
+        #expect(inputs[0].categoryPersistentId == food.persistentId)
+        #expect(inputs[1].categoryPersistentId == nil)
+    }
+
+    @Test func restoredTransactionDoesNotRelinkAcrossMismatchedType() {
+        // "Food" the expense category must not be matched by an income transaction that
+        // happens to carry the same name — categories are scoped per transaction type (#47).
+        let food = CategorySnapshot.test(name: "Food", type: .expense)
+        let backups = [
+            BackupTransaction(timestamp: date(2026, 1, 1), amount: 10, note: "", category: "Food", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil),
+        ]
+
+        let inputs = BackupMapper.makeTransactionInputs(from: backups, categories: [food])
+
+        #expect(inputs[0].categoryPersistentId == nil)
+    }
+
     @Test func recurrenceRuleRoundTripsThroughBackupRecurrenceRule() {
         let endDate = date(2026, 12, 31)
         let lastMaterializedDate = date(2026, 7, 1)

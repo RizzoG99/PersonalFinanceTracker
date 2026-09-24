@@ -63,6 +63,18 @@ public class PieChartDataService {
         // Slice colour comes from the category's own saved token, so it stays the same
         // whatever the category's spending rank happens to be this period.
         let colorTokensByName = Dictionary(uniqueKeysWithValues: categories.map { ($0.name, $0.colorToken) })
+        // Not every caller passes `categories:` — `SpendingInsightService.categoryTrends` does not —
+        // so fall back to the icon and colour the transactions themselves carry from their linked
+        // CategoryModel. Without this a user-created category rendered a generic glyph in a grey
+        // circle (#153), because the keyword table in `CategoryInfo` only knows the seeded names.
+        let itemSymbolsByName = Dictionary(
+            typeFilteredItems.compactMap { item in item.categorySystemImage.map { (groupingKey(for: item), $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let itemColorTokensByName = Dictionary(
+            typeFilteredItems.compactMap { item in item.categoryColorToken.map { (groupingKey(for: item), $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         // Calculate total amount for percentage calculations
         let totalAmount = categoryGroupedData.values.reduce(0, +)
@@ -72,7 +84,9 @@ public class PieChartDataService {
 
         for (categoryName, total) in categoryGroupedData.sorted(by: { $0.value > $1.value }) {
             let percentage = totalAmount > 0 ? Double(truncating: (total / totalAmount * 100) as NSDecimalNumber) : 0
-            let token = colorTokensByName[categoryName] ?? CategoryConstants.colorToken(forName: categoryName)
+            let token = colorTokensByName[categoryName]
+                ?? itemColorTokensByName[categoryName]
+                ?? CategoryConstants.colorToken(forName: categoryName)
             let color = Color(categoryToken: token)
 
             pieChartData.append(PieChartDataPoint(
@@ -80,7 +94,8 @@ public class PieChartDataService {
                 amount: total,
                 color: color,
                 percentage: percentage,
-                budget: budgetsByName[categoryName] ?? nil
+                budget: budgetsByName[categoryName] ?? nil,
+                systemImage: itemSymbolsByName[categoryName]
             ))
         }
 
@@ -151,11 +166,16 @@ public class PieChartDataService {
     /// Groups items by category and calculates totals
     /// - Parameter items: Array of items to group
     /// - Returns: Dictionary with category names as keys and total amounts as values
+    /// The name a snapshot is grouped under; the icon/colour maps must key on the same thing.
+    private func groupingKey(for item: TransactionSnapshot) -> String {
+        item.category.isEmpty ? "Other" : item.category
+    }
+
     private func groupByCategory(_ items: [TransactionSnapshot]) -> [String: Decimal] {
         var categoryData: [String: Decimal] = [:]
 
         for item in items {
-            let categoryName = item.category.isEmpty ? "Other" : item.category
+            let categoryName = groupingKey(for: item)
             let amount = abs(currencyService.convertToBase(item.amount, from: item.currencyCode))
             categoryData[categoryName, default: 0] += amount
         }
