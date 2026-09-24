@@ -44,6 +44,9 @@ struct CreditCardItem: View {
 
                 Divider().opacity(0.2)
 
+                // ponytail: no .privacyBlur() here or in CreditUtilizationCard — the
+                // Credit tab is commented out of MainTabView, so nothing can see these.
+                // Add it when the tab returns.
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Balance")
