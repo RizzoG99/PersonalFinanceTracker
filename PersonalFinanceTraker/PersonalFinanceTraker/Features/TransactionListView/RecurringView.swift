@@ -11,9 +11,11 @@ import SwiftData
 /// edit its definition, swipe to stop it. Finding the transactions a rule already produced is
 /// the Activity tab's job (the Recurring filter chip), not this screen's — see issue #58.
 ///
-/// Presented as a sheet that owns its own nested edit/add sheets (iPhone, and iPad's Activity
-/// toolbar entry) — see `IPadRecurringSection` for the iPad sidebar destination, which is the
-/// same list with its own local edit sheet instead of a NavigationStack push.
+/// Presented as a sheet that owns its own nested edit/add sheets — iPhone only, from Activity's
+/// toolbar (`ActivityView`, under `MainTabView`). iPad never reaches this: its Activity pane is
+/// `IPadLedgerTable`, with no Recurring entry of its own — see `IPadRecurringSection` for the
+/// iPad sidebar destination, which shares this file's list/row logic (`RecurringRulesContent`
+/// below) but presents its own local edit sheet instead of a NavigationStack push.
 struct RecurringView: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
