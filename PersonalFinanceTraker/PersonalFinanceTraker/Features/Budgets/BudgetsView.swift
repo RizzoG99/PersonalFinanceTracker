@@ -7,6 +7,10 @@ import SwiftData
 struct BudgetsView: View {
     @Query(sort: \CategoryModel.name) private var categories: [CategoryModel]
     @FocusState private var focusedCategoryID: PersistentIdentifier?
+    // Set by `navigate` right before it scrolls, so the `onChange` below can tell "focus moved
+    // because a chevron scrolled here" from "focus moved because of a direct tap" and skip its
+    // own redundant scroll for the former.
+    @State private var navigationTarget: PersistentIdentifier?
 
     private var expenseCategories: [CategoryModel] {
         categories.filter { $0.transactionType == .expense }
@@ -48,10 +52,15 @@ struct BudgetsView: View {
                 // matter what it's asked for — it's already as far "up" as the List can go. This
                 // reserves room past the last row equal to roughly the keyboard + accessory bar's
                 // height so every row, including the very last one, can actually reach the top.
-                Color.clear
-                    .frame(height: 320)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
+                // Only needed while a field is actually focused — with the keyboard down there's
+                // nothing to scroll a row above, so the row is gated the same way as the
+                // accessory-bar clearance in `keyboardFieldNavigation` below.
+                if focusedCategoryID != nil {
+                    Color.clear
+                        .frame(height: 320)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
             }
             .scrollContentBackground(.hidden)
             .appBackground()
@@ -63,6 +72,7 @@ struct BudgetsView: View {
             // — a row currently off-screen doesn't reliably take focus from a bare FocusState
             // assignment.
             .keyboardFieldNavigation($focusedCategoryID, order: expenseCategories.map(\.id), navigate: { id in
+                navigationTarget = id
                 withAnimation {
                     // .top, not .center: centering only leaves room for the raw keyboard, not
                     // the accessory bar's extra height above it (same reasoning as the onChange
@@ -80,8 +90,19 @@ struct BudgetsView: View {
             // same fix as TransactionFormView's Name field: anchor to the row's top edge, not
             // its center, so the rest of the viewport is clearance instead of just the raw
             // keyboard's height.
+            //
+            // A chevron tap also lands here, though: `navigate` above sets focus, and that
+            // change fires this `onChange` too, which used to scroll to the same row a second
+            // time right after `navigate` already had — the redundant scroll was part of what
+            // read as jumpy. `navigationTarget` tells the two apart so a chevron tap scrolls
+            // exactly once.
             .onChange(of: focusedCategoryID) { _, id in
-                guard let id else { return }
+                // Clear unconditionally, before the guard: Done sets id to nil, and leaving a
+                // stale target behind would swallow the scroll for the next direct tap that
+                // happens to land on that same row.
+                let target = navigationTarget
+                navigationTarget = nil
+                guard let id, id != target else { return }
                 withAnimation { proxy.scrollTo(id, anchor: .top) }
             }
         }

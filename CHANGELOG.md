@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Budgets: the empty amount field now shows "∞" instead of the truncated "Nessun limite", moving between budget fields with the ‹ › arrows no longer double-scrolls the list, and the blank space under the last budget only appears while the keyboard is open.
 - **Fixed the Insights tab showing contradictory, falsely negative charts.** The Year spending chart used to end in a sharp drop to near-zero because its last point was only a day or two of the current month next to full ones — it now shows the last 12 complete months instead. The "Spending X% less/more" card and the category trend arrows used to compare only part of this month against all of last month, which made spending look lower than it actually was for most of every month; they now compare the same number of days in each.
 - **Fixed recurring transactions with no history yet being untappable and greyed out.** A rule you just imported, or one whose start date is still in the future, used to show as disabled with "No transaction yet" and ignore taps entirely. Every recurring entry can now be opened and edited — amount, name, category and type — regardless of whether it has produced a transaction.
 - Hiding amounts now also covers the quick-log buttons on the Financial Pulse card, including what VoiceOver reads out.
