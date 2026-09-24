@@ -23,6 +23,15 @@ for changes with no visible effect (refactors, tooling, tests).
 Test" and archives it under the shipped build number — the changelog is the
 only source for that, so a skipped bullet means testers get no notes.
 
+## Branch Naming
+
+Git-flow style, always: `feature/<slug>`, `fix/<slug>`, `chore/<slug>` —
+prefix with the issue number when one exists (`fix/148-bulk-category-select-all`,
+`feature/47-category-type-uniqueness`). This applies to worktree branches too:
+when creating a worktree (`EnterWorktree` or `git worktree add`), name the
+branch by what it does, never `worktree-<anything>` — that's a directory
+name, not a branch name, and it has slipped in repeatedly.
+
 ## Build & Development Commands
 
 **Use the `xcodebuild` CLI. It is the default for agents.** The Xcode MCP is optional and has three failure modes that cost real time:
