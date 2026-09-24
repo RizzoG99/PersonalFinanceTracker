@@ -125,10 +125,13 @@ actor TransactionActor: ITransactionRepository {
         let days = Set(occurrenceDates.map { calendar.startOfDay(for: $0) })
         guard !days.isEmpty else { return }
 
-        let candidates = try modelContext.fetch(FetchDescriptor<TransactionModel>(
-            predicate: #Predicate { $0.recurrenceRuleId == nil && $0.amount == amount }
-        ))
-        for tx in candidates where days.contains(calendar.startOfDay(for: tx.timestamp)) {
+        // ponytail: filtered in Swift, not by #Predicate — a personal dataset is small enough that
+        // fetching all rows costs nothing, and it rules out Decimal/optional-UUID predicate
+        // translation as a source of a rule silently linking to nothing (#152).
+        let all = try modelContext.fetch(FetchDescriptor<TransactionModel>())
+        for tx in all where tx.recurrenceRuleId == nil
+            && tx.amount == amount
+            && days.contains(calendar.startOfDay(for: tx.timestamp)) {
             tx.recurrenceRuleId = id
         }
         try modelContext.save()

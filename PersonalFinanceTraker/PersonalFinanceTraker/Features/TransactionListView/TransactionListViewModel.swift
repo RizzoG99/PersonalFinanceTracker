@@ -998,12 +998,18 @@ final class TransactionListViewModel {
                 return added
             }
             // Best-effort: the rule is the important write, so a link failure shouldn't
-            // surface an error or undo it — the badge is cosmetic.
-            try? await repo.linkTransactionsToRecurrenceRule(
-                id: ruleInput.id,
-                amount: suggestion.amount,
-                occurrenceDates: suggestion.occurrenceDates
-            )
+            // surface an error or undo it — the badge is cosmetic. Still logged (not `try?`,
+            // #152) so a rule that comes back with no linked rows leaves a trace instead of
+            // vanishing silently.
+            do {
+                try await repo.linkTransactionsToRecurrenceRule(
+                    id: ruleInput.id,
+                    amount: suggestion.amount,
+                    occurrenceDates: suggestion.occurrenceDates
+                )
+            } catch {
+                print("linkTransactionsToRecurrenceRule failed for rule \(ruleInput.id): \(error)")
+            }
         }
         return added
     }

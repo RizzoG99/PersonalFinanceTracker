@@ -11,6 +11,19 @@ struct TransactionActorRecurrenceTests {
         return TransactionActor(modelContainer: container)
     }
 
+    /// Same schema, backed by a real SQLite file instead of memory — the in-memory store above
+    /// evaluates #Predicate by walking Swift values, which is not how the on-device store
+    /// resolves Decimal/optional-UUID comparisons. A predicate bug that only shows up against
+    /// SQLite would pass every test above and still fail for a real user (#152).
+    private func makeFileBackedActor() -> TransactionActor {
+        let schema = Schema([TransactionModel.self, CategoryModel.self, RecurrenceRule.self])
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TransactionActorRecurrenceTests-\(UUID().uuidString).sqlite")
+        let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
+        let container = try! ModelContainer(for: schema, configurations: [config])
+        return TransactionActor(modelContainer: container)
+    }
+
     private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
         Calendar.current.date(from: DateComponents(year: year, month: month, day: day))!
     }
@@ -164,6 +177,35 @@ struct TransactionActorRecurrenceTests {
             // Right amount, unrelated day
             TransactionInput(timestamp: date(2026, 3, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
             // Already linked to a different rule — must stay untouched
+            TransactionInput(timestamp: date(2026, 1, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR", recurrenceRuleId: UUID())
+        ])
+
+        try await actor.linkTransactionsToRecurrenceRule(
+            id: ruleId,
+            amount: -1200,
+            occurrenceDates: [date(2026, 1, 1), date(2026, 2, 1)]
+        )
+
+        let all = try await actor.fetchAll()
+        let linked = all.filter { $0.recurrenceRuleId == ruleId }
+        #expect(linked.count == 2)
+        #expect(linked.allSatisfy { $0.amount == -1200 })
+
+        let untouched = all.filter { $0.recurrenceRuleId != ruleId }
+        #expect(untouched.count == 3)
+    }
+
+    /// Same scenario as the in-memory test above, but against a real SQLite-backed store —
+    /// see #152, where an import's link step silently stamped zero rows on device despite the
+    /// in-memory test passing.
+    @Test func linkTransactionsToRecurrenceRuleStampsMatchingSameDayAmountOnlyOnDisk() async throws {
+        let actor = makeFileBackedActor()
+        let ruleId = UUID()
+        try await actor.addBatch([
+            TransactionInput(timestamp: date(2026, 1, 1).addingTimeInterval(3600 * 9), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
+            TransactionInput(timestamp: date(2026, 2, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
+            TransactionInput(timestamp: date(2026, 1, 1), amount: -50, note: "Groceries", category: "Food", currencyCode: "EUR"),
+            TransactionInput(timestamp: date(2026, 3, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
             TransactionInput(timestamp: date(2026, 1, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR", recurrenceRuleId: UUID())
         ])
 

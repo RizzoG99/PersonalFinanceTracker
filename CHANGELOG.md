@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- **Fixed recurring transactions with no history yet being untappable and greyed out.** A rule you just imported, or one whose start date is still in the future, used to show as disabled with "No transaction yet" and ignore taps entirely. Every recurring entry can now be opened and edited — amount, name, category and type — regardless of whether it has produced a transaction.
 - Hiding amounts now also covers the quick-log buttons on the Financial Pulse card, including what VoiceOver reads out.
 - **Fixed a data-loss bug in bulk edit.** Filtering the Activity list by a category and tapping "Select All" was selecting *every* transaction in the list, not just the ones on screen — so changing the category afterwards rewrote transactions you could not see. "Select All" now selects exactly the rows shown. Relatedly, switching to a different category chip while rows are selected now drops the selections that are no longer visible, instead of carrying them along invisibly into the next bulk edit.
 - Fixed the Face ID prompt that could still appear over the lock screen when the phone auto-locked with the app open. The app now only asks when it is actually coming back from the background, or right after you unlock the phone with it in front.

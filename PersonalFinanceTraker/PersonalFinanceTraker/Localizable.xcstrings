@@ -3600,6 +3600,22 @@
         }
       }
     },
+    "Edit Recurring" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Recurring"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica ricorrenza"
+          }
+        }
+      }
+    },
     "Edit Transaction" : {
       "localizations" : {
         "en" : {
@@ -8597,6 +8613,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stabilità"
+          }
+        }
+      }
+    },
+    "Starts" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inizia"
           }
         }
       }
