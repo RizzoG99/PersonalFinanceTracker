@@ -12,6 +12,14 @@ enum RestoreService {
         try await repo.deleteAllTransactions()
         try await repo.deleteAllRecurrenceRules()
 
+        // Travels first: restored transactions carry a raw travelId, so the
+        // folders must exist (with their original ids) before the batch lands.
+        try await repo.replaceAllTravels(
+            (payload.travels ?? []).map {
+                TravelSnapshot(id: $0.id, name: $0.name, symbolName: $0.symbolName, createdAt: $0.createdAt)
+            }
+        )
+
         // Categories themselves are never deleted/restored — only transactions and rules —
         // so relink against whatever already exists in the store.
         let categories = try await repo.fetchCategories()

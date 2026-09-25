@@ -8,7 +8,16 @@ struct BackupTransaction: Codable, Sendable {
     let category: String
     let currencyCode: String
     let goalId: UUID?
+    // Optional so backups written before travels existed still decode.
+    let travelId: UUID?
     let recurrenceRuleId: UUID?
+}
+
+struct BackupTravel: Codable, Sendable {
+    let id: UUID
+    let name: String
+    let symbolName: String
+    let createdAt: Date
 }
 
 struct BackupRecurrenceRule: Codable, Sendable {
@@ -30,6 +39,8 @@ struct BackupPayload: Codable, Sendable {
     let createdAt: Date
     let transactions: [BackupTransaction]
     let recurrenceRules: [BackupRecurrenceRule]
+    // Optional (and defaulted) so backups written before travels existed still decode.
+    var travels: [BackupTravel]? = nil
 }
 
 enum BackupMapper {
@@ -59,8 +70,15 @@ enum BackupMapper {
                 category: $0.category,
                 currencyCode: $0.currencyCode,
                 goalId: $0.goalId,
+                travelId: $0.travelId,
                 recurrenceRuleId: $0.recurrenceRuleId
             )
+        }
+    }
+
+    static func makeTravels(from snapshots: [TravelSnapshot]) -> [BackupTravel] {
+        snapshots.map {
+            BackupTravel(id: $0.id, name: $0.name, symbolName: $0.symbolName, createdAt: $0.createdAt)
         }
     }
 
@@ -92,6 +110,7 @@ enum BackupMapper {
                 category: $0.category,
                 currencyCode: $0.currencyCode,
                 goalId: $0.goalId,
+                travelId: $0.travelId,
                 categoryPersistentId: byKey[categoryKey(name: $0.category, amount: $0.amount)],
                 recurrenceRuleId: $0.recurrenceRuleId
             )

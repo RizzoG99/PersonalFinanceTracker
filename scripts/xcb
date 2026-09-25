@@ -273,15 +273,48 @@ PYEOF
       "$("$0" bundle-id)" "$("$0" marketing-version)" "$(cat scripts/BUILD_NUMBER)" "$group"
     ;;
 
-  release)   # test -> analyze -> archive -> export -> release-notes -> (optional) assign-testers <group>
+  check-notes)   # fail fast on text App Store Connect will refuse as "What to Test"
+    notes=$(awk '/^## Unreleased/{flag=1; next} /^## /{flag=0} flag' CHANGELOG.md | sed '/^$/d')
+    if [ -z "$notes" ]; then
+      exit 0   # nothing to send; release-notes skips too
+    fi
+    printf '%s\n' "$notes" | python3 -c '
+import sys, unicodedata
+
+# App Store Connect rejects emoji in whatsNew — a release once died at the final step,
+# after twelve minutes of testing and archiving, on a single airplane in a changelog
+# bullet ("contains invalid characters: [✈, ️]"). Dashes, currency symbols and accents
+# are fine; this looks only for what actually got refused.
+def offending(ch: str) -> bool:
+    cp = ord(ch)
+    return (
+        0xFE00 <= cp <= 0xFE0F      # variation selectors, the invisible half of an emoji
+        or 0x2600 <= cp <= 0x27BF   # misc symbols and dingbats, includes U+2708 airplane
+        or 0x1F000 <= cp <= 0x1FAFF # emoji proper
+    )
+
+text = sys.stdin.read()
+bad = sorted({c for c in text if offending(c)})
+if bad:
+    print("xcb: CHANGELOG.md Unreleased contains characters App Store Connect will refuse:", file=sys.stderr)
+    for c in bad:
+        print(f"  U+{ord(c):04X} {unicodedata.name(c, chr(63))}", file=sys.stderr)
+    print("xcb: rewrite those bullets in words before releasing", file=sys.stderr)
+    sys.exit(1)
+'
+    ;;
+
+  release)   # check-notes -> test -> analyze -> archive -> export -> release-notes -> (optional) assign-testers <group>
     shift
     group="${1:-}"
-    echo "xcb: release starting — test, analyze, archive, export, release-notes$( [ -n "$group" ] && echo ", assign-testers")" >&2
+    echo "xcb: release starting — check-notes, test, analyze, archive, export, release-notes$( [ -n "$group" ] && echo ", assign-testers")" >&2
     # Run as a loop, not as an && chain. `set -e` does not fire for a command that
     # fails in a non-final position of an && list, and the list's status was then
     # discarded by the `echo` below — so a release that aborted at `test` still
     # printed "release done" and exited 0, indistinguishable from one that shipped.
-    for step in test analyze archive export release-notes; do
+    # check-notes first: it costs a second, and it is the one failure that otherwise waits
+    # until after the archive has been built and uploaded.
+    for step in check-notes test analyze archive export release-notes; do
       if ! "$0" "$step"; then
         echo "xcb: release ABORTED at '$step' — no later step ran, nothing was uploaded" >&2
         exit 1

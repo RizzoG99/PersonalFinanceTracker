@@ -15,6 +15,7 @@ struct TransactionSnapshot: Identifiable, Sendable, Hashable {
     let category: String
     let currencyCode: String
     let goalId: UUID?
+    let travelId: UUID?
     let recurrenceRuleId: UUID?
     let categoryId: PersistentIdentifier?
     let categorySystemImage: String?
@@ -28,10 +29,32 @@ struct TransactionSnapshot: Identifiable, Sendable, Hashable {
         self.category = model.category
         self.currencyCode = model.currencyCode
         self.goalId = model.goalId
+        self.travelId = model.travelId
         self.recurrenceRuleId = model.recurrenceRuleId
         self.categoryId = model.categoryModel?.persistentModelID
         self.categorySystemImage = model.categoryModel?.systemImage
         self.categoryColorToken = model.categoryModel?.colorToken
+    }
+}
+
+struct TravelSnapshot: Identifiable, Sendable, Hashable {
+    let id: UUID
+    let name: String
+    let symbolName: String
+    let createdAt: Date
+
+    init(_ model: TravelModel) {
+        self.id = model.id
+        self.name = model.name
+        self.symbolName = model.symbolName
+        self.createdAt = model.createdAt
+    }
+
+    init(id: UUID, name: String, symbolName: String, createdAt: Date = Date()) {
+        self.id = id
+        self.name = name
+        self.symbolName = symbolName
+        self.createdAt = createdAt
     }
 }
 
@@ -149,16 +172,18 @@ struct TransactionInput: Sendable {
     let category: String
     let currencyCode: String
     let goalId: UUID?
+    let travelId: UUID?
     let categoryPersistentId: PersistentIdentifier?
     let recurrenceRuleId: UUID?
 
-    init(timestamp: Date, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil, recurrenceRuleId: UUID? = nil) {
+    init(timestamp: Date, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, travelId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil, recurrenceRuleId: UUID? = nil) {
         self.timestamp = timestamp
         self.amount = amount
         self.note = note
         self.category = category
         self.currencyCode = currencyCode
         self.goalId = goalId
+        self.travelId = travelId
         self.categoryPersistentId = categoryPersistentId
         self.recurrenceRuleId = recurrenceRuleId
     }

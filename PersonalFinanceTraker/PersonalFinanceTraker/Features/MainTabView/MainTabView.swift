@@ -37,6 +37,8 @@ struct MainTabView: View {
         /// Set once AppToolbarModifier's "Scan receipt" button finishes its own capture+recognition
         /// flow (see ReceiptScanShortcut) — the sheet then opens already filled in.
         var scan: ReceiptScan?
+        /// Set when the form was opened from inside a travel, so the expense lands in it.
+        var travelId: UUID?
     }
 
     /// Bool facade over `addSheet`, for the screens that just want to open an empty form.
@@ -163,7 +165,8 @@ struct MainTabView: View {
                         draft: context.draft,
                         repo: repo,
                         materializationService: materializationService,
-                        initialReceiptScan: context.scan
+                        initialReceiptScan: context.scan,
+                        initialTravelId: context.travelId
                     )
                         .environment(dataChanged)
                         .environment(appSettings)
@@ -207,6 +210,14 @@ struct MainTabView: View {
         }
         .onChange(of: viewModel.showUndoBanner) { _, isShowing in
             if !isShowing { dashboardViewModel.reload() }
+        }
+        // A travel's "Add expense" button: the travel sheet closes, then asks for a form
+        // already tagged with it. Routed through the view model because the Add sheet is
+        // owned here, several presentation levels above the button.
+        .onChange(of: viewModel.addExpenseTravelId) { _, travelId in
+            guard let travelId else { return }
+            addSheet = AddSheetContext(travelId: travelId)
+            viewModel.addExpenseTravelId = nil
         }
         .onChange(of: dataChanged.revision) { _, _ in
             dashboardViewModel.reload()
@@ -288,7 +299,7 @@ struct MainTabView: View {
 }
 
 #Preview {
-    let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self, GoalModel.self])
+    let schema = Schema([TransactionModel.self, CategoryModel.self, CreditCardModel.self, GoalModel.self, TravelModel.self])
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     do {
         let container = try ModelContainer(for: schema, configurations: [modelConfiguration])

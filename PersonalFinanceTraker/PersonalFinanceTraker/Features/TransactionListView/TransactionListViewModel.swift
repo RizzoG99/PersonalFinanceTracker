@@ -24,7 +24,45 @@ final class TransactionListViewModel {
             intersectSelectionWithVisible()
         }
     }
-    var groupedItems: [(String, [TransactionSnapshot])] = []
+    var groupedItems: [(String, [ActivityRow])] = []
+
+    var travels: [TravelSnapshot] = [] {
+        didSet {
+            travelsByID = Dictionary(travels.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            updateGroupedItems()
+        }
+    }
+
+    /// Indexed once per fetch rather than scanned per row: the Activity body re-evaluates
+    /// several times per keystroke, and every visible row asks this question.
+    private(set) var travelsByID: [UUID: TravelSnapshot] = [:]
+
+    /// The travel a row belongs to, or nil if it belongs to none — or if the travel list
+    /// has not caught up yet, which the row handles.
+    func travel(for item: TransactionSnapshot) -> TravelSnapshot? {
+        item.travelId.flatMap { travelsByID[$0] }
+    }
+
+    /// Whether anything in the current selection is in a travel at all. "Remove from
+    /// travel" is destructive-looking and does nothing when nothing is tagged, so the
+    /// picker hides it rather than offering a no-op.
+    var selectionHasTravel: Bool {
+        transactions.contains { selectedIDs.contains($0.id) && $0.travelId != nil }
+    }
+
+    /// Travels collapse only in the plain list. While searching, filtering or selecting,
+    /// the user is looking for individual transactions — and leaving the rows flat keeps
+    /// every existing filter and multi-select path working on plain transactions.
+    var isCollapsingTravels: Bool {
+        searchText.isEmpty && !filters.isActive && !isSelecting
+    }
+
+    /// Members of `travel`, newest first — the Activity list holds the only fetched copy.
+    func members(of travel: TravelSummary) -> [TransactionSnapshot] {
+        transactions
+            .filter { $0.travelId == travel.id }
+            .sorted { $0.timestamp > $1.timestamp }
+    }
 
     /// Category chip selection on the Activity screen; nil means "All"
     var selectedCategory: String? = nil {
@@ -74,8 +112,7 @@ final class TransactionListViewModel {
             searchDebounceTask?.cancel()
             searchDebounceTask = Task {
                 try? await Task.sleep(for: .milliseconds(250))
-                guard !Task.isCancelled else { return }
-                await doFilterItemBySearchText()
+                    await doFilterItemBySearchText()
             }
         }
     }
@@ -86,7 +123,9 @@ final class TransactionListViewModel {
     var transactionToEdit: TransactionSnapshot? = nil
 
     private(set) var pendingDeletion: [TransactionSnapshot] = []
-    private var pendingDeletionTask: Task<Void, Never>?
+    /// `private(set)` so a test can await the timer it just cancelled and assert on what
+    /// the cancelled timer did — the race below is otherwise only reproducible under load.
+    private(set) var pendingDeletionTask: Task<Void, Never>?
     /// Set instead of scheduling deletion when a single swiped-to-delete item belongs to a
     /// recurring series — the view prompts for "this transaction" vs. "this and future" scope.
     var pendingRecurrenceDeletion: TransactionSnapshot? = nil
@@ -102,7 +141,10 @@ final class TransactionListViewModel {
     @ObservationIgnored private(set) var bulkEditTask: Task<Void, Never>?
 
     // MARK: - Multi-select
-    var isSelecting = false
+    // Entering selection mode expands travels, so their members can be picked individually.
+    var isSelecting = false {
+        didSet { if oldValue != isSelecting { updateGroupedItems() } }
+    }
     var selectedIDs: Set<PersistentIdentifier> = []
 
     var selectedSnapshots: [TransactionSnapshot] {
@@ -176,6 +218,7 @@ final class TransactionListViewModel {
     private func fetchAndRefresh() async {
         do {
             transactions = try await repo.fetchAll()
+            travels = (try? await repo.fetchTravels()) ?? []
             await doFilterItemBySearchText()  // triggers filteredItems.didSet → updateGroupedItems() + chartData
         } catch { print(error) }
     }
@@ -220,27 +263,24 @@ final class TransactionListViewModel {
         self.filteredItems = filtered
     }
 
+    /// In-flight grouping, so a newer call can cancel an older one — and so tests can await it.
+    @ObservationIgnored private(set) var groupingTask: Task<Void, Never>?
+
     private func updateGroupedItems() {
         let items = filteredItems
-        Task { [weak self] in
-            let grouped = await Task.detached(priority: .userInitiated) { Self.group(items) }.value
+        // Handing the grouper no travels is how the list opts out of collapsing.
+        let travels = isCollapsingTravels ? travels : []
+        // A refresh fires this twice — once from `travels` (still holding the previous
+        // `filteredItems`) and once from the new `filteredItems`. Both group off the main
+        // thread, so without cancelling, the stale one can land last and the list shows the
+        // state from before the edit until something refreshes it again.
+        groupingTask?.cancel()
+        groupingTask = Task { [weak self] in
+            let grouped = await Task.detached(priority: .userInitiated) {
+                ActivityRowGrouper.group(items, travels: travels)
+            }.value
+            guard !Task.isCancelled else { return }
             self?.groupedItems = grouped
-        }
-    }
-
-    nonisolated private static func group(_ items: [TransactionSnapshot]) -> [(String, [TransactionSnapshot])] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: items) { item in
-            calendar.startOfDay(for: item.timestamp)
-        }
-
-        return grouped.map { (date, items) in
-            (date.formattedForTransaction(), items.sorted { $0.timestamp > $1.timestamp })
-        }.sorted { first, second in
-            // Sort sections by date (newest first)
-            let firstDate = calendar.startOfDay(for: first.1.first?.timestamp ?? Date())
-            let secondDate = calendar.startOfDay(for: second.1.first?.timestamp ?? Date())
-            return firstDate > secondDate
         }
     }
 
@@ -353,12 +393,19 @@ final class TransactionListViewModel {
     }
 
     /// Shared 5s progress timer, extracted from scheduleDeletion.
+    ///
+    /// Every exit that is not the timer running out belongs to somebody else: cancelling
+    /// happens because a banner was replaced or already finalized. `try?` swallows the
+    /// cancellation error the sleep throws, so without the two checks below a cancelled
+    /// timer walked out of the loop and committed anyway — clearing the banner that had
+    /// just replaced it (delete a row, then edit: the edit's undo vanished instantly) and
+    /// committing a batched delete early.
     private func startUndoTimer() -> Task<Void, Never> {
         Task {
             let start = Date.now
             while !Task.isCancelled {
                 try? await Task.sleep(for: .milliseconds(100))
-                guard !Task.isCancelled else { return }
+                if Task.isCancelled { break }
                 deleteProgress = min(Date.now.timeIntervalSince(start) / 5.0, 1.0)
                 if deleteProgress >= 1.0 { break }
             }
@@ -687,6 +734,70 @@ final class TransactionListViewModel {
     func bulkSetNote(_ note: String) {
         applyBulkEdit(message: { String(localized: "\($0) transactions updated") }) { s in
             self.input(from: s, note: note)
+        }
+    }
+
+    // MARK: - Travels
+
+    func addTravel(name: String, symbolName: String) {
+        Task {
+            _ = try? await repo.addTravel(name: name, symbolName: symbolName)
+            reload()
+        }
+    }
+
+    func renameTravel(id: UUID, name: String, symbolName: String) {
+        Task {
+            try? await repo.updateTravel(id: id, name: name, symbolName: symbolName)
+            reload()
+        }
+    }
+
+    /// Removes the folder only — members are untagged by the repository and stay in the list.
+    func deleteTravel(id: UUID) {
+        Task {
+            try? await repo.deleteTravel(id: id)
+            reload()
+        }
+    }
+
+    /// Takes one transaction back out of its travel, leaving the transaction itself alone.
+    /// The way in (add, edit, bulk tag) has three doors; without this the only way out was
+    /// the transaction's own edit sheet.
+    func removeFromTravel(_ item: TransactionSnapshot) {
+        Task {
+            try? await repo.setTravel(nil, forIDs: [item.id])
+            reload()
+        }
+    }
+
+    /// Set by a travel's "Add expense" button and consumed by the shell, which owns the Add
+    /// Transaction sheet. A plain flag would open an untagged form — the whole point of that
+    /// button is that the expense lands in the trip you are looking at.
+    var addExpenseTravelId: UUID?
+
+    /// Creates a travel and moves the current selection into it in one step. The travel
+    /// picker's empty state has nowhere else to send the user — every other way to create
+    /// a travel is behind the sheet it is already showing.
+    func addTravelAndAssignSelection(name: String, symbolName: String) {
+        let ids = Array(selectedIDs)
+        guard !ids.isEmpty else { return }
+        exitSelection()
+        bulkEditTask = Task {
+            guard let id = try? await repo.addTravel(name: name, symbolName: symbolName) else { return }
+            try? await repo.setTravel(id, forIDs: ids)
+            reload()
+        }
+    }
+
+    /// Bulk-tags the current selection into a travel (or untags it with `nil`).
+    func bulkSetTravel(_ travelId: UUID?) {
+        let ids = Array(selectedIDs)
+        guard !ids.isEmpty else { return }
+        exitSelection()
+        bulkEditTask = Task {
+            try? await repo.setTravel(travelId, forIDs: ids)
+            reload()
         }
     }
 

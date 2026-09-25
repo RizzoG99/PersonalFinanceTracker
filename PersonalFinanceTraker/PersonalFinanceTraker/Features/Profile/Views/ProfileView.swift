@@ -63,8 +63,9 @@ struct ProfileView: View {
     private func runManualBackup() async {
         let transactions = (try? await transactionViewModel.repo.fetchAll()) ?? []
         let rules = (try? await transactionViewModel.repo.fetchAllRecurrenceRules()) ?? []
+        let travels = (try? await transactionViewModel.repo.fetchTravels()) ?? []
         do {
-            try backupService.writeBackup(transactions: transactions, recurrenceRules: rules)
+            try backupService.writeBackup(transactions: transactions, recurrenceRules: rules, travels: travels)
             appSettings.lastBackupDate = .now
         } catch BackupService.BackupError.emptyStore {
             backupErrorMessage = "No transactions to back up yet."

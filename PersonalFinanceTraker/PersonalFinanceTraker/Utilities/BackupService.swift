@@ -35,7 +35,7 @@ final class BackupService {
     }
 
     @discardableResult
-    func writeBackup(transactions: [TransactionSnapshot], recurrenceRules: [RecurrenceRuleSnapshot], now: Date = Date()) throws -> URL {
+    func writeBackup(transactions: [TransactionSnapshot], recurrenceRules: [RecurrenceRuleSnapshot], travels: [TravelSnapshot] = [], now: Date = Date()) throws -> URL {
         guard !transactions.isEmpty else { throw BackupError.emptyStore }
         guard let containerURL = storage.containerURL() else { throw BackupError.iCloudUnavailable }
 
@@ -45,7 +45,8 @@ final class BackupService {
             version: 2,
             createdAt: now,
             transactions: BackupMapper.makeTransactions(from: transactions),
-            recurrenceRules: BackupMapper.makeRecurrenceRules(from: recurrenceRules)
+            recurrenceRules: BackupMapper.makeRecurrenceRules(from: recurrenceRules),
+            travels: BackupMapper.makeTravels(from: travels)
         )
         let data = try Self.encoder.encode(payload)
 

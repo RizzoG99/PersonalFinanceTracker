@@ -37,8 +37,8 @@ struct BackupModelsTests {
         // custom icon falls back to the generic glyph (#153).
         let food = CategorySnapshot.test(name: "Food", type: .expense)
         let backups = [
-            BackupTransaction(timestamp: date(2026, 1, 1), amount: -10, note: "", category: "Food", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil),
-            BackupTransaction(timestamp: date(2026, 1, 2), amount: -10, note: "", category: "Unknown", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil),
+            BackupTransaction(timestamp: date(2026, 1, 1), amount: -10, note: "", category: "Food", currencyCode: "EUR", goalId: nil, travelId: nil, recurrenceRuleId: nil),
+            BackupTransaction(timestamp: date(2026, 1, 2), amount: -10, note: "", category: "Unknown", currencyCode: "EUR", goalId: nil, travelId: nil, recurrenceRuleId: nil),
         ]
 
         let inputs = BackupMapper.makeTransactionInputs(from: backups, categories: [food])
@@ -52,7 +52,7 @@ struct BackupModelsTests {
         // happens to carry the same name — categories are scoped per transaction type (#47).
         let food = CategorySnapshot.test(name: "Food", type: .expense)
         let backups = [
-            BackupTransaction(timestamp: date(2026, 1, 1), amount: 10, note: "", category: "Food", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil),
+            BackupTransaction(timestamp: date(2026, 1, 1), amount: 10, note: "", category: "Food", currencyCode: "EUR", goalId: nil, travelId: nil, recurrenceRuleId: nil),
         ]
 
         let inputs = BackupMapper.makeTransactionInputs(from: backups, categories: [food])
@@ -94,7 +94,7 @@ struct BackupModelsTests {
         let payload = BackupPayload(
             version: 1,
             createdAt: date(2026, 1, 1),
-            transactions: [BackupTransaction(timestamp: date(2026, 1, 1), amount: -10, note: "A", category: "Food", currencyCode: "EUR", goalId: nil, recurrenceRuleId: nil)],
+            transactions: [BackupTransaction(timestamp: date(2026, 1, 1), amount: -10, note: "A", category: "Food", currencyCode: "EUR", goalId: nil, travelId: nil, recurrenceRuleId: nil)],
             recurrenceRules: [BackupRecurrenceRule(id: UUID(), frequency: .monthly, interval: 1, startDate: date(2026, 1, 1), endDate: endDate, lastMaterializedDate: lastMaterializedDate, amount: -1200, note: "", category: "Housing", currencyCode: "EUR", goalId: nil)]
         )
 

@@ -23,7 +23,14 @@ struct RecentTransactionsSectionView: View {
                         Button {
                             transactionListViewModel.transactionToEdit = tx
                         } label: {
-                            TransactionItemView(item: tx)
+                            // Unlike Activity, this list does not collapse a trip into a
+                            // single row, so without the badge a trip expense shows up
+                            // here with nothing saying it belongs to one.
+                            TransactionItemView(
+                                item: tx,
+                                showsTravelBadge: true,
+                                travel: transactionListViewModel.travel(for: tx)
+                            )
                         }
                         .buttonStyle(.plain)
                         if tx.id != viewModel.recentTransactions.last?.id {

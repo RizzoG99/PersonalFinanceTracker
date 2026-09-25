@@ -11,6 +11,7 @@ final class MockTransactionRepository: ITransactionRepository {
     var stubbedTransactions: [TransactionSnapshot] = []
     var stubbedCategories: [CategorySnapshot] = []
     var stubbedGoals: [GoalSnapshot] = []
+    var stubbedTravels: [TravelSnapshot] = []
     var stubbedSnapshots: [HealthScoreSnapshotData] = []
     var stubbedForecastCache: DailyForecastCacheData? = nil
     var stubbedRecurrenceRules: [RecurrenceRuleSnapshot] = []
@@ -93,6 +94,45 @@ final class MockTransactionRepository: ITransactionRepository {
 
     func deleteCategory(id: PersistentIdentifier) async throws {
         if shouldThrow { throw MockError.forced }
+    }
+
+    // MARK: Travels
+    var setTravelCalls: [(UUID?, [PersistentIdentifier])] = []
+    var replacedTravels: [TravelSnapshot] = []
+
+    func fetchTravels() async throws -> [TravelSnapshot] {
+        if shouldThrow { throw MockError.forced }
+        return stubbedTravels
+    }
+
+    @discardableResult
+    func addTravel(name: String, symbolName: String) async throws -> UUID {
+        if shouldThrow { throw MockError.forced }
+        let travel = TravelSnapshot(id: UUID(), name: name, symbolName: symbolName)
+        stubbedTravels.append(travel)
+        return travel.id
+    }
+
+    func updateTravel(id: UUID, name: String, symbolName: String) async throws {
+        if shouldThrow { throw MockError.forced }
+        guard let i = stubbedTravels.firstIndex(where: { $0.id == id }) else { return }
+        stubbedTravels[i] = TravelSnapshot(id: id, name: name, symbolName: symbolName, createdAt: stubbedTravels[i].createdAt)
+    }
+
+    func deleteTravel(id: UUID) async throws {
+        if shouldThrow { throw MockError.forced }
+        stubbedTravels.removeAll { $0.id == id }
+    }
+
+    func setTravel(_ travelId: UUID?, forIDs ids: [PersistentIdentifier]) async throws {
+        if shouldThrow { throw MockError.forced }
+        setTravelCalls.append((travelId, ids))
+    }
+
+    func replaceAllTravels(_ travels: [TravelSnapshot]) async throws {
+        if shouldThrow { throw MockError.forced }
+        replacedTravels = travels
+        stubbedTravels = travels
     }
 
     // MARK: Goals

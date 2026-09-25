@@ -27,6 +27,7 @@ extension TransactionSnapshot {
         category: String,
         currencyCode: String = "EUR",
         goalId: UUID? = nil,
+        travelId: UUID? = nil,
         recurrenceRuleId: UUID? = nil,
         categorySystemImage: String? = nil,
         categoryColorToken: String? = nil
@@ -53,6 +54,7 @@ extension TransactionSnapshot {
             categoryModel: linked,
             currencyCode: currencyCode,
             goalId: goalId,
+            travelId: travelId,
             recurrenceRuleId: recurrenceRuleId
         )
         context.insert(model)
