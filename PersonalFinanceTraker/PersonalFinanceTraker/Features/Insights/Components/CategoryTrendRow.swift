@@ -57,14 +57,19 @@ struct CategoryTrendRow: View {
     }
 
     private var categoryIcon: some View {
+        // Prefer the category's own saved icon and colour, like the Activity rows do
+        // (TransactionItemView) — `CategoryInfo`'s keyword table only knows the seeded names,
+        // so a user-created category used to land on the generic fallback glyph (#153).
         let info = CategoryInfo.info(for: trend.category.category)
+        let symbol = trend.category.systemImage ?? info.symbol
+        let tint = trend.category.color
         return ZStack {
             Circle()
-                .fill(info.color.opacity(0.18))
+                .fill(tint.opacity(0.18))
                 .frame(width: 42, height: 42)
-            Image(systemName: info.symbol)
+            Image(systemName: symbol)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(info.color)
+                .foregroundStyle(tint)
         }
     }
 

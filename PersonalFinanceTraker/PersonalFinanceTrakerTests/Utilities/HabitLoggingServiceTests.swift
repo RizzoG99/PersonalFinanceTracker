@@ -69,8 +69,11 @@ struct HabitLoggingServiceTests {
         let goalId = UUID()
         let transactions = [
             TransactionSnapshot.test(timestamp: day(-1), amount: -20, note: "Transfer", category: "Savings", goalId: goalId),
+            TransactionSnapshot.test(timestamp: day(-2), amount: -20, note: "Transfer", category: "Savings", goalId: goalId),
+            TransactionSnapshot.test(timestamp: day(-3), amount: -20, note: "Transfer", category: "Savings", goalId: goalId),
             TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Coffee", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-3), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-4), amount: -8, note: "Coffee", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
         #expect(templates.count == 1)
@@ -81,22 +84,27 @@ struct HabitLoggingServiceTests {
         let transactions = [
             TransactionSnapshot.test(timestamp: day(-1), amount: -8, note: "Coffee", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-3), amount: -8, note: "Coffee", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-3), amount: -12, note: "Lunch", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
         #expect(templates.count == 1)
-        #expect(templates.first?.frequency == 2)
+        #expect(templates.first?.frequency == 3)
         #expect(templates.first?.note == "Coffee")
     }
 
     @Test func quickTemplatesSortByFrequencyThenRecency() {
         let transactions = [
-            TransactionSnapshot.test(timestamp: day(-1), amount: -4, note: "Recent", category: "Food"),
-            TransactionSnapshot.test(timestamp: day(-6), amount: -4, note: "Recent", category: "Food"),
+            // "Frequent" wins on count; "Recent" and "Older" tie on count so recency breaks it.
             TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Frequent", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-3), amount: -8, note: "Frequent", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-5), amount: -8, note: "Frequent", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-6), amount: -8, note: "Frequent", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-1), amount: -4, note: "Recent", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-2), amount: -4, note: "Recent", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-3), amount: -4, note: "Recent", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-4), amount: -3, note: "Older", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-5), amount: -3, note: "Older", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-7), amount: -3, note: "Older", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
@@ -107,19 +115,53 @@ struct HabitLoggingServiceTests {
         let transactions = [
             TransactionSnapshot.test(timestamp: day(-1), amount: 100, note: "Pay", category: "Salary"),
             TransactionSnapshot.test(timestamp: day(-4), amount: 100, note: "Pay", category: "Salary"),
+            TransactionSnapshot.test(timestamp: day(-5), amount: 100, note: "Pay", category: "Salary"),
             TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Coffee", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-3), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-6), amount: -8, note: "Coffee", category: "Food"),
         ]
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
         #expect(templates.contains { $0.note == "Pay" && !$0.isExpense && $0.amount == 100 })
         #expect(templates.contains { $0.note == "Coffee" && $0.isExpense && $0.amount == -8 })
     }
 
-    @Test func quickTemplatesRequireTwoDistinctLoggedDays() {
+    @Test func quickTemplatesRequireThreeDistinctLoggedDays() {
         let transactions = [
             TransactionSnapshot.test(timestamp: day(-1, hour: 9), amount: -8, note: "Coffee", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-1, hour: 12), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-2), amount: -8, note: "Coffee", category: "Food"),
             TransactionSnapshot.test(timestamp: day(-2), amount: -12, note: "Lunch", category: "Food"),
+        ]
+
+        let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
+
+        #expect(templates.isEmpty)
+    }
+
+    @Test func quickTemplatesExcludeRecurringOccurrences() {
+        let ruleId = UUID()
+        let transactions = [
+            // A subscription repeats at a byte-identical amount, so it used to outrank every
+            // hand-logged habit — and tapping it would duplicate what the rule already writes.
+            TransactionSnapshot.test(timestamp: day(-1), amount: -9.99, note: "iCloud", category: "Bills", recurrenceRuleId: ruleId),
+            TransactionSnapshot.test(timestamp: day(-2), amount: -9.99, note: "iCloud", category: "Bills", recurrenceRuleId: ruleId),
+            TransactionSnapshot.test(timestamp: day(-3), amount: -9.99, note: "iCloud", category: "Bills", recurrenceRuleId: ruleId),
+            TransactionSnapshot.test(timestamp: day(-4), amount: -9.99, note: "iCloud", category: "Bills", recurrenceRuleId: ruleId),
+            TransactionSnapshot.test(timestamp: day(-2), amount: -1.20, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-3), amount: -1.20, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-5), amount: -1.20, note: "Coffee", category: "Food"),
+        ]
+
+        let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)
+
+        #expect(templates.map(\.note) == ["Coffee"])
+    }
+
+    @Test func quickTemplatesExcludeStaleHabits() {
+        let transactions = [
+            TransactionSnapshot.test(timestamp: day(-20), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-25), amount: -8, note: "Coffee", category: "Food"),
+            TransactionSnapshot.test(timestamp: day(-30), amount: -8, note: "Coffee", category: "Food"),
         ]
 
         let templates = HabitLoggingService.quickTemplates(from: transactions, now: now, calendar: calendar)

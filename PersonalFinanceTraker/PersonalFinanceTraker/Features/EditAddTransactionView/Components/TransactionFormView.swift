@@ -147,19 +147,30 @@ struct TransactionFormView: View {
                     // The toggle itself lives in the nav bar; this section is just its sub-options.
                     if viewModel.editingItem == nil && viewModel.transactionType != .transfer && viewModel.isRecurring {
                         Section {
-                            Picker("Frequency", selection: $viewModel.recurrenceFrequency) {
-                                ForEach(RecurrenceFrequency.allCases, id: \.self) { freq in
-                                    Text(freq.label).tag(freq)
+                            if let rule = viewModel.editingRule {
+                                // Rule-edit mode (#152): cadence is read-only, shown as plain rows
+                                // rather than `.disabled()` Picker/Stepper — a disabled control
+                                // greys out and VoiceOver announces it as unavailable, which is
+                                // exactly the affordance being removed from the Recurring row this
+                                // sheet opened from. `buildRecurrenceRuleInput(preserving:)` never
+                                // changes these — changing startDate would shift every future
+                                // occurrence date.
+                                LabeledContent("Frequency", value: rule.frequency.cadenceLabel(interval: rule.interval))
+                            } else {
+                                Picker("Frequency", selection: $viewModel.recurrenceFrequency) {
+                                    ForEach(RecurrenceFrequency.allCases, id: \.self) { freq in
+                                        Text(freq.label).tag(freq)
+                                    }
                                 }
+                                .onChange(of: viewModel.recurrenceFrequency) { _, newFrequency in
+                                    viewModel.recurrenceInterval = min(viewModel.recurrenceInterval, newFrequency.maxInterval)
+                                }
+                                Stepper(
+                                    "Every \(viewModel.recurrenceInterval) \(viewModel.recurrenceFrequency.unitLabel(for: viewModel.recurrenceInterval))",
+                                    value: $viewModel.recurrenceInterval,
+                                    in: 1...viewModel.recurrenceFrequency.maxInterval
+                                )
                             }
-                            .onChange(of: viewModel.recurrenceFrequency) { _, newFrequency in
-                                viewModel.recurrenceInterval = min(viewModel.recurrenceInterval, newFrequency.maxInterval)
-                            }
-                            Stepper(
-                                "Every \(viewModel.recurrenceInterval) \(viewModel.recurrenceFrequency.unitLabel(for: viewModel.recurrenceInterval))",
-                                value: $viewModel.recurrenceInterval,
-                                in: 1...viewModel.recurrenceFrequency.maxInterval
-                            )
                         } header: {
                             Text("Repeat")
                         }
@@ -209,13 +220,20 @@ struct TransactionFormView: View {
                     .id(TransactionFormField.name)
 
                     Section {
-                        DatePicker(
-                            "Date",
-                            selection: $viewModel.date,
-                            displayedComponents: [.date]
-                        )
-                        .tint(.accentIndigo)
-                        .accessibilityHint(viewModel.isDateFromScan ? String(localized: "Scanned — check before saving") : "")
+                        if viewModel.editingRule != nil {
+                            // Read-only in rule mode, same reasoning as Frequency above: this is
+                            // the rule's startDate, and changing it would shift every future
+                            // occurrence date.
+                            LabeledContent("Starts", value: viewModel.formattedDate)
+                        } else {
+                            DatePicker(
+                                "Date",
+                                selection: $viewModel.date,
+                                displayedComponents: [.date]
+                            )
+                            .tint(.accentIndigo)
+                            .accessibilityHint(viewModel.isDateFromScan ? String(localized: "Scanned — check before saving") : "")
+                        }
                     }
                     .appFormSectionBackground()
 
@@ -277,7 +295,7 @@ struct TransactionFormView: View {
                     // available. Keeping the content structurally present and only toggling its
                     // visibility/interactivity keeps that ideal width constant.
                     let showsAmountContent = focusedField == .amount || mathMode
-                    let isAddMode = viewModel.editingItem == nil
+                    let isAddMode = viewModel.editingItem == nil && viewModel.editingRule == nil
                     
                     if showsAmountContent {
                         Group {
@@ -478,8 +496,8 @@ struct TransactionFormView: View {
     /// conditions, so `TipGroup`'s order can't land on a tip for a control that isn't
     /// rendered (e.g. opening the sheet in edit mode, or switching to Transfer).
     private func updateTipEligibility() {
-        AddAnotherTip.isEligible = viewModel.editingItem == nil
-        RepeatTip.isEligible = viewModel.editingItem == nil && viewModel.transactionType != .transfer
+        AddAnotherTip.isEligible = viewModel.editingItem == nil && viewModel.editingRule == nil
+        RepeatTip.isEligible = viewModel.editingItem == nil && viewModel.editingRule == nil && viewModel.transactionType != .transfer
     }
 
     /// Live-formatted view of `mathExpression` for the bubble — parens are decorative (this
@@ -801,8 +819,15 @@ struct CategoryPickerSheet: View {
     }
 
     private var filtered: [CategorySnapshot] {
+        Self.matching(categories, search: search)
+    }
+
+    /// The chip renders `name.localizedCategoryDisplay`, so that is what people type ("Spesa",
+    /// not "Groceries"). Matching the raw stored name alone made every built-in category
+    /// unsearchable in any non-English locale (#150).
+    static func matching(_ categories: [CategorySnapshot], search: String) -> [CategorySnapshot] {
         guard !search.isEmpty else { return categories }
-        return categories.filter { $0.name.localizedCaseInsensitiveContains(search) }
+        return categories.filter { $0.name.matchesCategorySearch(search) }
     }
 
     var body: some View {

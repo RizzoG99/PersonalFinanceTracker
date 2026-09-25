@@ -74,6 +74,18 @@ struct EditAddTransactionView: View {
         _pendingInitialScan = State(wrappedValue: initialReceiptScan)
     }
 
+    /// RecurringView's row tap (#152): edits the rule itself rather than a transaction, since a
+    /// rule with no materialized occurrence has no transaction to hand this sheet.
+    init(
+        rule: RecurrenceRuleSnapshot,
+        repo: any ITransactionRepository,
+        materializationService: RecurrenceMaterializationService
+    ) {
+        _viewModel = State(wrappedValue: EditAddTransactionViewModel(editingRule: rule, repo: repo))
+        self.materializationService = materializationService
+        _pendingInitialScan = State(wrappedValue: nil)
+    }
+
     var body: some View {
         TransactionFormView(viewModel: viewModel, focusTrigger: refocusToken)
         .readableWidth()
@@ -89,7 +101,10 @@ struct EditAddTransactionView: View {
             }
         }
         .animation(.spring(duration: 0.3), value: showSavedToast)
-        .navigationTitle(viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction")
+        .navigationTitle(
+            viewModel.editingRule != nil ? "Edit Recurring"
+            : viewModel.editingItem == nil ? "New Transaction" : "Edit Transaction"
+        )
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             // No other dismissal affordance exists on this sheet besides swipe-down — give it an
@@ -104,8 +119,9 @@ struct EditAddTransactionView: View {
             // keyboard toolbar), so this is now unconditional.
             // Add mode only — scanning a receipt into an existing transaction's already-populated
             // form has murkier overwrite semantics, so it's out of scope for v1. Hidden for
-            // Transfer too: a receipt is never a transfer between the user's own goals.
-            if viewModel.editingItem == nil && viewModel.transactionType != .transfer {
+            // Transfer too: a receipt is never a transfer between the user's own goals. Also
+            // hidden in rule-edit mode: there's no receipt for a recurring rule's template.
+            if viewModel.editingItem == nil && viewModel.editingRule == nil && viewModel.transactionType != .transfer {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         openReceiptSourceDialog()
@@ -157,9 +173,9 @@ struct EditAddTransactionView: View {
                 } label: {
                     Image(systemName: "checkmark")
                 }
-                .accessibilityLabel(viewModel.editingItem == nil ? "Add Transaction" : "Update Transaction")
-                // Edit mode: nothing to save until the user changes something. Add mode is
-                // unaffected — isFormValid alone already gates it there.
+                .accessibilityLabel(viewModel.editingItem == nil && viewModel.editingRule == nil ? "Add Transaction" : "Update Transaction")
+                // Edit mode: nothing to save until the user changes something. Add mode and
+                // rule-edit mode are unaffected — isFormValid alone already gates it there.
                 .disabled(!viewModel.isFormValid || (viewModel.editingItem != nil && !viewModel.hasChanges))
             }
             if viewModel.editingItem != nil {
@@ -265,7 +281,7 @@ struct EditAddTransactionView: View {
     /// Mirrors the scan button's own visibility guard so `ScanReceiptTip` never targets a control
     /// that isn't on screen (opening the sheet in edit mode, or switching to Transfer).
     private func updateScanTipEligibility() {
-        ScanReceiptTip.isEligible = viewModel.editingItem == nil && viewModel.transactionType != .transfer
+        ScanReceiptTip.isEligible = viewModel.editingItem == nil && viewModel.editingRule == nil && viewModel.transactionType != .transfer
     }
 
     /// This sheet's own in-form "Scan receipt" toolbar button. The shell-level shortcut next to
@@ -345,6 +361,19 @@ struct EditAddTransactionView: View {
     }
 
     private func saveTransaction() {
+        if viewModel.editingRule != nil {
+            Task {
+                do {
+                    try await viewModel.saveRuleEdits()
+                    dataChanged.bump()
+                    dismiss()
+                } catch {
+                    viewModel.errorMessage = error.localizedDescription
+                    viewModel.showingErrorAlert = true
+                }
+            }
+            return
+        }
         guard let existing = viewModel.editingItem else {
             Task {
                 do {

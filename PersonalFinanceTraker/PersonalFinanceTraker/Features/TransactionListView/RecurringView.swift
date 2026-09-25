@@ -11,9 +11,11 @@ import SwiftData
 /// edit its definition, swipe to stop it. Finding the transactions a rule already produced is
 /// the Activity tab's job (the Recurring filter chip), not this screen's — see issue #58.
 ///
-/// Presented as a sheet that owns its own nested edit/add sheets (iPhone, and iPad's Activity
-/// toolbar entry) — see `IPadRecurringSection` for the iPad sidebar destination, which is the
-/// same list wired to the shared inspector instead.
+/// Presented as a sheet that owns its own nested edit/add sheets — iPhone only, from Activity's
+/// toolbar (`ActivityView`, under `MainTabView`). iPad never reaches this: its Activity pane is
+/// `IPadLedgerTable`, with no Recurring entry of its own — see `IPadRecurringSection` for the
+/// iPad sidebar destination, which shares this file's list/row logic (`RecurringRulesContent`
+/// below) but presents its own local edit sheet instead of a NavigationStack push.
 struct RecurringView: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
@@ -25,7 +27,7 @@ struct RecurringView: View {
     // MainTabView/IPadInspector present) so editing stacks *on top of* this screen instead of
     // dismissing it first — this screen is itself presented as a sheet, and a sheet can present a
     // child sheet of its own.
-    @State private var editingItem: TransactionSnapshot?
+    @State private var editingRule: RecurrenceRuleSnapshot?
 
     private func reloadRules() async {
         rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
@@ -41,7 +43,7 @@ struct RecurringView: View {
     }
 
     var body: some View {
-        RecurringRulesContent(rules: rules, onSelect: { editingItem = $0 }, onDelete: stopRecurrence)
+        RecurringRulesContent(rules: rules, onSelect: { editingRule = $0 }, onDelete: stopRecurrence)
             .navigationTitle("Recurring")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -66,25 +68,26 @@ struct RecurringView: View {
                 }
                 .presentationBackground { AppBackground() }
             }
-            .sheet(item: $editingItem) { item in
+            .sheet(item: $editingRule) { rule in
                 NavigationStack {
-                    EditAddTransactionView(item, repo: viewModel.repo, materializationService: materializationService)
+                    EditAddTransactionView(rule: rule, repo: viewModel.repo, materializationService: materializationService)
                 }
                 .presentationBackground { AppBackground() }
             }
             .onChange(of: showingAddSheet) { _, isPresented in
                 if !isPresented { Task { await reloadRules() } }
             }
-            .onChange(of: editingItem) { _, item in
-                if item == nil { Task { await reloadRules() } }
+            .onChange(of: editingRule) { _, rule in
+                if rule == nil { Task { await reloadRules() } }
             }
             .task { await reloadRules() }
     }
 }
 
 /// The iPad sidebar destination for the same list — a permanent content pane like Health Score,
-/// rather than a sheet. Tapping a rule opens its most recent occurrence in the shared inspector
-/// on the right (the same detail surface Activity's rows use), instead of a nested sheet.
+/// rather than a sheet. Tapping a rule opens its own local edit sheet (not the shared inspector —
+/// that surface only knows how to render a transaction, and a rule with no materialized occurrence
+/// has none to hand it), same as RecurringView's own sheet.
 ///
 /// ponytail: "+" still opens the shared add sheet plain (no Repeat pre-enabled, unlike
 /// RecurringView's own) — presetting it here would mean threading a flag through
@@ -94,6 +97,7 @@ struct IPadRecurringSection: View {
     let materializationService: RecurrenceMaterializationService
 
     @State private var rules: [RecurrenceRuleSnapshot] = []
+    @State private var editingRule: RecurrenceRuleSnapshot?
 
     private func reloadRules() async {
         rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
@@ -109,16 +113,19 @@ struct IPadRecurringSection: View {
     var body: some View {
         RecurringRulesContent(
             rules: rules,
-            onSelect: { viewModel.transactionToEdit = $0 },
+            onSelect: { editingRule = $0 },
             onDelete: stopRecurrence
         )
         .navigationTitle("Recurring")
         .task { await reloadRules() }
-        // The inspector's edit sheet closing is the only thing that can change a rule's
-        // note/amount/cadence here (there's no local add/edit sheet to key off), so refresh
-        // whenever it clears.
-        .onChange(of: viewModel.transactionToEdit) { _, item in
-            if item == nil { Task { await reloadRules() } }
+        .sheet(item: $editingRule) { rule in
+            NavigationStack {
+                EditAddTransactionView(rule: rule, repo: viewModel.repo, materializationService: materializationService)
+            }
+            .presentationBackground { AppBackground() }
+        }
+        .onChange(of: editingRule) { _, rule in
+            if rule == nil { Task { await reloadRules() } }
         }
     }
 }
@@ -129,7 +136,7 @@ struct IPadRecurringSection: View {
 private struct RecurringRulesContent: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     let rules: [RecurrenceRuleSnapshot]
-    let onSelect: (TransactionSnapshot) -> Void
+    let onSelect: (RecurrenceRuleSnapshot) -> Void
     let onDelete: (RecurrenceRuleSnapshot) -> Void
 
     private var categoryByPersistentId: [PersistentIdentifier: CategorySnapshot] {
@@ -167,16 +174,6 @@ private struct RecurringRulesContent: View {
         }
     }
 
-    /// The most recent occurrence a rule produced, used as the anchor for "edit this rule". It
-    /// routes through the existing transaction edit sheet's "This and future" path, which already
-    /// updates the rule's template — and anchoring on the *latest* row means that path's
-    /// this-and-future delete/edit scope never reaches past it, minimizing blast radius.
-    private func latestOccurrence(for rule: RecurrenceRuleSnapshot) -> TransactionSnapshot? {
-        viewModel.transactions
-            .filter { $0.recurrenceRuleId == rule.id }
-            .max { $0.timestamp < $1.timestamp }
-    }
-
     var body: some View {
         Group {
             if rules.isEmpty {
@@ -205,15 +202,12 @@ private struct RecurringRulesContent: View {
                     .listSectionSeparator(.hidden)
 
                     ForEach(rules) { rule in
-                        let anchor = latestOccurrence(for: rule)
                         Button {
-                            guard let anchor else { return }
-                            onSelect(anchor)
+                            onSelect(rule)
                         } label: {
-                            ruleRow(rule, isEditable: anchor != nil)
+                            ruleRow(rule)
                         }
                         .buttonStyle(.plain)
-                        .disabled(anchor == nil)
                         .listRowBackground(Color.clear)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
@@ -234,7 +228,7 @@ private struct RecurringRulesContent: View {
         .appBackground()
     }
 
-    private func ruleRow(_ rule: RecurrenceRuleSnapshot, isEditable: Bool) -> some View {
+    private func ruleRow(_ rule: RecurrenceRuleSnapshot) -> some View {
         let mapped = rule.categoryId.flatMap { categoryByPersistentId[$0] }
         let symbol = mapped?.systemImage ?? CategoryInfo.info(for: rule.category).symbol
         let tint = mapped.map { Color(categoryToken: $0.colorToken) } ?? CategoryInfo.info(for: rule.category).color
@@ -261,7 +255,7 @@ private struct RecurringRulesContent: View {
                             .background(Color.categoryAmber.opacity(0.15), in: .capsule)
                     }
                 }
-                Text(cadenceSubtitle(for: rule, isEditable: isEditable))
+                Text(cadenceSubtitle(for: rule))
                     .font(.caption)
                     .foregroundStyle(.textDim)
             }
@@ -274,19 +268,13 @@ private struct RecurringRulesContent: View {
                 .privacyBlur()
         }
         .padding(.vertical, 4)
-        // Nothing to anchor an edit on yet (its one transaction was deleted "this only", and the
-        // next materialization pass hasn't run) — dim rather than open a broken edit flow.
-        .opacity(isEditable ? 1 : 0.5)
         .contentShape(Rectangle())
     }
 
-    private func cadenceSubtitle(for rule: RecurrenceRuleSnapshot, isEditable: Bool) -> String {
+    private func cadenceSubtitle(for rule: RecurrenceRuleSnapshot) -> String {
         let cadence = rule.frequency.cadenceLabel(interval: rule.interval)
         if let endDate = rule.endDate, endDate < .now {
             return cadence + " · " + String(localized: "Ended \(endDate.formatted(date: .abbreviated, time: .omitted))")
-        }
-        if !isEditable {
-            return cadence + " · " + String(localized: "No transactions yet")
         }
         let next = RecurrenceOccurrenceCalculator.occurrenceDates(
             frequency: rule.frequency,

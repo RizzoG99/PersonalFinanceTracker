@@ -448,6 +448,48 @@ struct TransactionListViewModelTests {
         #expect(vm.totalFilteredExpenses == 300)
     }
 
+    @Test @MainActor func searchMatchesTheLocalizedCategoryName() async throws {
+        // Categories are stored as "emoji label" in production (CategoryModel.name /
+        // TransactionModel.category) — a mock without the emoji prefix would pass even if
+        // the fix forgot to strip it before the catalog lookup, which is exactly what happened
+        // the first time this was "fixed".
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = [
+            .test(amount: -50, note: "a", category: "🛒 Groceries"),
+            .test(amount: -20, note: "b", category: "🚗 Transport"),
+        ]
+        let vm = await loadedVM(mockRepo)
+
+        // The raw English key must keep working — the fix for #150 added a clause, it did
+        // not replace one.
+        vm.searchText = "Groceries"
+        await vm.searchDebounceTask?.value
+        #expect(vm.filteredItems.count == 1)
+
+        // The row renders the translated name, so that is what people type. Only observable
+        // in a localized run: `scripts/xcb test -testLanguage it`. In English the string
+        // catalog is the identity and there is nothing to assert.
+        let localized = "Groceries".localizedCategoryDisplay
+        guard localized != "Groceries" else { return }
+        vm.searchText = localized
+        await vm.searchDebounceTask?.value
+        #expect(vm.filteredItems.count == 1)
+        #expect(vm.filteredItems.first?.category == "🛒 Groceries")
+    }
+
+    @Test @MainActor func filterCategoryIconsPreferTheCategorysOwnSymbol() async throws {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = [
+            .test(amount: -50, note: "a", category: "Palestra", categorySystemImage: "figure.run"),
+            .test(amount: -20, note: "b", category: "Transport"),
+        ]
+        let vm = await loadedVM(mockRepo)
+
+        // Without this the filter menu showed CategoryInfo's generic fallback glyph (#153).
+        #expect(vm.filterCategoryIcons["Palestra"] == "figure.run")
+        #expect(vm.filterCategoryIcons["Transport"] == nil)
+    }
+
     @Test @MainActor func filterCategoriesSortedByFrequencyThenName() async throws {
         let mockRepo = MockTransactionRepository()
         mockRepo.stubbedTransactions = [
@@ -493,6 +535,23 @@ struct TransactionListViewModelTests {
         #expect(vm.categoryResolutionSelections["Ghost"] == nil)
     }
 
+    @Test @MainActor func savedSelectionsDoNotOverrideACreateNewChoice() {
+        let vm = TransactionListViewModel(repo: MockTransactionRepository())
+        let food = CategorySnapshot.test(name: "Food")
+        vm.availableCategories = [food]
+        vm.csvCategories = ["auto"]
+        // The user tapped "Create new category" for this CSV column...
+        vm.categoryResolutionSelections["auto"] = CategoryAutoMapper.newSentinel
+        // ...and a stored profile from a previous import names an existing category.
+        vm.setSavedCategorySelectionsForTesting(["auto": food.id.uuidString])
+
+        vm.applySavedCategorySelections()
+
+        // Stepping back and forward through the wizard used to silently refile the rows
+        // under the guessed category, so the new one was never created (#149).
+        #expect(vm.categoryResolutionSelections["auto"] == CategoryAutoMapper.newSentinel)
+    }
+
     // MARK: - Multi-select
 
     @Test @MainActor func toggleSelectionAddsAndRemoves() async {
@@ -511,6 +570,45 @@ struct TransactionListViewModelTests {
         vm.selectAllVisible()
         #expect(vm.selectedIDs == Set(vm.filteredItems.map(\.id)))
         #expect(vm.selectedIDs.count < vm.transactions.count)
+    }
+
+    /// Regression test for issue #148: category chip filter was ignored by selectAllVisible
+    @Test @MainActor func selectAllVisibleRespectsCategoryFilter() async {
+        let vm = await makeLoadedVM()
+        // VM has: 3x Food (-50, -20, -15), 1x Beverages (-30), 1x Housing (-100), 1x Income (+1000)
+        let foodTransactions = vm.transactions.filter { $0.category == "Food" }
+        #expect(foodTransactions.count == 3, "Setup: expect 3 Food transactions")
+
+        // Set category filter to "Food"
+        vm.selectedCategory = "Food"
+        await vm.searchDebounceTask?.value
+
+        // Before the fix, filteredItems would still contain all transactions
+        // (not scoped by category), so selectAllVisible would select all of them.
+        // After the fix, it should only select the visible Food transactions.
+        vm.selectAllVisible()
+
+        // Assertion 1: the chip row must stay usable - all categories still offered
+        #expect(vm.filterCategories.count > 1,
+                "Selecting a chip must not collapse the chip row")
+
+        // Assertion 2: selected count must be 3 (Food transactions), not 6 (all transactions)
+        #expect(vm.selectedIDs.count == 3,
+                "Must select only 3 Food transactions, not all \(vm.transactions.count)")
+
+        // Assertion 3: no non-Food transactions are selected
+        let selectedSnapshots = vm.selectedSnapshots
+        for snapshot in selectedSnapshots {
+            #expect(snapshot.category == "Food",
+                    "Selected transaction '\(snapshot.note)' must have category Food, got \(snapshot.category)")
+        }
+
+        // Assertion 4: switching to another chip must drop the now-invisible
+        // selections, or the next bulk edit rewrites rows the user cannot see.
+        vm.selectedCategory = "Housing"
+        await vm.searchDebounceTask?.value
+        #expect(vm.selectedSnapshots.allSatisfy { $0.category == "Housing" },
+                "Switching chips must drop selections that are no longer visible, got \(vm.selectedSnapshots.map(\.category))")
     }
 
     @Test @MainActor func filteringOutSelectedRowDropsIt() async {

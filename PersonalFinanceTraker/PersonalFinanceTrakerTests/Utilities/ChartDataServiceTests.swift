@@ -70,4 +70,72 @@ struct ChartDataServiceTests {
         let filtered = service.filterItems(transactions, for: .month, payCycleStartDay: 1)
         #expect(filtered.count == 1)
     }
+
+    /// #154: a transaction on the very last day of the financial month used to be dropped by
+    /// the old `<= end`-at-midnight bound.
+    @Test func monthFilterIncludesLastDayOfFinancialMonth() {
+        let service = ChartDataService()
+        let (start, end) = PayCycleService.currentFinancialMonth(startDay: 1)
+        let calendar = Calendar.current
+        let lastDayEvening = calendar.date(byAdding: .hour, value: 23, to: end) ?? end
+
+        let filtered = service.filterItems([makeExpense(on: lastDayEvening)], for: .month, referenceDate: start, payCycleStartDay: 1)
+        #expect(filtered.count == 1)
+    }
+
+    /// #154: the yearly chart used to show a partial in-progress month as its last point,
+    /// collapsing near zero next to 12 full months. It should show 12 *complete* months instead.
+    @Test func yearlyDataShowsTwelveCompleteMonthsNotTheCurrentOne() {
+        let service = ChartDataService()
+        let calendar = Calendar.current
+        // Anchor mid-month so "the current month" definitely has fewer days of data than a
+        // complete month would, making a regression to the old behavior visible.
+        var comps = calendar.dateComponents([.year, .month], from: .now)
+        comps.day = 15
+        let referenceDate = calendar.date(from: comps)!
+
+        // One equal-amount expense a few days into each of the last 13 financial months
+        // (including the in-progress one), so every *complete* month has the same total and a
+        // leaked-in partial month would be conspicuously absent instead of just lower.
+        let months = PayCycleService.financialMonths(count: 13, before: referenceDate, startDay: 1)
+        let transactions = months.map { month in
+            makeExpense(on: calendar.date(byAdding: .day, value: 5, to: month.start)!, amount: -10)
+        }
+
+        let data = service.generateChartData(from: transactions, for: .year, referenceDate: referenceDate, payCycleStartDay: 1)
+        #expect(data.count == 12)
+        #expect(data.allSatisfy { $0.expenses == 10 }, "all 12 complete months should have equal totals; got \(data.map { $0.expenses })")
+    }
+
+    /// #154: points must be oldest→newest, and be the 12 complete financial months immediately
+    /// before the in-progress one — computed independently via `PayCycleService.financialMonths`
+    /// rather than derived from `data` itself, so this actually guards against a stray
+    /// `.reversed()`, an off-by-one in the `dropLast()`, or a label misaligned with its window.
+    @Test func yearlyDataPointsAreOrderedOldestToNewestWithMatchingLabels() {
+        let service = ChartDataService()
+        let calendar = Calendar.current
+        var comps = calendar.dateComponents([.year, .month], from: .now)
+        comps.day = 15
+        let referenceDate = calendar.date(from: comps)!
+
+        let expectedMonths = PayCycleService.financialMonths(count: 13, before: referenceDate, startDay: 1).dropLast()
+        let data = service.generateChartData(from: [], for: .year, referenceDate: referenceDate, payCycleStartDay: 1)
+
+        #expect(data.count == 12)
+        #expect(zip(data, expectedMonths).allSatisfy { point, month in
+            point.date == month.start && point.period == month.start.formatted(.dateTime.month(.abbreviated))
+        })
+    }
+
+    @Test func yearlyDataRespectsPayCycleStartDay() {
+        let service = ChartDataService()
+        let calendar = Calendar.current
+        let startDay = 10
+        var comps = calendar.dateComponents([.year, .month], from: .now)
+        comps.day = 20
+        let referenceDate = calendar.date(from: comps)!
+
+        let data = service.generateChartData(from: [], for: .year, referenceDate: referenceDate, payCycleStartDay: startDay)
+        #expect(data.allSatisfy { calendar.component(.day, from: $0.date) == startDay })
+    }
 }

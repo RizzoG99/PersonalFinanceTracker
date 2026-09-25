@@ -62,4 +62,23 @@ extension String {
     var localizedCategoryDisplay: String {
         String(localized: String.LocalizationValue(self))
     }
+
+    /// True when this category string matches `query`, by either the stored value or the
+    /// localized name the UI actually shows. Every category search box must go through this.
+    ///
+    /// Two clauses because both are legitimate to type: the raw stored key ("Groceries") and
+    /// the translated label on screen ("Spesa"). The emoji strip is what makes one predicate
+    /// serve both storage shapes — `TransactionModel.category` is "🛒 Groceries" while
+    /// `CategoryModel.name` is "Groceries", and `localizedCategoryDisplay` is a literal
+    /// catalog lookup that never matches a key with an emoji still on the front. Stripping is
+    /// a no-op for the second shape.
+    ///
+    /// This lived as two hand-written copies before; the copy that forgot the strip shipped
+    /// broken, and the one that forgot the localized clause shipped broken too (#150).
+    /// `localizedStandardContains`, not `localizedCaseInsensitiveContains`: it ignores
+    /// diacritics as well, so "perche" finds "Perché".
+    func matchesCategorySearch(_ query: String) -> Bool {
+        localizedStandardContains(query) ||
+        removingLeadingEmoji.localizedCategoryDisplay.localizedStandardContains(query)
+    }
 }

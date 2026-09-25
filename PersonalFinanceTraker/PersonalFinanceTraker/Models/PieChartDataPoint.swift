@@ -39,6 +39,9 @@ public struct PieChartDataPoint: Identifiable {
     
     /// Monthly budget for this category
     public let budget: Decimal?
+    /// The category's own saved SF Symbol, when the transactions carry a linked category.
+    /// nil falls back to `CategoryInfo` keyword matching at the call site.
+    public let systemImage: String?
 
     /// Creates a new pie chart data point
     /// - Parameters:
@@ -47,12 +50,13 @@ public struct PieChartDataPoint: Identifiable {
     ///   - color: Color for the chart segment
     ///   - percentage: Percentage of total (0-100)
     ///   - budget: Optional monthly budget
-    public init(category: String, amount: Decimal, color: Color, percentage: Double = 0, budget: Decimal? = nil) {
+    public init(category: String, amount: Decimal, color: Color, percentage: Double = 0, budget: Decimal? = nil, systemImage: String? = nil) {
         self.category = category
         self.amount = amount
         self.color = color
         self.percentage = percentage
         self.budget = budget
+        self.systemImage = systemImage
     }
     
     /// Whether this category has any financial activity

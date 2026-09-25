@@ -37,6 +37,14 @@ for changes with no visible effect (refactors, tooling, tests).
 Test" and archives it under the shipped build number — the changelog is the
 only source for that, so a skipped bullet means testers get no notes.
 
+## Branch Naming
+
+Git-flow style, always: `feature/<slug>`, `fix/<slug>`, `chore/<slug>` —
+prefix with the issue number when one exists (`fix/148-bulk-category-select-all`,
+`feature/47-category-type-uniqueness`). This applies to worktree branches too:
+name the branch by what it does, never `worktree-<anything>` — that's a
+directory name, not a branch name.
+
 ## Build And Test
 
 Use the `xcodebuild` CLI by default. The Xcode MCP hangs forever on a crashed test, requires Xcode open and connected, and silently builds the wrong worktree when `tabIdentifier` gets reassigned.

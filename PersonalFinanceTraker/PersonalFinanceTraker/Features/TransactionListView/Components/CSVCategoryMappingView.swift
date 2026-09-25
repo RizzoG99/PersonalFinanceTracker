@@ -26,8 +26,6 @@ struct CSVCategoryMappingView: View {
         showsStepActions ? "Map Categories" : "Import"
     }
 
-    private let newSentinel = "__new__"
-
     private var allMapped: Bool {
         csvCategories.allSatisfy { selections[$0] != nil }
     }
@@ -132,7 +130,7 @@ struct CSVCategoryMappingView: View {
                     .map { $0.value },
                 onSave: { savedDraft in
                     viewModel.pendingCategoryDrafts[savedDraft.csvCategory] = savedDraft
-                    selections[savedDraft.csvCategory] = newSentinel
+                    selections[savedDraft.csvCategory] = CategoryAutoMapper.newSentinel
                 }
             )
         }
@@ -153,7 +151,7 @@ struct CSVCategoryMappingView: View {
 
             Menu {
                 let knownType = categoryTypes[csv]
-                let filtered = filteredCategories(for: knownType).sorted { $0.name < $1.name }
+                let filtered = CategoryAutoMapper.pool(for: knownType, in: availableCategories).sorted { $0.name < $1.name }
 
                 if knownType == nil {
                     // Type unknown — show both sections
@@ -190,19 +188,19 @@ struct CSVCategoryMappingView: View {
                     configureNewCategory(for: csv)
                 } label: {
                     Label {
-                        if selections[csv] == newSentinel {
+                        if selections[csv] == CategoryAutoMapper.newSentinel {
                             Text("Edit \"\(createName(for: csv))\"")
                         } else {
                             Text("Create \"\(createName(for: csv))\"")
                         }
                     } icon: {
-                        Image(systemName: selections[csv] == newSentinel ? "pencil" : "plus.circle")
+                        Image(systemName: selections[csv] == CategoryAutoMapper.newSentinel ? "pencil" : "plus.circle")
                     }
                 }
             } label: {
                 HStack(spacing: 4) {
                     if let sel = selections[csv] {
-                        if sel == newSentinel {
+                        if sel == CategoryAutoMapper.newSentinel {
                             Group {
                                 if let draft = viewModel.pendingCategoryDrafts[csv] {
                                     Text(draft.name)
@@ -240,12 +238,6 @@ struct CSVCategoryMappingView: View {
         return stripped.isEmpty ? csv : stripped
     }
 
-    /// Returns categories filtered to the matching type, or all if type is unknown.
-    private func filteredCategories(for type: TransactionType?) -> [CategorySnapshot] {
-        guard let type else { return availableCategories }
-        return availableCategories.filter { $0.transactionType == type }
-    }
-
     // MARK: - Actions
 
     private func buildResolutionAndContinue() {
@@ -260,8 +252,37 @@ struct CSVCategoryMappingView: View {
     }
 
     private func configureNewCategory(for csv: String) {
-        categoryBeingConfigured = viewModel.pendingCategoryDrafts[csv]
+        let draft = viewModel.pendingCategoryDrafts[csv]
             ?? ImportCategoryDraft(csvCategory: csv, inferredType: categoryTypes[csv])
+        // Commit the intent on tap, not only on Save. The sheet's `onSave` used to be the sole
+        // writer of the sentinel, so a Cancel, a swipe-dismiss, or a Save the duplicate-name check
+        // had disabled left the row still holding whatever `autoMap()` had guessed. A CSV category
+        // "auto" guesses to the seeded "Public Transport" (the synonym table files "auto" under
+        // `transport`), so the import created nothing and quietly refiled the rows — the category
+        // was then missing from the transaction detail and from Settings (#149).
+        //
+        // The draft must be stored alongside the sentinel, not instead of it:
+        // `reconcilePendingCategoryDrafts` deletes any draft whose selection is not the sentinel.
+        if isSavableWithoutEditing(draft) {
+            viewModel.pendingCategoryDrafts[csv] = draft
+            selections[csv] = CategoryAutoMapper.newSentinel
+        }
+        categoryBeingConfigured = draft
+    }
+
+    /// Mirrors `ImportCategorySetupSheet`'s own Save gate. A name that sheet would refuse must not
+    /// be committed on tap, or a dismissed sheet would queue a category `confirmImport` then
+    /// creates as a duplicate — Step 1 there inserts unconditionally.
+    private func isSavableWithoutEditing(_ draft: ImportCategoryDraft) -> Bool {
+        let name = draft.name.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, CategoryNameValidator.isValid(name) else { return false }
+        let sameTypeNames = availableCategories
+            .filter { $0.transactionType == draft.type }
+            .map(\.name)
+            + viewModel.pendingCategoryDrafts.values
+                .filter { $0.csvCategory != draft.csvCategory && $0.type == draft.type }
+                .map(\.name)
+        return !CategoryNameValidator.isDuplicate(name, among: sameTypeNames)
     }
 
     private func autoMap() {

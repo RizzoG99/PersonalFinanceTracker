@@ -24,7 +24,10 @@ struct BudgetRow: View {
                     .fill(.accentIndigo)
                     .frame(width: 6, height: 6)
             }
-            TextField("No limit", text: $text)
+            // "∞" rather than a "No limit" word: language-agnostic and short enough not to
+            // truncate in this field's 100pt width (unlike "Nessun limite" in Italian).
+            // VoiceOver still speaks the word via accessibilityValue below.
+            TextField("∞", text: $text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .focused(isFocused, equals: category.id)

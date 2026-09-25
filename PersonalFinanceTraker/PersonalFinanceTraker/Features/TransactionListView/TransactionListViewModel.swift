@@ -66,13 +66,20 @@ final class TransactionListViewModel {
 
     /// Category chip selection on the Activity screen; nil means "All"
     var selectedCategory: String? = nil {
-        didSet { recomputeDerivedFilterState() }
+        didSet {
+            recomputeDerivedFilterState()
+            intersectSelectionWithVisible()
+        }
     }
 
     /// Categories offered as filter chips, most-used first (stable within a data set).
     /// Computed once per `filteredItems`/`selectedCategory` change rather than per render —
     /// SwiftUI re-evaluates the Activity body several times per keystroke while searching.
     private(set) var filterCategories: [String] = []
+
+    /// Saved SF Symbol per filter category, so the picker can show the icon the user chose
+    /// instead of `CategoryInfo`'s keyword guess, which only knows the seeded names (#153).
+    private(set) var filterCategoryIcons: [String: String] = [:]
 
     /// selectedCategory, ignored when it no longer exists in the current data (e.g. after a search)
     private(set) var effectiveCategory: String? = nil
@@ -85,13 +92,12 @@ final class TransactionListViewModel {
         let counts = Dictionary(grouping: filteredItems, by: \.category).mapValues(\.count)
         filterCategories = counts.sorted { ($0.value, $1.key) > ($1.value, $0.key) }.map(\.key)
         effectiveCategory = selectedCategory.flatMap { filterCategories.contains($0) ? $0 : nil }
+        filterCategoryIcons = Dictionary(
+            filteredItems.compactMap { item in item.categorySystemImage.map { (item.category, $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
 
-        let scoped: [TransactionSnapshot]
-        if let category = effectiveCategory {
-            scoped = filteredItems.filter { $0.category == category }
-        } else {
-            scoped = filteredItems
-        }
+        let scoped = visibleItems
         var income = Decimal.zero
         var expenses = Decimal.zero
         for item in scoped {
@@ -154,8 +160,17 @@ final class TransactionListViewModel {
         if selectedIDs.contains(id) { selectedIDs.remove(id) } else { selectedIDs.insert(id) }
     }
 
+    /// Rows the Activity list actually renders: `filteredItems` narrowed by the
+    /// category chip, mirroring ActivityView's own `effectiveCategory` guard.
+    /// `filteredItems` stays category-free on purpose so `filterCategories` keeps
+    /// offering every chip.
+    private var visibleItems: [TransactionSnapshot] {
+        guard let category = effectiveCategory else { return filteredItems }
+        return filteredItems.filter { $0.category == category }
+    }
+
     func selectAllVisible() {
-        selectedIDs = Set(filteredItems.map(\.id))
+        selectedIDs = Set(visibleItems.map(\.id))
     }
 
     func deselectAll() {
@@ -169,7 +184,7 @@ final class TransactionListViewModel {
 
     private func intersectSelectionWithVisible() {
         guard !selectedIDs.isEmpty else { return }
-        let visible = Set(filteredItems.map(\.id))
+        let visible = Set(visibleItems.map(\.id))
         selectedIDs.formIntersection(visible)
     }
 
@@ -238,7 +253,7 @@ final class TransactionListViewModel {
                 let textMatch = searchText.isEmpty || (
                     item.note.localizedStandardContains(searchText) ||
                     item.amount.description.localizedStandardContains(searchText) ||
-                    item.category.localizedStandardContains(searchText)
+                    item.category.matchesCategorySearch(searchText)
                 )
                 let filterMatch = filters.matches(item, dateBounds: dateBounds)
                 return textMatch && filterMatch
@@ -597,6 +612,12 @@ final class TransactionListViewModel {
         guard let saved = savedCategorySelections else { return }
         let validIds = Set(availableCategories.map { $0.id.uuidString })
         for category in csvCategories {
+            // A saved profile can only ever name an existing category, never "create a new one",
+            // so letting it win would silently undo that choice when the user steps back and
+            // forward through the wizard — the same way #149 lost it.
+            guard categoryResolutionSelections[category] != CategoryAutoMapper.newSentinel else {
+                continue
+            }
             if let selection = saved[category], validIds.contains(selection) {
                 categoryResolutionSelections[category] = selection
             }
@@ -629,7 +650,7 @@ final class TransactionListViewModel {
     func reconcilePendingCategoryDrafts(validCategories: [String]) {
         let valid = Set(validCategories)
         pendingCategoryDrafts = pendingCategoryDrafts.filter {
-            valid.contains($0.key) && categoryResolutionSelections[$0.key] == "__new__"
+            valid.contains($0.key) && categoryResolutionSelections[$0.key] == CategoryAutoMapper.newSentinel
         }
     }
 
@@ -812,7 +833,7 @@ final class TransactionListViewModel {
         guard let file = csvFile else { return }
         // Build UUID resolution only for existing categories; "__new__" entries will have nil UUID
         let uuidResolution: [String: UUID?] = categoryResolutionSelections.mapValues { sel in
-            sel == "__new__" ? nil : UUID(uuidString: sel)
+            sel == CategoryAutoMapper.newSentinel ? nil : UUID(uuidString: sel)
         }
         let mapping = columnMapping
 
@@ -879,7 +900,7 @@ final class TransactionListViewModel {
             // Step 1: Create any new categories that need to be created
             var newCategoryPersistentIds: [String: PersistentIdentifier] = [:]
             for (csvCatName, selection) in categoryResolutionSelections {
-                guard selection == "__new__" else { continue }
+                guard selection == CategoryAutoMapper.newSentinel else { continue }
                 let draft = pendingCategoryDrafts[csvCatName]
                     ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
                 let categoryInput = CategoryInput(
@@ -913,7 +934,7 @@ final class TransactionListViewModel {
             // Matched on name AND type: "Other" can now exist for both Expense and Income,
             // so name alone could bind an Income row to the Expense category.
             for (csvCatName, selection) in categoryResolutionSelections {
-                guard selection == "__new__" else { continue }
+                guard selection == CategoryAutoMapper.newSentinel else { continue }
                 let createdDraft = pendingCategoryDrafts[csvCatName]
                     ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
                 if let catSnapshot = updatedCategories.first(where: {
@@ -927,7 +948,7 @@ final class TransactionListViewModel {
             // "__new__" selections are stored as the just-created category's UUID.
             if let signature = currentImportSignature {
                 var resolvedSelections = categoryResolutionSelections
-                for (csvCatName, selection) in resolvedSelections where selection == "__new__" {
+                for (csvCatName, selection) in resolvedSelections where selection == CategoryAutoMapper.newSentinel {
                     let createdDraft = pendingCategoryDrafts[csvCatName]
                         ?? ImportCategoryDraft(csvCategory: csvCatName, inferredType: csvCategoryTypes[csvCatName])
                     if let created = updatedCategories.first(where: {
@@ -1088,12 +1109,18 @@ final class TransactionListViewModel {
                 return added
             }
             // Best-effort: the rule is the important write, so a link failure shouldn't
-            // surface an error or undo it — the badge is cosmetic.
-            try? await repo.linkTransactionsToRecurrenceRule(
-                id: ruleInput.id,
-                amount: suggestion.amount,
-                occurrenceDates: suggestion.occurrenceDates
-            )
+            // surface an error or undo it — the badge is cosmetic. Still logged (not `try?`,
+            // #152) so a rule that comes back with no linked rows leaves a trace instead of
+            // vanishing silently.
+            do {
+                try await repo.linkTransactionsToRecurrenceRule(
+                    id: ruleInput.id,
+                    amount: suggestion.amount,
+                    occurrenceDates: suggestion.occurrenceDates
+                )
+            } catch {
+                print("linkTransactionsToRecurrenceRule failed for rule \(ruleInput.id): \(error)")
+            }
         }
         return added
     }

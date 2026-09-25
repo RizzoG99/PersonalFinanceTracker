@@ -549,3 +549,79 @@ extension EditAddTransactionViewModelTests {
         #expect(result.note == "Rent (increased)")
     }
 }
+
+// MARK: - Rule-edit mode (#152: recurring rules with no occurrence yet are untappable)
+
+extension EditAddTransactionViewModelTests {
+    /// A rule that never linked to a real transaction — the exact shape #152's tester hit — must
+    /// still populate a full, saveable form: amount, name, type, currency, cadence and a future
+    /// (or past) startDate that isFormValid does not reject.
+    @Test @MainActor func initWithRecurrenceRulePopulatesFormFromTemplate() async throws {
+        let futureStart = Calendar.current.date(byAdding: .month, value: 1, to: Date())!
+        let rule = RecurrenceRuleSnapshot.test(
+            frequency: .yearly, interval: 2, startDate: futureStart,
+            amount: -1200, note: "Rent", category: "Housing", currencyCode: "GBP"
+        )
+        let vm = EditAddTransactionViewModel(editingRule: rule, repo: MockTransactionRepository())
+
+        #expect(vm.editingRule?.id == rule.id)
+        #expect(vm.editingItem == nil)
+        #expect(vm.transactionName == "Rent")
+        #expect(vm.amount == 1200)
+        #expect(vm.transactionType == .expense)
+        #expect(vm.currencyCode == "GBP")
+        #expect(vm.isRecurring == true)
+        #expect(vm.recurrenceFrequency == .yearly)
+        #expect(vm.recurrenceInterval == 2)
+        #expect(vm.date == futureStart)
+        // A future startDate is exactly what an imported, not-yet-materialized rule has — it must
+        // not be rejected the way a hand-typed future date would be. selectedCategory is normally
+        // resolved async by setTransactionViewModel() (covered by the fallback test below); set it
+        // directly here to isolate this assertion to the date check alone.
+        vm.selectedCategory = .test(name: "Housing", systemImage: "house", type: .expense)
+        #expect(vm.isFormValid == true)
+    }
+
+    /// `RecurrenceRuleSnapshot.test` never sets `categoryModel`, so `categoryId` is nil here —
+    /// the same shape as a rule whose import-time category link never resolved. Without the
+    /// name+type fallback in `setTransactionViewModel()`, `selectedCategory` stays nil,
+    /// `buildInput()` returns nil, and the rule could never be saved (#152's root symptom).
+    @Test @MainActor func setTransactionViewModelResolvesRuleCategoryByNameFallback() async throws {
+        let repo = MockTransactionRepository()
+        repo.stubbedCategories = [expenseCat()]
+        let rule = RecurrenceRuleSnapshot.test(startDate: Date(), amount: -50, category: "Food")
+        let vm = EditAddTransactionViewModel(editingRule: rule, repo: repo)
+
+        vm.setTransactionViewModel()
+        try await Task.sleep(for: .milliseconds(50))
+
+        #expect(vm.selectedCategory?.name == "Food")
+        #expect(vm.isFormValid == true)
+    }
+
+    /// `saveRuleEdits()` must go through `updateRecurrenceRule`, never `add`/`update` on a
+    /// transaction — a rule with no materialized occurrence has no transaction row to touch.
+    @Test @MainActor func saveRuleEditsUpdatesTheRuleWithEditedTemplate() async throws {
+        let repo = MockTransactionRepository()
+        let originalStart = Date(timeIntervalSince1970: 1_735_689_600)
+        let rule = RecurrenceRuleSnapshot.test(
+            frequency: .monthly, interval: 1, startDate: originalStart, amount: -1200, category: "Housing"
+        )
+        let vm = EditAddTransactionViewModel(editingRule: rule, repo: repo)
+        vm.amount = 1500
+        vm.transactionName = "Rent (increased)"
+        vm.selectedCategory = expenseCat()
+
+        try await vm.saveRuleEdits()
+
+        #expect(repo.updateRecurrenceRuleCalls.count == 1)
+        let call = try #require(repo.updateRecurrenceRuleCalls.first)
+        #expect(call.id == rule.id)
+        #expect(call.input.amount == -1500)
+        #expect(call.input.note == "Rent (increased)")
+        // Cadence untouched — same guarantee `buildRecurrenceRuleInput(preserving:)` already gives
+        // the "this and future" transaction-edit path.
+        #expect(call.input.frequency == .monthly)
+        #expect(call.input.startDate == originalStart)
+    }
+}

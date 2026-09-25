@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 struct BackupTransaction: Codable, Sendable {
     let timestamp: Date
@@ -43,6 +44,23 @@ struct BackupPayload: Codable, Sendable {
 }
 
 enum BackupMapper {
+    /// `PersistentIdentifier` doesn't survive a JSON round-trip, so a restore can only
+    /// relink each backed-up row to whatever `CategoryModel` currently exists in the store,
+    /// matched by name + type (income/expense categories can share a name). Without this,
+    /// every transaction and recurrence rule restored from a backup loses its category link,
+    /// and every icon that isn't in `CategoryInfo`'s seeded keyword table falls back to the
+    /// generic glyph (#153) — permanently, since there's no other path that relinks them.
+    private static func categoryPersistentIds(for categories: [CategorySnapshot]) -> [String: PersistentIdentifier] {
+        Dictionary(
+            categories.map { ("\($0.name)#\($0.type)", $0.persistentId) },
+            uniquingKeysWith: { first, _ in first }
+        )
+    }
+
+    private static func categoryKey(name: String, amount: Decimal) -> String {
+        "\(name)#\((amount < 0 ? TransactionType.expense : TransactionType.income).rawValue)"
+    }
+
     static func makeTransactions(from snapshots: [TransactionSnapshot]) -> [BackupTransaction] {
         snapshots.map {
             BackupTransaction(
@@ -82,8 +100,9 @@ enum BackupMapper {
         }
     }
 
-    static func makeTransactionInputs(from backups: [BackupTransaction]) -> [TransactionInput] {
-        backups.map {
+    static func makeTransactionInputs(from backups: [BackupTransaction], categories: [CategorySnapshot] = []) -> [TransactionInput] {
+        let byKey = categoryPersistentIds(for: categories)
+        return backups.map {
             TransactionInput(
                 timestamp: $0.timestamp,
                 amount: $0.amount,
@@ -92,13 +111,15 @@ enum BackupMapper {
                 currencyCode: $0.currencyCode,
                 goalId: $0.goalId,
                 travelId: $0.travelId,
+                categoryPersistentId: byKey[categoryKey(name: $0.category, amount: $0.amount)],
                 recurrenceRuleId: $0.recurrenceRuleId
             )
         }
     }
 
-    static func makeRecurrenceRuleInputs(from backups: [BackupRecurrenceRule]) -> [RecurrenceRuleInput] {
-        backups.map {
+    static func makeRecurrenceRuleInputs(from backups: [BackupRecurrenceRule], categories: [CategorySnapshot] = []) -> [RecurrenceRuleInput] {
+        let byKey = categoryPersistentIds(for: categories)
+        return backups.map {
             RecurrenceRuleInput(
                 id: $0.id,
                 frequency: $0.frequency,
@@ -110,7 +131,8 @@ enum BackupMapper {
                 note: $0.note,
                 category: $0.category,
                 currencyCode: $0.currencyCode,
-                goalId: $0.goalId
+                goalId: $0.goalId,
+                categoryPersistentId: byKey[categoryKey(name: $0.category, amount: $0.amount)]
             )
         }
     }

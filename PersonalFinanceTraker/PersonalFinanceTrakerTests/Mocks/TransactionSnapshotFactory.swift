@@ -28,14 +28,30 @@ extension TransactionSnapshot {
         currencyCode: String = "EUR",
         goalId: UUID? = nil,
         travelId: UUID? = nil,
-        recurrenceRuleId: UUID? = nil
+        recurrenceRuleId: UUID? = nil,
+        categorySystemImage: String? = nil,
+        categoryColorToken: String? = nil
     ) -> TransactionSnapshot {
         let context = ModelContext(SnapshotTestSupport.container)
+        // Snapshots only carry an icon/colour when the transaction is linked to a CategoryModel,
+        // so build one on demand rather than exposing the two fields directly.
+        var linked: CategoryModel?
+        if categorySystemImage != nil || categoryColorToken != nil {
+            let categoryModel = CategoryModel(
+                name: category,
+                systemImage: categorySystemImage ?? "tag",
+                type: amount < 0 ? .expense : .income,
+                colorToken: categoryColorToken ?? "categoryIndigo"
+            )
+            context.insert(categoryModel)
+            linked = categoryModel
+        }
         let model = TransactionModel(
             timestamp: timestamp,
             amount: amount,
             note: note,
             category: category,
+            categoryModel: linked,
             currencyCode: currencyCode,
             goalId: goalId,
             travelId: travelId,

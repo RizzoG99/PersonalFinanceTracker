@@ -74,6 +74,10 @@ final class EditAddTransactionViewModel {
     var hasScannedFields: Bool { isAmountFromScan || isDateFromScan || isCategoryFromScan || isNameFromScan }
 
     let editingItem: TransactionSnapshot?
+    /// Set when this sheet is editing a *rule* (RecurringView's row tap, #152) rather than a
+    /// transaction. Mutually exclusive with `editingItem` — a rule with no materialized occurrence
+    /// has no transaction to edit instead.
+    let editingRule: RecurrenceRuleSnapshot?
     let repo: any ITransactionRepository
     private let draft: TransactionDraft?
     /// True when the shell-level "Scan receipt" shortcut already has a result waiting to be
@@ -111,16 +115,20 @@ final class EditAddTransactionViewModel {
 
     init(
         editingItem: TransactionSnapshot? = nil,
+        editingRule: RecurrenceRuleSnapshot? = nil,
         draft: TransactionDraft? = nil,
         repo: any ITransactionRepository,
         hasPendingReceiptScan: Bool = false
     ) {
         self.editingItem = editingItem
+        self.editingRule = editingRule
         self.draft = draft
         self.repo = repo
         self.hasPendingReceiptScan = hasPendingReceiptScan
         if let item = editingItem {
             populateForm(from: item)
+        } else if let editingRule {
+            populateForm(from: editingRule)
         } else if let draft {
             populateForm(from: draft)
         }
@@ -152,6 +160,16 @@ final class EditAddTransactionViewModel {
             // Set selectedCategory from editingItem.categoryId if editing
             if let catId = editingItem?.categoryId {
                 selectedCategory = availableCategories.first { $0.persistentId == catId }
+            } else if let editingRule {
+                // categoryId first (same persistentId match as a transaction); a rule imported
+                // before its category resolved, or restored from a backup, falls back to matching
+                // by name + type — without this fallback buildInput() returns nil and the rule can
+                // never be saved (#152).
+                selectedCategory = editingRule.categoryId.flatMap { catId in
+                    availableCategories.first { $0.persistentId == catId }
+                } ?? availableCategories.first {
+                    $0.name == editingRule.category && $0.transactionType == transactionType
+                }
             } else if let draft {
                 selectedCategory = availableCategories.first {
                     $0.name == draft.categoryName && $0.transactionType == draft.transactionType
@@ -169,11 +187,13 @@ final class EditAddTransactionViewModel {
                 selectedTravelId = travelId
             }
 
-            if editingItem == nil {
+            if editingItem == nil && editingRule == nil {
                 currencyCode = UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
-            } else {
+            } else if editingItem != nil {
                 // Everything above (category/goal resolution included) has landed — this is the
-                // form as loaded, before the user has touched anything.
+                // form as loaded, before the user has touched anything. Rule mode skips this: its
+                // Save button is gated on isFormValid alone (editingItem == nil), so hasChanges is
+                // never consulted there — see the toolbar's .disabled(...) in EditAddTransactionView.
                 originalFormSnapshot = currentFormSnapshot
             }
         }
@@ -181,9 +201,12 @@ final class EditAddTransactionViewModel {
 
     /// Transaction types offered in the picker. Transfer needs a goal to move money into, so it is
     /// hidden when there are no goals — unless the form is already on Transfer (editing an existing
-    /// transfer, or goals still loading), so we never hide the currently-selected type.
+    /// transfer, or goals still loading), so we never hide the currently-selected type. Also hidden
+    /// in rule-edit mode: switching an "Edit Recurring" sheet to Transfer would clear `isRecurring`
+    /// (see the Type picker's onChange), collapsing the Repeat section this sheet exists to show
+    /// with no toggle left to bring it back — goal-linked recurrence isn't supported anyway.
     var availableTypes: [TransactionType] {
-        if availableGoals.isEmpty && transactionType != .transfer {
+        if editingRule != nil || (availableGoals.isEmpty && transactionType != .transfer) {
             return TransactionType.allCases.filter { $0 != .transfer }
         }
         return TransactionType.allCases
@@ -191,10 +214,12 @@ final class EditAddTransactionViewModel {
 
     /// Name is optional: a blank name renders the localized category as the title in the list
     /// (TransactionItemView), so validity is amount + a non-future date + a category (or a goal for
-    /// transfers).
+    /// transfers). The date check is skipped in rule mode — an imported rule's `startDate` is
+    /// legitimately in the future (it's `RecurrenceSuggestion.nextDate`), and this date is shown
+    /// read-only there anyway (see TransactionFormView), never something the user just typed.
     var isFormValid: Bool {
         amount > 0 &&
-        date <= Date.now &&
+        (editingRule != nil || date <= Date.now) &&
         (transactionType == .transfer ? selectedGoal != nil : selectedCategory != nil)
     }
 
@@ -203,7 +228,7 @@ final class EditAddTransactionViewModel {
     /// transaction before deciding to save it, rather than the keyboard grabbing Amount and racing
     /// (and winning against) the fill that's about to land.
     var shouldAutoFocusAmount: Bool {
-        editingItem == nil && draft == nil && !hasPendingReceiptScan
+        editingItem == nil && editingRule == nil && draft == nil && !hasPendingReceiptScan
     }
 
     private static let mediumDateFormatter: DateFormatter = {
@@ -438,6 +463,16 @@ final class EditAddTransactionViewModel {
         try await repo.materializeOccurrences(ruleId: ruleInput.id, inputs: [firstOccurrence], newCursor: ruleInput.startDate)
     }
 
+    /// Rule-edit mode's save (#152): applies the template fields only, via the same
+    /// `preserving:` builder the "this and future" transaction-edit path already uses. Cadence
+    /// and start date are never touched here — TransactionFormView shows them read-only in this
+    /// mode, and no materialization/regeneration follows: the next materialize pass reads the
+    /// rule fresh and applies the new template to occurrences it hasn't generated yet.
+    func saveRuleEdits() async throws {
+        guard let editingRule, let ruleInput = buildRecurrenceRuleInput(preserving: editingRule) else { return }
+        try await repo.updateRecurrenceRule(id: editingRule.id, with: ruleInput)
+    }
+
     func saveTransaction() {
         guard let input = buildInput() else { return }
         Task {
@@ -459,6 +494,18 @@ final class EditAddTransactionViewModel {
             : item.amount < 0 ? .expense : .income
         transactionType = type
 
+        // selectedCategory set in setTransactionViewModel() after categories load
+    }
+
+    private func populateForm(from rule: RecurrenceRuleSnapshot) {
+        date = rule.startDate
+        amount = abs(Double(truncating: rule.amount as NSDecimalNumber))
+        transactionName = rule.note
+        currencyCode = rule.currencyCode
+        transactionType = rule.amount < 0 ? .expense : .income
+        isRecurring = true
+        recurrenceFrequency = rule.frequency
+        recurrenceInterval = rule.interval
         // selectedCategory set in setTransactionViewModel() after categories load
     }
 

@@ -50,11 +50,12 @@ public class PieChartDataService {
         timePeriod: TimePeriod,
         referenceDate: Date = Date(),
         payCycleStartDay: Int = 1,
-        categories: [CategorySnapshot] = []
+        categories: [CategorySnapshot] = [],
+        upTo: Date? = nil
     ) -> [PieChartDataPoint] {
 
         // Filter items by time period and transaction type
-        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay)
+        let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay, upTo: upTo)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
 
         // Group by category and calculate totals
@@ -63,6 +64,18 @@ public class PieChartDataService {
         // Slice colour comes from the category's own saved token, so it stays the same
         // whatever the category's spending rank happens to be this period.
         let colorTokensByName = Dictionary(uniqueKeysWithValues: categories.map { ($0.name, $0.colorToken) })
+        // Not every caller passes `categories:` — `SpendingInsightService.categoryTrends` does not —
+        // so fall back to the icon and colour the transactions themselves carry from their linked
+        // CategoryModel. Without this a user-created category rendered a generic glyph in a grey
+        // circle (#153), because the keyword table in `CategoryInfo` only knows the seeded names.
+        let itemSymbolsByName = Dictionary(
+            typeFilteredItems.compactMap { item in item.categorySystemImage.map { (groupingKey(for: item), $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let itemColorTokensByName = Dictionary(
+            typeFilteredItems.compactMap { item in item.categoryColorToken.map { (groupingKey(for: item), $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         // Calculate total amount for percentage calculations
         let totalAmount = categoryGroupedData.values.reduce(0, +)
@@ -72,7 +85,9 @@ public class PieChartDataService {
 
         for (categoryName, total) in categoryGroupedData.sorted(by: { $0.value > $1.value }) {
             let percentage = totalAmount > 0 ? Double(truncating: (total / totalAmount * 100) as NSDecimalNumber) : 0
-            let token = colorTokensByName[categoryName] ?? CategoryConstants.colorToken(forName: categoryName)
+            let token = colorTokensByName[categoryName]
+                ?? itemColorTokensByName[categoryName]
+                ?? CategoryConstants.colorToken(forName: categoryName)
             let color = Color(categoryToken: token)
 
             pieChartData.append(PieChartDataPoint(
@@ -80,7 +95,8 @@ public class PieChartDataService {
                 amount: total,
                 color: color,
                 percentage: percentage,
-                budget: budgetsByName[categoryName] ?? nil
+                budget: budgetsByName[categoryName] ?? nil,
+                systemImage: itemSymbolsByName[categoryName]
             ))
         }
 
@@ -121,12 +137,12 @@ public class PieChartDataService {
     ///   - referenceDate: Reference date for calculations
     ///   - payCycleStartDay: The start day of the financial month (1-28, defaults to 1)
     /// - Returns: Filtered array of items within the time period
-    private func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1) -> [TransactionSnapshot] {
+    private func filterItems(_ items: [TransactionSnapshot], for timePeriod: TimePeriod, referenceDate: Date, payCycleStartDay: Int = 1, upTo: Date? = nil) -> [TransactionSnapshot] {
         let calendar = Calendar.current
         switch timePeriod {
         case .month:
             let start = PayCycleService.financialMonthStart(for: referenceDate, startDay: payCycleStartDay, calendar: calendar)
-            let end = calendar.date(byAdding: .month, value: 1, to: start) ?? start
+            let end = min(upTo ?? .distantFuture, calendar.date(byAdding: .month, value: 1, to: start) ?? start)
             return items.filter { $0.timestamp >= start && $0.timestamp < end }
         default:
             let startDate = calendar.date(byAdding: .day, value: -timePeriod.days, to: referenceDate) ?? referenceDate
@@ -151,11 +167,16 @@ public class PieChartDataService {
     /// Groups items by category and calculates totals
     /// - Parameter items: Array of items to group
     /// - Returns: Dictionary with category names as keys and total amounts as values
+    /// The name a snapshot is grouped under; the icon/colour maps must key on the same thing.
+    private func groupingKey(for item: TransactionSnapshot) -> String {
+        item.category.isEmpty ? "Other" : item.category
+    }
+
     private func groupByCategory(_ items: [TransactionSnapshot]) -> [String: Decimal] {
         var categoryData: [String: Decimal] = [:]
 
         for item in items {
-            let categoryName = item.category.isEmpty ? "Other" : item.category
+            let categoryName = groupingKey(for: item)
             let amount = abs(currencyService.convertToBase(item.amount, from: item.currencyCode))
             categoryData[categoryName, default: 0] += amount
         }

@@ -76,12 +76,16 @@ struct HabitLoggingService {
         limit: Int = 3
     ) -> [QuickTransactionTemplate] {
         guard limit > 0 else { return [] }
-        let startDate = calendar.date(byAdding: .day, value: -90, to: now) ?? now
+        let startDate = calendar.date(byAdding: .day, value: -60, to: now) ?? now
+        let recentCutoff = calendar.date(byAdding: .day, value: -14, to: now) ?? now
         var grouped: [TemplateKey: TemplateStats] = [:]
 
         for transaction in transactions where transaction.timestamp >= startDate {
             guard !isTransfer(transaction) else { continue }
             guard transaction.amount != 0 else { continue }
+            // Recurrence rules already materialise their own occurrences
+            // (RecurrenceMaterializationService), so offering one here would log a duplicate.
+            guard transaction.recurrenceRuleId == nil else { continue }
 
             let key = TemplateKey(
                 amount: transaction.amount,
@@ -100,9 +104,10 @@ struct HabitLoggingService {
             grouped[key] = stats
         }
 
-        // One-offs and same-day duplicates are not reliable repeat suggestions.
+        // A daily habit is something bought on several separate days and bought lately:
+        // one-offs, same-day duplicates and abandoned habits are not worth a one-tap button.
         return grouped
-            .filter { $0.value.loggedDayKeys.count >= 2 }
+            .filter { $0.value.loggedDayKeys.count >= 3 && $0.value.lastUsed >= recentCutoff }
             .map { key, stats in
                 QuickTransactionTemplate(
                     amount: key.amount,
