@@ -242,7 +242,9 @@ struct TravelDetailSheet: View {
                     .foregroundStyle(.textDim)
 
                 GlassCard {
-                    VStack(spacing: 0) {
+                    // Spacing and divider inset both match RecentTransactionsSectionView —
+                    // same row component, so the two lists must not read differently.
+                    VStack(spacing: 8) {
                         ForEach(Array(members.enumerated()), id: \.element.id) { index, item in
                             Button {
                                 onSelect(item)
@@ -259,7 +261,9 @@ struct TravelDetailSheet: View {
                             }
 
                             if index < members.count - 1 {
-                                Divider().overlay(Color.hairline)
+                                // Negative inset cancels GlassCard's flat 16pt padding so
+                                // the rule runs to the card edge, as it does on Dashboard.
+                                Divider().overlay(Color.hairline).padding(.horizontal, -16)
                             }
                         }
                     }

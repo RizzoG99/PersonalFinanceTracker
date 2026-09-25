@@ -27,7 +27,27 @@ final class TransactionListViewModel {
     var groupedItems: [(String, [ActivityRow])] = []
 
     var travels: [TravelSnapshot] = [] {
-        didSet { updateGroupedItems() }
+        didSet {
+            travelsByID = Dictionary(travels.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            updateGroupedItems()
+        }
+    }
+
+    /// Indexed once per fetch rather than scanned per row: the Activity body re-evaluates
+    /// several times per keystroke, and every visible row asks this question.
+    private(set) var travelsByID: [UUID: TravelSnapshot] = [:]
+
+    /// The travel a row belongs to, or nil if it belongs to none — or if the travel list
+    /// has not caught up yet, which the row handles.
+    func travel(for item: TransactionSnapshot) -> TravelSnapshot? {
+        item.travelId.flatMap { travelsByID[$0] }
+    }
+
+    /// Whether anything in the current selection is in a travel at all. "Remove from
+    /// travel" is destructive-looking and does nothing when nothing is tagged, so the
+    /// picker hides it rather than offering a no-op.
+    var selectionHasTravel: Bool {
+        transactions.contains { selectedIDs.contains($0.id) && $0.travelId != nil }
     }
 
     /// Travels collapse only in the plain list. While searching, filtering or selecting,
@@ -734,6 +754,20 @@ final class TransactionListViewModel {
     /// Transaction sheet. A plain flag would open an untagged form — the whole point of that
     /// button is that the expense lands in the trip you are looking at.
     var addExpenseTravelId: UUID?
+
+    /// Creates a travel and moves the current selection into it in one step. The travel
+    /// picker's empty state has nowhere else to send the user — every other way to create
+    /// a travel is behind the sheet it is already showing.
+    func addTravelAndAssignSelection(name: String, symbolName: String) {
+        let ids = Array(selectedIDs)
+        guard !ids.isEmpty else { return }
+        exitSelection()
+        bulkEditTask = Task {
+            guard let id = try? await repo.addTravel(name: name, symbolName: symbolName) else { return }
+            try? await repo.setTravel(id, forIDs: ids)
+            reload()
+        }
+    }
 
     /// Bulk-tags the current selection into a travel (or untags it with `nil`).
     func bulkSetTravel(_ travelId: UUID?) {

@@ -174,11 +174,18 @@ struct ActivityView: View {
             .sheet(isPresented: $showNoteSheet) {
                 descriptionSheet
             }
+            // The same Travels list the ⋯ menu opens, in moving mode. It used to be a
+            // second, thinner sheet listing the same trips.
             .sheet(isPresented: $showTravelPicker) {
-                TravelPickerSheet(travels: viewModel.travels) { travelId in
-                    viewModel.bulkSetTravel(travelId)
-                    showTravelPicker = false
+                NavigationStack {
+                    TravelsView(
+                        mode: .movingSelection,
+                        // Read here, where the selection is still intact and the value is
+                        // known before the sheet sizes itself.
+                        selectionHasTravel: viewModel.selectionHasTravel
+                    )
                 }
+                .presentationBackground { AppBackground() }
             }
             .sheet(item: $selectedTravel, onDismiss: flushPendingAddExpense) { summary in
                 TravelDetailSheet(
@@ -286,7 +293,13 @@ struct ActivityView: View {
 
     private func travelRow(_ summary: TravelSummary) -> some View {
         Button {
-            selectedTravel = summary
+            // Guarded for the same reason transactionRow guards: the button's tap fires on
+            // *release*, so a long press would otherwise enter selection mode AND open the
+            // detail sheet on top of it. No checkbox branch is needed here — selecting
+            // expands travels into their members, so travel rows stop rendering entirely.
+            if !viewModel.isSelecting {
+                selectedTravel = summary
+            }
         } label: {
             TravelRowView(travel: summary)
         }
@@ -365,10 +378,20 @@ struct ActivityView: View {
                         .foregroundStyle(viewModel.selectedIDs.contains(item.id) ? Color.accentIndigo : Color.textMid)
                         .accessibilityHidden(true)
                 }
-                TransactionItemView(item: item)
+                // Only this list badges travel membership: it is the one place a row in a
+                // travel sits next to one that is not, and bulk-assigning silently moves
+                // a row out of the travel it was already in.
+                TransactionItemView(item: item, showsTravelBadge: true, travel: viewModel.travel(for: item))
             }
         }
         .buttonStyle(.plain)
+        // The checkbox is hidden from VoiceOver, so without this a row sounds identical
+        // whether or not it is selected — and the bar below offers Delete.
+        .accessibilityAddTraits(
+            viewModel.isSelecting && viewModel.selectedIDs.contains(item.id)
+                ? AccessibilityTraits.isSelected
+                : []
+        )
         // A plain Button in a List swallows .onLongPressGesture, so run the
         // long-press alongside the button via .simultaneousGesture instead.
         // The long-press ONLY enters selection mode — the button's own tap
