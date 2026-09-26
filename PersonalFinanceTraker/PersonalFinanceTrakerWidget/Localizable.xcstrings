@@ -644,7 +644,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scansiona scontrino"
+            "value" : "Scansiona uno scontrino"
           }
         }
       }
@@ -662,7 +662,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scansiona scontrino"
+            "value" : "Scansiona uno scontrino"
           }
         }
       }

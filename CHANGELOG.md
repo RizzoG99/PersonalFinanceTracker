@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- What’s New now highlights Travels, receipt scanning, recurring payments, and a new Siri and widgets guide, with a button that opens each feature or its setup instructions directly.
 - Travels: multi-selecting transactions and tapping "Travel" now opens the same Travels list you get from the ⋯ menu, so each trip shows its total and dates while you pick instead of just a name. It also offers "Add Travel" when you haven't made one yet — naming the trip there creates it and moves everything you had selected straight into it — and a ＋ when you already have trips, so one old trip no longer forces you back out to start another.
 - Travels: "Remove from travel" no longer appears when none of the transactions you've selected are in a trip — it had nothing to remove them from.
 - Travels: long-pressing a trip row in Activity now just starts multi-select, instead of also opening the trip's detail sheet on top of it.

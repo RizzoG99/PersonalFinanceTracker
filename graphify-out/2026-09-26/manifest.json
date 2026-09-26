@@ -15,8 +15,8 @@
     "semantic_hash": "4c3afb48b769d8fc31aac9fb501f5fb8"
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/AuthenticationWrapper.swift": {
-    "mtime": 1790368060.6654682,
-    "ast_hash": "63aaaacf4ae2a1e4a589219b15851856",
+    "mtime": 1790368298.8575203,
+    "ast_hash": "bcb41afa6419455ded54dd16eebb97ca",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift": {
@@ -330,8 +330,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/MainTabView/MainTabView.swift": {
-    "mtime": 1790368060.69322,
-    "ast_hash": "0d9a3397de75a0d2a312016d9a2d05c4",
+    "mtime": 1790433193.2393332,
+    "ast_hash": "b20cf99d8e7ce74a05d90ea272c64659",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Components/ProfileAvatarView.swift": {
@@ -375,8 +375,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Profile/Views/ProfileView.swift": {
-    "mtime": 1790368060.695089,
-    "ast_hash": "d22b2b48fb970bf8ef7da3b62207c634",
+    "mtime": 1790433193.2827213,
+    "ast_hash": "1bd0ccec9cae08773f800da9f1198b89",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/Security/Components/MonkeyAnimationView.swift": {
@@ -420,8 +420,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/ActivityView.swift": {
-    "mtime": 1790368060.6970484,
-    "ast_hash": "948fb2b99ec1e6aecb7cb5d7e0967a58",
+    "mtime": 1790368298.915925,
+    "ast_hash": "c3696b97d272edd5d0d8a371fcd279dd",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/Components/ActivitySearchBar.swift": {
@@ -1315,8 +1315,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/AddTransactionIntent.swift": {
-    "mtime": 1790368060.6651652,
-    "ast_hash": "903130a8ca992c720d5a9bd54cda00c1",
+    "mtime": 1790433193.3049734,
+    "ast_hash": "108e3acd4424ac661f1f48cf2032817c",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/AppContainer.swift": {
@@ -1965,8 +1965,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/iPad/IPadInspector.swift": {
-    "mtime": 1790368060.7020545,
-    "ast_hash": "640e7ef9be1747b773aba8a695557f91",
+    "mtime": 1790368589.7265222,
+    "ast_hash": "53b63600bfd2128df07ec6a1dc780196",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/iPad/IPadLedgerTable.swift": {
@@ -1975,8 +1975,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/iPad/IPadRootView.swift": {
-    "mtime": 1790368060.7023191,
-    "ast_hash": "a6f571fbacd8e2f3b5b8e7a14f0c6850",
+    "mtime": 1790433193.2616804,
+    "ast_hash": "dce8a203e6b3fd8b58e10c3146d5d5f9",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/iPad/IPadSection.swift": {
@@ -2010,18 +2010,18 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/FeatureDiscoveryContent.swift": {
-    "mtime": 1790368060.6886172,
-    "ast_hash": "7381afbab459fb819515745a36f7ddc8",
+    "mtime": 1790435276.755741,
+    "ast_hash": "5c6a250171c0e5229fab56051bc89690",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/FeatureDiscoveryCoordinator.swift": {
-    "mtime": 1790368060.6887238,
-    "ast_hash": "9b848ec0c0abac30993f4c29102470f5",
+    "mtime": 1790368298.837172,
+    "ast_hash": "ad5790f0a1a66479c5dae807aeed3a65",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/FeatureDiscoveryDestination.swift": {
-    "mtime": 1790368060.6888196,
-    "ast_hash": "2d50ad5d757481c3d20566d5ce5151f6",
+    "mtime": 1790433145.6425219,
+    "ast_hash": "a5278792d373786ce149ea87baa663b4",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/FeatureDiscoveryManifest.swift": {
@@ -2035,23 +2035,23 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/FeatureDiscoveryViews.swift": {
-    "mtime": 1790368060.689126,
-    "ast_hash": "506a2a43f5d77a3df84a3bb73441a038",
+    "mtime": 1790433145.6700096,
+    "ast_hash": "3dec2b00943a1c3c86cd90bd1fcb3023",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/FeatureDiscovery/FeatureDiscoveryCoordinatorTests.swift": {
-    "mtime": 1790368060.7158432,
-    "ast_hash": "16a9c0c5ba5adff18510aec7069c0a76",
+    "mtime": 1790435276.8473508,
+    "ast_hash": "de5e01a1e8953ad75d2e08584b22161c",
     "semantic_hash": ""
   },
   "docs/remote-assets/feature-discovery/manifest-it.json": {
-    "mtime": 1790368060.7307057,
-    "ast_hash": "dd454d4f7a7ea2048e9ae454afa63ce9",
+    "mtime": 1790435276.8055053,
+    "ast_hash": "8a7a597103a2719feb5dcdd05823ee0d",
     "semantic_hash": ""
   },
   "docs/remote-assets/feature-discovery/manifest.json": {
-    "mtime": 1790368060.7307913,
-    "ast_hash": "3d4e6313d6461718f8d2f3d8716e7138",
+    "mtime": 1790433209.168364,
+    "ast_hash": "9883f52535ec39b61c4bc304f6a47357",
     "semantic_hash": ""
   },
   "docs/features/2026-08-16-feature-discovery.md": {
@@ -2060,8 +2060,8 @@
     "semantic_hash": ""
   },
   "docs/remote-assets/feature-discovery/README.md": {
-    "mtime": 1790368060.7306137,
-    "ast_hash": "26c14b3d8d4e618ee35a337b5a115667",
+    "mtime": 1790434338.300811,
+    "ast_hash": "2e158278f35534d6b62e781803483907",
     "semantic_hash": ""
   },
   "docs/remote-assets/feature-discovery/onboarding/activity-v1.png": {
@@ -2330,8 +2330,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1790368060.663675,
-    "ast_hash": "666ac1eb78718e13863973d158bf737e",
+    "mtime": 1790433193.348528,
+    "ast_hash": "e265e521387a03b02141d34523f94cb8",
     "semantic_hash": ""
   },
   ".agents/skills/swiftui-pro/assets/swiftui-pro-icon.png": {
@@ -2667,6 +2667,36 @@
   "docs/features/2026-09-06-travel-expense-groups.md": {
     "mtime": 1790368060.7300596,
     "ast_hash": "d39187b9e97f8789eb0aa139641b2304",
+    "semantic_hash": ""
+  },
+  "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/SiriWidgetsGuideView.swift": {
+    "mtime": 1790435921.577064,
+    "ast_hash": "645ce16961b59f2ea272e0bc2177cf3a",
+    "semantic_hash": ""
+  },
+  "docs/remote-assets/feature-discovery/releases/recurring-transactions-v1.png": {
+    "mtime": 1790431203.5765162,
+    "ast_hash": "7011c703f9de15a6a8e595d06759e5d0",
+    "semantic_hash": ""
+  },
+  "docs/remote-assets/feature-discovery/releases/scan-receipt-v1.png": {
+    "mtime": 1790431207.773443,
+    "ast_hash": "81230e2501ecd7bb6ba3ed8e4e7f29e7",
+    "semantic_hash": ""
+  },
+  "docs/remote-assets/feature-discovery/releases/travels-v1.png": {
+    "mtime": 1790431203.5743737,
+    "ast_hash": "01957f0ee15663723c2164d8914771d2",
+    "semantic_hash": ""
+  },
+  "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcodecloud/manifest.json": {
+    "mtime": 1790434512.188618,
+    "ast_hash": "d7fd9cb6ce95bb528d9704117b6ba1fb",
+    "semantic_hash": ""
+  },
+  "docs/remote-assets/feature-discovery/releases/siri-widgets-v1.png": {
+    "mtime": 1790434175.6765926,
+    "ast_hash": "6ea56e5849dcbfb1dd2c27cd858e867b",
     "semantic_hash": ""
   }
 }

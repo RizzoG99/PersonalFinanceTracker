@@ -4,7 +4,7 @@ import SwiftData
 import CoreTransferable
 
 enum ProfileRoute: Hashable {
-    case categories, scanCategories, budgets, changePIN
+    case categories, scanCategories, budgets, changePIN, siriWidgetsGuide
 }
 
 struct ProfileView: View {
@@ -22,6 +22,7 @@ struct ProfileView: View {
     @Environment(AppSettings.self) private var appSettings
     @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.locale) private var locale
     @State private var showingFileImporter = false
     @State private var showingDeleteConfirmation = false
     @State private var showingPINConfirmation = false
@@ -162,6 +163,12 @@ struct ProfileView: View {
             } label: {
                 Label("What's New", systemImage: "gift")
             }
+
+            Button {
+                route = .siriWidgetsGuide
+            } label: {
+                Label(SiriWidgetsGuideCopy.localized(for: locale).navigationTitle, systemImage: "waveform")
+            }
         } header: {
             sectionHeader("DISCOVER")
         }
@@ -285,6 +292,11 @@ struct ProfileView: View {
                     case .changePIN:
                         PINSetupView(
                             viewModel: PINSetupViewModel(pinService: pinService, authService: authService, isChangeMode: true)
+                        )
+                    case .siriWidgetsGuide:
+                        SiriWidgetsGuideView(
+                            media: featureDiscovery.manifest.siriWidgetsGuideMedia,
+                            mediaBaseURL: featureDiscovery.mediaBaseURL
                         )
                     }
                 }

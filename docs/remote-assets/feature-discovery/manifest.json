@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2026.08.16.1",
+  "contentVersion": "2026.09.26.1",
   "onboarding": {
     "id": "explore-the-app",
     "title": "Explore Personal Finance",
@@ -108,6 +108,66 @@
           },
           "destination": "insights",
           "actionTitle": "Open Insights"
+        }
+      ]
+    },
+    {
+      "id": "1.0-highlights-2026-09",
+      "version": "1.0",
+      "title": "More ways to stay on top of your money",
+      "summary": "Catch up on four powerful features you may have missed.",
+      "items": [
+        {
+          "id": "travels",
+          "title": "Organize spending by trip",
+          "body": "Group Activity rows by trip, then see travel dates, daily cost, and spending by category. Every expense still counts normally in Budgets and Insights.",
+          "symbolName": "airplane",
+          "media": {
+            "kind": "image",
+            "path": "releases/travels-v1.png",
+            "accessibilityLabel": "A glass suitcase beside grouped expense cards and a curved travel route."
+          },
+          "destination": "travels",
+          "actionTitle": "Open Travels"
+        },
+        {
+          "id": "receipt-scan",
+          "title": "Scan a receipt in seconds",
+          "body": "Scan a receipt on your device to prefill the amount, date, merchant, and category, then review everything before saving.",
+          "symbolName": "doc.text.viewfinder",
+          "media": {
+            "kind": "image",
+            "path": "releases/scan-receipt-v1.png",
+            "accessibilityLabel": "A glass receipt framed by scan corners with a teal confirmation mark."
+          },
+          "destination": "receiptScan",
+          "actionTitle": "Scan a receipt"
+        },
+        {
+          "id": "recurring-transactions",
+          "title": "Manage recurring payments in one place",
+          "body": "Create recurring rules, detect them while importing bank files, and manage every recurring payment from one place.",
+          "symbolName": "repeat.circle",
+          "media": {
+            "kind": "image",
+            "path": "releases/recurring-transactions-v1.png",
+            "accessibilityLabel": "Indigo and teal circular arrows connecting glass calendar and payment cards."
+          },
+          "destination": "recurring",
+          "actionTitle": "Open Recurring"
+        },
+        {
+          "id": "siri-widgets",
+          "title": "Siri and widgets, ready when you are",
+          "body": "Ask **Siri** to add a transaction, or add **Financial Pulse**, **Scan Receipt**, and **Safe to Spend** widgets to your Home or Lock Screen.",
+          "symbolName": "waveform",
+          "media": {
+            "kind": "image",
+            "path": "releases/siri-widgets-v1.png",
+            "accessibilityLabel": "An abstract indigo voice waveform beside three floating glass widget tiles."
+          },
+          "destination": "siriWidgetsGuide",
+          "actionTitle": "Learn how"
         }
       ]
     }

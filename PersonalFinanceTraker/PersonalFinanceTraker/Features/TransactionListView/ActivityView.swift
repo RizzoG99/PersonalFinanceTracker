@@ -12,12 +12,12 @@ struct ActivityView: View {
     @Binding var showingAddItemView: Bool
     let materializationService: RecurrenceMaterializationService
     var onScanned: ((ReceiptScan) -> Void)? = nil
+    @Binding var showingRecurringView: Bool
+    @Binding var showingTravelsView: Bool
 
     @State private var showCategorySheet = false
     @State private var showAmountSheet = false
     @State private var showNoteSheet = false
-    @State private var showRecurringView = false
-    @State private var showTravelsView = false
     @State private var selectedTravel: TravelSummary? = nil
     @State private var showTravelPicker = false
     @State private var pendingTravelDeletion: TravelSummary? = nil
@@ -128,8 +128,8 @@ struct ActivityView: View {
                     // the plus inside that list and in the add transaction form, never here.
                     ToolbarItem(placement: .topBarLeading) {
                         Menu {
-                            Button("Recurring", systemImage: "repeat") { showRecurringView = true }
-                            Button("Travels", systemImage: "airplane") { showTravelsView = true }
+                            Button("Recurring", systemImage: "repeat") { showingRecurringView = true }
+                            Button("Travels", systemImage: "airplane") { showingTravelsView = true }
                         } label: {
                             // .circle, not a bare ellipsis: it sits beside the gear, and
                             // three loose dots read lighter than every other toolbar glyph.
@@ -141,17 +141,17 @@ struct ActivityView: View {
             }
             // A sheet, not a push: RecurringView owns its own nested edit sheet, so tapping a
             // row there stacks the edit surface on top instead of popping back to Activity first.
-            .sheet(isPresented: $showRecurringView) {
+            .sheet(isPresented: $showingRecurringView) {
                 NavigationStack {
                     RecurringView(materializationService: materializationService)
                 }
                 .presentationBackground { AppBackground() }
             }
-            .sheet(isPresented: $showTravelsView, onDismiss: flushPendingAddExpense) {
+            .sheet(isPresented: $showingTravelsView, onDismiss: flushPendingAddExpense) {
                 NavigationStack {
                     TravelsView(onAddExpense: { travelId in
                         pendingAddExpenseTravelId = travelId
-                        showTravelsView = false
+                        showingTravelsView = false
                     })
                 }
                 .presentationBackground { AppBackground() }
@@ -576,7 +576,12 @@ struct DescriptionBulkEditSheet: View {
     SampleData.populateModelContext(container.mainContext)
     let vm = TransactionListViewModel(repo: TransactionActor.make(container))
     let materializationService: RecurrenceMaterializationService = .init()
-    let base: ActivityView = ActivityView(showingAddItemView: .constant(false), materializationService: materializationService)
+    let base: ActivityView = ActivityView(
+        showingAddItemView: .constant(false),
+        materializationService: materializationService,
+        showingRecurringView: .constant(false),
+        showingTravelsView: .constant(false)
+    )
     return base
         .environment(vm)
         .environment(ProfileViewModel())

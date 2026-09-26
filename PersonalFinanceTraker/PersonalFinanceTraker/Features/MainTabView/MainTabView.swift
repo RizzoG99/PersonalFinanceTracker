@@ -29,6 +29,10 @@ struct MainTabView: View {
     @State private var addSheet: AddSheetContext?
     /// Flipped by the "Scan Receipt" widget deep link.
     @State private var scanFromWidget = false
+    @State private var showingReceiptSourceChooser = false
+    @State private var showingRecurringView = false
+    @State private var showingTravelsView = false
+    @State private var showingSiriWidgetsGuide = false
 
     /// One Add Transaction presentation, with whatever opened it.
     private struct AddSheetContext: Identifiable {
@@ -117,6 +121,16 @@ struct MainTabView: View {
         case .addTransaction:
             selectedTab = .home
             addSheet = AddSheetContext()
+        case .travels:
+            selectedTab = .activity
+            showingTravelsView = true
+        case .receiptScan:
+            showingReceiptSourceChooser = true
+        case .recurring:
+            selectedTab = .activity
+            showingRecurringView = true
+        case .siriWidgetsGuide:
+            showingSiriWidgetsGuide = true
         }
     }
 
@@ -142,7 +156,13 @@ struct MainTabView: View {
                         .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
-                    ActivityView(showingAddItemView: showingAddItemView, materializationService: materializationService, onScanned: applyScan)
+                    ActivityView(
+                        showingAddItemView: showingAddItemView,
+                        materializationService: materializationService,
+                        onScanned: applyScan,
+                        showingRecurringView: $showingRecurringView,
+                        showingTravelsView: $showingTravelsView
+                    )
                         .payCycleAware { viewModel.load() }
                 }
                 Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {
@@ -202,6 +222,17 @@ struct MainTabView: View {
         .animation(.spring(duration: 0.3), value: viewModel.showUndoBanner)
         .hideAmountsShortcut(appSettings)
         .receiptScanShortcut(isPresented: $scanFromWidget, directToCamera: true, onScanned: applyScan)
+        .receiptScanShortcut(isPresented: $showingReceiptSourceChooser, onScanned: applyScan)
+        .sheet(isPresented: $showingSiriWidgetsGuide) {
+            NavigationStack {
+                SiriWidgetsGuideView(
+                    media: featureDiscovery.manifest.siriWidgetsGuideMedia,
+                    mediaBaseURL: featureDiscovery.mediaBaseURL,
+                    showsDoneButton: true
+                )
+            }
+            .presentationBackground { AppBackground() }
+        }
         .onChange(of: selectedTab) { _, newTab in
             shellModels.selectedTab = newTab
         }

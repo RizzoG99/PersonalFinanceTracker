@@ -26,7 +26,10 @@ struct IPadRootView: View {
     /// (see ReceiptScanShortcut) — carried into the inspector's Add Transaction, which then
     /// opens already filled in.
     @State private var pendingReceiptScan: ReceiptScan?
+    @State private var pendingTravelId: UUID?
     @State private var showingScanDialog = false
+    @State private var showingTravelsView = false
+    @State private var showingSiriWidgetsGuide = false
     /// ProfileView takes this binding to drive its own sheet detents on iPhone. As a sidebar
     /// destination there is no sheet to size, so nothing observes it — it just satisfies the API.
     @State private var profileDetent: PresentationDetent = .large
@@ -42,7 +45,12 @@ struct IPadRootView: View {
         // shaking an iPad isn't a comfortable gesture anyway — issue #52.
         .hideAmountsShortcut(appSettings)
         .inspector(isPresented: inspectorPresented) {
-            IPadInspector(models: models, showingAddItemView: $showingAddItemView, pendingReceiptScan: pendingReceiptScan)
+            IPadInspector(
+                models: models,
+                showingAddItemView: $showingAddItemView,
+                pendingReceiptScan: pendingReceiptScan,
+                pendingTravelId: pendingTravelId
+            )
                 .inspectorColumnWidth(min: 320, ideal: 400, max: 560)
         }
         .background { AppBackground() }
@@ -51,6 +59,25 @@ struct IPadRootView: View {
         // the section switch — this one.
         .sheet(isPresented: importFlowPresented) {
             IPadImportFlowView(viewModel: models.transactions)
+        }
+        .sheet(isPresented: $showingTravelsView, onDismiss: openPendingTravelExpense) {
+            NavigationStack {
+                TravelsView { travelId in
+                    pendingTravelId = travelId
+                    showingTravelsView = false
+                }
+            }
+            .presentationBackground { AppBackground() }
+        }
+        .sheet(isPresented: $showingSiriWidgetsGuide) {
+            NavigationStack {
+                SiriWidgetsGuideView(
+                    media: featureDiscovery.manifest.siriWidgetsGuideMedia,
+                    mediaBaseURL: featureDiscovery.mediaBaseURL,
+                    showsDoneButton: true
+                )
+            }
+            .presentationBackground { AppBackground() }
         }
         .alert("Import", isPresented: importErrorPresented) {
             Button("OK") { models.transactions.importError = nil }
@@ -107,6 +134,11 @@ struct IPadRootView: View {
         )
     }
 
+    private func openPendingTravelExpense() {
+        guard pendingTravelId != nil else { return }
+        showingAddItemView = true
+    }
+
     private func consumeFeatureDiscoveryDestination() {
         guard let destination = featureDiscovery.consumeDestination() else { return }
         switch destination {
@@ -119,6 +151,15 @@ struct IPadRootView: View {
         case .addTransaction:
             section = .home
             showingAddItemView = true
+        case .travels:
+            section = .activity
+            showingTravelsView = true
+        case .receiptScan:
+            showingScanDialog = true
+        case .recurring:
+            section = .recurring
+        case .siriWidgetsGuide:
+            showingSiriWidgetsGuide = true
         }
     }
 
@@ -219,6 +260,7 @@ struct IPadRootView: View {
                 guard !presented else { return }
                 showingAddItemView = false
                 pendingReceiptScan = nil
+                pendingTravelId = nil
                 models.transactions.transactionToEdit = nil
                 models.compass.showingAddGoal = false
                 models.compass.goalEditDraft = nil

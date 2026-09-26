@@ -11,7 +11,7 @@ extension FeatureDiscoveryManifest {
 
         return FeatureDiscoveryManifest(
             schemaVersion: 1,
-            contentVersion: "bundled-fallback",
+            contentVersion: "2026.09.26.1",
             onboarding: Onboarding(
             id: "explore-the-app",
             title: copy("Explore Personal Finance", "Scopri Personal Finance"),
@@ -91,6 +91,50 @@ extension FeatureDiscoveryManifest {
                         media: nil,
                         destination: .insights,
                         actionTitle: copy("Open Insights", "Apri Insights")
+                    )
+                ]
+            ),
+            Release(
+                id: "1.0-highlights-2026-09",
+                version: "1.0",
+                title: copy("More ways to stay on top of your money", "Più modi per gestire il tuo denaro"),
+                summary: copy("Catch up on four powerful features you may have missed.", "Scopri quattro funzioni che potresti non aver ancora provato."),
+                items: [
+                    ReleaseItem(
+                        id: "travels",
+                        title: copy("Organize spending by trip", "Organizza le spese per viaggio"),
+                        body: copy("Group Activity rows by trip, then see travel dates, daily cost, and spending by category. Every expense still counts normally in Budgets and Insights.", "Raggruppa per viaggio le righe in Attività, poi consulta date, costo giornaliero e spese per categoria. Ogni spesa continua a essere conteggiata normalmente in Budget e Analisi."),
+                        symbolName: "airplane",
+                        media: nil,
+                        destination: .travels,
+                        actionTitle: copy("Open Travels", "Apri Viaggi")
+                    ),
+                    ReleaseItem(
+                        id: "receipt-scan",
+                        title: copy("Scan a receipt in seconds", "Scansiona uno scontrino in pochi secondi"),
+                        body: copy("Scan a receipt on your device to prefill the amount, date, merchant, and category, then review everything before saving.", "Scansiona uno scontrino sul dispositivo per precompilare importo, data, esercente e categoria, poi controlla tutto prima di salvare."),
+                        symbolName: "doc.text.viewfinder",
+                        media: nil,
+                        destination: .receiptScan,
+                        actionTitle: copy("Scan a receipt", "Scansiona uno scontrino")
+                    ),
+                    ReleaseItem(
+                        id: "recurring-transactions",
+                        title: copy("Manage recurring payments in one place", "Gestisci i pagamenti ricorrenti in un unico posto"),
+                        body: copy("Create recurring rules, detect them while importing bank files, and manage every recurring payment from one place.", "Crea regole ricorrenti, rilevale durante l’importazione dei file bancari e gestisci tutti i pagamenti ricorrenti in un unico posto."),
+                        symbolName: "repeat.circle",
+                        media: nil,
+                        destination: .recurring,
+                        actionTitle: copy("Open Recurring", "Apri Ricorrenti")
+                    ),
+                    ReleaseItem(
+                        id: "siri-widgets",
+                        title: copy("Siri and widgets, ready when you are", "Siri e widget, sempre a portata di mano"),
+                        body: copy("Ask **Siri** to add a transaction, or add **Financial Pulse**, **Scan Receipt**, and **Safe to Spend** widgets to your Home or Lock Screen.", "Chiedi a **Siri** di aggiungere una transazione oppure aggiungi i widget **Impulso finanziario**, **Scansiona uno scontrino** e **Quanto puoi spendere** alla schermata Home o di blocco."),
+                        symbolName: "waveform",
+                        media: nil,
+                        destination: .siriWidgetsGuide,
+                        actionTitle: copy("Learn how", "Scopri come")
                     )
                 ]
             )

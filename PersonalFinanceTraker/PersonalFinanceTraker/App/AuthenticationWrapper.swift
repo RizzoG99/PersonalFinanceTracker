@@ -192,7 +192,7 @@ struct AuthenticationWrapper: View {
             .presentationDragIndicator(.hidden)
         }
         .sheet(item: $featureDiscovery.releaseToPresent, onDismiss: {
-            featureDiscovery.dismissWhatsNew()
+            featureDiscovery.completeWhatsNewDismissal()
         }) { release in
             FeatureDiscoveryWhatsNewView(
                 release: release,

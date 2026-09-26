@@ -425,7 +425,7 @@ private struct FeatureDiscoveryReleaseCopy: View {
             Text(item.title)
                 .font(.headline)
                 .foregroundStyle(.textPrimary)
-            Text(item.body)
+            FeatureDiscoveryMarkdownText(item.body)
                 .foregroundStyle(.textMid)
             if let actionTitle = item.actionTitle {
                 Button(actionTitle, action: onAction)
@@ -436,7 +436,26 @@ private struct FeatureDiscoveryReleaseCopy: View {
     }
 }
 
-private struct FeatureDiscoveryArtworkView: View {
+struct FeatureDiscoveryMarkdownText: View {
+    let source: String
+
+    init(_ source: String) {
+        self.source = source
+    }
+
+    var body: some View {
+        Text(attributedCopy)
+    }
+
+    private var attributedCopy: AttributedString {
+        (try? AttributedString(
+            markdown: source,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        )) ?? AttributedString(source)
+    }
+}
+
+struct FeatureDiscoveryArtworkView: View {
     let media: FeatureDiscoveryManifest.Media?
     let mediaBaseURL: URL?
     let symbolName: String
