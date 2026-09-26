@@ -192,7 +192,7 @@ struct AuthenticationWrapper: View {
             .presentationDragIndicator(.hidden)
         }
         .sheet(item: $featureDiscovery.releaseToPresent, onDismiss: {
-            featureDiscovery.dismissWhatsNew()
+            featureDiscovery.completeWhatsNewDismissal()
         }) { release in
             FeatureDiscoveryWhatsNewView(
                 release: release,
@@ -202,10 +202,12 @@ struct AuthenticationWrapper: View {
                 },
                 onDone: { featureDiscovery.dismissWhatsNew() }
             )
-            // .large only: at .medium the release card's illustration gets clipped right at the
-            // sheet edge instead of reading as "scroll for more" — the tour view avoids .medium
-            // for the same reason (.fraction(0.72)/fullScreen).
-            .presentationDetents([.large])
+            // .page, not a detent: a detent (even .large) keeps the sheet on the detent-driven
+            // sizing path, which on iPad caps width at the compact phone-form-sheet size no
+            // matter which detent you pick — that's what was producing the narrow floating card.
+            // .page gives full height *and* full width, and lets FeatureDiscoveryReleaseItemView's
+            // own horizontalSizeClass-driven layout (image beside copy) finally activate on iPad.
+            .presentationSizing(.page)
             .presentationBackground { AppBackground() }
         }
         .task(id: isPINSetup && authService.isUnlocked && !showSplash) {

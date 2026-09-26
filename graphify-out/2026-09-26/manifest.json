@@ -15,8 +15,8 @@
     "semantic_hash": "4c3afb48b769d8fc31aac9fb501f5fb8"
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/AuthenticationWrapper.swift": {
-    "mtime": 1790450641.5246508,
-    "ast_hash": "1f9eb172ca968bd68b8da9ff3d077e5a",
+    "mtime": 1790368298.8575203,
+    "ast_hash": "bcb41afa6419455ded54dd16eebb97ca",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/AppToolbarModifier.swift": {
-    "mtime": 1790450669.3088856,
-    "ast_hash": "924b25d7e663cb643f9ff76f5732efbd",
+    "mtime": 1790448572.9466372,
+    "ast_hash": "0a0542fa389682b1296e838fed1a2722",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/BiometricAuthService.swift": {
@@ -2035,8 +2035,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/FeatureDiscovery/FeatureDiscoveryViews.swift": {
-    "mtime": 1790450761.1778185,
-    "ast_hash": "e2267f3bea7fc88759497d04245612d4",
+    "mtime": 1790433145.6700096,
+    "ast_hash": "3dec2b00943a1c3c86cd90bd1fcb3023",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/FeatureDiscovery/FeatureDiscoveryCoordinatorTests.swift": {
@@ -2330,8 +2330,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1790450786.221276,
-    "ast_hash": "7098766e61aefa4bb098dd4ed52943d4",
+    "mtime": 1790448587.548504,
+    "ast_hash": "0b5c6d9a09f15691e10b922c28f2b783",
     "semantic_hash": ""
   },
   ".agents/skills/swiftui-pro/assets/swiftui-pro-icon.png": {

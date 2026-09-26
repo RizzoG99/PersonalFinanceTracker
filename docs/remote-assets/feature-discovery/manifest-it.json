@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2026.08.16.1",
+  "contentVersion": "2026.09.26.1",
   "onboarding": {
     "id": "explore-the-app",
     "title": "Scopri Personal Finance",
@@ -108,6 +108,66 @@
           },
           "destination": "insights",
           "actionTitle": "Apri Insights"
+        }
+      ]
+    },
+    {
+      "id": "1.0-highlights-2026-09",
+      "version": "1.0",
+      "title": "Più modi per gestire il tuo denaro",
+      "summary": "Scopri quattro funzioni che potresti non aver ancora provato.",
+      "items": [
+        {
+          "id": "travels",
+          "title": "Organizza le spese per viaggio",
+          "body": "Raggruppa per viaggio le righe in Attività, poi consulta date, costo giornaliero e spese per categoria. Ogni spesa continua a essere conteggiata normalmente in Budget e Analisi.",
+          "symbolName": "airplane",
+          "media": {
+            "kind": "image",
+            "path": "releases/travels-v1.png",
+            "accessibilityLabel": "Una valigia in vetro accanto a schede di spesa raggruppate e a un itinerario curvo."
+          },
+          "destination": "travels",
+          "actionTitle": "Apri Viaggi"
+        },
+        {
+          "id": "receipt-scan",
+          "title": "Scansiona uno scontrino in pochi secondi",
+          "body": "Scansiona uno scontrino sul dispositivo per precompilare importo, data, esercente e categoria, poi controlla tutto prima di salvare.",
+          "symbolName": "doc.text.viewfinder",
+          "media": {
+            "kind": "image",
+            "path": "releases/scan-receipt-v1.png",
+            "accessibilityLabel": "Uno scontrino in vetro racchiuso tra angoli di scansione con un segno di conferma turchese."
+          },
+          "destination": "receiptScan",
+          "actionTitle": "Scansiona uno scontrino"
+        },
+        {
+          "id": "recurring-transactions",
+          "title": "Gestisci i pagamenti ricorrenti in un unico posto",
+          "body": "Crea regole ricorrenti, rilevale durante l’importazione dei file bancari e gestisci tutti i pagamenti ricorrenti in un unico posto.",
+          "symbolName": "repeat.circle",
+          "media": {
+            "kind": "image",
+            "path": "releases/recurring-transactions-v1.png",
+            "accessibilityLabel": "Frecce circolari indaco e turchesi collegano schede in vetro per calendario e pagamento."
+          },
+          "destination": "recurring",
+          "actionTitle": "Apri Ricorrenti"
+        },
+        {
+          "id": "siri-widgets",
+          "title": "Siri e widget, sempre a portata di mano",
+          "body": "Chiedi a **Siri** di aggiungere una transazione oppure aggiungi i widget **Impulso finanziario**, **Scansiona uno scontrino** e **Quanto puoi spendere** alla schermata Home o di blocco.",
+          "symbolName": "waveform",
+          "media": {
+            "kind": "image",
+            "path": "releases/siri-widgets-v1.png",
+            "accessibilityLabel": "Una forma d’onda vocale indaco accanto a tre widget in vetro sospesi."
+          },
+          "destination": "siriWidgetsGuide",
+          "actionTitle": "Scopri come"
         }
       ]
     }

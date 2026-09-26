@@ -10,6 +10,11 @@ struct AppToolbarModifier: ViewModifier {
     @Environment(ProfileViewModel.self) private var profileViewModel: ProfileViewModel
     @Environment(TransactionListViewModel.self) private var transactionViewModel: TransactionListViewModel
     @Environment(DataChangedSignal.self) private var dataChanged: DataChangedSignal
+    /// Optional, not required: this modifier's host-view previews (Dashboard, Activity,
+    /// Insights, Credit) don't inject the coordinator, and a missing non-optional
+    /// `@Environment` traps at render time — nil-means-no-dot is the right failure mode
+    /// for a purely decorative indicator.
+    @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery: FeatureDiscoveryCoordinator?
     @Binding var showingAddItemView: Bool
     /// When false, the gear/＋ items are hidden (e.g. while the Activity list is in
     /// multi-select mode and shows its own Cancel / count / Select All toolbar instead).
@@ -22,6 +27,10 @@ struct AppToolbarModifier: ViewModifier {
     @State private var showingProfile = false
     @State private var selectedDetent: PresentationDetent = .large
     @State private var showingScanDialog = false
+    /// The gear glyph scales with Dynamic Type via `.font(.headline)`; scaling the dot the same
+    /// way keeps it proportionally readable at large accessibility sizes instead of shrinking
+    /// relative to the glyph it's supposed to be flagging.
+    @ScaledMetric(relativeTo: .headline) private var unseenDotDiameter: CGFloat = 9
 
     /// The iPad shell owns these actions itself — Settings is a sidebar destination and Add
     /// lives in the shell's toolbar — so showing them again per screen would duplicate both.
@@ -36,12 +45,24 @@ struct AppToolbarModifier: ViewModifier {
             .toolbar {
                 if showsItems {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("Open profile", systemImage: "gear") {
+                        let hasUnseenRelease = featureDiscovery?.hasUnseenRelease == true
+                        Button {
                             selectedDetent = .large
                             showingProfile = true
+                        } label: {
+                            Image(systemName: "gear")
+                                .overlay(alignment: .topTrailing) {
+                                    if hasUnseenRelease {
+                                        Circle()
+                                            .fill(Color.accentIndigo)
+                                            .frame(width: unseenDotDiameter, height: unseenDotDiameter)
+                                    }
+                                }
                         }
                         .font(.headline)
                         .foregroundStyle(.textPrimary)
+                        .accessibilityLabel("Open profile")
+                        .accessibilityValue(hasUnseenRelease ? Text("New") : Text(verbatim: ""))
                     }
                     if onScanned != nil {
                         ToolbarItem(placement: .topBarTrailing) {

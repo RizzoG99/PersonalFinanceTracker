@@ -18,19 +18,23 @@ feature-discovery/
   releases/
     financial-pulse-v1.png
     safe-to-spend-v1.png
+    travels-v1.png
+    scan-receipt-v1.png
+    recurring-transactions-v1.png
+    siri-widgets-v1.png
 ```
 
-The app first loads `manifest-<language-code>.json` when one exists (for example `manifest-it.json`), then falls back to `manifest.json`. Media paths are relative to the manifest, so moving from staging to `https://assets.<your-domain>/feature-discovery/` does not require changing the JSON.
+The app first loads `manifest-<language-code>.json` when one exists (for example `manifest-it.json`), then falls back to `manifest.json`. Media paths are relative to the manifest at `https://assets.finance.gabrielerizzo.dev/feature-discovery/`.
 
-## Development URL
+## Production URL
 
-Until a product domain is available, upload this directory's contents to the `pft-public-assets-prod` bucket under `feature-discovery/`. The development app configuration currently requests:
+Upload this directory's contents to the `pft-public-assets-prod` bucket under `feature-discovery/`. The app configuration requests the custom domain, which requires TLS 1.2 or newer:
 
 ```text
-https://pub-acab7f749262455f81f509d6c0f66518.r2.dev/feature-discovery/manifest.json
+https://assets.finance.gabrielerizzo.dev/feature-discovery/manifest.json
 ```
 
-The endpoint currently returns `404`, which is expected until `manifest.json` and the `onboarding/` directory have been uploaded. Before release, replace `FeatureDiscoveryManifestURL` in the app target's Info settings with the production custom-domain URL; do not ship an `r2.dev` URL.
+The endpoint already contains the previously published feature-discovery release. Upload the refreshed manifests and all newly referenced artwork before releasing an app build that includes this fallback, so remote and bundled content stay aligned. Do not restore or ship the former `r2.dev` URL.
 
 ## Publishing rules
 

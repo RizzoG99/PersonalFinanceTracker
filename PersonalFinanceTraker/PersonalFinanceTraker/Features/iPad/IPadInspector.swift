@@ -15,6 +15,7 @@ struct IPadInspector: View {
     let models: AppShellModels
     @Binding var showingAddItemView: Bool
     let pendingReceiptScan: ReceiptScan?
+    let pendingTravelId: UUID?
 
     var body: some View {
         NavigationStack {
@@ -30,7 +31,8 @@ struct IPadInspector: View {
                 draft: nil,
                 repo: models.repo,
                 materializationService: models.materializationService,
-                initialReceiptScan: pendingReceiptScan
+                initialReceiptScan: pendingReceiptScan,
+                initialTravelId: pendingTravelId
             )
         } else if let item = models.transactions.transactionToEdit {
             // .id(item.id): without it, tapping a different row while the inspector is already

@@ -158,6 +158,8 @@ struct PFTShortcuts: AppShortcutsProvider {
             phrases: [
                 "Add a transaction in \(.applicationName)",
                 "Log an expense in \(.applicationName)",
+                "Aggiungi una transazione con \(.applicationName)",
+                "Registra una spesa con \(.applicationName)",
             ],
             shortTitle: "Add Transaction",
             systemImageName: "plus.circle.fill"
