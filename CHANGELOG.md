@@ -7,6 +7,8 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Settings now shows a small dot, and What's New a "New" tag, when there's a release you haven't opened yet — so it's not easy to miss if you skipped it earlier.
+- On iPad, the What's New sheet now fills the screen instead of showing as a small, off-center card.
 - What’s New now highlights Travels, receipt scanning, recurring payments, and a new Siri and widgets guide, with a button that opens each feature or its setup instructions directly.
 - Travels: multi-selecting transactions and tapping "Travel" now opens the same Travels list you get from the ⋯ menu, so each trip shows its total and dates while you pick instead of just a name. It also offers "Add Travel" when you haven't made one yet — naming the trip there creates it and moves everything you had selected straight into it — and a ＋ when you already have trips, so one old trip no longer forces you back out to start another.
 - Travels: "Remove from travel" no longer appears when none of the transactions you've selected are in a trip — it had nothing to remove them from.

@@ -17,6 +17,12 @@ final class FeatureDiscoveryCoordinator {
     var pendingDestination: FeatureDiscoveryDestination?
     private(set) var manifest = FeatureDiscoveryManifest.fallback
     private(set) var mediaBaseURL: URL?
+    /// Drives the "New" badge on Settings > Discover. Kept as a stored, explicitly
+    /// refreshed property rather than computed from `manifest`/`UserDefaults`, since
+    /// `@Observable` can't track a `UserDefaults` read and the badge must update the
+    /// moment a release is dismissed, not just on the next `prepare()`.
+    private(set) var hasUnseenRelease = false
+    private var appVersion = "0"
     private var presentedReleaseID: String?
     private var destinationAfterReleaseDismissal: FeatureDiscoveryDestination?
 
@@ -36,6 +42,8 @@ final class FeatureDiscoveryCoordinator {
     func prepare(content: FeatureDiscoveryLoadedContent, appVersion: String) {
         manifest = content.manifest
         mediaBaseURL = content.mediaBaseURL
+        self.appVersion = appVersion
+        refreshUnseenBadge()
 
         guard !isShowingTour, releaseToPresent == nil else { return }
         guard defaults.bool(forKey: Key.hasCompletedTour) else {
@@ -69,6 +77,7 @@ final class FeatureDiscoveryCoordinator {
             defaults.set(presentedReleaseID, forKey: Key.lastSeenReleaseID)
         }
         releaseToPresent = nil
+        refreshUnseenBadge()
     }
 
     func performReleaseAction(destination: FeatureDiscoveryDestination?) {
@@ -92,11 +101,20 @@ final class FeatureDiscoveryCoordinator {
     }
 
     private func presentUnseenRelease(for appVersion: String) {
+        guard let release = unseenRelease(for: appVersion) else { return }
+        present(release)
+    }
+
+    private func unseenRelease(for appVersion: String) -> FeatureDiscoveryManifest.Release? {
         guard let release = manifest.releases.last(where: { $0.version == appVersion }),
               migratedSeenReleaseID() != release.id else {
-            return
+            return nil
         }
-        present(release)
+        return release
+    }
+
+    private func refreshUnseenBadge() {
+        hasUnseenRelease = unseenRelease(for: appVersion) != nil
     }
 
     private func present(_ release: FeatureDiscoveryManifest.Release?) {

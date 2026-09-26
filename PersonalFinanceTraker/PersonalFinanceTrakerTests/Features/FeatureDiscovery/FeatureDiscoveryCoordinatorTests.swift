@@ -53,6 +53,34 @@ struct FeatureDiscoveryCoordinatorTests {
         coordinator.showWhatsNew(appVersion: "1.0")
 
         #expect(coordinator.releaseToPresent?.id == "1.0-highlights-2026-09")
+        #expect(coordinator.hasUnseenRelease == false)
+    }
+
+    @Test @MainActor func unseenReleaseBadgeClearsOnDismissalAndStaysClearedAcrossLaunches() {
+        let defaults = makeDefaults()
+        defaults.set(true, forKey: "feature_discovery_has_completed_tour")
+        let coordinator = FeatureDiscoveryCoordinator(defaults: defaults)
+
+        coordinator.prepare(content: fallbackContent, appVersion: "1.0")
+        #expect(coordinator.hasUnseenRelease)
+
+        coordinator.dismissWhatsNew()
+        #expect(coordinator.hasUnseenRelease == false)
+
+        let nextLaunch = FeatureDiscoveryCoordinator(defaults: defaults)
+        nextLaunch.prepare(content: fallbackContent, appVersion: "1.0")
+        #expect(nextLaunch.hasUnseenRelease == false)
+    }
+
+    @Test @MainActor func unseenReleaseBadgeSurvivesTheOnboardingTourDeferral() {
+        let defaults = makeDefaults()
+        let coordinator = FeatureDiscoveryCoordinator(defaults: defaults)
+
+        coordinator.prepare(content: fallbackContent, appVersion: "1.0")
+
+        #expect(coordinator.isShowingTour)
+        #expect(coordinator.releaseToPresent == nil)
+        #expect(coordinator.hasUnseenRelease)
     }
 
     @Test @MainActor func finishingTourQueuesFirstTransactionAction() {

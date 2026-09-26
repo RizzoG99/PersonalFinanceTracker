@@ -161,7 +161,13 @@ struct ProfileView: View {
                 let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
                 featureDiscovery.showWhatsNew(appVersion: appVersion)
             } label: {
-                Label("What's New", systemImage: "gift")
+                HStack {
+                    Label("What's New", systemImage: "gift")
+                    Spacer()
+                    if featureDiscovery.hasUnseenRelease {
+                        NewContentBadge()
+                    }
+                }
             }
 
             Button {

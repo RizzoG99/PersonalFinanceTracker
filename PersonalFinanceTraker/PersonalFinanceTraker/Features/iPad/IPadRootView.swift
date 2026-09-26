@@ -176,8 +176,14 @@ struct IPadRootView: View {
                 }
             }
             Section {
-                Label(IPadSection.settings.title, systemImage: IPadSection.settings.systemImage)
-                    .tag(IPadSection.settings)
+                HStack {
+                    Label(IPadSection.settings.title, systemImage: IPadSection.settings.systemImage)
+                    Spacer()
+                    if featureDiscovery.hasUnseenRelease {
+                        NewContentBadge()
+                    }
+                }
+                .tag(IPadSection.settings)
             }
         }
         .navigationTitle("Finance")

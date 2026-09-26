@@ -297,6 +297,23 @@ struct ToastBanner<Action: View>: View {
     }
 }
 
+// MARK: - New Content Badge
+
+/// Unread marker for Feature Discovery content (Settings > Discover, the Settings
+/// gear, the iPad sidebar). Deliberately not `.badge()`, whose system gray reads
+/// as detail text rather than "there's something here for you" — and `.badge()`
+/// only accepts `Text`/`Int`, so it can't be tinted anyway.
+struct NewContentBadge: View {
+    var body: some View {
+        Text("New")
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(Color.accentIndigo)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color.accentIndigo.opacity(0.15), in: .capsule)
+    }
+}
+
 // MARK: - Glass Card Component
 
 struct GlassCard<Content: View>: View {

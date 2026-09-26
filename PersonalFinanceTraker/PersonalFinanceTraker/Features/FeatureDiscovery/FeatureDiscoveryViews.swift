@@ -365,6 +365,7 @@ struct FeatureDiscoveryWhatsNewView: View {
                     }
                 }
                 .padding(20)
+                .readableWidth()
             }
             .appBackground()
             .toolbar {
