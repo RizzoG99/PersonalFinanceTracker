@@ -12,6 +12,8 @@
 		F894959D302750C700031D5F /* SafeToSpendWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F894958C302750C500031D5F /* SafeToSpendWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F8B100102F39000000000010 /* PersonalFinanceTrakerWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F8B100022F39000000000002 /* PersonalFinanceTrakerWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F8B100152F39000000000015 /* PersonalFinanceTraker/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F8B100162F39000000000016 /* PersonalFinanceTraker/Assets.xcassets */; };
+		F8C200000000000000000003 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = F8C200000000000000000001 /* manifest.json */; };
+		F8C200000000000000000004 /* manifest-it.json in Resources */ = {isa = PBXBuildFile; fileRef = F8C200000000000000000002 /* manifest-it.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +70,8 @@
 		F8A5249E2E67A8CA0000E48D /* PersonalFinanceTrakerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PersonalFinanceTrakerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8B100022F39000000000002 /* PersonalFinanceTrakerWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PersonalFinanceTrakerWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8B100162F39000000000016 /* PersonalFinanceTraker/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = PersonalFinanceTraker/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		F8C200000000000000000001 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = "../docs/remote-assets/feature-discovery/manifest.json"; sourceTree = SOURCE_ROOT; };
+		F8C200000000000000000002 /* manifest-it.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "manifest-it.json"; path = "../docs/remote-assets/feature-discovery/manifest-it.json"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -197,7 +201,17 @@
 				F885D75530117AE20060FBCD /* Frameworks */,
 				F8A524842E67A8C90000E48D /* Products */,
 				F8AC8A003030E88F0065CDB3 /* Recovered References */,
+				F8C200000000000000000005 /* Staged Remote Assets */,
 			);
+			sourceTree = "<group>";
+		};
+		F8C200000000000000000005 /* Staged Remote Assets */ = {
+			isa = PBXGroup;
+			children = (
+				F8C200000000000000000001 /* manifest.json */,
+				F8C200000000000000000002 /* manifest-it.json */,
+			);
+			name = "Staged Remote Assets";
 			sourceTree = "<group>";
 		};
 		F8A524842E67A8C90000E48D /* Products */ = {
@@ -418,6 +432,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F8C200000000000000000003 /* manifest.json in Resources */,
+				F8C200000000000000000004 /* manifest-it.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

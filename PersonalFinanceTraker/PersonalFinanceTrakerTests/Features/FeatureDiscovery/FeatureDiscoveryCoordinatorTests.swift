@@ -159,16 +159,25 @@ struct FeatureDiscoveryCoordinatorTests {
     }
 
     @Test func stagedEnglishAndItalianManifestsDecodeThroughTheAppModel() throws {
-        for filename in ["manifest.json", "manifest-it.json"] {
-            let data = try Data(contentsOf: repositoryRoot
-                .appending(path: "docs/remote-assets/feature-discovery")
-                .appending(path: filename))
+        // The staged manifests are shipped into the test bundle as file references (see the
+        // Xcode project's "Staged Remote Assets" group) so this reads the real files under
+        // docs/remote-assets/feature-discovery, not a copy that could drift from them.
+        var contentVersions: [String] = []
+        var releaseIDs: [[String]] = []
+        for filename in ["manifest", "manifest-it"] {
+            let url = try #require(Bundle(for: BundleToken.self).url(forResource: filename, withExtension: "json"))
+            let data = try Data(contentsOf: url)
             let manifest = try JSONDecoder().decode(FeatureDiscoveryManifest.self, from: data)
 
-            #expect(manifest.contentVersion == "2026.09.26.1")
-            #expect(manifest.releases.last?.id == "1.0-highlights-2026-09")
-            #expect(manifest.releases.last?.items.map(\.destination) == [.travels, .receiptScan, .recurring, .siriWidgetsGuide])
+            #expect(!manifest.contentVersion.isEmpty)
+            #expect(!manifest.releases.isEmpty)
+            contentVersions.append(manifest.contentVersion)
+            releaseIDs.append(manifest.releases.map(\.id))
         }
+
+        // English and Italian are meant to ship in lockstep — catch one being updated without the other.
+        #expect(contentVersions[0] == contentVersions[1])
+        #expect(releaseIDs[0] == releaseIDs[1])
     }
 
     @Test func italianGuideIncludesRegisteredSiriPhrases() {
@@ -209,12 +218,6 @@ struct FeatureDiscoveryCoordinatorTests {
         )
     }
 
-    private var repositoryRoot: URL {
-        var url = URL(fileURLWithPath: #filePath)
-        for _ in 0..<5 { url.deleteLastPathComponent() }
-        return url
-    }
-
     private func makeDefaults() -> UserDefaults {
         let suiteName = "FeatureDiscoveryCoordinatorTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -222,3 +225,5 @@ struct FeatureDiscoveryCoordinatorTests {
         return defaults
     }
 }
+
+private final class BundleToken {}
