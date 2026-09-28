@@ -37,6 +37,7 @@ single session costs repeated context compactions and is the main budget sink.
 | 159 | iPad: the filter-chips band does not match the app background | P3 | UI | 12 | 7 |
 | 161 | Budgets screen: no income section, "No limit" wording, jumpy focus, dead space | P3 | Budgets | 14 | 8 |
 | 162 | Dashboard suggestions surface recurring transactions instead of habitual daily spends | — | Insights | — | parked `enhancement`, no fix |
+| 181 | Add Transaction: first-run tips collide with the keyboard, and the scan tip renders in English | P2 | Transactions | — | fixed on `fix/181-first-run-tips-collide-with-keyboard` |
 
 **Batch 5 (trips) branches off `feature/travel-groups` @ `a1f9e22`, not `main`** —
 that feature is unmerged. Those four issue bodies open with a scope blockquote.

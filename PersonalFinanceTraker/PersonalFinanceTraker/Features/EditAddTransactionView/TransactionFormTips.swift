@@ -62,13 +62,23 @@ struct MathModeTip: Tip {
 ///
 /// `isEligible` mirrors the button's own visibility guard (add-mode, not a transfer) — set from
 /// `EditAddTransactionView`, which owns that condition, not from this file.
+///
+/// `title`/`message` resolve through `String(localized:)` rather than `Text`'s own
+/// `LocalizedStringKey` init: unlike the inline `TipView`s above, this tip is presented via
+/// `.popoverTip()`, which renders outside this view's locale environment and was showing the
+/// English source string on an Italian device even though the catalog carries a translation.
+///
+/// `MaxDisplayCount(1)` makes `shouldDisplay` — and the autofocus suppression
+/// `TransactionFormView` derives from it — a one-shot condition rather than one that stays true
+/// until the user happens to notice and dismiss the popover.
 struct ScanReceiptTip: Tip {
     @Parameter static var isEligible: Bool = true
 
-    var title: Text { Text("Scan a receipt") }
-    var message: Text? { Text("Fill amount, date, merchant, and category from a photo of a receipt.") }
+    var title: Text { Text(String(localized: "Scan a receipt")) }
+    var message: Text? { Text(String(localized: "Fill amount, date, merchant, and category from a photo of a receipt.")) }
     var image: Image? { Image(systemName: "doc.text.viewfinder") }
     var rules: [Rule] { #Rule(Self.$isEligible) { $0 } }
+    var options: [Option] { Tips.MaxDisplayCount(1) }
 }
 
 /// Restyles TipKit's default system-gray card with the app's own palette, so the tip
