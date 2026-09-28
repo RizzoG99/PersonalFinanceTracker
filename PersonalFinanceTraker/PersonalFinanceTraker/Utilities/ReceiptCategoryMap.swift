@@ -89,6 +89,13 @@ enum ReceiptCategoryConcept: String, CaseIterable, Identifiable, Sendable {
 }
 
 enum ReceiptCategoryMap {
+    // This key is global `UserDefaults.standard` state, not per-test. `setCategoryId` is a
+    // read-modify-write of the whole dictionary and `prune` deletes from it wholesale, so any two
+    // tests that touch it concurrently clobber each other — this raced silently on Xcode Cloud
+    // (build 99) because the shared scheme parallelizes the test target. Every test that reads or
+    // writes this key must live under the single serialized parent `ReceiptCategoryPairingTests`
+    // (`PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift`) — don't add a new
+    // suite that touches it elsewhere.
     private static let defaultsKey = "receiptCategoryConcepts"
 
     /// concept raw value → category `UUID` string.
