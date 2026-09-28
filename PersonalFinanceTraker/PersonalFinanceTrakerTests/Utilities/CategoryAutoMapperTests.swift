@@ -107,49 +107,7 @@ struct CategoryAutoMapperTests {
     }
 }
 
-/// `resolve` is the import flow's entry point, and unlike `bestMatch` it consults the user's own
-/// concept → category pairing from Settings. Serialized and restoring the key afterwards because
-/// `ReceiptCategoryMap` reads and writes `UserDefaults.standard` with no injection seam.
-@Suite(.serialized)
-struct CategoryAutoMapperUserPairingTests {
-    /// A category no keyword in the table can reach — which is the whole reason the pairing exists.
-    private let gelati = CategorySnapshot.test(name: "Gelati", type: .expense)
-    private let groceries = CategorySnapshot.test(name: "Groceries", type: .expense)
-
-    private func withPairing(_ concept: ReceiptCategoryConcept,
-                             to category: CategorySnapshot?,
-                             _ body: () -> Void) {
-        let previous = ReceiptCategoryMap.categoryId(for: concept)
-        ReceiptCategoryMap.setCategoryId(category?.id, for: concept)
-        body()
-        ReceiptCategoryMap.setCategoryId(previous, for: concept)
-    }
-
-    @Test("The user's own pairing beats the keyword heuristic")
-    func userPairingOutranksHeuristic() {
-        withPairing(.grocer, to: gelati) {
-            let selections = CategoryAutoMapper.resolve(
-                csvCategories: ["Spesa"],
-                categoryTypes: ["Spesa": .expense],
-                availableCategories: [groceries, gelati],
-                existing: [:]
-            )
-            // Without the tier this resolves to "Groceries" — a defensible guess that nonetheless
-            // overrides something the user stated outright.
-            #expect(selections["Spesa"] == gelati.id.uuidString)
-        }
-    }
-
-    @Test("An exact name match still beats the user's pairing")
-    func exactMatchOutranksUserPairing() {
-        withPairing(.grocer, to: gelati) {
-            let selections = CategoryAutoMapper.resolve(
-                csvCategories: ["Groceries"],
-                categoryTypes: ["Groceries": .expense],
-                availableCategories: [groceries, gelati],
-                existing: [:]
-            )
-            #expect(selections["Groceries"] == groceries.id.uuidString)
-        }
-    }
-}
+// `resolve`'s user-pairing coverage (`CategoryAutoMapperUserPairingTests`) moved to
+// `ReceiptCategoryPairingTests.ImportPairingTests` in ReceiptCategoryInferrerTests.swift — it reads
+// and writes the same `ReceiptCategoryMap` UserDefaults key as that suite, and needs to be under the
+// same serialized parent, not a sibling `.serialized` suite that can still run concurrently with it.
