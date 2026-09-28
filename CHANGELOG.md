@@ -7,6 +7,7 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- Adding your first transaction: the "Scan a receipt" tip now gets the screen to itself instead of the keyboard jumping up and covering it. Tap the amount field when you're ready and the keyboard appears as usual. The tip now also reads in Italian instead of English.
 - Settings now shows a small dot, and What's New a "New" tag, when there's a release you haven't opened yet — so it's not easy to miss if you skipped it earlier.
 - On iPad, the What's New sheet now fills the screen instead of showing as a small, off-center card.
 - What’s New now highlights Travels, receipt scanning, recurring payments, and a new Siri and widgets guide, with a button that opens each feature or its setup instructions directly.

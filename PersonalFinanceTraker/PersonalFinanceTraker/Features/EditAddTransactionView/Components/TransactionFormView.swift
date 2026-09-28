@@ -64,6 +64,15 @@ struct TransactionFormView: View {
     @State private var dismissedScanBanner = false
     @State private var showingNewTravel = false
 
+    /// Latched once at sheet open, not read live: `shouldAutoFocus` below stays true for the
+    /// whole sheet lifetime and `CurrencyAmountField` only sets its own one-shot guard inside the
+    /// branch that actually focuses (see its `hasAutoFocused`) — so a live
+    /// `ScanReceiptTip().shouldDisplay` would flip to false the moment the popover's
+    /// `MaxDisplayCount` is hit, and the very next Form remount would auto-focus Amount out of
+    /// nowhere. Capturing the value once here keeps the suppression scoped to this one open,
+    /// matching the sheet-lifetime contract `CurrencyAmountField` already assumes.
+    @State private var scanTipWasPendingAtOpen = ScanReceiptTip().shouldDisplay
+
     // .popoverTip() doesn't anchor from the keyboard accessory bar — it lives in
     // UIRemoteKeyboardWindow, not the app window (verified on-device, issue #31).
     // Pinned above the accessory bar instead, via the .safeAreaInset below, so it
@@ -108,7 +117,10 @@ struct TransactionFormView: View {
                             placeholder: "0",
                             amount: $viewModel.amount,
                             currencyCode: $viewModel.currencyCode,
-                            shouldAutoFocus: viewModel.shouldAutoFocusAmount,
+                            // Let the unread "Scan a receipt" tip have the screen to itself first —
+                        // otherwise the keyboard it summons buries the tip's own pinned card
+                        // (see `scanTipWasPendingAtOpen`).
+                        shouldAutoFocus: viewModel.shouldAutoFocusAmount && !scanTipWasPendingAtOpen,
                             focusTrigger: focusTrigger,
                             focus: $focusedField
                         )
