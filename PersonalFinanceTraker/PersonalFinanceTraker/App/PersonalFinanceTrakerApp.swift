@@ -161,6 +161,7 @@ private extension PersonalFinanceTrakerApp {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-resetTips") {
             try? Tips.resetDatastore()
+            UserDefaults.standard.removeObject(forKey: "add_transaction_opened_once")
         }
         // Tip popovers land on top of whatever is being captured, so the screenshot
         // pass turns them off wholesale rather than dismissing them one by one.

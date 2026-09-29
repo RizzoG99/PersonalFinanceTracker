@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift": {
-    "mtime": 1790714156.5298893,
-    "ast_hash": "8beb2ec73053ef3f681af7dc8c2aa469",
+    "mtime": 1790714083.6659262,
+    "ast_hash": "64b9114b92f2627fe7cf8b69412bd4de",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Assets.xcassets/AccentColor.colorset/Contents.json": {
@@ -225,8 +225,8 @@
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift": {
-    "mtime": 1790716733.6840148,
-    "ast_hash": "e861494a7e54b9986124b3910b738529",
+    "mtime": 1790714083.6930819,
+    "ast_hash": "73b239d7ec4b3b973ee2448c500b3c2d",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/EditAddTransactionView.swift": {
@@ -2600,8 +2600,8 @@
     "semantic_hash": ""
   },
   "docs/feedback/ios-2026-09/PROGRESS.md": {
-    "mtime": 1790717207.5989277,
-    "ast_hash": "8e94458cac40d87dbba26ec3f835c0d7",
+    "mtime": 1790714083.7353737,
+    "ast_hash": "f448410d8af799cc79b571016158409b",
     "semantic_hash": ""
   },
   "PersonalFinanceTraker/PersonalFinanceTraker/Features/TransactionListView/ActivityRow.swift": {
@@ -2697,11 +2697,6 @@
   "docs/feedback/ios-2026-09/b80-AMY0QRIh.jpg": {
     "mtime": 1790714083.7369366,
     "ast_hash": "d9af762a575430167fdfd43ee1bb67b3",
-    "semantic_hash": ""
-  },
-  "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcodecloud/manifest.json": {
-    "mtime": 1790715022.8213918,
-    "ast_hash": "d7fd9cb6ce95bb528d9704117b6ba1fb",
     "semantic_hash": ""
   }
 }

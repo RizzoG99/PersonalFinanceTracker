@@ -97,36 +97,6 @@
   },
   "nodes": [
     {
-      "label": "manifest.json",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcodecloud/manifest.json",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "xcodecloud_manifest",
-      "community": 341,
-      "norm_label": "manifest.json"
-    },
-    {
-      "label": "id",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcodecloud/manifest.json",
-      "source_location": "L2",
-      "_origin": "ast",
-      "id": "xcodecloud_manifest_id",
-      "community": 341,
-      "norm_label": "id"
-    },
-    {
-      "label": "targets",
-      "file_type": "code",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcodecloud/manifest.json",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "xcodecloud_manifest_targets",
-      "community": 341,
-      "norm_label": "targets"
-    },
-    {
       "label": "AddTransactionIntent.swift",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/App/AddTransactionIntent.swift",
@@ -793,7 +763,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "app_authenticationwrapper_authenticationwrapper_synclockoverlay",
-      "community": 201,
+      "community": 94,
       "norm_label": ".synclockoverlay()"
     },
     {
@@ -1873,7 +1843,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_categorypiechart",
-      "community": 45,
+      "community": 24,
       "norm_label": "categorypiechart.swift"
     },
     {
@@ -1883,7 +1853,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorybreakdown_components_categorypiechart_swift_swiftui",
-      "community": 45,
+      "community": 24,
       "norm_label": "swiftui"
     },
     {
@@ -1893,7 +1863,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorybreakdown_components_categorypiechart_swift_charts",
-      "community": 45,
+      "community": 24,
       "norm_label": "charts"
     },
     {
@@ -1903,7 +1873,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "components_categorypiechart_categorypiechart",
-      "community": 45,
+      "community": 24,
       "norm_label": "categorypiechart"
     },
     {
@@ -1913,7 +1883,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorybreakdown_components_categorypiechart_swift_piechartdatapoint",
-      "community": 45,
+      "community": 24,
       "norm_label": "piechartdatapoint"
     },
     {
@@ -1923,7 +1893,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorybreakdown_components_categorypiechart_swift_piechartdatatype",
-      "community": 45,
+      "community": 24,
       "norm_label": "piechartdatatype"
     },
     {
@@ -1933,7 +1903,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorybreakdown_components_categorypiechart_swift_string",
-      "community": 45,
+      "community": 24,
       "norm_label": "string"
     },
     {
@@ -1943,7 +1913,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_categorybreakdown_components_categorypiechart_swift_cgfloat",
-      "community": 45,
+      "community": 24,
       "norm_label": "cgfloat"
     },
     {
@@ -1953,7 +1923,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "components_categorypiechart_categorypiechart_init",
-      "community": 45,
+      "community": 24,
       "norm_label": ".init()"
     },
     {
@@ -1963,7 +1933,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "components_categorypiechart_categorylegendview",
-      "community": 45,
+      "community": 24,
       "norm_label": "categorylegendview"
     },
     {
@@ -1973,7 +1943,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "components_categorypiechart_categorylegenditem",
-      "community": 45,
+      "community": 24,
       "norm_label": "categorylegenditem"
     },
     {
@@ -1983,7 +1953,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "components_categorypiechart_emptypiechartview",
-      "community": 45,
+      "community": 24,
       "norm_label": "emptypiechartview"
     },
     {
@@ -4533,7 +4503,7 @@
       "source_location": "L364",
       "_origin": "ast",
       "id": "components_receiptcameraview_receiptcameramodel_cropped",
-      "community": 325,
+      "community": 291,
       "norm_label": ".cropped()"
     },
     {
@@ -4583,7 +4553,7 @@
       "source_location": "L437",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_receiptcameraview_swift_sendable",
-      "community": 42,
+      "community": 93,
       "norm_label": "sendable"
     },
     {
@@ -4663,7 +4633,7 @@
       "source_location": "L561",
       "_origin": "ast",
       "id": "components_receiptcameraview_receiptquad_path",
-      "community": 325,
+      "community": 291,
       "norm_label": ".path()"
     },
     {
@@ -4673,7 +4643,7 @@
       "source_location": "L561",
       "_origin": "ast",
       "id": "cgrect",
-      "community": 325,
+      "community": 291,
       "norm_label": "cgrect"
     },
     {
@@ -4683,7 +4653,7 @@
       "source_location": "L561",
       "_origin": "ast",
       "id": "path",
-      "community": 325,
+      "community": 291,
       "norm_label": "path"
     },
     {
@@ -4813,7 +4783,7 @@
       "source_location": "L662",
       "_origin": "ast",
       "id": "components_receiptcameraview_uiimage",
-      "community": 325,
+      "community": 291,
       "norm_label": "uiimage"
     },
     {
@@ -4823,7 +4793,7 @@
       "source_location": "L666",
       "_origin": "ast",
       "id": "components_receiptcameraview_uiimage_uprightpixels",
-      "community": 325,
+      "community": 291,
       "norm_label": ".uprightpixels()"
     },
     {
@@ -4833,7 +4803,7 @@
       "source_location": "L666",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_receiptcameraview_swift_cgimage",
-      "community": 325,
+      "community": 291,
       "norm_label": "cgimage"
     },
     {
@@ -5043,7 +5013,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformfield",
-      "community": 120,
+      "community": 83,
       "norm_label": "transactionformfield"
     },
     {
@@ -5053,7 +5023,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "caseiterable",
-      "community": 120,
+      "community": 53,
       "norm_label": "caseiterable"
     },
     {
@@ -5073,7 +5043,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformfield_amount",
-      "community": 120,
+      "community": 83,
       "norm_label": "amount"
     },
     {
@@ -5083,7 +5053,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformfield_name",
-      "community": 120,
+      "community": 83,
       "norm_label": "name"
     },
     {
@@ -5093,7 +5063,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformfield_mathexpression",
-      "community": 120,
+      "community": 83,
       "norm_label": "mathexpression"
     },
     {
@@ -5200,7 +5170,7 @@
       "label": ".syncTipVisibility()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L521",
+      "source_location": "L496",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_synctipvisibility",
       "community": 83,
@@ -5210,7 +5180,7 @@
       "label": ".updateTipEligibility()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L535",
+      "source_location": "L510",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_updatetipeligibility",
       "community": 83,
@@ -5220,7 +5190,7 @@
       "label": "Binding",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L550",
+      "source_location": "L525",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_binding",
       "community": 83,
@@ -5230,7 +5200,7 @@
       "label": ".operatorButton()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L557",
+      "source_location": "L532",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_operatorbutton",
       "community": 83,
@@ -5240,7 +5210,7 @@
       "label": "LocalizedStringKey",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L557",
+      "source_location": "L532",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_localizedstringkey",
       "community": 83,
@@ -5250,7 +5220,7 @@
       "label": ".enterMathMode()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L571",
+      "source_location": "L546",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_entermathmode",
       "community": 83,
@@ -5260,7 +5230,7 @@
       "label": ".appendOperator()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L579",
+      "source_location": "L554",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_appendoperator",
       "community": 83,
@@ -5270,7 +5240,7 @@
       "label": ".commitMathExpression()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L598",
+      "source_location": "L573",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_commitmathexpression",
       "community": 83,
@@ -5280,7 +5250,7 @@
       "label": ".exitMathMode()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L610",
+      "source_location": "L585",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_exitmathmode",
       "community": 83,
@@ -5290,7 +5260,7 @@
       "label": ".plainString()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L619",
+      "source_location": "L594",
       "_origin": "ast",
       "id": "components_transactionformview_transactionformview_plainstring",
       "community": 83,
@@ -5300,7 +5270,7 @@
       "label": "Double",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L619",
+      "source_location": "L594",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_double",
       "community": 83,
@@ -5310,7 +5280,7 @@
       "label": "ScannedFieldsBanner",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L672",
+      "source_location": "L647",
       "_origin": "ast",
       "id": "components_transactionformview_scannedfieldsbanner",
       "community": 83,
@@ -5320,7 +5290,7 @@
       "label": "Void",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L673",
+      "source_location": "L648",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_void",
       "community": 83,
@@ -5330,7 +5300,7 @@
       "label": "ReceiptTotalCandidatesRow",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L699",
+      "source_location": "L674",
       "_origin": "ast",
       "id": "components_transactionformview_receipttotalcandidatesrow",
       "community": 83,
@@ -5340,7 +5310,7 @@
       "label": "Decimal",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L700",
+      "source_location": "L675",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_decimal",
       "community": 83,
@@ -5350,7 +5320,7 @@
       "label": "CategoryChipsGrid",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L726",
+      "source_location": "L701",
       "_origin": "ast",
       "id": "components_transactionformview_categorychipsgrid",
       "community": 83,
@@ -5360,7 +5330,7 @@
       "label": "CategorySnapshot",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L727",
+      "source_location": "L702",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_categorysnapshot",
       "community": 83,
@@ -5370,7 +5340,7 @@
       "label": "TransactionType",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L728",
+      "source_location": "L703",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_transactiontype",
       "community": 83,
@@ -5380,7 +5350,7 @@
       "label": "CategoryModel",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L731",
+      "source_location": "L706",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_categorymodel",
       "community": 83,
@@ -5390,7 +5360,7 @@
       "label": ".openPendingAddCategorySheet()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L802",
+      "source_location": "L777",
       "_origin": "ast",
       "id": "components_transactionformview_categorychipsgrid_openpendingaddcategorysheet",
       "community": 83,
@@ -5400,7 +5370,7 @@
       "label": "MoreChip",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L811",
+      "source_location": "L786",
       "_origin": "ast",
       "id": "components_transactionformview_morechip",
       "community": 83,
@@ -5410,7 +5380,7 @@
       "label": "CategoryPickerSheet",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L841",
+      "source_location": "L816",
       "_origin": "ast",
       "id": "components_transactionformview_categorypickersheet",
       "community": 83,
@@ -5420,7 +5390,7 @@
       "label": ".init()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L848",
+      "source_location": "L823",
       "_origin": "ast",
       "id": "components_transactionformview_categorypickersheet_init",
       "community": 83,
@@ -5430,7 +5400,7 @@
       "label": ".matching()",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L865",
+      "source_location": "L840",
       "_origin": "ast",
       "id": "components_transactionformview_categorypickersheet_matching",
       "community": 83,
@@ -5440,7 +5410,7 @@
       "label": "CategoryChip",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L910",
+      "source_location": "L885",
       "_origin": "ast",
       "id": "components_transactionformview_categorychip",
       "community": 83,
@@ -5450,7 +5420,7 @@
       "label": "GoalChipsGrid",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L950",
+      "source_location": "L925",
       "_origin": "ast",
       "id": "components_transactionformview_goalchipsgrid",
       "community": 83,
@@ -5460,7 +5430,7 @@
       "label": "GoalSnapshot",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L951",
+      "source_location": "L926",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_components_transactionformview_swift_goalsnapshot",
       "community": 83,
@@ -5470,7 +5440,7 @@
       "label": "GoalChip",
       "file_type": "code",
       "source_file": "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/TransactionFormView.swift",
-      "source_location": "L982",
+      "source_location": "L957",
       "_origin": "ast",
       "id": "components_transactionformview_goalchip",
       "community": 83,
@@ -5873,7 +5843,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel",
-      "community": 34,
+      "community": 155,
       "norm_label": "editaddtransactionviewmodel.swift"
     },
     {
@@ -5883,7 +5853,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_foundation",
-      "community": 34,
+      "community": 155,
       "norm_label": "foundation"
     },
     {
@@ -5893,7 +5863,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_swiftdata",
-      "community": 34,
+      "community": 155,
       "norm_label": "swiftdata"
     },
     {
@@ -5913,7 +5883,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_string",
-      "community": 34,
+      "community": 155,
       "norm_label": "string"
     },
     {
@@ -5933,7 +5903,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_transactiontype",
-      "community": 34,
+      "community": 155,
       "norm_label": "transactiontype"
     },
     {
@@ -5943,7 +5913,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_date",
-      "community": 34,
+      "community": 155,
       "norm_label": "date"
     },
     {
@@ -5953,7 +5923,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_categorysnapshot",
-      "community": 34,
+      "community": 155,
       "norm_label": "categorysnapshot"
     },
     {
@@ -5963,7 +5933,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_goalsnapshot",
-      "community": 34,
+      "community": 155,
       "norm_label": "goalsnapshot"
     },
     {
@@ -6003,7 +5973,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_uuid",
-      "community": 34,
+      "community": 155,
       "norm_label": "uuid"
     },
     {
@@ -6013,7 +5983,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_createandselecttravel",
-      "community": 34,
+      "community": 155,
       "norm_label": ".createandselecttravel()"
     },
     {
@@ -6093,7 +6063,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_formsnapshot",
-      "community": 34,
+      "community": 155,
       "norm_label": "formsnapshot"
     },
     {
@@ -6113,7 +6083,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_task",
-      "community": 155,
+      "community": 348,
       "norm_label": "task"
     },
     {
@@ -6143,7 +6113,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_settransactionviewmodel",
-      "community": 155,
+      "community": 348,
       "norm_label": ".settransactionviewmodel()"
     },
     {
@@ -6163,7 +6133,7 @@
       "source_location": "L261",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_selectcreatedcategory",
-      "community": 34,
+      "community": 155,
       "norm_label": ".selectcreatedcategory()"
     },
     {
@@ -6173,7 +6143,7 @@
       "source_location": "L271",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_applyreceiptscan",
-      "community": 34,
+      "community": 155,
       "norm_label": ".applyreceiptscan()"
     },
     {
@@ -6183,7 +6153,7 @@
       "source_location": "L271",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_receiptscan",
-      "community": 34,
+      "community": 155,
       "norm_label": "receiptscan"
     },
     {
@@ -6213,7 +6183,7 @@
       "source_location": "L386",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_buildinput",
-      "community": 155,
+      "community": 348,
       "norm_label": ".buildinput()"
     },
     {
@@ -6223,7 +6193,7 @@
       "source_location": "L386",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_transactioninput",
-      "community": 155,
+      "community": 348,
       "norm_label": "transactioninput"
     },
     {
@@ -6233,7 +6203,7 @@
       "source_location": "L413",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_buildrecurrenceruleinput",
-      "community": 155,
+      "community": 348,
       "norm_label": ".buildrecurrenceruleinput()"
     },
     {
@@ -6243,7 +6213,7 @@
       "source_location": "L413",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_editaddtransactionview_editaddtransactionviewmodel_swift_recurrenceruleinput",
-      "community": 155,
+      "community": 348,
       "norm_label": "recurrenceruleinput"
     },
     {
@@ -6253,7 +6223,7 @@
       "source_location": "L450",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_saverecurringtransaction",
-      "community": 155,
+      "community": 348,
       "norm_label": ".saverecurringtransaction()"
     },
     {
@@ -6263,7 +6233,7 @@
       "source_location": "L471",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_saveruleedits",
-      "community": 155,
+      "community": 348,
       "norm_label": ".saveruleedits()"
     },
     {
@@ -6273,7 +6243,7 @@
       "source_location": "L476",
       "_origin": "ast",
       "id": "editaddtransactionview_editaddtransactionviewmodel_editaddtransactionviewmodel_savetransaction",
-      "community": 155,
+      "community": 348,
       "norm_label": ".savetransaction()"
     },
     {
@@ -6533,7 +6503,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinator",
-      "community": 302,
+      "community": 0,
       "norm_label": "featurediscoverycoordinator.swift"
     },
     {
@@ -6543,7 +6513,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_featurediscoverycoordinator_swift_foundation",
-      "community": 302,
+      "community": 0,
       "norm_label": "foundation"
     },
     {
@@ -6553,7 +6523,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_featurediscoverycoordinator_swift_observation",
-      "community": 302,
+      "community": 0,
       "norm_label": "observation"
     },
     {
@@ -6573,7 +6543,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinator_key",
-      "community": 302,
+      "community": 0,
       "norm_label": "key"
     },
     {
@@ -6813,7 +6783,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination",
-      "community": 334,
+      "community": 119,
       "norm_label": "featurediscoverydestination.swift"
     },
     {
@@ -6823,7 +6793,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination",
-      "community": 334,
+      "community": 119,
       "norm_label": "featurediscoverydestination"
     },
     {
@@ -6843,7 +6813,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_home",
-      "community": 334,
+      "community": 119,
       "norm_label": "home"
     },
     {
@@ -6853,7 +6823,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_activity",
-      "community": 334,
+      "community": 119,
       "norm_label": "activity"
     },
     {
@@ -6863,7 +6833,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_budgets",
-      "community": 334,
+      "community": 119,
       "norm_label": "budgets"
     },
     {
@@ -6873,7 +6843,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_insights",
-      "community": 334,
+      "community": 119,
       "norm_label": "insights"
     },
     {
@@ -6883,7 +6853,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_addtransaction",
-      "community": 334,
+      "community": 119,
       "norm_label": "addtransaction"
     },
     {
@@ -6903,7 +6873,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_receiptscan",
-      "community": 334,
+      "community": 119,
       "norm_label": "receiptscan"
     },
     {
@@ -6913,7 +6883,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_recurring",
-      "community": 334,
+      "community": 119,
       "norm_label": "recurring"
     },
     {
@@ -6923,7 +6893,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverydestination_featurediscoverydestination_siriwidgetsguide",
-      "community": 334,
+      "community": 119,
       "norm_label": "siriwidgetsguide"
     },
     {
@@ -7003,7 +6973,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "identifiable",
-      "community": 120,
+      "community": 42,
       "norm_label": "identifiable"
     },
     {
@@ -7093,7 +7063,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverymanifest_kind_image",
-      "community": 24,
+      "community": 121,
       "norm_label": "image"
     },
     {
@@ -7443,7 +7413,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoveryviews_featurediscoverypagelayout_init",
-      "community": 12,
+      "community": 34,
       "norm_label": ".init()"
     },
     {
@@ -7453,7 +7423,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "cgsize",
-      "community": 12,
+      "community": 34,
       "norm_label": "cgsize"
     },
     {
@@ -7463,7 +7433,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "userinterfacesizeclass",
-      "community": 12,
+      "community": 34,
       "norm_label": "userinterfacesizeclass"
     },
     {
@@ -7613,7 +7583,7 @@
       "source_location": "L506",
       "_origin": "ast",
       "id": "roundedrectangle",
-      "community": 24,
+      "community": 121,
       "norm_label": "roundedrectangle"
     },
     {
@@ -7623,7 +7593,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview",
-      "community": 188,
+      "community": 267,
       "norm_label": "siriwidgetsguideview.swift"
     },
     {
@@ -7633,7 +7603,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_siriwidgetsguideview_swift_swiftui",
-      "community": 188,
+      "community": 267,
       "norm_label": "swiftui"
     },
     {
@@ -7643,7 +7613,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_siriwidgetsguideview_swift_uikit",
-      "community": 188,
+      "community": 267,
       "norm_label": "uikit"
     },
     {
@@ -7813,7 +7783,7 @@
       "source_location": "L314",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesection",
-      "community": 188,
+      "community": 385,
       "norm_label": "guidesection"
     },
     {
@@ -7823,7 +7793,7 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesection_siri",
-      "community": 188,
+      "community": 385,
       "norm_label": "siri"
     },
     {
@@ -7833,7 +7803,7 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesection_widgets",
-      "community": 188,
+      "community": 385,
       "norm_label": "widgets"
     },
     {
@@ -7843,7 +7813,7 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesection_home",
-      "community": 188,
+      "community": 385,
       "norm_label": "home"
     },
     {
@@ -7853,7 +7823,7 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesection_lock",
-      "community": 188,
+      "community": 385,
       "norm_label": "lock"
     },
     {
@@ -7893,7 +7863,7 @@
       "source_location": "L366",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesectionbuttonstyle",
-      "community": 188,
+      "community": 272,
       "norm_label": "guidesectionbuttonstyle"
     },
     {
@@ -7913,7 +7883,7 @@
       "source_location": "L367",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesectionbuttonstyle_makebody",
-      "community": 188,
+      "community": 272,
       "norm_label": ".makebody()"
     },
     {
@@ -7923,7 +7893,7 @@
       "source_location": "L367",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_siriwidgetsguideview_swift_configuration",
-      "community": 188,
+      "community": 272,
       "norm_label": "configuration"
     },
     {
@@ -7943,7 +7913,7 @@
       "source_location": "L461",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_guidesetupillustration",
-      "community": 188,
+      "community": 267,
       "norm_label": "guidesetupillustration"
     },
     {
@@ -7953,7 +7923,7 @@
       "source_location": "L462",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_kind",
-      "community": 188,
+      "community": 267,
       "norm_label": "kind"
     },
     {
@@ -7963,7 +7933,7 @@
       "source_location": "L463",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_kind_home",
-      "community": 188,
+      "community": 267,
       "norm_label": "home"
     },
     {
@@ -7973,7 +7943,7 @@
       "source_location": "L463",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_kind_lock",
-      "community": 188,
+      "community": 267,
       "norm_label": "lock"
     },
     {
@@ -7983,7 +7953,7 @@
       "source_location": "L512",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_siriwidgetsguidecopy",
-      "community": 188,
+      "community": 389,
       "norm_label": "siriwidgetsguidecopy"
     },
     {
@@ -7993,7 +7963,7 @@
       "source_location": "L513",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_widget",
-      "community": 188,
+      "community": 292,
       "norm_label": "widget"
     },
     {
@@ -8003,7 +7973,7 @@
       "source_location": "L515",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_kind_pulse",
-      "community": 188,
+      "community": 267,
       "norm_label": "pulse"
     },
     {
@@ -8013,7 +7983,7 @@
       "source_location": "L516",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_kind_receipt",
-      "community": 188,
+      "community": 267,
       "norm_label": "receipt"
     },
     {
@@ -8023,7 +7993,7 @@
       "source_location": "L517",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_kind_safetospend",
-      "community": 188,
+      "community": 267,
       "norm_label": "safetospend"
     },
     {
@@ -8033,7 +8003,7 @@
       "source_location": "L525",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_siriwidgetsguideview_swift_color",
-      "community": 188,
+      "community": 292,
       "norm_label": "color"
     },
     {
@@ -8043,7 +8013,7 @@
       "source_location": "L560",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_siriwidgetsguidecopy_localized",
-      "community": 188,
+      "community": 389,
       "norm_label": ".localized()"
     },
     {
@@ -8053,7 +8023,7 @@
       "source_location": "L560",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_siriwidgetsguideview_swift_locale",
-      "community": 188,
+      "community": 389,
       "norm_label": "locale"
     },
     {
@@ -8063,7 +8033,7 @@
       "source_location": "L560",
       "_origin": "ast",
       "id": "self",
-      "community": 188,
+      "community": 389,
       "norm_label": "self"
     },
     {
@@ -8073,7 +8043,7 @@
       "source_location": "L717",
       "_origin": "ast",
       "id": "featurediscovery_siriwidgetsguideview_featurediscoverymanifest",
-      "community": 188,
+      "community": 267,
       "norm_label": "featurediscoverymanifest"
     },
     {
@@ -8083,7 +8053,7 @@
       "source_location": "L718",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_featurediscovery_siriwidgetsguideview_swift_media",
-      "community": 188,
+      "community": 267,
       "norm_label": "media"
     },
     {
@@ -8163,7 +8133,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "components_addgoalsheet_field",
-      "community": 120,
+      "community": 53,
       "norm_label": "field"
     },
     {
@@ -8173,7 +8143,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "components_addgoalsheet_field_name",
-      "community": 120,
+      "community": 53,
       "norm_label": "name"
     },
     {
@@ -8183,7 +8153,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "components_addgoalsheet_field_amount",
-      "community": 120,
+      "community": 53,
       "norm_label": "amount"
     },
     {
@@ -8283,7 +8253,7 @@
       "source_location": "L256",
       "_origin": "ast",
       "id": "components_addgoalsheet_addgoalsheet_iconbutton",
-      "community": 24,
+      "community": 121,
       "norm_label": ".iconbutton()"
     },
     {
@@ -8293,7 +8263,7 @@
       "source_location": "L256",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_addgoalsheet_swift_cgfloat",
-      "community": 24,
+      "community": 121,
       "norm_label": "cgfloat"
     },
     {
@@ -8433,7 +8403,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_categorytrendssection",
-      "community": 276,
+      "community": 24,
       "norm_label": "categorytrendssection.swift"
     },
     {
@@ -8443,7 +8413,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_categorytrendssection_swift_swiftui",
-      "community": 276,
+      "community": 24,
       "norm_label": "swiftui"
     },
     {
@@ -8453,7 +8423,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_categorytrendssection_categorytrendssection",
-      "community": 276,
+      "community": 24,
       "norm_label": "categorytrendssection"
     },
     {
@@ -8463,7 +8433,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_categorytrendssection_swift_categorytrend",
-      "community": 276,
+      "community": 24,
       "norm_label": "categorytrend"
     },
     {
@@ -8573,7 +8543,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_forecastsection",
-      "community": 279,
+      "community": 24,
       "norm_label": "forecastsection.swift"
     },
     {
@@ -8583,7 +8553,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_forecastsection_swift_swiftui",
-      "community": 279,
+      "community": 24,
       "norm_label": "swiftui"
     },
     {
@@ -8593,7 +8563,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_forecastsection_forecastsection",
-      "community": 279,
+      "community": 24,
       "norm_label": "forecastsection"
     },
     {
@@ -8603,7 +8573,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_forecastsection_swift_spendingforecast",
-      "community": 279,
+      "community": 24,
       "norm_label": "spendingforecast"
     },
     {
@@ -8873,7 +8843,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_habitinsightrow",
-      "community": 292,
+      "community": 24,
       "norm_label": "habitinsightrow.swift"
     },
     {
@@ -8883,7 +8853,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_habitinsightrow_swift_swiftui",
-      "community": 292,
+      "community": 24,
       "norm_label": "swiftui"
     },
     {
@@ -8893,7 +8863,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "components_habitinsightrow_habitinsightrow",
-      "community": 292,
+      "community": 24,
       "norm_label": "habitinsightrow"
     },
     {
@@ -8903,7 +8873,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_habitinsightrow_swift_habitobservation",
-      "community": 292,
+      "community": 24,
       "norm_label": "habitobservation"
     },
     {
@@ -9133,7 +9103,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "components_healthscoredetailview_healthscoredetailview_componentrow",
-      "community": 24,
+      "community": 121,
       "norm_label": ".componentrow()"
     },
     {
@@ -9143,7 +9113,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_healthscoredetailview_swift_scorecomponent",
-      "community": 24,
+      "community": 121,
       "norm_label": "scorecomponent"
     },
     {
@@ -9403,7 +9373,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_insightstopcategoryrow",
-      "community": 24,
+      "community": 393,
       "norm_label": "insightstopcategoryrow.swift"
     },
     {
@@ -9413,7 +9383,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_insightstopcategoryrow_swift_swiftui",
-      "community": 24,
+      "community": 393,
       "norm_label": "swiftui"
     },
     {
@@ -9423,7 +9393,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "components_insightstopcategoryrow_insightstopcategoryrow",
-      "community": 24,
+      "community": 393,
       "norm_label": "insightstopcategoryrow"
     },
     {
@@ -9433,7 +9403,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_components_insightstopcategoryrow_swift_piechartdatapoint",
-      "community": 24,
+      "community": 393,
       "norm_label": "piechartdatapoint"
     },
     {
@@ -10193,7 +10163,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_dailypoint",
-      "community": 120,
+      "community": 42,
       "norm_label": "dailypoint.swift"
     },
     {
@@ -10203,7 +10173,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_dailypoint_swift_foundation",
-      "community": 120,
+      "community": 42,
       "norm_label": "foundation"
     },
     {
@@ -10213,7 +10183,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "models_dailypoint_dailypoint",
-      "community": 120,
+      "community": 42,
       "norm_label": "dailypoint"
     },
     {
@@ -10223,7 +10193,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_dailypoint_swift_int",
-      "community": 120,
+      "community": 42,
       "norm_label": "int"
     },
     {
@@ -10233,7 +10203,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_dailypoint_swift_decimal",
-      "community": 120,
+      "community": 42,
       "norm_label": "decimal"
     },
     {
@@ -10303,7 +10273,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_habitobservation",
-      "community": 120,
+      "community": 42,
       "norm_label": "habitobservation.swift"
     },
     {
@@ -10313,7 +10283,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_habitobservation_swift_foundation",
-      "community": 120,
+      "community": 42,
       "norm_label": "foundation"
     },
     {
@@ -10323,7 +10293,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "models_habitobservation_habitobservation",
-      "community": 120,
+      "community": 42,
       "norm_label": "habitobservation"
     },
     {
@@ -10333,7 +10303,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_habitobservation_swift_string",
-      "community": 120,
+      "community": 42,
       "norm_label": "string"
     },
     {
@@ -10453,7 +10423,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_scorecomponent",
-      "community": 120,
+      "community": 42,
       "norm_label": "scorecomponent.swift"
     },
     {
@@ -10463,7 +10433,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_scorecomponent_swift_foundation",
-      "community": 120,
+      "community": 42,
       "norm_label": "foundation"
     },
     {
@@ -10473,7 +10443,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "models_scorecomponent_scorecomponent",
-      "community": 120,
+      "community": 42,
       "norm_label": "scorecomponent"
     },
     {
@@ -10483,7 +10453,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_scorecomponent_swift_string",
-      "community": 120,
+      "community": 42,
       "norm_label": "string"
     },
     {
@@ -10493,7 +10463,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_insights_models_scorecomponent_swift_int",
-      "community": 120,
+      "community": 42,
       "norm_label": "int"
     },
     {
@@ -11063,7 +11033,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_profileappearancesection",
-      "community": 24,
+      "community": 274,
       "norm_label": "profileappearancesection.swift"
     },
     {
@@ -11073,7 +11043,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_profile_components_profileappearancesection_swift_swiftui",
-      "community": 24,
+      "community": 274,
       "norm_label": "swiftui"
     },
     {
@@ -11083,7 +11053,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_profileappearancesection_profileappearancesection",
-      "community": 24,
+      "community": 274,
       "norm_label": "profileappearancesection"
     },
     {
@@ -11093,7 +11063,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_profile_components_profileappearancesection_swift_thememode",
-      "community": 24,
+      "community": 274,
       "norm_label": "thememode"
     },
     {
@@ -11283,7 +11253,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_profilecurrencysection",
-      "community": 298,
+      "community": 24,
       "norm_label": "profilecurrencysection.swift"
     },
     {
@@ -11293,7 +11263,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_profile_components_profilecurrencysection_swift_swiftui",
-      "community": 298,
+      "community": 24,
       "norm_label": "swiftui"
     },
     {
@@ -11303,7 +11273,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_profilecurrencysection_profilecurrencysection",
-      "community": 298,
+      "community": 24,
       "norm_label": "profilecurrencysection"
     },
     {
@@ -11313,7 +11283,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_profile_components_profilecurrencysection_swift_string",
-      "community": 298,
+      "community": 24,
       "norm_label": "string"
     },
     {
@@ -12413,7 +12383,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "security_pinentryview",
-      "community": 201,
+      "community": 94,
       "norm_label": "pinentryview.swift"
     },
     {
@@ -12423,7 +12393,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_security_pinentryview_swift_swiftui",
-      "community": 201,
+      "community": 94,
       "norm_label": "swiftui"
     },
     {
@@ -12433,7 +12403,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "security_pinentryview_pinentryview",
-      "community": 201,
+      "community": 94,
       "norm_label": "pinentryview"
     },
     {
@@ -12443,7 +12413,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "pinentryviewmodel",
-      "community": 201,
+      "community": 94,
       "norm_label": "pinentryviewmodel"
     },
     {
@@ -12453,7 +12423,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_security_pinentryview_swift_pinsetupviewmodel",
-      "community": 201,
+      "community": 94,
       "norm_label": "pinsetupviewmodel"
     },
     {
@@ -13213,7 +13183,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "splash_splashview",
-      "community": 201,
+      "community": 94,
       "norm_label": "splashview.swift"
     },
     {
@@ -13223,7 +13193,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_splash_splashview_swift_swiftui",
-      "community": 201,
+      "community": 94,
       "norm_label": "swiftui"
     },
     {
@@ -13233,7 +13203,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "splash_splashview_splashview",
-      "community": 201,
+      "community": 94,
       "norm_label": "splashview"
     },
     {
@@ -13243,7 +13213,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_splash_splashview_swift_bool",
-      "community": 201,
+      "community": 94,
       "norm_label": "bool"
     },
     {
@@ -14343,7 +14313,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_filterchipsview",
-      "community": 24,
+      "community": 121,
       "norm_label": "filterchipsview.swift"
     },
     {
@@ -14353,7 +14323,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_filterchipsview_swift_swiftui",
-      "community": 24,
+      "community": 121,
       "norm_label": "swiftui"
     },
     {
@@ -14363,7 +14333,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "components_filterchipsview_filterchipsview",
-      "community": 24,
+      "community": 121,
       "norm_label": "filterchipsview"
     },
     {
@@ -14373,7 +14343,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_filterchipsview_swift_bool",
-      "community": 24,
+      "community": 121,
       "norm_label": "bool"
     },
     {
@@ -14383,7 +14353,7 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_transactionlistview_components_filterchipsview_swift_string",
-      "community": 24,
+      "community": 121,
       "norm_label": "string"
     },
     {
@@ -14393,7 +14363,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "components_filterchipsview_filterchipsview_chip",
-      "community": 24,
+      "community": 121,
       "norm_label": ".chip()"
     },
     {
@@ -14403,7 +14373,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "components_filterchipsview_customdaterangesheet",
-      "community": 24,
+      "community": 121,
       "norm_label": "customdaterangesheet"
     },
     {
@@ -17313,7 +17283,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ipad_ipaddashboardgrid",
-      "community": 24,
+      "community": 355,
       "norm_label": "ipaddashboardgrid.swift"
     },
     {
@@ -17323,7 +17293,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipaddashboardgrid_swift_swiftui",
-      "community": 24,
+      "community": 355,
       "norm_label": "swiftui"
     },
     {
@@ -17333,7 +17303,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "ipad_ipaddashboardgrid_ipaddashboardgrid",
-      "community": 24,
+      "community": 355,
       "norm_label": "ipaddashboardgrid"
     },
     {
@@ -17343,7 +17313,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipaddashboardgrid_swift_bool",
-      "community": 24,
+      "community": 355,
       "norm_label": "bool"
     },
     {
@@ -17353,7 +17323,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ipad_ipadgoalsview",
-      "community": 24,
+      "community": 276,
       "norm_label": "ipadgoalsview.swift"
     },
     {
@@ -17363,7 +17333,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipadgoalsview_swift_swiftui",
-      "community": 24,
+      "community": 276,
       "norm_label": "swiftui"
     },
     {
@@ -17373,7 +17343,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "ipad_ipadgoalsview_ipadgoalsview",
-      "community": 24,
+      "community": 276,
       "norm_label": "ipadgoalsview"
     },
     {
@@ -17383,7 +17353,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipadgoalsview_swift_compassviewmodel",
-      "community": 24,
+      "community": 276,
       "norm_label": "compassviewmodel"
     },
     {
@@ -17433,7 +17403,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ipad_ipadimportflowview",
-      "community": 29,
+      "community": 249,
       "norm_label": "ipadimportflowview.swift"
     },
     {
@@ -17443,7 +17413,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipadimportflowview_swift_swiftui",
-      "community": 29,
+      "community": 249,
       "norm_label": "swiftui"
     },
     {
@@ -17453,7 +17423,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "ipad_ipadimportflowview_ipadimportflowview",
-      "community": 29,
+      "community": 249,
       "norm_label": "ipadimportflowview"
     },
     {
@@ -17463,7 +17433,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipadimportflowview_swift_transactionlistviewmodel",
-      "community": 29,
+      "community": 249,
       "norm_label": "transactionlistviewmodel"
     },
     {
@@ -17473,7 +17443,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "ipad_ipadimportflowview_step",
-      "community": 29,
+      "community": 249,
       "norm_label": "step"
     },
     {
@@ -17483,7 +17453,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "ipad_ipadimportflowview_step_columns",
-      "community": 29,
+      "community": 249,
       "norm_label": "columns"
     },
     {
@@ -17493,7 +17463,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "ipad_ipadimportflowview_step_categories",
-      "community": 29,
+      "community": 249,
       "norm_label": "categories"
     },
     {
@@ -17503,7 +17473,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "ipad_ipadimportflowview_step_recurring",
-      "community": 29,
+      "community": 249,
       "norm_label": "recurring"
     },
     {
@@ -17513,7 +17483,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipadimportflowview_swift_string",
-      "community": 29,
+      "community": 249,
       "norm_label": "string"
     },
     {
@@ -17523,7 +17493,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_features_ipad_ipadimportflowview_swift_bool",
-      "community": 29,
+      "community": 249,
       "norm_label": "bool"
     },
     {
@@ -17533,7 +17503,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "ipad_ipadimportflowview_ipadimportflowview_remap",
-      "community": 29,
+      "community": 249,
       "norm_label": ".remap()"
     },
     {
@@ -22023,7 +21993,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_backupservice",
-      "community": 122,
+      "community": 131,
       "norm_label": "backupservice.swift"
     },
     {
@@ -22033,7 +22003,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_backupservice_swift_foundation",
-      "community": 122,
+      "community": 131,
       "norm_label": "foundation"
     },
     {
@@ -22043,7 +22013,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_backupservice_swift_cryptokit",
-      "community": 122,
+      "community": 131,
       "norm_label": "cryptokit"
     },
     {
@@ -22063,7 +22033,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "utilities_backupservice_backuperror",
-      "community": 122,
+      "community": 131,
       "norm_label": "backuperror"
     },
     {
@@ -22083,7 +22053,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "utilities_backupservice_backuperror_icloudunavailable",
-      "community": 122,
+      "community": 131,
       "norm_label": "icloudunavailable"
     },
     {
@@ -22093,7 +22063,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "utilities_backupservice_backuperror_emptystore",
-      "community": 122,
+      "community": 131,
       "norm_label": "emptystore"
     },
     {
@@ -22103,7 +22073,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "utilities_backupservice_backuperror_decryptionfailed",
-      "community": 122,
+      "community": 131,
       "norm_label": "decryptionfailed"
     },
     {
@@ -22113,7 +22083,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utilities_backupservice_backuperror_sealingfailed",
-      "community": 122,
+      "community": 131,
       "norm_label": "sealingfailed"
     },
     {
@@ -22123,7 +22093,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "utilities_backupservice_backuperror_keychainerror",
-      "community": 122,
+      "community": 131,
       "norm_label": "keychainerror"
     },
     {
@@ -22303,7 +22273,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "jsonencoder",
-      "community": 73,
+      "community": 307,
       "norm_label": "jsonencoder"
     },
     {
@@ -22933,7 +22903,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "utilities_csvcolumnmapper_importstep",
-      "community": 248,
+      "community": 345,
       "norm_label": "importstep"
     },
     {
@@ -22943,7 +22913,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "utilities_csvcolumnmapper_importstep_categorymapping",
-      "community": 248,
+      "community": 345,
       "norm_label": "categorymapping"
     },
     {
@@ -22963,7 +22933,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "utilities_csvcolumnmapper_importstep_recurringsuggestions",
-      "community": 248,
+      "community": 345,
       "norm_label": "recurringsuggestions"
     },
     {
@@ -23143,7 +23113,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_csvimportservice",
-      "community": 29,
+      "community": 277,
       "norm_label": "csvimportservice.swift"
     },
     {
@@ -23153,7 +23123,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_csvimportservice_swift_foundation",
-      "community": 29,
+      "community": 277,
       "norm_label": "foundation"
     },
     {
@@ -23273,7 +23243,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "utilities_csvimportservice_csvreaderror",
-      "community": 29,
+      "community": 277,
       "norm_label": "csvreaderror"
     },
     {
@@ -23283,7 +23253,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "localizederror",
-      "community": 29,
+      "community": 277,
       "norm_label": "localizederror"
     },
     {
@@ -23293,7 +23263,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "utilities_csvimportservice_csvreaderror_unreadablefile",
-      "community": 29,
+      "community": 277,
       "norm_label": "unreadablefile"
     },
     {
@@ -23303,7 +23273,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "utilities_csvimportservice_csvreaderror_emptyfile",
-      "community": 29,
+      "community": 277,
       "norm_label": "emptyfile"
     },
     {
@@ -23313,7 +23283,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "utilities_csvimportservice_csvreaderror_missingheader",
-      "community": 29,
+      "community": 277,
       "norm_label": "missingheader"
     },
     {
@@ -23323,7 +23293,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "utilities_csvimportservice_csvreaderror_binaryfile",
-      "community": 29,
+      "community": 277,
       "norm_label": "binaryfile"
     },
     {
@@ -24063,7 +24033,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_dailycheckinservice",
-      "community": 379,
+      "community": 15,
       "norm_label": "dailycheckinservice.swift"
     },
     {
@@ -24073,7 +24043,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_dailycheckinservice_swift_foundation",
-      "community": 379,
+      "community": 15,
       "norm_label": "foundation"
     },
     {
@@ -24083,7 +24053,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "utilities_dailycheckinservice_dailycheckinstate",
-      "community": 379,
+      "community": 15,
       "norm_label": "dailycheckinstate"
     },
     {
@@ -24093,7 +24063,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utilities_dailycheckinservice_dailycheckinstate_pending",
-      "community": 379,
+      "community": 15,
       "norm_label": "pending"
     },
     {
@@ -24103,7 +24073,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "utilities_dailycheckinservice_dailycheckinstate_transactionlogged",
-      "community": 379,
+      "community": 15,
       "norm_label": "transactionlogged"
     },
     {
@@ -24113,7 +24083,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utilities_dailycheckinservice_dailycheckinstate_nospendconfirmed",
-      "community": 379,
+      "community": 15,
       "norm_label": "nospendconfirmed"
     },
     {
@@ -24123,7 +24093,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_dailycheckinservice_swift_bool",
-      "community": 379,
+      "community": 15,
       "norm_label": "bool"
     },
     {
@@ -24133,7 +24103,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "utilities_dailycheckinservice_dailycheckinstatus",
-      "community": 379,
+      "community": 15,
       "norm_label": "dailycheckinstatus"
     },
     {
@@ -24143,7 +24113,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_dailycheckinservice_swift_int",
-      "community": 379,
+      "community": 15,
       "norm_label": "int"
     },
     {
@@ -24423,7 +24393,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "utilities_designtokens_color_init",
-      "community": 248,
+      "community": 13,
       "norm_label": ".init()"
     },
     {
@@ -24433,7 +24403,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_designtokens_swift_string",
-      "community": 248,
+      "community": 13,
       "norm_label": "string"
     },
     {
@@ -24553,7 +24523,7 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "utilities_designtokens_privacyblur_body",
-      "community": 13,
+      "community": 120,
       "norm_label": ".body()"
     },
     {
@@ -24623,7 +24593,7 @@
       "source_location": "L279",
       "_origin": "ast",
       "id": "utilities_designtokens_toastbanner",
-      "community": 248,
+      "community": 13,
       "norm_label": "toastbanner"
     },
     {
@@ -24683,7 +24653,7 @@
       "source_location": "L352",
       "_origin": "ast",
       "id": "utilities_designtokens_categoryinfo",
-      "community": 248,
+      "community": 13,
       "norm_label": "categoryinfo"
     },
     {
@@ -24693,7 +24663,7 @@
       "source_location": "L356",
       "_origin": "ast",
       "id": "utilities_designtokens_categoryinfo_info",
-      "community": 248,
+      "community": 13,
       "norm_label": ".info()"
     },
     {
@@ -25133,7 +25103,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_habitwidgetsnapshotstore",
-      "community": 42,
+      "community": 45,
       "norm_label": "habitwidgetsnapshotstore.swift"
     },
     {
@@ -25143,7 +25113,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_foundation",
-      "community": 42,
+      "community": 45,
       "norm_label": "foundation"
     },
     {
@@ -25153,7 +25123,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_widgetkit",
-      "community": 42,
+      "community": 45,
       "norm_label": "widgetkit"
     },
     {
@@ -25163,7 +25133,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utilities_habitwidgetsnapshotstore_habitwidgetquicktemplate",
-      "community": 42,
+      "community": 45,
       "norm_label": "habitwidgetquicktemplate"
     },
     {
@@ -25173,7 +25143,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_string",
-      "community": 42,
+      "community": 45,
       "norm_label": "string"
     },
     {
@@ -25183,7 +25153,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_double",
-      "community": 42,
+      "community": 45,
       "norm_label": "double"
     },
     {
@@ -25193,7 +25163,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_bool",
-      "community": 42,
+      "community": 45,
       "norm_label": "bool"
     },
     {
@@ -25203,7 +25173,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "utilities_habitwidgetsnapshotstore_habitwidgetsnapshot",
-      "community": 42,
+      "community": 45,
       "norm_label": "habitwidgetsnapshot"
     },
     {
@@ -25213,7 +25183,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_int",
-      "community": 42,
+      "community": 45,
       "norm_label": "int"
     },
     {
@@ -25223,7 +25193,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_dailycheckinstate",
-      "community": 42,
+      "community": 45,
       "norm_label": "dailycheckinstate"
     },
     {
@@ -25233,7 +25203,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_date",
-      "community": 42,
+      "community": 45,
       "norm_label": "date"
     },
     {
@@ -25243,7 +25213,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "utilities_habitwidgetsnapshotstore_habitwidgetsnapshotstore",
-      "community": 42,
+      "community": 45,
       "norm_label": "habitwidgetsnapshotstore"
     },
     {
@@ -25253,7 +25223,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "utilities_habitwidgetsnapshotstore_habitwidgetsnapshotstore_makesnapshot",
-      "community": 42,
+      "community": 45,
       "norm_label": ".makesnapshot()"
     },
     {
@@ -25263,7 +25233,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_dailyloggingstatus",
-      "community": 42,
+      "community": 45,
       "norm_label": "dailyloggingstatus"
     },
     {
@@ -25273,7 +25243,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_dailycheckinstatus",
-      "community": 42,
+      "community": 45,
       "norm_label": "dailycheckinstatus"
     },
     {
@@ -25283,7 +25253,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_quicktransactiontemplate",
-      "community": 42,
+      "community": 45,
       "norm_label": "quicktransactiontemplate"
     },
     {
@@ -25293,7 +25263,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "utilities_habitwidgetsnapshotstore_habitwidgetsnapshotstore_save",
-      "community": 42,
+      "community": 45,
       "norm_label": ".save()"
     },
     {
@@ -25303,7 +25273,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "utilities_habitwidgetsnapshotstore_habitwidgetsnapshotstore_load",
-      "community": 42,
+      "community": 45,
       "norm_label": ".load()"
     },
     {
@@ -25313,7 +25283,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_habitwidgetsnapshotstore_swift_userdefaults",
-      "community": 42,
+      "community": 45,
       "norm_label": "userdefaults"
     },
     {
@@ -26013,7 +25983,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_pinservice",
-      "community": 215,
+      "community": 195,
       "norm_label": "pinservice.swift"
     },
     {
@@ -26023,7 +25993,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_pinservice_swift_foundation",
-      "community": 215,
+      "community": 195,
       "norm_label": "foundation"
     },
     {
@@ -26033,7 +26003,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_pinservice_swift_cryptokit",
-      "community": 215,
+      "community": 195,
       "norm_label": "cryptokit"
     },
     {
@@ -26043,7 +26013,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_pinservice_swift_security",
-      "community": 215,
+      "community": 195,
       "norm_label": "security"
     },
     {
@@ -26053,7 +26023,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "commoncrypto",
-      "community": 215,
+      "community": 195,
       "norm_label": "commoncrypto"
     },
     {
@@ -26063,7 +26033,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "utilities_pinservice_pinvalidationresult",
-      "community": 215,
+      "community": 195,
       "norm_label": "pinvalidationresult"
     },
     {
@@ -26073,7 +26043,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "utilities_pinservice_pinvalidationresult_success",
-      "community": 215,
+      "community": 195,
       "norm_label": "success"
     },
     {
@@ -26083,7 +26053,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "utilities_pinservice_pinvalidationresult_failure",
-      "community": 215,
+      "community": 195,
       "norm_label": "failure"
     },
     {
@@ -26093,7 +26063,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utilities_pinservice_pinvalidationresult_lockedout",
-      "community": 215,
+      "community": 195,
       "norm_label": "lockedout"
     },
     {
@@ -26103,7 +26073,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "utilities_pinservice_pinservice",
-      "community": 143,
+      "community": 195,
       "norm_label": "pinservice"
     },
     {
@@ -26113,7 +26083,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_pinservice_swift_int",
-      "community": 143,
+      "community": 195,
       "norm_label": "int"
     },
     {
@@ -26123,7 +26093,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "uint32",
-      "community": 119,
+      "community": 195,
       "norm_label": "uint32"
     },
     {
@@ -26133,7 +26103,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "lockoutinfo",
-      "community": 143,
+      "community": 195,
       "norm_label": "lockoutinfo"
     },
     {
@@ -26193,7 +26163,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_pinservice_swift_date",
-      "community": 143,
+      "community": 195,
       "norm_label": "date"
     },
     {
@@ -26223,7 +26193,7 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "utilities_pinservice_pinservice_clearpin",
-      "community": 143,
+      "community": 195,
       "norm_label": ".clearpin()"
     },
     {
@@ -26263,7 +26233,7 @@
       "source_location": "L204",
       "_origin": "ast",
       "id": "utilities_pinservice_lockoutinfo",
-      "community": 143,
+      "community": 195,
       "norm_label": "lockoutinfo"
     },
     {
@@ -26273,7 +26243,7 @@
       "source_location": "L206",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_pinservice_swift_timeinterval",
-      "community": 143,
+      "community": 195,
       "norm_label": "timeinterval"
     },
     {
@@ -26283,7 +26253,7 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "utilities_pinservice_pinservice_checkcurrentlockout",
-      "community": 143,
+      "community": 195,
       "norm_label": ".checkcurrentlockout()"
     },
     {
@@ -26293,7 +26263,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "utilities_pinservice_pinservice_resolvelockout",
-      "community": 143,
+      "community": 195,
       "norm_label": ".resolvelockout()"
     },
     {
@@ -26303,7 +26273,7 @@
       "source_location": "L256",
       "_origin": "ast",
       "id": "utilities_pinservice_pinservice_setlockoutdeadline",
-      "community": 143,
+      "community": 195,
       "norm_label": ".setlockoutdeadline()"
     },
     {
@@ -26383,7 +26353,7 @@
       "source_location": "L403",
       "_origin": "ast",
       "id": "utilities_pinservice_pinservice_delete",
-      "community": 143,
+      "community": 195,
       "norm_label": ".delete()"
     },
     {
@@ -26413,7 +26383,7 @@
       "source_location": "L416",
       "_origin": "ast",
       "id": "utilities_pinservice_notification_name",
-      "community": 215,
+      "community": 195,
       "norm_label": "notification.name"
     },
     {
@@ -27673,7 +27643,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_receiptparser",
-      "community": 180,
+      "community": 379,
       "norm_label": "receiptparser.swift"
     },
     {
@@ -27683,7 +27653,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receiptparser_swift_foundation",
-      "community": 180,
+      "community": 379,
       "norm_label": "foundation"
     },
     {
@@ -27743,7 +27713,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "utilities_receiptparser_receiptrow",
-      "community": 180,
+      "community": 379,
       "norm_label": "receiptrow"
     },
     {
@@ -27753,7 +27723,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "utilities_receiptparser_receiptdocument",
-      "community": 180,
+      "community": 379,
       "norm_label": "receiptdocument"
     },
     {
@@ -27773,7 +27743,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receiptparser_swift_double",
-      "community": 180,
+      "community": 379,
       "norm_label": "double"
     },
     {
@@ -27943,7 +27913,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_receiptscandebug",
-      "community": 119,
+      "community": 195,
       "norm_label": "receiptscandebug.swift"
     },
     {
@@ -27953,7 +27923,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receiptscandebug_swift_foundation",
-      "community": 119,
+      "community": 195,
       "norm_label": "foundation"
     },
     {
@@ -27963,7 +27933,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receiptscandebug_swift_uikit",
-      "community": 119,
+      "community": 195,
       "norm_label": "uikit"
     },
     {
@@ -27973,7 +27943,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "utilities_receiptscandebug_receiptscandebug",
-      "community": 119,
+      "community": 195,
       "norm_label": "receiptscandebug"
     },
     {
@@ -27983,7 +27953,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "utilities_receiptscandebug_receiptscandebug_beginscan",
-      "community": 119,
+      "community": 195,
       "norm_label": ".beginscan()"
     },
     {
@@ -27993,7 +27963,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receiptscandebug_swift_string",
-      "community": 119,
+      "community": 195,
       "norm_label": "string"
     },
     {
@@ -28003,7 +27973,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "utilities_receiptscandebug_receiptscandebug_log",
-      "community": 119,
+      "community": 195,
       "norm_label": ".log()"
     },
     {
@@ -28013,7 +27983,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "utilities_receiptscandebug_receiptscandebug_fingerprint",
-      "community": 119,
+      "community": 195,
       "norm_label": ".fingerprint()"
     },
     {
@@ -28023,7 +27993,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receiptscandebug_swift_uiimage",
-      "community": 119,
+      "community": 195,
       "norm_label": "uiimage"
     },
     {
@@ -28033,7 +28003,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "utilities_receiptscandebug_receiptscandebug_describe",
-      "community": 119,
+      "community": 195,
       "norm_label": ".describe()"
     },
     {
@@ -28243,7 +28213,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer",
-      "community": 12,
+      "community": 34,
       "norm_label": "receipttextrecognizer.swift"
     },
     {
@@ -28253,7 +28223,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "coreimage_cifilterbuiltins",
-      "community": 12,
+      "community": 34,
       "norm_label": "coreimage.cifilterbuiltins"
     },
     {
@@ -28263,7 +28233,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "datadetection",
-      "community": 12,
+      "community": 34,
       "norm_label": "datadetection"
     },
     {
@@ -28273,7 +28243,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receipttextrecognizer_swift_uikit",
-      "community": 12,
+      "community": 34,
       "norm_label": "uikit"
     },
     {
@@ -28283,7 +28253,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receipttextrecognizer_swift_vision",
-      "community": 12,
+      "community": 34,
       "norm_label": "vision"
     },
     {
@@ -28293,7 +28263,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_receipttextrecognizer",
-      "community": 12,
+      "community": 34,
       "norm_label": "receipttextrecognizer"
     },
     {
@@ -28303,7 +28273,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_receipttextrecognizer_recognize",
-      "community": 12,
+      "community": 34,
       "norm_label": ".recognize()"
     },
     {
@@ -28313,7 +28283,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receipttextrecognizer_swift_uiimage",
-      "community": 12,
+      "community": 34,
       "norm_label": "uiimage"
     },
     {
@@ -28323,7 +28293,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receipttextrecognizer_swift_receiptdocument",
-      "community": 12,
+      "community": 34,
       "norm_label": "receiptdocument"
     },
     {
@@ -28333,7 +28303,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receipttextrecognizer_swift_cgimage",
-      "community": 12,
+      "community": 34,
       "norm_label": "cgimage"
     },
     {
@@ -28343,7 +28313,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_receipttextrecognizer_enhanced",
-      "community": 12,
+      "community": 34,
       "norm_label": ".enhanced()"
     },
     {
@@ -28353,7 +28323,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_receipttextrecognizer_append",
-      "community": 12,
+      "community": 34,
       "norm_label": ".append()"
     },
     {
@@ -28363,7 +28333,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "documentobservation",
-      "community": 12,
+      "community": 34,
       "norm_label": "documentobservation"
     },
     {
@@ -28373,7 +28343,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_receipttextrecognizer_detecteddates",
-      "community": 12,
+      "community": 34,
       "norm_label": ".detecteddates()"
     },
     {
@@ -28383,7 +28353,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receipttextrecognizer_swift_date",
-      "community": 12,
+      "community": 34,
       "norm_label": "date"
     },
     {
@@ -28393,7 +28363,7 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_receipttextrecognizer_rows",
-      "community": 12,
+      "community": 34,
       "norm_label": ".rows()"
     },
     {
@@ -28403,7 +28373,7 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "receiptrow",
-      "community": 12,
+      "community": 34,
       "norm_label": "receiptrow"
     },
     {
@@ -28413,7 +28383,7 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_uiimage",
-      "community": 12,
+      "community": 34,
       "norm_label": "uiimage"
     },
     {
@@ -28423,7 +28393,7 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_receipttextrecognizer_swift_cgfloat",
-      "community": 12,
+      "community": 34,
       "norm_label": "cgfloat"
     },
     {
@@ -28433,7 +28403,7 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "utilities_receipttextrecognizer_uiimage_preparedforrecognition",
-      "community": 12,
+      "community": 34,
       "norm_label": ".preparedforrecognition()"
     },
     {
@@ -28713,7 +28683,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_recurrencematerializationservice_swift_task",
-      "community": 344,
+      "community": 215,
       "norm_label": "task"
     },
     {
@@ -28743,7 +28713,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "utilities_recurrencematerializationservice_recurrencematerializationservice_materialize",
-      "community": 344,
+      "community": 215,
       "norm_label": ".materialize()"
     },
     {
@@ -28753,7 +28723,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_recurrencematerializationservice_swift_itransactionrepository",
-      "community": 344,
+      "community": 215,
       "norm_label": "itransactionrepository"
     },
     {
@@ -28763,7 +28733,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_recurrencematerializationservice_swift_date",
-      "community": 344,
+      "community": 215,
       "norm_label": "date"
     },
     {
@@ -28773,7 +28743,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_recurrencematerializationservice_swift_calendar",
-      "community": 344,
+      "community": 215,
       "norm_label": "calendar"
     },
     {
@@ -28783,7 +28753,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "utilities_recurrencematerializationservice_recurrencematerializationservice_runmaterialization",
-      "community": 344,
+      "community": 215,
       "norm_label": ".runmaterialization()"
     },
     {
@@ -29003,7 +28973,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_safetospendsnapshotbuilder",
-      "community": 257,
+      "community": 335,
       "norm_label": "safetospendsnapshotbuilder.swift"
     },
     {
@@ -29013,7 +28983,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_safetospendsnapshotbuilder_swift_foundation",
-      "community": 257,
+      "community": 335,
       "norm_label": "foundation"
     },
     {
@@ -29023,7 +28993,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "utilities_safetospendsnapshotbuilder_safetospendsnapshotbuilder",
-      "community": 257,
+      "community": 335,
       "norm_label": "safetospendsnapshotbuilder"
     },
     {
@@ -29033,7 +29003,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utilities_safetospendsnapshotbuilder_safetospendsnapshotbuilder_build",
-      "community": 257,
+      "community": 335,
       "norm_label": ".build()"
     },
     {
@@ -29043,7 +29013,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_safetospendsnapshotbuilder_swift_transactionsnapshot",
-      "community": 257,
+      "community": 335,
       "norm_label": "transactionsnapshot"
     },
     {
@@ -29053,7 +29023,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_safetospendsnapshotbuilder_swift_recurrencerulesnapshot",
-      "community": 257,
+      "community": 335,
       "norm_label": "recurrencerulesnapshot"
     },
     {
@@ -29063,7 +29033,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_safetospendsnapshotbuilder_swift_int",
-      "community": 257,
+      "community": 335,
       "norm_label": "int"
     },
     {
@@ -29073,7 +29043,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_safetospendsnapshotbuilder_swift_currencyservice",
-      "community": 257,
+      "community": 335,
       "norm_label": "currencyservice"
     },
     {
@@ -29083,7 +29053,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_safetospendsnapshotbuilder_swift_date",
-      "community": 257,
+      "community": 335,
       "norm_label": "date"
     },
     {
@@ -29093,7 +29063,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_safetospendsnapshotbuilder_swift_calendar",
-      "community": 257,
+      "community": 335,
       "norm_label": "calendar"
     },
     {
@@ -29103,7 +29073,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "safetospendsnapshot",
-      "community": 257,
+      "community": 335,
       "norm_label": "safetospendsnapshot"
     },
     {
@@ -29933,7 +29903,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice",
-      "community": 29,
+      "community": 143,
       "norm_label": "xlsxexportservice.swift"
     },
     {
@@ -29943,7 +29913,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxexportservice_swift_foundation",
-      "community": 29,
+      "community": 143,
       "norm_label": "foundation"
     },
     {
@@ -29953,7 +29923,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "zipfoundation",
-      "community": 29,
+      "community": 143,
       "norm_label": "zipfoundation"
     },
     {
@@ -29963,7 +29933,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_xlsxwriteerror",
-      "community": 29,
+      "community": 277,
       "norm_label": "xlsxwriteerror"
     },
     {
@@ -29973,7 +29943,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_xlsxwriteerror_archivefailed",
-      "community": 29,
+      "community": 277,
       "norm_label": "archivefailed"
     },
     {
@@ -29983,7 +29953,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxexportservice_swift_string",
-      "community": 29,
+      "community": 143,
       "norm_label": "string"
     },
     {
@@ -29993,7 +29963,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_xlsxexportservice",
-      "community": 29,
+      "community": 143,
       "norm_label": "xlsxexportservice"
     },
     {
@@ -30003,7 +29973,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_xlsxexportservice_generatexlsx",
-      "community": 29,
+      "community": 143,
       "norm_label": ".generatexlsx()"
     },
     {
@@ -30013,7 +29983,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxexportservice_swift_transactionsnapshot",
-      "community": 29,
+      "community": 143,
       "norm_label": "transactionsnapshot"
     },
     {
@@ -30023,7 +29993,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxexportservice_swift_data",
-      "community": 29,
+      "community": 143,
       "norm_label": "data"
     },
     {
@@ -30033,7 +30003,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_xlsxexportservice_sheetxml",
-      "community": 29,
+      "community": 143,
       "norm_label": ".sheetxml()"
     },
     {
@@ -30043,7 +30013,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_cellvalue",
-      "community": 29,
+      "community": 143,
       "norm_label": "cellvalue"
     },
     {
@@ -30063,7 +30033,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_cellvalue_number",
-      "community": 29,
+      "community": 143,
       "norm_label": "number"
     },
     {
@@ -30073,7 +30043,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_xlsxexportservice_row",
-      "community": 29,
+      "community": 143,
       "norm_label": ".row()"
     },
     {
@@ -30083,7 +30053,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxexportservice_swift_int",
-      "community": 29,
+      "community": 143,
       "norm_label": "int"
     },
     {
@@ -30093,7 +30063,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "utilities_xlsxexportservice_xlsxexportservice_escapexml",
-      "community": 29,
+      "community": 143,
       "norm_label": ".escapexml()"
     },
     {
@@ -30153,7 +30123,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxworkbook_swift_string",
-      "community": 267,
+      "community": 146,
       "norm_label": "string"
     },
     {
@@ -30243,7 +30213,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "utilities_xlsxworkbook_xlsxworkbook_csvfile",
-      "community": 249,
+      "community": 146,
       "norm_label": ".csvfile()"
     },
     {
@@ -30253,7 +30223,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxworkbook_swift_csvfile",
-      "community": 249,
+      "community": 146,
       "norm_label": "csvfile"
     },
     {
@@ -30273,7 +30243,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "utilities_xlsxworkbook_xlsxworkbook_fields",
-      "community": 249,
+      "community": 146,
       "norm_label": ".fields()"
     },
     {
@@ -30283,7 +30253,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "row",
-      "community": 249,
+      "community": 146,
       "norm_label": "row"
     },
     {
@@ -30293,7 +30263,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "utilities_xlsxworkbook_xlsxworkbook_columnindex",
-      "community": 249,
+      "community": 146,
       "norm_label": ".columnindex()"
     },
     {
@@ -30303,7 +30273,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "columnreference",
-      "community": 249,
+      "community": 146,
       "norm_label": "columnreference"
     },
     {
@@ -30313,7 +30283,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "utilities_xlsxworkbook_xlsxworkbook_stringify",
-      "community": 267,
+      "community": 146,
       "norm_label": ".stringify()"
     },
     {
@@ -30323,7 +30293,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "cell",
-      "community": 267,
+      "community": 146,
       "norm_label": "cell"
     },
     {
@@ -30353,7 +30323,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "utilities_xlsxworkbook_xlsxworkbook_cleannumberstring",
-      "community": 267,
+      "community": 146,
       "norm_label": ".cleannumberstring()"
     },
     {
@@ -30363,7 +30333,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetraker_utilities_xlsxworkbook_swift_double",
-      "community": 267,
+      "community": 146,
       "norm_label": "double"
     },
     {
@@ -30413,7 +30383,7 @@
       "source_location": "L210",
       "_origin": "ast",
       "id": "utilities_xlsxworkbook_xlsxworkbook_canonicaldatestring",
-      "community": 267,
+      "community": 146,
       "norm_label": ".canonicaldatestring()"
     },
     {
@@ -32003,7 +31973,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests",
-      "community": 274,
+      "community": 0,
       "norm_label": "featurediscoverycoordinatortests.swift"
     },
     {
@@ -32013,7 +31983,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_features_featurediscovery_featurediscoverycoordinatortests_swift_foundation",
-      "community": 274,
+      "community": 0,
       "norm_label": "foundation"
     },
     {
@@ -32023,7 +31993,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_features_featurediscovery_featurediscoverycoordinatortests_swift_testing",
-      "community": 274,
+      "community": 0,
       "norm_label": "testing"
     },
     {
@@ -32033,7 +32003,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_features_featurediscovery_featurediscoverycoordinatortests_swift_personalfinancetraker",
-      "community": 274,
+      "community": 0,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -32043,7 +32013,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests",
-      "community": 231,
+      "community": 0,
       "norm_label": "featurediscoverycoordinatortests"
     },
     {
@@ -32053,7 +32023,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_firsteligiblelaunchshowstourbeforereleasenotes",
-      "community": 231,
+      "community": 0,
       "norm_label": ".firsteligiblelaunchshowstourbeforereleasenotes()"
     },
     {
@@ -32063,7 +32033,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_legacyversionstateskipsoldreleasebutshowsnewrelease",
-      "community": 231,
+      "community": 0,
       "norm_label": ".legacyversionstateskipsoldreleasebutshowsnewrelease()"
     },
     {
@@ -32073,7 +32043,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_returninguserseesnewreleaseonlyonceanddismissalpersistsitsid",
-      "community": 231,
+      "community": 0,
       "norm_label": ".returninguserseesnewreleaseonlyonceanddismissalpersistsitsid()"
     },
     {
@@ -32083,7 +32053,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_manualreleasepresentationignoresseenstate",
-      "community": 231,
+      "community": 0,
       "norm_label": ".manualreleasepresentationignoresseenstate()"
     },
     {
@@ -32093,7 +32063,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_unseenreleasebadgeclearsondismissalandstaysclearedacrosslaunches",
-      "community": 231,
+      "community": 0,
       "norm_label": ".unseenreleasebadgeclearsondismissalandstaysclearedacrosslaunches()"
     },
     {
@@ -32103,7 +32073,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_unseenreleasebadgesurvivestheonboardingtourdeferral",
-      "community": 231,
+      "community": 0,
       "norm_label": ".unseenreleasebadgesurvivestheonboardingtourdeferral()"
     },
     {
@@ -32113,7 +32083,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_finishingtourqueuesfirsttransactionaction",
-      "community": 231,
+      "community": 0,
       "norm_label": ".finishingtourqueuesfirsttransactionaction()"
     },
     {
@@ -32123,7 +32093,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_everynewreleaseactionqueuesitsdestinationafterdismissal",
-      "community": 231,
+      "community": 0,
       "norm_label": ".everynewreleaseactionqueuesitsdestinationafterdismissal()"
     },
     {
@@ -32143,7 +32113,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_italianfallbackcopykeepsremoteartwork",
-      "community": 231,
+      "community": 0,
       "norm_label": ".italianfallbackcopykeepsremoteartwork()"
     },
     {
@@ -32153,7 +32123,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_fallbackincludesthenewhighlightsrelease",
-      "community": 231,
+      "community": 0,
       "norm_label": ".fallbackincludesthenewhighlightsrelease()"
     },
     {
@@ -32163,7 +32133,7 @@
       "source_location": "L154",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_italianfallbackdoesnotdependontheprocesslocale",
-      "community": 231,
+      "community": 0,
       "norm_label": ".italianfallbackdoesnotdependontheprocesslocale()"
     },
     {
@@ -32183,7 +32153,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_italianguideincludesregisteredsiriphrases",
-      "community": 231,
+      "community": 0,
       "norm_label": ".italianguideincludesregisteredsiriphrases()"
     },
     {
@@ -32193,7 +32163,7 @@
       "source_location": "L204",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_features_featurediscovery_featurediscoverycoordinatortests_swift_featurediscoveryloadedcontent",
-      "community": 231,
+      "community": 0,
       "norm_label": "featurediscoveryloadedcontent"
     },
     {
@@ -32203,7 +32173,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_featurediscoverycoordinatortests_makedefaults",
-      "community": 231,
+      "community": 0,
       "norm_label": ".makedefaults()"
     },
     {
@@ -32213,7 +32183,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_features_featurediscovery_featurediscoverycoordinatortests_swift_userdefaults",
-      "community": 231,
+      "community": 0,
       "norm_label": "userdefaults"
     },
     {
@@ -32223,7 +32193,7 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "featurediscovery_featurediscoverycoordinatortests_bundletoken",
-      "community": 274,
+      "community": 0,
       "norm_label": "bundletoken"
     },
     {
@@ -35333,7 +35303,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mocks_mocktransactionrepository",
-      "community": 122,
+      "community": 302,
       "norm_label": "mocktransactionrepository.swift"
     },
     {
@@ -35343,7 +35313,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_mocks_mocktransactionrepository_swift_foundation",
-      "community": 122,
+      "community": 302,
       "norm_label": "foundation"
     },
     {
@@ -35353,7 +35323,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_mocks_mocktransactionrepository_swift_swiftdata",
-      "community": 122,
+      "community": 302,
       "norm_label": "swiftdata"
     },
     {
@@ -35363,7 +35333,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_mocks_mocktransactionrepository_swift_personalfinancetraker",
-      "community": 122,
+      "community": 302,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -35503,7 +35473,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "uint64",
-      "community": 119,
+      "community": 195,
       "norm_label": "uint64"
     },
     {
@@ -36213,7 +36183,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_backupmodelstests",
-      "community": 73,
+      "community": 201,
       "norm_label": "backupmodelstests.swift"
     },
     {
@@ -36223,7 +36193,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_backupmodelstests_swift_testing",
-      "community": 73,
+      "community": 201,
       "norm_label": "testing"
     },
     {
@@ -36233,7 +36203,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_backupmodelstests_swift_foundation",
-      "community": 73,
+      "community": 201,
       "norm_label": "foundation"
     },
     {
@@ -36243,7 +36213,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_backupmodelstests_swift_personalfinancetraker",
-      "community": 73,
+      "community": 201,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -36253,7 +36223,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "models_backupmodelstests_backupmodelstests",
-      "community": 73,
+      "community": 201,
       "norm_label": "backupmodelstests"
     },
     {
@@ -36263,7 +36233,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "models_backupmodelstests_backupmodelstests_date",
-      "community": 73,
+      "community": 201,
       "norm_label": ".date()"
     },
     {
@@ -36273,7 +36243,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_backupmodelstests_swift_int",
-      "community": 73,
+      "community": 201,
       "norm_label": "int"
     },
     {
@@ -36283,7 +36253,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_backupmodelstests_swift_date",
-      "community": 73,
+      "community": 201,
       "norm_label": "date"
     },
     {
@@ -36293,7 +36263,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "models_backupmodelstests_backupmodelstests_transactionroundtripsthroughbackuptransaction",
-      "community": 73,
+      "community": 201,
       "norm_label": ".transactionroundtripsthroughbackuptransaction()"
     },
     {
@@ -36303,7 +36273,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "models_backupmodelstests_backupmodelstests_restoredtransactionrelinkscategorymodelbynameandtype",
-      "community": 73,
+      "community": 201,
       "norm_label": ".restoredtransactionrelinkscategorymodelbynameandtype()"
     },
     {
@@ -36313,7 +36283,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "models_backupmodelstests_backupmodelstests_restoredtransactiondoesnotrelinkacrossmismatchedtype",
-      "community": 73,
+      "community": 201,
       "norm_label": ".restoredtransactiondoesnotrelinkacrossmismatchedtype()"
     },
     {
@@ -36323,7 +36293,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "models_backupmodelstests_backupmodelstests_recurrenceruleroundtripsthroughbackuprecurrencerule",
-      "community": 73,
+      "community": 201,
       "norm_label": ".recurrenceruleroundtripsthroughbackuprecurrencerule()"
     },
     {
@@ -36833,7 +36803,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_safetospendsnapshottests",
-      "community": 257,
+      "community": 231,
       "norm_label": "safetospendsnapshottests.swift"
     },
     {
@@ -36843,7 +36813,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_safetospendsnapshottests_swift_foundation",
-      "community": 257,
+      "community": 231,
       "norm_label": "foundation"
     },
     {
@@ -36853,7 +36823,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_safetospendsnapshottests_swift_testing",
-      "community": 257,
+      "community": 231,
       "norm_label": "testing"
     },
     {
@@ -36863,7 +36833,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_safetospendsnapshottests_swift_personalfinancetraker",
-      "community": 257,
+      "community": 231,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -36873,7 +36843,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "models_safetospendsnapshottests_safetospendsnapshottests",
-      "community": 257,
+      "community": 231,
       "norm_label": "safetospendsnapshottests"
     },
     {
@@ -36883,7 +36853,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "models_safetospendsnapshottests_safetospendsnapshottests_day",
-      "community": 257,
+      "community": 231,
       "norm_label": ".day()"
     },
     {
@@ -36893,7 +36863,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_safetospendsnapshottests_swift_int",
-      "community": 257,
+      "community": 231,
       "norm_label": "int"
     },
     {
@@ -36903,7 +36873,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_safetospendsnapshottests_swift_date",
-      "community": 257,
+      "community": 231,
       "norm_label": "date"
     },
     {
@@ -36913,7 +36883,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_models_safetospendsnapshottests_swift_calendar",
-      "community": 257,
+      "community": 231,
       "norm_label": "calendar"
     },
     {
@@ -36923,7 +36893,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "models_safetospendsnapshottests_safetospendsnapshottests_amountreturnsmatchingdayvalue",
-      "community": 257,
+      "community": 231,
       "norm_label": ".amountreturnsmatchingdayvalue()"
     },
     {
@@ -36933,7 +36903,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "models_safetospendsnapshottests_safetospendsnapshottests_projectedamountusestheforecastendvalue",
-      "community": 257,
+      "community": 231,
       "norm_label": ".projectedamountusestheforecastendvalue()"
     },
     {
@@ -36943,7 +36913,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "models_safetospendsnapshottests_safetospendsnapshottests_projectedamountexpiresaftertheforecasthorizon",
-      "community": 257,
+      "community": 231,
       "norm_label": ".projectedamountexpiresaftertheforecasthorizon()"
     },
     {
@@ -36953,7 +36923,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "models_safetospendsnapshottests_safetospendsnapshottests_roundtripsthroughjson",
-      "community": 257,
+      "community": 231,
       "norm_label": ".roundtripsthroughjson()"
     },
     {
@@ -37583,7 +37553,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetrakertests_searchtests",
-      "community": 107,
+      "community": 390,
       "norm_label": "searchtests.swift"
     },
     {
@@ -37593,7 +37563,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_searchtests_swift_foundation",
-      "community": 107,
+      "community": 390,
       "norm_label": "foundation"
     },
     {
@@ -37603,7 +37573,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_searchtests_swift_testing",
-      "community": 107,
+      "community": 390,
       "norm_label": "testing"
     },
     {
@@ -37613,7 +37583,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_searchtests_swift_personalfinancetraker",
-      "community": 107,
+      "community": 390,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -38403,7 +38373,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_backupservicetests",
-      "community": 73,
+      "community": 388,
       "norm_label": "backupservicetests.swift"
     },
     {
@@ -38413,7 +38383,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_testing",
-      "community": 73,
+      "community": 388,
       "norm_label": "testing"
     },
     {
@@ -38423,7 +38393,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_foundation",
-      "community": 73,
+      "community": 388,
       "norm_label": "foundation"
     },
     {
@@ -38433,7 +38403,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_cryptokit",
-      "community": 73,
+      "community": 388,
       "norm_label": "cryptokit"
     },
     {
@@ -38443,7 +38413,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_personalfinancetraker",
-      "community": 73,
+      "community": 388,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -38453,7 +38423,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests",
-      "community": 73,
+      "community": 307,
       "norm_label": "backupservicetests"
     },
     {
@@ -38463,7 +38433,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_maketempstorage",
-      "community": 73,
+      "community": 307,
       "norm_label": ".maketempstorage()"
     },
     {
@@ -38473,7 +38443,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_testbackupstorage",
-      "community": 73,
+      "community": 307,
       "norm_label": "testbackupstorage"
     },
     {
@@ -38483,7 +38453,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_url",
-      "community": 73,
+      "community": 307,
       "norm_label": "url"
     },
     {
@@ -38493,7 +38463,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_makeservice",
-      "community": 73,
+      "community": 307,
       "norm_label": ".makeservice()"
     },
     {
@@ -38503,7 +38473,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_int",
-      "community": 73,
+      "community": 307,
       "norm_label": "int"
     },
     {
@@ -38513,7 +38483,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_backupservice",
-      "community": 73,
+      "community": 307,
       "norm_label": "backupservice"
     },
     {
@@ -38523,7 +38493,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_date",
-      "community": 73,
+      "community": 307,
       "norm_label": ".date()"
     },
     {
@@ -38533,7 +38503,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_backupservicetests_swift_date",
-      "community": 73,
+      "community": 307,
       "norm_label": "date"
     },
     {
@@ -38543,7 +38513,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_writebackupcreatesajsonfileinthecontainer",
-      "community": 73,
+      "community": 307,
       "norm_label": ".writebackupcreatesajsonfileinthecontainer()"
     },
     {
@@ -38553,7 +38523,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_writebackupthrowswhentransactionsareempty",
-      "community": 73,
+      "community": 307,
       "norm_label": ".writebackupthrowswhentransactionsareempty()"
     },
     {
@@ -38563,7 +38533,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_writebackupthrowswhenicloudunavailable",
-      "community": 73,
+      "community": 307,
       "norm_label": ".writebackupthrowswhenicloudunavailable()"
     },
     {
@@ -38573,7 +38543,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_newestbackupreturnsthemostrecentlywrittenfile",
-      "community": 73,
+      "community": 307,
       "norm_label": ".newestbackupreturnsthemostrecentlywrittenfile()"
     },
     {
@@ -38583,7 +38553,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_writebackupprunesbeyondmaxbackupskept",
-      "community": 73,
+      "community": 307,
       "norm_label": ".writebackupprunesbeyondmaxbackupskept()"
     },
     {
@@ -38593,7 +38563,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_readbackupdecodeswhatwaswritten",
-      "community": 73,
+      "community": 307,
       "norm_label": ".readbackupdecodeswhatwaswritten()"
     },
     {
@@ -38603,7 +38573,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_encryptedwriteandreadroundtrip",
-      "community": 73,
+      "community": 307,
       "norm_label": ".encryptedwriteandreadroundtrip()"
     },
     {
@@ -38613,7 +38583,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_legacyplaintextjsonbackupstillrestores",
-      "community": 73,
+      "community": 307,
       "norm_label": ".legacyplaintextjsonbackupstillrestores()"
     },
     {
@@ -38623,7 +38593,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_listbackupsincludesbothjsonandpftbackupextensions",
-      "community": 73,
+      "community": 307,
       "norm_label": ".listbackupsincludesbothjsonandpftbackupextensions()"
     },
     {
@@ -38633,7 +38603,7 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "utilities_backupservicetests_backupservicetests_newestbackuppickscorrectlyamongmixedfiles",
-      "community": 73,
+      "community": 307,
       "norm_label": ".newestbackuppickscorrectlyamongmixedfiles()"
     },
     {
@@ -39233,7 +39203,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_csvimportexporttests",
-      "community": 307,
+      "community": 217,
       "norm_label": "csvimportexporttests.swift"
     },
     {
@@ -39243,7 +39213,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_csvimportexporttests_swift_testing",
-      "community": 307,
+      "community": 217,
       "norm_label": "testing"
     },
     {
@@ -39253,7 +39223,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_csvimportexporttests_swift_foundation",
-      "community": 307,
+      "community": 217,
       "norm_label": "foundation"
     },
     {
@@ -39263,7 +39233,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_csvimportexporttests_swift_personalfinancetraker",
-      "community": 307,
+      "community": 217,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -39383,7 +39353,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "utilities_csvimportexporttests_csvimportservicetests_parserowhandlesquotedfieldwithcomma",
-      "community": 249,
+      "community": 146,
       "norm_label": ".parserowhandlesquotedfieldwithcomma()"
     },
     {
@@ -39393,7 +39363,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "utilities_csvimportexporttests_csvimportservicetests_parserowhandlesdoublequoteescape",
-      "community": 249,
+      "community": 146,
       "norm_label": ".parserowhandlesdoublequoteescape()"
     },
     {
@@ -40653,7 +40623,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_importprofilestoretests",
-      "community": 131,
+      "community": 27,
       "norm_label": "importprofilestoretests.swift"
     },
     {
@@ -40663,7 +40633,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_importprofilestoretests_swift_foundation",
-      "community": 131,
+      "community": 27,
       "norm_label": "foundation"
     },
     {
@@ -40673,7 +40643,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_importprofilestoretests_swift_testing",
-      "community": 131,
+      "community": 27,
       "norm_label": "testing"
     },
     {
@@ -40683,7 +40653,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_importprofilestoretests_swift_personalfinancetraker",
-      "community": 131,
+      "community": 27,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -40693,7 +40663,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "utilities_importprofilestoretests_importprofilestoretests",
-      "community": 131,
+      "community": 27,
       "norm_label": "importprofilestoretests"
     },
     {
@@ -40703,7 +40673,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "utilities_importprofilestoretests_importprofilestoretests_freshstore",
-      "community": 131,
+      "community": 27,
       "norm_label": ".freshstore()"
     },
     {
@@ -40713,7 +40683,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "importprofilestore",
-      "community": 131,
+      "community": 27,
       "norm_label": "importprofilestore"
     },
     {
@@ -40723,7 +40693,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "utilities_importprofilestoretests_importprofilestoretests_signatureisstableforsameheaders",
-      "community": 131,
+      "community": 27,
       "norm_label": ".signatureisstableforsameheaders()"
     },
     {
@@ -40733,7 +40703,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "utilities_importprofilestoretests_importprofilestoretests_signaturediffersfordifferentheadersordelimiter",
-      "community": 131,
+      "community": 27,
       "norm_label": ".signaturediffersfordifferentheadersordelimiter()"
     },
     {
@@ -40743,7 +40713,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "utilities_importprofilestoretests_importprofilestoretests_saveandloadroundtrip",
-      "community": 131,
+      "community": 27,
       "norm_label": ".saveandloadroundtrip()"
     },
     {
@@ -40753,7 +40723,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "utilities_importprofilestoretests_importprofilestoretests_savingagainoverwrites",
-      "community": 131,
+      "community": 27,
       "norm_label": ".savingagainoverwrites()"
     },
     {
@@ -41053,7 +41023,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_paycycleservicetests",
-      "community": 335,
+      "community": 147,
       "norm_label": "paycycleservicetests.swift"
     },
     {
@@ -41063,7 +41033,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_paycycleservicetests_swift_testing",
-      "community": 335,
+      "community": 147,
       "norm_label": "testing"
     },
     {
@@ -41073,7 +41043,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_paycycleservicetests_swift_foundation",
-      "community": 335,
+      "community": 147,
       "norm_label": "foundation"
     },
     {
@@ -41083,7 +41053,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_paycycleservicetests_swift_personalfinancetraker",
-      "community": 335,
+      "community": 147,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -43053,7 +43023,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_recurrencematerializationservicetests",
-      "community": 344,
+      "community": 341,
       "norm_label": "recurrencematerializationservicetests.swift"
     },
     {
@@ -43063,7 +43033,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_recurrencematerializationservicetests_swift_testing",
-      "community": 344,
+      "community": 341,
       "norm_label": "testing"
     },
     {
@@ -43073,7 +43043,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_recurrencematerializationservicetests_swift_foundation",
-      "community": 344,
+      "community": 341,
       "norm_label": "foundation"
     },
     {
@@ -43083,7 +43053,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_recurrencematerializationservicetests_swift_personalfinancetraker",
-      "community": 344,
+      "community": 341,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -44333,7 +44303,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utilities_xlsxexportservicetests",
-      "community": 12,
+      "community": 34,
       "norm_label": "xlsxexportservicetests.swift"
     },
     {
@@ -44343,7 +44313,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_xlsxexportservicetests_swift_testing",
-      "community": 12,
+      "community": 34,
       "norm_label": "testing"
     },
     {
@@ -44353,7 +44323,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_xlsxexportservicetests_swift_foundation",
-      "community": 12,
+      "community": 34,
       "norm_label": "foundation"
     },
     {
@@ -44363,7 +44333,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_xlsxexportservicetests_swift_personalfinancetraker",
-      "community": 12,
+      "community": 34,
       "norm_label": "personalfinancetraker"
     },
     {
@@ -44373,7 +44343,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "utilities_xlsxexportservicetests_xlsxexportservicetests",
-      "community": 12,
+      "community": 34,
       "norm_label": "xlsxexportservicetests"
     },
     {
@@ -44383,7 +44353,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "utilities_xlsxexportservicetests_xlsxexportservicetests_roundtrip",
-      "community": 12,
+      "community": 34,
       "norm_label": ".roundtrip()"
     },
     {
@@ -44393,7 +44363,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_xlsxexportservicetests_swift_transactionsnapshot",
-      "community": 12,
+      "community": 34,
       "norm_label": "transactionsnapshot"
     },
     {
@@ -44403,7 +44373,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakertests_utilities_xlsxexportservicetests_swift_csvfile",
-      "community": 12,
+      "community": 34,
       "norm_label": "csvfile"
     },
     {
@@ -44413,7 +44383,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "utilities_xlsxexportservicetests_xlsxexportservicetests_emptyexporthasheaderrowonly",
-      "community": 12,
+      "community": 34,
       "norm_label": ".emptyexporthasheaderrowonly()"
     },
     {
@@ -44423,7 +44393,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "utilities_xlsxexportservicetests_xlsxexportservicetests_exportedrowssurviveroundtrip",
-      "community": 12,
+      "community": 34,
       "norm_label": ".exportedrowssurviveroundtrip()"
     },
     {
@@ -45303,7 +45273,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "timelineentry",
-      "community": 138,
+      "community": 279,
       "norm_label": "timelineentry"
     },
     {
@@ -45353,7 +45323,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "timelineprovider",
-      "community": 138,
+      "community": 279,
       "norm_label": "timelineprovider"
     },
     {
@@ -45453,7 +45423,7 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_dailylogginghabitwidget_dailylogginghabitwidgetview_statusmetric",
-      "community": 24,
+      "community": 121,
       "norm_label": ".statusmetric()"
     },
     {
@@ -45463,7 +45433,7 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_dailylogginghabitwidget_swift_content",
-      "community": 24,
+      "community": 121,
       "norm_label": "content"
     },
     {
@@ -45473,7 +45443,7 @@
       "source_location": "L308",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_dailylogginghabitwidget_dailylogginghabitwidget",
-      "community": 188,
+      "community": 292,
       "norm_label": "dailylogginghabitwidget"
     },
     {
@@ -45483,7 +45453,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_dailylogginghabitwidget_swift_widgetconfiguration",
-      "community": 188,
+      "community": 292,
       "norm_label": "widgetconfiguration"
     },
     {
@@ -45493,7 +45463,7 @@
       "source_location": "L321",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_dailylogginghabitwidget_personalfinancetrakerwidgetbundle",
-      "community": 188,
+      "community": 292,
       "norm_label": "personalfinancetrakerwidgetbundle"
     },
     {
@@ -45503,7 +45473,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "widgetbundle",
-      "community": 188,
+      "community": 292,
       "norm_label": "widgetbundle"
     },
     {
@@ -45513,7 +45483,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget",
-      "community": 138,
+      "community": 382,
       "norm_label": "scanreceiptwidget.swift"
     },
     {
@@ -45523,7 +45493,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_scanreceiptwidget_swift_swiftui",
-      "community": 138,
+      "community": 382,
       "norm_label": "swiftui"
     },
     {
@@ -45533,7 +45503,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_scanreceiptwidget_swift_widgetkit",
-      "community": 138,
+      "community": 382,
       "norm_label": "widgetkit"
     },
     {
@@ -45543,7 +45513,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget_scanreceiptentry",
-      "community": 138,
+      "community": 279,
       "norm_label": "scanreceiptentry"
     },
     {
@@ -45553,7 +45523,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_scanreceiptwidget_swift_date",
-      "community": 138,
+      "community": 279,
       "norm_label": "date"
     },
     {
@@ -45563,7 +45533,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget_scanreceiptprovider",
-      "community": 138,
+      "community": 279,
       "norm_label": "scanreceiptprovider"
     },
     {
@@ -45573,7 +45543,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget_scanreceiptprovider_placeholder",
-      "community": 138,
+      "community": 279,
       "norm_label": ".placeholder()"
     },
     {
@@ -45583,7 +45553,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_scanreceiptwidget_swift_context",
-      "community": 138,
+      "community": 279,
       "norm_label": "context"
     },
     {
@@ -45593,7 +45563,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget_scanreceiptprovider_getsnapshot",
-      "community": 138,
+      "community": 279,
       "norm_label": ".getsnapshot()"
     },
     {
@@ -45603,7 +45573,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_scanreceiptwidget_swift_void",
-      "community": 138,
+      "community": 279,
       "norm_label": "void"
     },
     {
@@ -45613,7 +45583,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget_scanreceiptprovider_gettimeline",
-      "community": 138,
+      "community": 279,
       "norm_label": ".gettimeline()"
     },
     {
@@ -45623,7 +45593,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_scanreceiptwidget_swift_timeline",
-      "community": 138,
+      "community": 279,
       "norm_label": "timeline"
     },
     {
@@ -45633,7 +45603,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget_scanreceiptwidgetview",
-      "community": 138,
+      "community": 382,
       "norm_label": "scanreceiptwidgetview"
     },
     {
@@ -45643,7 +45613,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "personalfinancetrakerwidget_scanreceiptwidget_scanreceiptwidget",
-      "community": 138,
+      "community": 382,
       "norm_label": "scanreceiptwidget"
     },
     {
@@ -45653,7 +45623,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "personalfinancetraker_personalfinancetrakerwidget_scanreceiptwidget_swift_widgetconfiguration",
-      "community": 138,
+      "community": 382,
       "norm_label": "widgetconfiguration"
     },
     {
@@ -45663,7 +45633,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "safetospendwidget_safetospendentry",
-      "community": 138,
+      "community": 298,
       "norm_label": "safetospendentry.swift"
     },
     {
@@ -45673,7 +45643,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_widgetkit",
-      "community": 138,
+      "community": 298,
       "norm_label": "widgetkit"
     },
     {
@@ -45683,7 +45653,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "safetospendwidget_safetospendentry_safetospendentry",
-      "community": 138,
+      "community": 298,
       "norm_label": "safetospendentry"
     },
     {
@@ -45693,7 +45663,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_date",
-      "community": 138,
+      "community": 298,
       "norm_label": "date"
     },
     {
@@ -45703,7 +45673,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_decimal",
-      "community": 138,
+      "community": 298,
       "norm_label": "decimal"
     },
     {
@@ -45713,7 +45683,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_string",
-      "community": 138,
+      "community": 298,
       "norm_label": "string"
     },
     {
@@ -45723,7 +45693,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendentry_swift_bool",
-      "community": 138,
+      "community": 298,
       "norm_label": "bool"
     },
     {
@@ -45863,7 +45833,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "safetospendwidget_safetospendwidget",
-      "community": 188,
+      "community": 292,
       "norm_label": "safetospendwidget.swift"
     },
     {
@@ -45873,7 +45843,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendwidget_swift_swiftui",
-      "community": 188,
+      "community": 292,
       "norm_label": "swiftui"
     },
     {
@@ -45883,7 +45853,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendwidget_swift_widgetkit",
-      "community": 188,
+      "community": 292,
       "norm_label": "widgetkit"
     },
     {
@@ -45893,7 +45863,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "safetospendwidget_safetospendwidget_safetospendwidget",
-      "community": 188,
+      "community": 292,
       "norm_label": "safetospendwidget"
     },
     {
@@ -45903,7 +45873,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "personalfinancetraker_safetospendwidget_safetospendwidget_swift_widgetconfiguration",
-      "community": 188,
+      "community": 292,
       "norm_label": "widgetconfiguration"
     },
     {
@@ -45913,7 +45883,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "safetospendwidget_safetospendwidget_safetospendwidgetbundle",
-      "community": 188,
+      "community": 292,
       "norm_label": "safetospendwidgetbundle"
     },
     {
@@ -49128,7 +49098,7 @@
       "label": "Batch 2 \u2014 what happened (read before batch 3)",
       "file_type": "document",
       "source_file": "docs/feedback/ios-2026-09/PROGRESS.md",
-      "source_location": "L122",
+      "source_location": "L108",
       "_origin": "ast",
       "id": "ios_2026_09_progress_batch_2_what_happened_read_before_batch_3",
       "community": 262,
@@ -49138,7 +49108,7 @@
       "label": "Open question for the user",
       "file_type": "document",
       "source_file": "docs/feedback/ios-2026-09/PROGRESS.md",
-      "source_location": "L155",
+      "source_location": "L141",
       "_origin": "ast",
       "id": "ios_2026_09_progress_open_question_for_the_user",
       "community": 262,
@@ -53734,26 +53704,6 @@
     }
   ],
   "links": [
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcodecloud/manifest.json",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "xcodecloud_manifest",
-      "target": "xcodecloud_manifest_id",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcodecloud/manifest.json",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "xcodecloud_manifest",
-      "target": "xcodecloud_manifest_targets",
-      "confidence_score": 1.0
-    },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -67976,9 +67926,9 @@
       "source_location": "L81",
       "weight": 1.0,
       "context": "field",
-      "confidence_score": 1.0,
       "source": "editaddtransactionview_transactionformtips_scanreceipttip",
-      "target": "option"
+      "target": "option",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -112530,9 +112480,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/FeatureDiscovery/FeatureDiscoveryCoordinatorTests.swift",
       "source_location": "L229",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "featurediscovery_featurediscoverycoordinatortests",
-      "target": "featurediscovery_featurediscoverycoordinatortests_bundletoken"
+      "target": "featurediscovery_featurediscoverycoordinatortests_bundletoken",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -127868,9 +127818,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L290",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests",
-      "target": "utilities_receiptcategoryinferrertests_importpairingtests"
+      "target": "utilities_receiptcategoryinferrertests_importpairingtests",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -127878,9 +127828,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L14",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -127888,9 +127838,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L11",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests",
-      "target": "utilities_receiptcategoryinferrertests_receiptcategorypairingtests"
+      "target": "utilities_receiptcategoryinferrertests_receiptcategorypairingtests",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127898,9 +127848,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L62",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_anunsetpairingfallsbacktonamematching"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_anunsetpairingfallsbacktonamematching",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127908,9 +127858,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L115",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_arecognizedmerchantisnotreportedasaguess"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_arecognizedmerchantisnotreportedasaguess",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127918,9 +127868,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L182",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_fallsbacktomostusedcategorywhennothingmatches"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_fallsbacktomostusedcategorywhennothingmatches",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127928,9 +127878,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L20",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_gelateriamerchantsreachtheeatingoutcategory"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_gelateriamerchantsreachtheeatingoutcategory",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127938,9 +127888,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L164",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_keywordfallbackmatchesmerchantbrandtoanexistingcategory"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_keywordfallbackmatchesmerchantbrandtoanexistingcategory",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127948,9 +127898,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L251",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_keywordfallbackrespectstransactiontype"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_keywordfallbackrespectstransactiontype",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127958,9 +127908,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L232",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_keywordmatchesamerchantthatendsexactlywiththekeyword"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_keywordmatchesamerchantthatendsexactlywiththekeyword",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127968,9 +127918,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L149",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_learnedlookupiscaseandwhitespaceinsensitive"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_learnedlookupiscaseandwhitespaceinsensitive",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127978,9 +127928,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L131",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_learnedmappingwinsoverthekeywordtable"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_learnedmappingwinsoverthekeywordtable",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127988,9 +127938,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L202",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_neverreturnsnilwhenapoolexistsevenwithnomerchantatall"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_neverreturnsnilwhenapoolexistsevenwithnomerchantatall",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -127998,9 +127948,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L269",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_noaddressskipsthemapkittierwithouthanging"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_noaddressskipsthemapkittierwithouthanging",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -128008,9 +127958,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L80",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_pairingsfordeletedcategoriesarepruned"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_pairingsfordeletedcategoriesarepruned",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -128018,9 +127968,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L217",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_returnsnilwhentherearenocategoriesofthattypeyet"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_returnsnilwhentherearenocategoriesofthattypeyet",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -128028,9 +127978,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L42",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_settingspairingbeatsnamematchingforacategorythesynonymscannotreach"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_settingspairingbeatsnamematchingforacategorythesynonymscannotreach",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -128038,9 +127988,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L96",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_inferrertests",
-      "target": "utilities_receiptcategoryinferrertests_inferrertests_themostusedfallbackisreportedasaguess"
+      "target": "utilities_receiptcategoryinferrertests_inferrertests_themostusedfallbackisreportedasaguess",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -128048,9 +127998,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L319",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests",
-      "target": "utilities_receiptcategoryinferrertests_importpairingtests_exactmatchoutranksuserpairing"
+      "target": "utilities_receiptcategoryinferrertests_importpairingtests_exactmatchoutranksuserpairing",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -128058,9 +128008,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L304",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests",
-      "target": "utilities_receiptcategoryinferrertests_importpairingtests_userpairingoutranksheuristic"
+      "target": "utilities_receiptcategoryinferrertests_importpairingtests_userpairingoutranksheuristic",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -128068,9 +128018,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L295",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests",
-      "target": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing"
+      "target": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -128079,9 +128029,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L321",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests_exactmatchoutranksuserpairing",
-      "target": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing"
+      "target": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -128090,9 +128040,9 @@
       "source_file": "PersonalFinanceTraker/PersonalFinanceTrakerTests/Utilities/ReceiptCategoryInferrerTests.swift",
       "source_location": "L306",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests_userpairingoutranksheuristic",
-      "target": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing"
+      "target": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -128101,9 +128051,9 @@
       "source_location": "L295",
       "weight": 1.0,
       "context": "parameter_type",
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing",
-      "target": "personalfinancetraker_personalfinancetrakertests_utilities_receiptcategoryinferrertests_swift_categorysnapshot"
+      "target": "personalfinancetraker_personalfinancetrakertests_utilities_receiptcategoryinferrertests_swift_categorysnapshot",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -128112,9 +128062,9 @@
       "source_location": "L295",
       "weight": 1.0,
       "context": "parameter_type",
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing",
-      "target": "personalfinancetraker_personalfinancetrakertests_utilities_receiptcategoryinferrertests_swift_receiptcategoryconcept"
+      "target": "personalfinancetraker_personalfinancetrakertests_utilities_receiptcategoryinferrertests_swift_receiptcategoryconcept",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -128123,9 +128073,9 @@
       "source_location": "L295",
       "weight": 1.0,
       "context": "parameter_type",
-      "confidence_score": 1.0,
       "source": "utilities_receiptcategoryinferrertests_importpairingtests_withpairing",
-      "target": "personalfinancetraker_personalfinancetrakertests_utilities_receiptcategoryinferrertests_swift_void"
+      "target": "personalfinancetraker_personalfinancetrakertests_utilities_receiptcategoryinferrertests_swift_void",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -135422,9 +135372,9 @@
       "source_file": "PersonalFinanceTraker/ci_scripts/ci_post_clone.sh",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "ci_scripts_ci_post_clone",
-      "target": "users_gabrielerizzo_develop_personalfinancetracker_claude_worktrees_fix_181_first_run_autofocus_beats_tip_datastore_personalfinancetraker_ci_scripts_ci_post_clone_sh__entry"
+      "target": "users_gabrielerizzo_develop_personalfinancetracker_claude_worktrees_fix_181_first_run_autofocus_beats_tip_datastore_personalfinancetraker_ci_scripts_ci_post_clone_sh__entry",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",

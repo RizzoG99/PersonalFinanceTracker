@@ -73,6 +73,13 @@ struct TransactionFormView: View {
     /// matching the sheet-lifetime contract `CurrencyAmountField` already assumes.
     @State private var scanTipWasPendingAtOpen = ScanReceiptTip().shouldDisplay
 
+    /// Covers the case `scanTipWasPendingAtOpen` can't: on a genuine first install, TipKit's
+    /// SwiftData-backed datastore hasn't loaded yet, so the synchronous `shouldDisplay` read above
+    /// returns false even though the scan tip is actually pending — the suppression never engages
+    /// and the keyboard rises over the tip exactly as before (issue #181, reported again after the
+    /// first fix shipped). `UserDefaults` has no such load to race, so it's trustworthy this early.
+    @State private var isFirstEverOpen = !UserDefaults.standard.bool(forKey: "add_transaction_opened_once")
+
     // .popoverTip() doesn't anchor from the keyboard accessory bar — it lives in
     // UIRemoteKeyboardWindow, not the app window (verified on-device, issue #31).
     // Pinned above the accessory bar instead, via the .safeAreaInset below, so it
@@ -93,6 +100,21 @@ struct TransactionFormView: View {
     /// Matches how `AuthenticationWrapper` picks the root view, so the two can't disagree
     /// about which layout is on screen.
     private var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
+
+    /// The first-ever open lets whatever first-run tip is on screen be read before the keyboard
+    /// covers it. Two independent conditions because each has a blind spot the other covers:
+    /// `isFirstEverOpen` is trustworthy on first launch, where TipKit's datastore hasn't loaded
+    /// and `shouldDisplay` reads a stale false; `scanTipWasPendingAtOpen` covers later opens where
+    /// the popover is somehow still pending (e.g. `ScanReceiptTip.isEligible` not yet set when this
+    /// view was built), which the one-shot flag above no longer suppresses.
+    ///
+    /// iPad excluded: the form sits in a persistent inspector column there, and
+    /// `syncTipVisibility` already skips its tips, so the keyboard has nothing to bury.
+    private var autoFocusesAmount: Bool {
+        guard viewModel.shouldAutoFocusAmount else { return false }
+        guard !isPad else { return true }
+        return !isFirstEverOpen && !scanTipWasPendingAtOpen
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -117,10 +139,7 @@ struct TransactionFormView: View {
                             placeholder: "0",
                             amount: $viewModel.amount,
                             currencyCode: $viewModel.currencyCode,
-                            // Let the unread "Scan a receipt" tip have the screen to itself first —
-                        // otherwise the keyboard it summons buries the tip's own pinned card
-                        // (see `scanTipWasPendingAtOpen`).
-                        shouldAutoFocus: viewModel.shouldAutoFocusAmount && !scanTipWasPendingAtOpen,
+                            shouldAutoFocus: autoFocusesAmount,
                             focusTrigger: focusTrigger,
                             focus: $focusedField
                         )
@@ -285,6 +304,27 @@ struct TransactionFormView: View {
                         Task { await viewModel.createAndSelectTravel(name: name, symbolName: symbolName) }
                     }
                 }
+                // Scoped to the Form on purpose: the scrim blocks taps on the rows behind the
+                // tip, but the keyboard and its accessory bar render outside the Form, so the
+                // controls the tip is explaining stay reachable.
+                .focusScrim(tipVisible)
+                // Pinned just above the accessory bar — appears exactly while the keyboard
+                // (and the bar it explains) is up, and doesn't scroll away with the form.
+                // Applied before `.keyboardFieldNavigation` below so its own internal 60pt
+                // safe-area reserve (sized to the accessory bar's real, taller-than-system-slot
+                // height) lands outside this inset — otherwise the reserve ends up between the
+                // form and the card instead of between the card and the bar, leaving only the
+                // card's own guessed bottom padding to clear the bar (issue #181).
+                .safeAreaInset(edge: .bottom) {
+                    if tipVisible, let tip = tips.currentTip {
+                        TipView(tip)
+                            .tipViewStyle(AppTipViewStyle())
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            .padding(.bottom, 52)
+                            .transition(.opacity)
+                    }
+                }
                 // Chevron taps go through `navigate` (scroll target into view, wait for the scroll
                 // to actually settle, only then request focus) instead of setting focus directly —
                 // same fix as AddGoalSheet's chevrons: a field currently scrolled out of the Form
@@ -395,22 +435,6 @@ struct TransactionFormView: View {
                         .frame(maxWidth: .infinity)
                     }
                 }
-                // Scoped to the Form on purpose: the scrim blocks taps on the rows behind the
-                // tip, but the keyboard and its accessory bar render outside the Form, so the
-                // controls the tip is explaining stay reachable.
-                .focusScrim(tipVisible)
-                // Pinned just above the accessory bar — appears exactly while the keyboard
-                // (and the bar it explains) is up, and doesn't scroll away with the form.
-                .safeAreaInset(edge: .bottom) {
-                    if tipVisible, let tip = tips.currentTip {
-                        TipView(tip)
-                            .tipViewStyle(AppTipViewStyle())
-                            .padding(.horizontal)
-                            .padding(.top, 8)
-                            .padding(.bottom, 52)
-                            .transition(.opacity)
-                    }
-                }
                 // Both inputs to tipVisible have to be watched: focus and TipKit's currentTip
                 // resolve in separate render passes, and syncTipVisibility() folds whichever
                 // lands second into one animated transaction.
@@ -477,6 +501,7 @@ struct TransactionFormView: View {
                 .onAppear {
                     updateTipEligibility()
                     syncTipVisibility()
+                    UserDefaults.standard.set(true, forKey: "add_transaction_opened_once")
                 }
                 .onChange(of: viewModel.transactionType) { _, _ in updateTipEligibility() }
                 .onChange(of: viewModel.receiptStatusMessage) { _, _ in dismissedScanBanner = false }
