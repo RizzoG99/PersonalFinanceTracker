@@ -37,7 +37,7 @@ single session costs repeated context compactions and is the main budget sink.
 | 159 | iPad: the filter-chips band does not match the app background | P3 | UI | 12 | 7 |
 | 161 | Budgets screen: no income section, "No limit" wording, jumpy focus, dead space | P3 | Budgets | 14 | 8 |
 | 162 | Dashboard suggestions surface recurring transactions instead of habitual daily spends | — | Insights | — | parked `enhancement`, no fix |
-| 181 | Add Transaction: first-run tips collide with the keyboard, and the scan tip renders in English | P2 | Transactions | — | fixed on `fix/181-first-run-tips-collide-with-keyboard` |
+| 181 | Add Transaction: first-run tips collide with the keyboard, and the scan tip renders in English | P2 | Transactions | — | fixed on `fix/181-first-run-autofocus-beats-tip-datastore`, reopened once already — first fix shipped and failed retest |
 
 **Batch 5 (trips) branches off `feature/travel-groups` @ `a1f9e22`, not `main`** —
 that feature is unmerged. Those four issue bodies open with a scope blockquote.
@@ -104,6 +104,20 @@ Status `Todo` → `In Progress` → `Done` **only once the PR merges**.
   its answer turns out useless.
 - rtk's output compression is display-only and mangles Swift source (drops `=`
   and `?`). Never author a `sed`/`python` patch pattern from rtk-rendered text.
+- **`-resetTips` cannot reproduce a genuine first install.** It clears TipKit's
+  datastore *contents*, not its existence. `Tips.configure()`'s SwiftData-backed
+  datastore load is async, so only `xcrun simctl erase` (or an actual
+  delete+reinstall) recreates "datastore never loaded" — the state where a
+  synchronous `shouldDisplay` read at view-construction time is wrong. Issue
+  #181's first fix (`80fa71d`) passed every `-resetTips`-based manual check and
+  still shipped broken.
+- **Stacked `.safeAreaInset(edge: .bottom)` modifiers compose in application
+  order — the last-applied one sits closest to the physical edge.** A view
+  can't be kept clear of a floating bottom bar by giving it its own guessed
+  padding if another modifier's bottom inset (sized to reserve exactly that
+  space) is applied earlier in the chain: the earlier one ends up further from
+  the edge, not closer. Reorder so the modifier that knows the bar's real
+  height applies last.
 
 ## Batch 2 — what happened (read before batch 3)
 
