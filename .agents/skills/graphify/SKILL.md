@@ -30,7 +30,10 @@ Use `graphify path` for relationships and `graphify explain` for focused concept
 
 ## Maintenance
 
+- `graphify-out/` is generated, ignored by Git, and local to the current worktree. Never stage, commit, or share it between worktrees.
+- On a fresh worktree without a graph, use `rg` for initial navigation or generate the graph locally.
 - After modifying code, run `graphify update .` when graphify is installed and the user has not asked to skip it.
+- Confirm the update leaves Git status unchanged. Graph results describe the checkout that generated them and may be stale after switching branches or commits.
 - If graphify is unavailable or blocked by sandbox/network limits, continue with `rg` and source reading, and mention the skipped graph update.
 - Read `graphify-out/GRAPH_REPORT.md` only for broad architecture review or when query/path/explain is insufficient.
 

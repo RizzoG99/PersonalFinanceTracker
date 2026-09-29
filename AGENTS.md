@@ -91,13 +91,15 @@ scripts/xcb delete-sim   # drop this worktree's dedicated simulator
 
 ## graphify
 
-This project has a knowledge graph at `graphify-out/`.
+Graphify generates a local knowledge graph at `graphify-out/`. The directory is ignored by Git and belongs to the worktree that generated it; never stage, commit, or share it between worktrees.
 
 - For codebase questions, first run `graphify query "<question>"` when `graphify-out/graph.json` exists.
 - Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts.
 - If `graphify-out/wiki/index.md` exists, use it for broad navigation instead of raw source browsing.
 - Read `graphify-out/GRAPH_REPORT.md` only for broad architecture review or when query/path/explain does not surface enough context.
-- After modifying code, run `graphify update .` if graphify is available and the user has not asked to skip it.
+- On a fresh worktree without a graph, use `rg` for initial navigation or generate the graph locally.
+- After modifying code, run `graphify update .` if graphify is available and the user has not asked to skip it. The update must leave Git status unchanged.
+- Graphify results describe the checkout that generated them and may be stale after switching branches or commits.
 
 
 <!-- headroom:rtk-instructions -->

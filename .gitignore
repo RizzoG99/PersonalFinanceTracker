@@ -63,9 +63,8 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 .DS_Store
 
-# graphify: cost.json is local-only; cache/ is optional (commit for speed, skip to keep repo small)
-graphify-out/**/cost.json
-graphify-out/cache/
+# Graphify knowledge graphs are generated independently in each worktree.
+graphify-out/
 .claude/worktrees/
 .worktrees/
 
