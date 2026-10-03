@@ -52,9 +52,11 @@ struct BudgetProgressBarView: View {
         }
         let spent = progress.spent.formatted(.currency(code: "EUR"))
         let budget = progress.budget.formatted(.currency(code: "EUR"))
+        // Plan lists every budget, not only the at-risk ones Home shows, so "within budget" is
+        // a real case here and must not read as "near limit".
         let status = progress.isOverBudget
             ? String(localized: ", over budget")
-            : String(localized: ", near budget limit")
+            : progress.isNearLimit ? String(localized: ", near budget limit") : ""
         return String(localized: "\(name), \(spent) of \(budget)") + status
     }
 }

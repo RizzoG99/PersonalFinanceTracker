@@ -15,7 +15,7 @@ struct TravelsView: View {
     /// multi-select flow used to have a second, thinner sheet of its own, which meant two
     /// components to keep in step for one job.
     enum Mode {
-        /// Opened from the ⋯ menu: a row opens the trip.
+        /// Opened from Activity's Travels button: a row opens the trip.
         case browse
         /// Opened from the selection bar: a row moves the selected transactions into it.
         case movingSelection

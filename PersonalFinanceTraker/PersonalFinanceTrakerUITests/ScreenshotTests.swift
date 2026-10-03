@@ -54,6 +54,12 @@ final class ScreenshotTests: XCTestCase {
         tapTab(app, "Activity")
         try shoot("02-activity")
 
+        tapTab(app, "Plan")
+        try shoot("10-plan")
+        tap(app.buttons["Manage"])
+        try shoot("08-budgets")
+        goBack(app)
+
         tapTab(app, "Insights")
         try shoot("04-insights")
 
@@ -71,14 +77,6 @@ final class ScreenshotTests: XCTestCase {
         scrollTo(app.buttons["Manage Categories"], in: app)
         tap(app.buttons["Manage Categories"])
         try shoot("07-categories")
-        goBack(app)
-
-        // Prefix match: the row appends a "N set" count once budgets exist, so its
-        // accessibility label is not just the title.
-        let budgets = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Manage Budgets")).firstMatch
-        scrollTo(budgets, in: app)
-        tap(budgets)
-        try shoot("08-budgets")
         goBack(app)
 
         // The import mapping screen sits behind the system document picker, which is
@@ -109,6 +107,9 @@ final class ScreenshotTests: XCTestCase {
 
         tapSidebar(app, "Activity")
         try shoot("02-ledger")
+
+        tapSidebar(app, "Budgets")
+        try shoot("06-budgets")
 
         tapSidebar(app, "Insights")
         try shoot("03-insights")

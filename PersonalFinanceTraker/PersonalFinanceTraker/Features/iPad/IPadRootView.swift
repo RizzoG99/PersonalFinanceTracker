@@ -146,8 +146,10 @@ struct IPadRootView: View {
             section = .activity
         case .insights:
             section = .insights
-        case .home, .budgets:
+        case .home:
             section = .home
+        case .budgets:
+            section = .budgets
         case .addTransaction:
             section = .home
             showingAddItemView = true
@@ -168,11 +170,13 @@ struct IPadRootView: View {
     private var sidebar: some View {
         List(selection: $section) {
             ForEach(IPadSection.Group.allCases) { group in
-                Section(group.title) {
+                Section {
                     ForEach(group.sections) { item in
                         Label(item.title, systemImage: item.systemImage)
                             .tag(item)
                     }
+                } header: {
+                    if let title = group.title { Text(title) }
                 }
             }
             Section {
@@ -227,6 +231,11 @@ struct IPadRootView: View {
                 IPadGoalsView(viewModel: models.compass)
             case .recurring:
                 IPadRecurringSection(materializationService: models.materializationService)
+            case .budgets:
+                NavigationStack {
+                    BudgetsView()
+                        .appBackground()
+                }
             case .insights:
                 CompassView(viewModel: models.compass, showingAddItemView: $showingAddItemView)
             case .healthScore:

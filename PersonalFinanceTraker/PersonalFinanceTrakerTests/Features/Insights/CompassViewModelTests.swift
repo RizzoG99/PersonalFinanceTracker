@@ -27,6 +27,20 @@ struct CompassViewModelTests {
         return .test(timestamp: date, amount: -abs(amount), category: category)
     }
 
+    @Test("explorer ‹ stops at the period holding the first transaction")
+    func explorerPreviousStopsAtFirstTransaction() async {
+        let empty = await makeVM(transactions: [])
+        #expect(!empty.canGoToPreviousPeriod)
+
+        let startedToday = await makeVM(transactions: [makeExpense(amount: 10)])
+        #expect(!startedToday.canGoToPreviousPeriod)
+
+        let since2MonthsAgo = await makeVM(transactions: [makeExpense(amount: 10, monthsAgo: 2), makeExpense(amount: 5)])
+        #expect(since2MonthsAgo.canGoToPreviousPeriod)
+        since2MonthsAgo.explorerPeriod = since2MonthsAgo.explorerPeriod.previous().previous()
+        #expect(!since2MonthsAgo.canGoToPreviousPeriod)
+    }
+
     @Test("healthScore is nil when no income and no expenses in recent 6 months")
     func healthScoreNilWithoutRecentTransactions() async {
         let vm = await makeVM(transactions: [])

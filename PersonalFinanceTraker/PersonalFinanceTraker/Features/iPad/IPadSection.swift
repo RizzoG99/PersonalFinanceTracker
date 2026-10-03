@@ -7,14 +7,15 @@ import Foundation
 
 /// Sidebar destinations for the iPad shell.
 ///
-/// Deliberately richer than the iPhone's three tabs: Goals and Health Score are buried inside
-/// Insights on iPhone because there is no room for them, but on iPad they are things you go to,
-/// so they get to be destinations.
+/// Grouped like the iPhone's four tabs (Home · Activity · Plan · Insights, #187), but richer:
+/// what iPhone stacks on one Plan page or inside Insights — Recurring, Budgets, Goals, Health
+/// Score — gets its own destination here, because on iPad there is room to go to each.
 enum IPadSection: String, Hashable, Identifiable, CaseIterable {
     case home
     case activity
-    case goals
     case recurring
+    case budgets
+    case goals
     case insights
     case healthScore
     case settings
@@ -25,8 +26,9 @@ enum IPadSection: String, Hashable, Identifiable, CaseIterable {
         switch self {
         case .home: String(localized: "Home")
         case .activity: String(localized: "Activity")
-        case .goals: String(localized: "Goals")
         case .recurring: String(localized: "Recurring")
+        case .budgets: String(localized: "Budgets")
+        case .goals: String(localized: "Goals")
         case .insights: String(localized: "Insights")
         case .healthScore: String(localized: "Health Score")
         case .settings: String(localized: "Settings")
@@ -37,8 +39,9 @@ enum IPadSection: String, Hashable, Identifiable, CaseIterable {
         switch self {
         case .home: "house"
         case .activity: "list.bullet.rectangle"
-        case .goals: "flag"
         case .recurring: "repeat"
+        case .budgets: "chart.bar"
+        case .goals: "flag"
         case .insights: "chart.line.uptrend.xyaxis"
         case .healthScore: "gauge.medium"
         case .settings: "gear"
@@ -46,23 +49,25 @@ enum IPadSection: String, Hashable, Identifiable, CaseIterable {
     }
 
     enum Group: String, Identifiable, CaseIterable {
-        case overview, money, analyse
+        case top, plan, insights
 
         var id: String { rawValue }
 
-        var title: String {
+        /// nil for `top`: Home and Activity are single destinations, so a heading over them
+        /// would just repeat their names.
+        var title: String? {
             switch self {
-            case .overview: String(localized: "Overview")
-            case .money: String(localized: "Money")
-            case .analyse: String(localized: "Analyse")
+            case .top: nil
+            case .plan: String(localized: "Plan")
+            case .insights: String(localized: "Insights")
             }
         }
 
         var sections: [IPadSection] {
             switch self {
-            case .overview: [.home]
-            case .money: [.activity, .goals, .recurring]
-            case .analyse: [.insights, .healthScore]
+            case .top: [.home, .activity]
+            case .plan: [.recurring, .budgets, .goals]
+            case .insights: [.insights, .healthScore]
             }
         }
     }

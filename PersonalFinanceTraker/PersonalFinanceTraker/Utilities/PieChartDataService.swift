@@ -57,13 +57,46 @@ public class PieChartDataService {
         // Filter items by time period and transaction type
         let filteredItems = filterItems(items, for: timePeriod, referenceDate: referenceDate, payCycleStartDay: payCycleStartDay, upTo: upTo)
         let typeFilteredItems = filterByDataType(filteredItems, dataType: dataType)
+        return points(from: typeFilteredItems, categories: categories)
+    }
 
+    /// The Insights explorer's one filter: inside `interval` (end exclusive), of `dataType`, goal
+    /// transfers left out (moving money into a goal isn't spending — same rule as the rest of
+    /// Insights). Pie slices, period bars and a category's drill-down list all go through this, so
+    /// a slice's amount always equals the sum of the rows it drills into.
+    func explorerItems(_ items: [TransactionSnapshot], in interval: DateInterval, dataType: PieChartDataType) -> [TransactionSnapshot] {
+        filterByDataType(
+            items.filter { $0.goalId == nil && $0.timestamp >= interval.start && $0.timestamp < interval.end },
+            dataType: dataType
+        )
+    }
+
+    /// Calendar-interval variant of `generatePieChartData`, for the Insights explorer.
+    func generatePieChartData(
+        from items: [TransactionSnapshot],
+        for dataType: PieChartDataType,
+        in interval: DateInterval,
+        categories: [CategorySnapshot] = []
+    ) -> [PieChartDataPoint] {
+        // An income and an expense category can share a name ("Other"); take the one of this type.
+        let type: TransactionType = dataType == .income ? .income : .expense
+        return points(from: explorerItems(items, in: interval, dataType: dataType), categories: categories.filter { $0.transactionType == type })
+    }
+
+    /// Base-currency, unsigned total per grouping key — what a slice's `amount` is built from.
+    func categoryTotals(_ items: [TransactionSnapshot]) -> [String: Decimal] {
+        groupByCategory(items)
+    }
+
+    private func points(from typeFilteredItems: [TransactionSnapshot], categories: [CategorySnapshot]) -> [PieChartDataPoint] {
         // Group by category and calculate totals
         let categoryGroupedData = groupByCategory(typeFilteredItems)
-        let budgetsByName = Dictionary(uniqueKeysWithValues: categories.map { ($0.name, $0.monthlyBudget) })
+        // Not `uniqueKeysWithValues`: names aren't unique across types (or a duplicate slipped in
+        // through import), and that initializer traps on the first repeat.
+        let budgetsByName = Dictionary(categories.map { ($0.name, $0.monthlyBudget) }, uniquingKeysWith: { first, _ in first })
         // Slice colour comes from the category's own saved token, so it stays the same
         // whatever the category's spending rank happens to be this period.
-        let colorTokensByName = Dictionary(uniqueKeysWithValues: categories.map { ($0.name, $0.colorToken) })
+        let colorTokensByName = Dictionary(categories.map { ($0.name, $0.colorToken) }, uniquingKeysWith: { first, _ in first })
         // Not every caller passes `categories:` — `SpendingInsightService.categoryTrends` does not —
         // so fall back to the icon and colour the transactions themselves carry from their linked
         // CategoryModel. Without this a user-created category rendered a generic glyph in a grey
@@ -168,7 +201,7 @@ public class PieChartDataService {
     /// - Parameter items: Array of items to group
     /// - Returns: Dictionary with category names as keys and total amounts as values
     /// The name a snapshot is grouped under; the icon/colour maps must key on the same thing.
-    private func groupingKey(for item: TransactionSnapshot) -> String {
+    func groupingKey(for item: TransactionSnapshot) -> String {
         item.category.isEmpty ? "Other" : item.category
     }
 

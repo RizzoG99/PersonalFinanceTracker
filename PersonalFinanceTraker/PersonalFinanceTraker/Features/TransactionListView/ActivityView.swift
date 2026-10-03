@@ -10,9 +10,7 @@ struct ActivityView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(TransactionListViewModel.self) private var viewModel: TransactionListViewModel
     @Binding var showingAddItemView: Bool
-    let materializationService: RecurrenceMaterializationService
     var onScanned: ((ReceiptScan) -> Void)? = nil
-    @Binding var showingRecurringView: Bool
     @Binding var showingTravelsView: Bool
 
     @State private var showCategorySheet = false
@@ -121,31 +119,14 @@ struct ActivityView: View {
                         }
                     }
                 } else {
-                    // Both open a *list* over the same transactions, so they share one
-                    // overflow menu rather than each claiming a bare glyph next to the
-                    // global gear: three icons in the leading group read as noise, and the
-                    // next such list would make it four. Creating a travel still lives on
-                    // the plus inside that list and in the add transaction form, never here.
+                    // Recurring used to share an overflow menu with this; it moved to the Plan
+                    // tab (#187), so Travels is the only list left and gets a direct button.
+                    // Creating a travel still lives on the plus inside that list and in the add
+                    // transaction form, never here.
                     ToolbarItem(placement: .topBarLeading) {
-                        Menu {
-                            Button("Recurring", systemImage: "repeat") { showingRecurringView = true }
-                            Button("Travels", systemImage: "airplane") { showingTravelsView = true }
-                        } label: {
-                            // .circle, not a bare ellipsis: it sits beside the gear, and
-                            // three loose dots read lighter than every other toolbar glyph.
-                            Image(systemName: "ellipsis.circle")
-                        }
-                        .accessibilityLabel(String(localized: "Lists"))
+                        Button("Travels", systemImage: "airplane") { showingTravelsView = true }
                     }
                 }
-            }
-            // A sheet, not a push: RecurringView owns its own nested edit sheet, so tapping a
-            // row there stacks the edit surface on top instead of popping back to Activity first.
-            .sheet(isPresented: $showingRecurringView) {
-                NavigationStack {
-                    RecurringView(materializationService: materializationService)
-                }
-                .presentationBackground { AppBackground() }
             }
             .sheet(isPresented: $showingTravelsView, onDismiss: flushPendingAddExpense) {
                 NavigationStack {
@@ -575,11 +556,8 @@ struct DescriptionBulkEditSheet: View {
     let container = try! ModelContainer(for: schema, configurations: [config])
     SampleData.populateModelContext(container.mainContext)
     let vm = TransactionListViewModel(repo: TransactionActor.make(container))
-    let materializationService: RecurrenceMaterializationService = .init()
     let base: ActivityView = ActivityView(
         showingAddItemView: .constant(false),
-        materializationService: materializationService,
-        showingRecurringView: .constant(false),
         showingTravelsView: .constant(false)
     )
     return base

@@ -10,11 +10,16 @@ final class CompassViewModel {
     // MARK: - State
     var heroInsight: HeroInsight?
     var healthScore: HealthScore?
-    var timelineData: [TimelineDataPoint] = []
-    var selectedTimePeriod: TimePeriod = .month {
-        didSet { Task { await computeTimelineData() } }
+    /// Set once here, never in `reloadData()`: the app reloads this model on every data change
+    /// and every foreground, and resetting would throw someone who just edited a transaction
+    /// from a drill-down back to the current month.
+    var explorerPeriod: ExplorerPeriod = .current(.month) {
+        didSet { refreshExplorer() }
     }
-    var categoryTrends: [CategoryTrend] = []
+    var explorerType: PieChartDataType = .expenses {
+        didSet { refreshExplorer() }
+    }
+    private(set) var explorer: ExplorerBreakdown = .empty
     var habitObservations: [HabitObservation] = []
     var forecast: SpendingForecast?
     var goals: [GoalSnapshot] = []
@@ -40,15 +45,24 @@ final class CompassViewModel {
     let repo: any ITransactionRepository
     /// Set by the owning view; notifies the app that persisted data changed
     @ObservationIgnored var onDataChanged: (() -> Void)?
-    @ObservationIgnored private let chartDataService = ChartDataService()
     @ObservationIgnored private let currencyService: CurrencyService
-    @ObservationIgnored private let anomalyService = TimelineAnomalyService()
+    @ObservationIgnored private let pieDataService = PieChartDataService()
     @ObservationIgnored private let healthService: FinancialHealthService
     @ObservationIgnored private let forecastService: SpendingForecastService
     @ObservationIgnored private let averagesService: StatisticalAverageService
     @ObservationIgnored private let insightService: SpendingInsightService
 
-    private var transactions: [TransactionSnapshot] = []
+    private(set) var transactions: [TransactionSnapshot] = []
+    /// Earliest recorded transaction — the explorer's ‹ stops at the period containing it.
+    var firstTransactionDate: Date? { transactions.lazy.map(\.timestamp).min() }
+
+    /// ‹ is offered only while the previous period still overlaps recorded history; before the
+    /// first transaction every period is empty, so going there is a dead end.
+    var canGoToPreviousPeriod: Bool {
+        guard let first = firstTransactionDate else { return false }
+        return explorerPeriod.previous().interval.end > first
+    }
+    private var categories: [CategorySnapshot] = []
     private var expenseTransactions: [TransactionSnapshot] = []
 
     init(repo: ITransactionRepository) {
@@ -58,7 +72,7 @@ final class CompassViewModel {
         self.healthService = FinancialHealthService(currencyService: currency)
         self.forecastService = SpendingForecastService(currencyService: currency)
         self.averagesService = StatisticalAverageService(currencyService: currency)
-        self.insightService = SpendingInsightService(currencyService: currency, pieDataService: PieChartDataService())
+        self.insightService = SpendingInsightService(currencyService: currency)
     }
 
     // MARK: - Load
@@ -76,8 +90,10 @@ final class CompassViewModel {
         do {
             async let txs = repo.fetchAll()
             async let fetchedGoals = repo.fetchGoals()
+            async let fetchedCategories = repo.fetchCategories()
             transactions = try await txs
             goals = (try? await fetchedGoals) ?? []
+            categories = (try? await fetchedCategories) ?? []
         } catch {
             print("CompassViewModel load error: \(error)")
             return
@@ -87,8 +103,7 @@ final class CompassViewModel {
         async let health: Void = computeHealthScore()
         async let futureForecast: Void = computeForecast()
         await computeHeroInsight()
-        await computeTimelineData()
-        await computeCategoryTrends()
+        refreshExplorer()
         await computeHabits()
         calculateAverages()
         await health
@@ -188,15 +203,22 @@ final class CompassViewModel {
         scoreSnapshots = (try? await repo.fetchSnapshots(limit: 6)) ?? []
     }
 
-    func computeTimelineData() async {
-        let raw = chartDataService.generateChartData(from: expenseTransactions, for: selectedTimePeriod, payCycleStartDay: AppSettings.storedStartDay)
-        timelineData = anomalyService.annotateWithSpikes(raw)
+    private func refreshExplorer() {
+        explorer = ExplorerBreakdown(
+            transactions: transactions,
+            categories: categories,
+            period: explorerPeriod,
+            dataType: explorerType,
+            service: pieDataService
+        )
     }
 
-    private func computeCategoryTrends() async {
-        categoryTrends = insightService.categoryTrends(
-            expenseTransactions: expenseTransactions, payCycleStartDay: AppSettings.storedStartDay
-        )
+    /// A category row's drill-down, through the same filter as the slice it came from, so the
+    /// list always adds up to the row's amount. Derived live, so edits made from the list show.
+    func transactions(inCategory category: String, interval: DateInterval, dataType: PieChartDataType) -> [TransactionSnapshot] {
+        pieDataService.explorerItems(transactions, in: interval, dataType: dataType)
+            .filter { pieDataService.groupingKey(for: $0) == category }
+            .sorted { $0.timestamp > $1.timestamp }
     }
 
     private func computeHabits() async {
