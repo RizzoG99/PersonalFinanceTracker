@@ -21,6 +21,8 @@ final class DashboardViewModel {
     var loadError: String? = nil
     var anomalyCallout: AnomalyCallout? = nil
     var nearLimitBudgets: [BudgetProgress] = []
+    /// Every budgeted category this cycle — Plan shows the full list, Home only the at-risk ones.
+    var budgetProgress: [BudgetProgress] = []
     var dailyLoggingStatus = DailyLoggingStatus(hasLoggedToday: false, todayCount: 0, currentStreakDays: 0)
     var dailyCheckInStatus = DailyCheckInStatus(state: .pending, currentStreakDays: 0)
     var quickTransactionTemplates: [QuickTransactionTemplate] = []
@@ -93,7 +95,10 @@ final class DashboardViewModel {
             payCycleStartDay: payCycleStartDay,
             dismissedKey: UserDefaults.standard.string(forKey: Self.dismissedAnomalyDefaultsKey)
         )
-        nearLimitBudgets = Self.computeNearLimitBudgets(transactions, categories, payCycleStartDay: payCycleStartDay)
+        budgetProgress = BudgetProgressService.computeProgress(
+            categories: categories, transactions: transactions, payCycleStartDay: payCycleStartDay
+        )
+        nearLimitBudgets = BudgetProgressService.nearLimit(budgetProgress)
         showsReminderPrompt = Self.computeShowsReminderPrompt(
             transactions,
             remindersEnabled: UserDefaults.standard.bool(forKey: "reminderEnabled"),

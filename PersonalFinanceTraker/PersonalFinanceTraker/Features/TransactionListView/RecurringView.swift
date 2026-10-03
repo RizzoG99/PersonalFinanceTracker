@@ -176,7 +176,7 @@ private struct RecurringRulesContent: View {
 
     var body: some View {
         Group {
-            if rules.isEmpty {
+            if activeRules.isEmpty {
                 // EmptyStateView is a compact card — without an explicit fill, this Group (and the
                 // .appBackground() below) only paints behind the card itself, leaving the rest of
                 // the canvas as the system's default white on iPad's form-sheet style.
@@ -201,7 +201,9 @@ private struct RecurringRulesContent: View {
                     .listRowSeparator(.hidden)
                     .listSectionSeparator(.hidden)
 
-                    ForEach(rules) { rule in
+                    // Active only: "Delete" stops a rule (keeps its history), so a stopped one
+                    // must not come back the next time this list opens.
+                    ForEach(activeRules) { rule in
                         Button {
                             onSelect(rule)
                         } label: {

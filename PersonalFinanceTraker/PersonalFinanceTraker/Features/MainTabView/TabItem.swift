@@ -1,5 +1,5 @@
 import SwiftUI
 
 enum TabItem: Hashable {
-    case home, activity, insights, credit
+    case home, activity, plan, insights, credit
 }

@@ -6,7 +6,7 @@ import Foundation
 struct SpendingInsightServiceTests {
 
     private func makeService() -> SpendingInsightService {
-        SpendingInsightService(currencyService: CurrencyService(), pieDataService: PieChartDataService())
+        SpendingInsightService(currencyService: CurrencyService())
     }
 
     // Returns a date that lands on a specific weekday (1=Sun, 7=Sat) within the last 30 days
@@ -93,26 +93,6 @@ struct SpendingInsightServiceTests {
         let weekday = (0..<5).map { makeExpense(amount: 2, on: dateOnWeekday(2, weeksAgo: $0 % 4)) }
         let obs = service.habitObservations(expenseTransactions: weekend + weekday)
         #expect(!obs.contains { $0.sfSymbol == "calendar.badge.clock" || $0.sfSymbol == "briefcase" })
-    }
-
-    /// Regression guard: categoryTrends used to compare "this month" against itself (the `.month`
-    /// filter ignored `referenceDate`), so every row showed a flat "0%" change no matter what
-    /// actually happened last month.
-    @Test("categoryTrends reports a non-zero change when last month differs from this month")
-    func categoryTrendsComputesRealDelta() {
-        let service = makeService()
-        let calendar = Calendar.current
-        let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: .now)!
-
-        let txns = [
-            makeExpense(amount: 100, category: "🛒 Groceries", on: .now),
-            makeExpense(amount: 50, category: "🛒 Groceries", on: lastMonthRef)
-        ]
-
-        let trends = service.categoryTrends(expenseTransactions: txns)
-        let groceries = trends.first { $0.category.category == "🛒 Groceries" }
-        #expect(groceries?.changePercent != 0)
-        #expect(groceries?.direction == .up)
     }
 
     /// Regression guard: heroInsight kept using plain calendar-month boundaries even after
@@ -226,36 +206,5 @@ struct SpendingInsightServiceTests {
         // "Building your picture", not "similar to last month" — this branch hasn't evaluated
         // pace at all, so it shouldn't claim to.
         #expect(insight.title == String(localized: "Building your picture"))
-    }
-
-    /// #154: categoryTrends has the identical partial-vs-full bias as heroInsight, on the same
-    /// screen — identical pace per category must not read as a decline. The March 21/26 expenses
-    /// land after the elapsed cutoff; the old, uncapped `last` window counted them (300 vs 200 →
-    /// "down"), so this fails against the old code and passes only once both sides are capped.
-    @Test("categoryTrends: identical pace across a partial vs full month reads as flat")
-    func categoryTrendsFlatWhenPaceMatchesAcrossPartialMonth() {
-        let service = makeService()
-        let referenceDate = fixedDate(day: 20)
-        let currentMonth = [1, 6, 11, 16].map { makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: $0)) }
-        let lastMonth = [1, 6, 11, 16, 21, 26].map { makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: $0, month: 3)) }
-
-        let trends = service.categoryTrends(expenseTransactions: currentMonth + lastMonth, referenceDate: referenceDate)
-        let groceries = trends.first { $0.category.category == "🛒 Groceries" }
-        #expect(groceries?.direction == .flat)
-    }
-
-    /// #154: same future-dated-transaction hole as heroInsight — a materialized recurring rule
-    /// later this month must not inflate the current-month pie beyond `referenceDate`.
-    @Test("categoryTrends: a transaction dated after referenceDate is excluded from the current pie")
-    func categoryTrendsExcludesFutureDatedTransactions() {
-        let service = makeService()
-        let referenceDate = fixedDate(day: 20)
-        let currentMonth = [makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: 10))]
-        let futureDated = [makeExpense(amount: 5000, category: "🛒 Groceries", on: fixedDate(day: 25))]
-        let lastMonth = [makeExpense(amount: 50, category: "🛒 Groceries", on: fixedDate(day: 10, month: 3))]
-
-        let trends = service.categoryTrends(expenseTransactions: currentMonth + futureDated + lastMonth, referenceDate: referenceDate)
-        let groceries = trends.first { $0.category.category == "🛒 Groceries" }
-        #expect(groceries?.direction == .flat)
     }
 }

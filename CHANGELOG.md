@@ -7,6 +7,9 @@ section to TestFlight as "What to Test" and archives it under the build
 number that shipped it.
 
 ## Unreleased
+- New **Plan** tab between Activity and Insights. It shows your next recurring payments, all your budgets and your goals on one page. Recurring moved here from Activity's ⋯ menu (Activity now has a direct Travels button), Budgets moved here from Settings, and Goals moved here from Insights. On iPad the sidebar is grouped the same way, and Budgets has its own entry.
+- Insights has a new **Breakdown** at the top. Pick a week, month, year or your own dates, step back with ‹ ›, and switch between expenses and income. You get a bar chart of the period, a pie chart and every category with its amount, its share and how it changed from the period before. Tap a category to see its transactions, grouped by day. ‹ only goes back as far as your first transaction. This replaces the old Spending chart and Category Trends.
+- Recurring: a payment you deleted no longer shows up again the next time you open the list.
 - Adding your first transaction: the "Scan a receipt" tip now gets the screen to itself instead of the keyboard jumping up and covering it. Tap the amount field when you're ready and the keyboard appears as usual. The tip now also reads in Italian instead of English.
 - Settings now shows a small dot, and What's New a "New" tag, when there's a release you haven't opened yet — so it's not easy to miss if you skipped it earlier.
 - On iPad, the What's New sheet now fills the screen instead of showing as a small, off-center card.

@@ -116,8 +116,10 @@ struct MainTabView: View {
             selectedTab = .activity
         case .insights:
             selectedTab = .insights
-        case .home, .budgets:
+        case .home:
             selectedTab = .home
+        case .budgets:
+            selectedTab = .plan
         case .addTransaction:
             selectedTab = .home
             addSheet = AddSheetContext()
@@ -127,7 +129,7 @@ struct MainTabView: View {
         case .receiptScan:
             showingReceiptSourceChooser = true
         case .recurring:
-            selectedTab = .activity
+            selectedTab = .plan
             showingRecurringView = true
         case .siriWidgetsGuide:
             showingSiriWidgetsGuide = true
@@ -158,12 +160,20 @@ struct MainTabView: View {
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
                     ActivityView(
                         showingAddItemView: showingAddItemView,
-                        materializationService: materializationService,
                         onScanned: applyScan,
-                        showingRecurringView: $showingRecurringView,
                         showingTravelsView: $showingTravelsView
                     )
                         .payCycleAware { viewModel.load() }
+                }
+                Tab("Plan", systemImage: "calendar", value: .plan) {
+                    PlanView(
+                        compassViewModel: compassViewModel,
+                        materializationService: materializationService,
+                        showingAddItemView: showingAddItemView,
+                        showingRecurringView: $showingRecurringView,
+                        selectedTab: $selectedTab,
+                        onScanned: applyScan
+                    )
                 }
                 Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {
                     CompassView(viewModel: compassViewModel, showingAddItemView: showingAddItemView, onScanned: applyScan)

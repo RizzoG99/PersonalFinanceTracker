@@ -4,7 +4,7 @@ import SwiftData
 import CoreTransferable
 
 enum ProfileRoute: Hashable {
-    case categories, scanCategories, budgets, changePIN, siriWidgetsGuide
+    case categories, scanCategories, changePIN, siriWidgetsGuide
 }
 
 struct ProfileView: View {
@@ -115,13 +115,6 @@ struct ProfileView: View {
     private var categoriesSection: some View {
         Section {
             ProfileCategoriesSection(selectedDetent: $selectedDetent, route: $route)
-        }
-        .appFormSectionBackground()
-    }
-
-    private var budgetsSection: some View {
-        Section {
-            ProfileBudgetsSection(selectedDetent: $selectedDetent, route: $route)
         }
         .appFormSectionBackground()
     }
@@ -284,7 +277,6 @@ struct ProfileView: View {
                     payCycleSection
                     reminderSection
                     categoriesSection
-                    budgetsSection
                     dataSection
                     securitySection
                     discoverSection
@@ -294,7 +286,6 @@ struct ProfileView: View {
                     switch route {
                     case .categories: CategorySettingsView()
                     case .scanCategories: ReceiptCategoryMappingView()
-                    case .budgets: BudgetsView()
                     case .changePIN:
                         PINSetupView(
                             viewModel: PINSetupViewModel(pinService: pinService, authService: authService, isChangeMode: true)

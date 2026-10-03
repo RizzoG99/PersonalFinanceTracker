@@ -7,11 +7,14 @@ import SwiftUI
 
 struct CategoryTrendRow: View {
     let trend: CategoryTrend
+    /// Income rising is good news, spending rising isn't — flips which way reads green.
+    var isIncome = false
+    @Environment(AppSettings.self) private var appSettings: AppSettings?
 
     private var trendColor: Color {
         switch trend.direction {
-        case .up:   return .negative
-        case .down: return .positive
+        case .up:   return isIncome ? .positive : .negative
+        case .down: return isIncome ? .negative : .positive
         case .flat: return .textDim
         }
     }
@@ -54,6 +57,25 @@ struct CategoryTrendRow: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(trend.category.category.removingLeadingEmoji.localizedCategoryDisplay)
+        .accessibilityValue(accessibilityValue)
+    }
+
+    private var accessibilityValue: String {
+        let share = String(format: String(localized: "%.1f%% of total"), locale: .current, trend.category.percentage)
+        let change: String = if trend.isNew {
+            String(localized: "new")
+        } else {
+            switch trend.direction {
+            case .up: String(localized: "up \(Int(abs(trend.changePercent).rounded()))% from previous period")
+            case .down: String(localized: "down \(Int(abs(trend.changePercent).rounded()))% from previous period")
+            case .flat: String(localized: "about the same as previous period")
+            }
+        }
+        // The amount is left out while amounts are hidden (shake-to-hide), same as on screen.
+        let amount = (appSettings?.hideAmounts ?? false) ? String(localized: "Amount hidden") : trend.category.amount.formattedEUR()
+        return [amount, share, change].joined(separator: ", ")
     }
 
     private var categoryIcon: some View {

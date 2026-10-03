@@ -7,7 +7,6 @@ import Foundation
 
 struct SpendingInsightService {
     let currencyService: CurrencyService
-    let pieDataService: PieChartDataService
 
     // ponytail: elapsed-day threshold below which "% change" is noise (one transaction can
     // swing it wildly) rather than signal — raise it if early-month reports keep looking wrong.
@@ -77,39 +76,6 @@ struct SpendingInsightService {
                 subtitle: String(localized: "Spending similar to last month"),
                 trendDirection: .flat
             )
-        }
-    }
-
-    func categoryTrends(expenseTransactions: [TransactionSnapshot], payCycleStartDay startDay: Int = 1, referenceDate: Date = .now) -> [CategoryTrend] {
-        let calendar = Calendar.current
-        let lastMonthRef = calendar.date(byAdding: .month, value: -1, to: referenceDate) ?? referenceDate
-
-        // #154: same partial-vs-full bias as heroInsight — cap last month's window at how far
-        // into the current financial month we are, so both pies cover the same span of days.
-        let startOfCurrentMonth = PayCycleService.financialMonthStart(for: referenceDate, startDay: startDay, calendar: calendar)
-        let elapsed = referenceDate.timeIntervalSince(startOfCurrentMonth)
-        let startOfLastMonth = PayCycleService.financialMonthStart(for: lastMonthRef, startDay: startDay, calendar: calendar)
-        let lastMonthCutoff = startOfLastMonth.addingTimeInterval(elapsed)
-
-        let current = pieDataService.generatePieChartData(
-            from: expenseTransactions, for: .expenses, timePeriod: .month, referenceDate: referenceDate, payCycleStartDay: startDay, upTo: referenceDate
-        )
-        let last = pieDataService.generatePieChartData(
-            from: expenseTransactions, for: .expenses, timePeriod: .month, referenceDate: lastMonthRef, payCycleStartDay: startDay, upTo: lastMonthCutoff
-        )
-        let lastDict = Dictionary(last.map { ($0.category, $0.amount) }, uniquingKeysWith: { a, _ in a })
-
-        return Array(current.prefix(6)).map { cat in
-            let prev = lastDict[cat.category] ?? 0
-            let isNew = prev == 0 && cat.amount > 0
-            let change: Double
-            if prev > 0 {
-                change = Double(truncating: ((cat.amount - prev) / prev * 100) as NSDecimalNumber)
-            } else {
-                change = cat.amount > 0 ? 100 : 0
-            }
-            let direction: TrendDirection = change > 5 ? .up : change < -5 ? .down : .flat
-            return CategoryTrend(category: cat, changePercent: change, direction: direction, isNew: isNew)
         }
     }
 
