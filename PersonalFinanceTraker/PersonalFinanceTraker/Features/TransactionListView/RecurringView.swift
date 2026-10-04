@@ -94,12 +94,15 @@ struct RecurringView: View {
 /// IPadRootView/IPadInspector for one button; add it if that turns out to matter.
 struct IPadRecurringSection: View {
     @Environment(TransactionListViewModel.self) private var viewModel
+    @Environment(DataChangedSignal.self) private var dataChanged
     let materializationService: RecurrenceMaterializationService
 
     @State private var rules: [RecurrenceRuleSnapshot] = []
     @State private var editingRule: RecurrenceRuleSnapshot?
+    @State private var committedSpending = CommittedSpendingModel()
 
     private func reloadRules() async {
+        if await committedSpending.reload(repo: viewModel.repo) { dataChanged.bump() }
         rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
     }
 
@@ -111,12 +114,16 @@ struct IPadRecurringSection: View {
     }
 
     var body: some View {
+        // iPad has no Plan tab — fixed expenses to confirm (#188) live with the rules instead.
         RecurringRulesContent(
             rules: rules,
             onSelect: { editingRule = $0 },
-            onDelete: stopRecurrence
+            onDelete: stopRecurrence,
+            committedSpending: committedSpending
         )
+        .onChange(of: dataChanged.revision) { Task { await reloadRules() } }
         .navigationTitle("Recurring")
+        .fixedExpenseFeedback(committedSpending)
         .task { await reloadRules() }
         .sheet(item: $editingRule) { rule in
             NavigationStack {
@@ -138,6 +145,8 @@ private struct RecurringRulesContent: View {
     let rules: [RecurrenceRuleSnapshot]
     let onSelect: (RecurrenceRuleSnapshot) -> Void
     let onDelete: (RecurrenceRuleSnapshot) -> Void
+    /// iPad only: Plan's fixed-expense cards (#188), scrolling with the rules.
+    var committedSpending: CommittedSpendingModel?
 
     private var categoryByPersistentId: [PersistentIdentifier: CategorySnapshot] {
         Dictionary(uniqueKeysWithValues: viewModel.availableCategories.map { ($0.persistentId, $0) })
@@ -180,16 +189,30 @@ private struct RecurringRulesContent: View {
                 // EmptyStateView is a compact card — without an explicit fill, this Group (and the
                 // .appBackground() below) only paints behind the card itself, leaving the rest of
                 // the canvas as the system's default white on iPad's form-sheet style.
-                EmptyStateView(
-                    icon: "repeat",
-                    message: "No recurring transactions yet",
-                    subtitle: "Rules you add manually, or accept from an import, show up here."
-                )
+                ScrollView {
+                    VStack(spacing: 24) {
+                        if let committedSpending, !committedSpending.isEmpty {
+                            FixedExpensesSection(model: committedSpending)
+                        }
+                        EmptyStateView(
+                            icon: "repeat",
+                            message: "No recurring transactions yet",
+                            subtitle: "Rules you add manually, or accept from an import, show up here."
+                        )
+                    }
+                    .readableWidth()
+                }
                 .padding(.horizontal, 16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .padding(.top, 24)
             } else {
                 List {
+                    if let committedSpending, !committedSpending.isEmpty {
+                        FixedExpensesSection(model: committedSpending)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 8, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
                     Section {
                         HStack(spacing: 12) {
                             StatCard(icon: "repeat", label: "Active", value: "\(activeRules.count)", color: .accentIndigo)

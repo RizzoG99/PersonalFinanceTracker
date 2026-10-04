@@ -71,6 +71,14 @@ struct RecurrenceSuggestionsView: View {
                                     ? .isSelected
                                     : []
                             )
+                        // Auto-record only for identical amounts (#188); its own row so the
+                        // row-wide selection tap above doesn't swallow the toggle.
+                        if suggestion.amountsIdentical && viewModel.selectedSuggestionIds.contains(suggestion.id) {
+                            Toggle("Record it for me each time", isOn: autoRecordBinding(suggestion.id))
+                                .font(.subheadline)
+                                .tint(.accentIndigo)
+                                .padding(.horizontal, 10)
+                        }
                     }
                 }
                 .appFormSectionBackground()
@@ -129,9 +137,9 @@ struct RecurrenceSuggestionsView: View {
     private var headerSubtitle: String {
         switch mode {
         case .wizardStep:
-            return String(localized: "These look like repeating transactions. Add recurrence rules to track them automatically.")
+            return String(localized: "These look like fixed expenses. Checked ones are planned for as coming up — we won't add transactions without your permission.")
         case .preview:
-            return String(localized: "Checked ones become recurrence rules when you import. Uncheck anything you don't want tracked.")
+            return String(localized: "Checked ones are planned for as fixed expenses — we won't add transactions without your permission. Unchecked ones won't be suggested again.")
         }
     }
 
@@ -160,7 +168,7 @@ struct RecurrenceSuggestionsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(suggestion.note)
                     .font(.subheadline)
-                Text(cadenceLabel(for: suggestion) + " · " + String(localized: "starts \(suggestion.nextDate.formatted(date: .abbreviated, time: .omitted))"))
+                Text(cadenceLabel(for: suggestion) + " · " + String(localized: "next \(suggestion.nextDate.formatted(date: .abbreviated, time: .omitted))"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(String(localized: "Seen \(suggestion.occurrenceCount) times"))
@@ -188,6 +196,15 @@ struct RecurrenceSuggestionsView: View {
         return amount >= 0 ? "+\(magnitude)" : magnitude
     }
 
+    private func autoRecordBinding(_ id: UUID) -> Binding<Bool> {
+        Binding(
+            get: { viewModel.autoRecordSuggestionIds.contains(id) },
+            set: { isOn in
+                if isOn { viewModel.autoRecordSuggestionIds.insert(id) } else { viewModel.autoRecordSuggestionIds.remove(id) }
+            }
+        )
+    }
+
     private func toggleSelection(_ id: UUID) {
         if viewModel.selectedSuggestionIds.contains(id) {
             viewModel.selectedSuggestionIds.remove(id)
@@ -199,6 +216,6 @@ struct RecurrenceSuggestionsView: View {
     private func accessibilityLabel(for suggestion: RecurrenceSuggestion) -> String {
         let amount = formattedSignedAmount(suggestion.amount, currencyCode: suggestion.currencyCode)
         let date = suggestion.nextDate.formatted(date: .abbreviated, time: .omitted)
-        return "\(suggestion.note), \(cadenceLabel(for: suggestion)), \(amount), starts \(date), seen \(suggestion.occurrenceCount) times"
+        return String(localized: "\(suggestion.note), \(cadenceLabel(for: suggestion)), \(amount), next \(date), seen \(suggestion.occurrenceCount) times")
     }
 }

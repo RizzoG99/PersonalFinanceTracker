@@ -491,6 +491,8 @@ final class TransactionListViewModel {
     var mappedRows: [MappedRow] = []
     var recurrenceSuggestions: [RecurrenceSuggestion] = []
     var selectedSuggestionIds: Set<UUID> = []
+    /// Checked suggestions the user also wants recorded every cycle (identical amounts only).
+    var autoRecordSuggestionIds: Set<UUID> = []
     var importedTransactionCount = 0
     var availableCategories: [CategorySnapshot] = []
     var showingImportFlow = false
@@ -639,6 +641,7 @@ final class TransactionListViewModel {
         csvCategoryTypes = [:]
         recurrenceSuggestions = []
         selectedSuggestionIds = []
+        autoRecordSuggestionIds = []
         importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
@@ -667,6 +670,7 @@ final class TransactionListViewModel {
         mappedRows = []
         recurrenceSuggestions = []
         selectedSuggestionIds = []
+        autoRecordSuggestionIds = []
         importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
@@ -849,7 +853,8 @@ final class TransactionListViewModel {
 
         // Mark rows that already exist in the store so the preview shows them
         // as duplicates instead of surprising the user at confirm time
-        let existingKeys = (try? await repo.fetchAll()).map { Set($0.map(Self.duplicateKey)) } ?? []
+        let existing = (try? await repo.fetchAll()) ?? []
+        let existingKeys = Set(existing.map(Self.duplicateKey))
 
         // Re-resolve CategorySnapshot references on MainActor
         mappedRows = rawRows.map { raw in
@@ -871,12 +876,17 @@ final class TransactionListViewModel {
             return MappedRow(input: input, error: nil, rowIndex: raw.rowIndex, isDuplicate: isDuplicate)
         }
 
+        // Whole history + the new rows (#188): a fixed expense shows up even when this file holds
+        // only one payment of it. Rows already in the store are counted once.
         let existingRules = (try? await repo.fetchActiveRecurrenceRules()) ?? []
+        let newRows = mappedRows.filter { !$0.isDuplicate }.compactMap(\.input)
         recurrenceSuggestions = RecurrenceDetector.detect(
-            in: mappedRows.compactMap(\.input),
-            existingRules: existingRules
+            in: existing.map(TransactionInput.init) + newRows,
+            existingRules: existingRules,
+            dismissed: DismissedRecurrencePatterns.all
         )
         selectedSuggestionIds = Set(recurrenceSuggestions.map(\.id))
+        autoRecordSuggestionIds = []
     }
 
     private static func duplicateKey(timestamp: Date, amount: Decimal, note: String) -> String {
@@ -993,11 +1003,22 @@ final class TransactionListViewModel {
             // Build Set for O(1) duplicate detection instead of O(N*M) contains checks
             // ponytail: O(N) duplicate detection with Set
             let existingKeys = Set(existing.map(Self.duplicateKey))
+            // Rows an auto-record rule already wrote: the bank's copy of the same payment carries
+            // another note and time, so it's matched on amount within a few days (#188).
+            let autoRecordIds = Set(((try? await repo.fetchAllRecurrenceRules()) ?? []).filter(\.autoRecord).map(\.id))
+            var generated = existing.filter { $0.recurrenceRuleId.map(autoRecordIds.contains) ?? false }
             var toInsert: [TransactionInput] = []
             var skippedDuplicates = 0
             for input in updatedInputs {
                 let key = Self.duplicateKey(timestamp: input.timestamp, amount: input.amount, note: input.note)
                 if existingKeys.contains(key) {
+                    skippedDuplicates += 1
+                } else if let index = generated.firstIndex(where: {
+                    $0.amount.roundedToCents == input.amount.roundedToCents && abs($0.timestamp.timeIntervalSince(input.timestamp)) <= 3 * 86_400
+                }) {
+                    // ponytail: keeps the generated row and drops the bank's; replace it instead
+                    // if the real booking date matters.
+                    generated.remove(at: index)
                     skippedDuplicates += 1
                 } else {
                     toInsert.append(input)
@@ -1065,19 +1086,14 @@ final class TransactionListViewModel {
         }
     }
 
-    /// Create and persist recurrence rules for all selected suggestions.
-    /// The transactions from the import already exist; nextDate is in the future,
-    /// so RecurrenceMaterializationService will pick them up naturally at the next launch.
-    /// Do NOT materialize occurrences here — that would create a duplicate of the first
-    /// occurrence, which is already in the database from the import.
+    /// Creates the checked suggestions' rules and remembers the unchecked ones as "Not fixed".
+    /// The imported payments already exist and each rule's cursor sits on the last of them, so
+    /// nothing is inserted twice.
     func addSelectedRecurrenceRules() async {
         await persistSelectedRecurrenceRules()
         // A save failure leaves importError set, and cancelImport() clears it — the flow would
         // vanish with no explanation. Stay put so the alert has something to show.
         guard importError == nil else { return }
-        // persistSelectedRecurrenceRules() just stamped recurrenceRuleId onto rows already sitting
-        // in `transactions` (from the earlier reload() in confirmImport) — without this, the ⟳
-        // badge and the Recurring screen keep showing the pre-link snapshot until the next reload.
         onDataChanged?()
         reload()
         cancelImport()
@@ -1089,39 +1105,15 @@ final class TransactionListViewModel {
     private func persistSelectedRecurrenceRules() async -> Int {
         var added = 0
         for suggestion in recurrenceSuggestions where selectedSuggestionIds.contains(suggestion.id) {
-            let ruleInput = RecurrenceRuleInput(
-                frequency: suggestion.frequency,
-                interval: suggestion.interval,
-                startDate: suggestion.nextDate,
-                endDate: nil,
-                lastMaterializedDate: nil,
-                amount: suggestion.amount,
-                note: suggestion.note,
-                category: suggestion.category,
-                currencyCode: suggestion.currencyCode,
-                categoryPersistentId: suggestion.categoryPersistentId
-            )
             do {
-                try await repo.addRecurrenceRule(ruleInput)
+                try await repo.addRecurrenceRule(suggestion.ruleInput(autoRecord: autoRecordSuggestionIds.contains(suggestion.id)))
                 added += 1
             } catch {
                 importError = String(localized: "Failed to save recurrence rule: \(error.localizedDescription)")
                 return added
             }
-            // Best-effort: the rule is the important write, so a link failure shouldn't
-            // surface an error or undo it — the badge is cosmetic. Still logged (not `try?`,
-            // #152) so a rule that comes back with no linked rows leaves a trace instead of
-            // vanishing silently.
-            do {
-                try await repo.linkTransactionsToRecurrenceRule(
-                    id: ruleInput.id,
-                    amount: suggestion.amount,
-                    occurrenceDates: suggestion.occurrenceDates
-                )
-            } catch {
-                print("linkTransactionsToRecurrenceRule failed for rule \(ruleInput.id): \(error)")
-            }
         }
+        DismissedRecurrencePatterns.dismiss(recurrenceSuggestions.filter { !selectedSuggestionIds.contains($0.id) })
         return added
     }
 }

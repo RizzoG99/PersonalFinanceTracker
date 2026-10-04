@@ -32,6 +32,8 @@ struct BackupRecurrenceRule: Codable, Sendable {
     let category: String
     let currencyCode: String
     let goalId: UUID?
+    // Optional so backups written before forecast-only rules (#188) still decode (as auto-record).
+    var autoRecord: Bool? = nil
 }
 
 struct BackupPayload: Codable, Sendable {
@@ -95,7 +97,8 @@ enum BackupMapper {
                 note: $0.note,
                 category: $0.category,
                 currencyCode: $0.currencyCode,
-                goalId: $0.goalId
+                goalId: $0.goalId,
+                autoRecord: $0.autoRecord
             )
         }
     }
@@ -127,6 +130,7 @@ enum BackupMapper {
                 startDate: $0.startDate,
                 endDate: $0.endDate,
                 lastMaterializedDate: $0.lastMaterializedDate,
+                autoRecord: $0.autoRecord ?? true,
                 amount: $0.amount,
                 note: $0.note,
                 category: $0.category,

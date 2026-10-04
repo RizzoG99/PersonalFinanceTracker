@@ -43,6 +43,15 @@ struct TransactionActorRecurrenceTests {
         #expect(active[0].frequency == .monthly)
     }
 
+    @Test func forecastOnlyFlagRoundTrips() async throws {
+        let actor = makeActor()
+        let input = RecurrenceRuleInput(frequency: .monthly, interval: 1, startDate: date(2026, 1, 1), autoRecord: false, amount: -40, note: "Gym", category: "Fitness", currencyCode: "EUR")
+        try await actor.addRecurrenceRule(input)
+        #expect(try await actor.fetchRecurrenceRule(id: input.id)?.autoRecord == false)
+        try await actor.addRecurrenceRule(ruleInput(startDate: date(2026, 1, 1)))
+        #expect(try await actor.fetchAllRecurrenceRules().filter(\.autoRecord).count == 1)
+    }
+
     @Test func fetchActiveExcludesRulesClosedInThePast() async throws {
         let actor = makeActor()
         let input = ruleInput(startDate: date(2026, 1, 1))
@@ -165,62 +174,20 @@ struct TransactionActorRecurrenceTests {
         #expect(try await actor.fetchActiveRecurrenceRules().isEmpty)
     }
 
-    @Test func linkTransactionsToRecurrenceRuleStampsMatchingSameDayAmountOnly() async throws {
+    @Test func advanceRecurrenceRuleMovesCursorAndAmount() async throws {
         let actor = makeActor()
-        let ruleId = UUID()
-        try await actor.addBatch([
-            // Matches: same amount, same calendar day as an occurrence date (different time-of-day)
-            TransactionInput(timestamp: date(2026, 1, 1).addingTimeInterval(3600 * 9), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
-            TransactionInput(timestamp: date(2026, 2, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
-            // Wrong amount, same day
-            TransactionInput(timestamp: date(2026, 1, 1), amount: -50, note: "Groceries", category: "Food", currencyCode: "EUR"),
-            // Right amount, unrelated day
-            TransactionInput(timestamp: date(2026, 3, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
-            // Already linked to a different rule — must stay untouched
-            TransactionInput(timestamp: date(2026, 1, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR", recurrenceRuleId: UUID())
-        ])
+        let input = ruleInput(startDate: date(2026, 1, 1))
+        try await actor.addRecurrenceRule(input)
 
-        try await actor.linkTransactionsToRecurrenceRule(
-            id: ruleId,
-            amount: -1200,
-            occurrenceDates: [date(2026, 1, 1), date(2026, 2, 1)]
-        )
+        try await actor.advanceRecurrenceRule(id: input.id, cursor: date(2026, 3, 1), amount: -1234)
+        let moved = try #require(try await actor.fetchRecurrenceRule(id: input.id))
+        #expect(moved.lastMaterializedDate == date(2026, 3, 1))
+        #expect(moved.amount == -1234)
 
-        let all = try await actor.fetchAll()
-        let linked = all.filter { $0.recurrenceRuleId == ruleId }
-        #expect(linked.count == 2)
-        #expect(linked.allSatisfy { $0.amount == -1200 })
-
-        let untouched = all.filter { $0.recurrenceRuleId != ruleId }
-        #expect(untouched.count == 3)
+        try await actor.advanceRecurrenceRule(id: input.id, cursor: date(2026, 4, 1), amount: nil)
+        let kept = try #require(try await actor.fetchRecurrenceRule(id: input.id))
+        #expect(kept.lastMaterializedDate == date(2026, 4, 1))
+        #expect(kept.amount == -1234)
     }
 
-    /// Same scenario as the in-memory test above, but against a real SQLite-backed store —
-    /// see #152, where an import's link step silently stamped zero rows on device despite the
-    /// in-memory test passing.
-    @Test func linkTransactionsToRecurrenceRuleStampsMatchingSameDayAmountOnlyOnDisk() async throws {
-        let actor = makeFileBackedActor()
-        let ruleId = UUID()
-        try await actor.addBatch([
-            TransactionInput(timestamp: date(2026, 1, 1).addingTimeInterval(3600 * 9), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
-            TransactionInput(timestamp: date(2026, 2, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
-            TransactionInput(timestamp: date(2026, 1, 1), amount: -50, note: "Groceries", category: "Food", currencyCode: "EUR"),
-            TransactionInput(timestamp: date(2026, 3, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR"),
-            TransactionInput(timestamp: date(2026, 1, 1), amount: -1200, note: "Rent", category: "Housing", currencyCode: "EUR", recurrenceRuleId: UUID())
-        ])
-
-        try await actor.linkTransactionsToRecurrenceRule(
-            id: ruleId,
-            amount: -1200,
-            occurrenceDates: [date(2026, 1, 1), date(2026, 2, 1)]
-        )
-
-        let all = try await actor.fetchAll()
-        let linked = all.filter { $0.recurrenceRuleId == ruleId }
-        #expect(linked.count == 2)
-        #expect(linked.allSatisfy { $0.amount == -1200 })
-
-        let untouched = all.filter { $0.recurrenceRuleId != ruleId }
-        #expect(untouched.count == 3)
-    }
 }

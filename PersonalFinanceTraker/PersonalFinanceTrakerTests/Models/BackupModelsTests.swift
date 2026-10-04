@@ -86,6 +86,20 @@ struct BackupModelsTests {
         #expect(inputs[0].frequency == RecurrenceFrequency.monthly)
         #expect(inputs[0].endDate == endDate)
         #expect(inputs[0].lastMaterializedDate == lastMaterializedDate)
+        #expect(inputs[0].autoRecord == true)
+    }
+
+    @Test func forecastOnlyFlagSurvivesBackupAndOldBackupsDefaultToAutoRecord() throws {
+        let snapshot = RecurrenceRuleSnapshot.test(startDate: date(2026, 1, 1), autoRecord: false, amount: -40, category: "Fitness")
+        let data = try JSONEncoder().encode(BackupMapper.makeRecurrenceRules(from: [snapshot]))
+        let decoded = try JSONDecoder().decode([BackupRecurrenceRule].self, from: data)
+        #expect(BackupMapper.makeRecurrenceRuleInputs(from: decoded)[0].autoRecord == false)
+
+        // A backup written before #188 has no "autoRecord" key: it restores as auto-record.
+        var legacy = try #require(JSONSerialization.jsonObject(with: data) as? [[String: Any]])
+        legacy[0].removeValue(forKey: "autoRecord")
+        let legacyRules = try JSONDecoder().decode([BackupRecurrenceRule].self, from: JSONSerialization.data(withJSONObject: legacy))
+        #expect(BackupMapper.makeRecurrenceRuleInputs(from: legacyRules)[0].autoRecord == true)
     }
 
     @Test func backupPayloadEncodesAndDecodesAsJSON() throws {

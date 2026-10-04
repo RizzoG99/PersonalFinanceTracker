@@ -104,6 +104,7 @@ actor TransactionActor: ITransactionRepository {
             startDate: input.startDate,
             endDate: input.endDate,
             lastMaterializedDate: input.lastMaterializedDate,
+            autoRecord: input.autoRecord,
             amount: input.amount,
             note: input.note,
             category: input.category,
@@ -119,25 +120,17 @@ actor TransactionActor: ITransactionRepository {
         await refreshSafeToSpendWidgetSnapshot()
     }
 
-    /// Stamps `recurrenceRuleId` onto the unlinked transactions that produced a detected
-    /// suggestion, so the rows that triggered detection also show the recurring badge.
-    /// Matches on same amount + same calendar day (not exact `Date`) since a suggestion's
-    /// dates come from the same grouping the detector used, not the transactions' raw timestamps.
-    func linkTransactionsToRecurrenceRule(id: UUID, amount: Decimal, occurrenceDates: [Date]) async throws {
-        let calendar = Calendar.current
-        let days = Set(occurrenceDates.map { calendar.startOfDay(for: $0) })
-        guard !days.isEmpty else { return }
-
-        // ponytail: filtered in Swift, not by #Predicate — a personal dataset is small enough that
-        // fetching all rows costs nothing, and it rules out Decimal/optional-UUID predicate
-        // translation as a source of a rule silently linking to nothing (#152).
-        let all = try modelContext.fetch(FetchDescriptor<TransactionModel>())
-        for tx in all where tx.recurrenceRuleId == nil
-            && tx.amount == amount
-            && days.contains(calendar.startOfDay(for: tx.timestamp)) {
-            tx.recurrenceRuleId = id
-        }
+    /// Moves a forecast-only rule's "paid through" cursor (#188) — after a real payment matched,
+    /// or when the user says they still pay a missed one. `amount` replaces the template so a
+    /// variable bill forecasts its latest value.
+    func advanceRecurrenceRule(id: UUID, cursor: Date, amount: Decimal?) async throws {
+        var desc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == id })
+        desc.fetchLimit = 1
+        guard let rule = try modelContext.fetch(desc).first else { return }
+        rule.lastMaterializedDate = cursor
+        if let amount { rule.amount = amount }
         try modelContext.save()
+        await refreshSafeToSpendWidgetSnapshot()
     }
 
     func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {

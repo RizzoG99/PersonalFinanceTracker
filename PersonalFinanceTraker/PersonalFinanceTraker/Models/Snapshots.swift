@@ -187,6 +187,21 @@ struct TransactionInput: Sendable {
         self.categoryPersistentId = categoryPersistentId
         self.recurrenceRuleId = recurrenceRuleId
     }
+
+    /// A stored row as detector input (#188 runs detection over the whole history).
+    init(_ snapshot: TransactionSnapshot) {
+        self.init(
+            timestamp: snapshot.timestamp,
+            amount: snapshot.amount,
+            note: snapshot.note,
+            category: snapshot.category,
+            currencyCode: snapshot.currencyCode,
+            goalId: snapshot.goalId,
+            travelId: snapshot.travelId,
+            categoryPersistentId: snapshot.categoryId,
+            recurrenceRuleId: snapshot.recurrenceRuleId
+        )
+    }
 }
 
 struct CategoryInput: Sendable {
@@ -214,6 +229,7 @@ struct RecurrenceRuleSnapshot: Identifiable, Sendable, Hashable {
     let startDate: Date
     let endDate: Date?
     let lastMaterializedDate: Date?
+    let autoRecord: Bool
     let amount: Decimal
     let note: String
     let category: String
@@ -229,6 +245,7 @@ struct RecurrenceRuleSnapshot: Identifiable, Sendable, Hashable {
         self.startDate = model.startDate
         self.endDate = model.endDate
         self.lastMaterializedDate = model.lastMaterializedDate
+        self.autoRecord = model.autoRecord
         self.amount = model.amount
         self.note = model.note
         self.category = model.category
@@ -245,6 +262,7 @@ struct RecurrenceRuleInput: Sendable {
     let startDate: Date
     let endDate: Date?
     let lastMaterializedDate: Date?
+    let autoRecord: Bool
     let amount: Decimal
     let note: String
     let category: String
@@ -252,13 +270,14 @@ struct RecurrenceRuleInput: Sendable {
     let goalId: UUID?
     let categoryPersistentId: PersistentIdentifier?
 
-    init(id: UUID = UUID(), frequency: RecurrenceFrequency, interval: Int, startDate: Date, endDate: Date? = nil, lastMaterializedDate: Date? = nil, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil) {
+    init(id: UUID = UUID(), frequency: RecurrenceFrequency, interval: Int, startDate: Date, endDate: Date? = nil, lastMaterializedDate: Date? = nil, autoRecord: Bool = true, amount: Decimal, note: String, category: String, currencyCode: String, goalId: UUID? = nil, categoryPersistentId: PersistentIdentifier? = nil) {
         self.id = id
         self.frequency = frequency
         self.interval = interval
         self.startDate = startDate
         self.endDate = endDate
         self.lastMaterializedDate = lastMaterializedDate
+        self.autoRecord = autoRecord
         self.amount = amount
         self.note = note
         self.category = category
