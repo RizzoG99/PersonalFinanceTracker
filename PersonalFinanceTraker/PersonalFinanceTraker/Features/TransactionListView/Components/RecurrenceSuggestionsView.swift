@@ -18,6 +18,8 @@ struct RecurrenceSuggestionsView: View {
     @Bindable var viewModel: TransactionListViewModel
     let mode: Mode
     @State private var isProcessing = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .subheadline) private var iconSize: CGFloat = 16
 
     private var categoryByPersistentId: [PersistentIdentifier: CategorySnapshot] {
         Dictionary(uniqueKeysWithValues: viewModel.availableCategories.map { ($0.persistentId, $0) })
@@ -41,37 +43,50 @@ struct RecurrenceSuggestionsView: View {
 
     var body: some View {
         List {
-            Section {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(headerTitle)
+            if isWizardStep {
+                Section {
+                    Text(String(localized: "Imported \(viewModel.importedTransactionCount) transactions."))
                         .font(.title3.bold())
-                    Text(headerSubtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 4)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 4)
+                .appFormSectionBackground()
             }
-            .appFormSectionBackground()
 
             if !viewModel.recurrenceSuggestions.isEmpty {
                 Section {
                     ForEach(viewModel.recurrenceSuggestions) { suggestion in
-                        suggestionRow(suggestion)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                withAnimation {
-                                    toggleSelection(suggestion.id)
-                                }
-                            }
-                            .accessibilityElement()
-                            .accessibilityLabel(accessibilityLabel(for: suggestion))
-                            .accessibilityAddTraits(
-                                viewModel.selectedSuggestionIds.contains(suggestion.id)
-                                    ? .isSelected
-                                    : []
-                            )
+                        Button {
+                            withAnimation { viewModel.toggleSuggestion(suggestion.id) }
+                        } label: {
+                            suggestionRow(suggestion)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(accessibilityLabel(for: suggestion))
+                        .accessibilityHint(String(localized: "Checked ones are planned for in Coming up"))
+                        .accessibilityAddTraits(
+                            viewModel.selectedSuggestionIds.contains(suggestion.id) ? .isSelected : []
+                        )
                     }
+                } header: {
+                    // Next to the rows rather than at the top, so it doesn't scroll away from them.
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(headerTitle)
+                            .font(.headline)
+                            .foregroundStyle(.textPrimary)
+                        Text("Checked ones go to Coming up — we won't add transactions without your permission. Ones you uncheck won't be suggested again.")
+                            .font(.footnote)
+                            .foregroundStyle(.textMid)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button(allSelected ? "Deselect all" : "Select all") {
+                            withAnimation { viewModel.setAllSuggestions(selected: !allSelected) }
+                        }
+                        .font(.subheadline.bold())
+                        .tint(.accentIndigo)
+                        .frame(minHeight: 44)
+                    }
+                    .textCase(nil)
                 }
                 .appFormSectionBackground()
             }
@@ -91,48 +106,37 @@ struct RecurrenceSuggestionsView: View {
                     if isProcessing {
                         ProgressView()
                     } else {
-                        Button {
+                        // Always enabled: with nothing checked it still records what was unchecked.
+                        Button(confirmTitle) {
                             Task {
                                 isProcessing = true
                                 await viewModel.addSelectedRecurrenceRules()
                                 isProcessing = false
                             }
-                        } label: {
-                            Image(systemName: "checkmark")
                         }
-                        .accessibilityLabel(String(localized: "Add Rules"))
-                        .disabled(viewModel.selectedSuggestionIds.isEmpty)
+                        .bold()
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
-                    Button {
+                    // Decide later: nothing is planned and nothing is remembered as "Not fixed".
+                    Button(String(localized: "Skip")) {
                         viewModel.cancelImport()
-                    } label: {
-                        Text(String(localized: "Skip"))
                     }
                 }
             }
         }
     }
 
-    private var headerTitle: String {
-        // One key each, pluralised by the catalog. Branching on `count == 1` in Swift needs two
-        // keys and still assumes a language with exactly two plural forms.
-        switch mode {
-        case .wizardStep:
-            return String(localized: "Imported \(viewModel.importedTransactionCount) transactions.")
-        case .preview:
-            return String(localized: "\(viewModel.recurrenceSuggestions.count) recurring transactions found")
-        }
+    private var selectedCount: Int { viewModel.selectedSuggestionIds.count }
+
+    private var allSelected: Bool { selectedCount == viewModel.recurrenceSuggestions.count }
+
+    private var confirmTitle: String {
+        selectedCount == 0 ? String(localized: "Done") : String(localized: "Plan \(selectedCount)")
     }
 
-    private var headerSubtitle: String {
-        switch mode {
-        case .wizardStep:
-            return String(localized: "These look like repeating transactions. Add recurrence rules to track them automatically.")
-        case .preview:
-            return String(localized: "Checked ones become recurrence rules when you import. Uncheck anything you don't want tracked.")
-        }
+    private var headerTitle: String {
+        String(localized: "\(viewModel.recurrenceSuggestions.count) recurring transactions found")
     }
 
     private func suggestionRow(_ suggestion: RecurrenceSuggestion) -> some View {
@@ -143,62 +147,75 @@ struct RecurrenceSuggestionsView: View {
             ?? CategoryInfo.info(for: suggestion.category).color
 
         return HStack(spacing: 12) {
-            // Selection checkbox
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 18, weight: .semibold))
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(isSelected ? .accentIndigo : .secondary)
-                .frame(width: 24, height: 24)
+                .frame(minWidth: 28)
 
-            // Category icon
-            GlassCard(tint: tint.opacity(0.12), borderRadius: 12) {
-                Image(systemName: symbol)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(tint)
-                    .frame(width: 16, height: 16)
+            if !dynamicTypeSize.isAccessibilitySize {
+                GlassCard(tint: tint.opacity(0.12), borderRadius: 12) {
+                    Image(systemName: symbol)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(tint)
+                        .frame(width: iconSize, height: iconSize)
+                }
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(suggestion.note)
+                Text(suggestion.title)
                     .font(.subheadline)
-                Text(cadenceLabel(for: suggestion) + " · " + String(localized: "starts \(suggestion.nextDate.formatted(date: .abbreviated, time: .omitted))"))
+                    .foregroundStyle(.textPrimary)
+                Text("\(cadenceLabel(for: suggestion)) · \(suggestion.occurrenceCount) payments")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(String(localized: "Seen \(suggestion.occurrenceCount) times"))
-                    .font(.caption2)
+                Text(String(localized: "Next \(nextDateText(suggestion.nextDate))"))
+                    .font(.caption)
                     .foregroundStyle(.textDim)
+                // At accessibility sizes the amount drops under the text instead of squeezing it.
+                if dynamicTypeSize.isAccessibilitySize {
+                    amountText(suggestion)
+                }
             }
 
-            Spacer()
-
-            Text(formattedSignedAmount(suggestion.amount, currencyCode: suggestion.currencyCode))
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(suggestion.amount >= 0 ? .positive : .negative)
-                .privacyBlur()
+            if !dynamicTypeSize.isAccessibilitySize {
+                Spacer(minLength: 8)
+                amountText(suggestion)
+            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
+        .contentShape(Rectangle())
+    }
+
+    /// Every row is an expense, so no red: "≈" marks a variable bill's typical amount, as in Plan.
+    private func amountText(_ suggestion: RecurrenceSuggestion) -> some View {
+        Text(amountString(suggestion))
+            .font(.subheadline.monospacedDigit())
+            .foregroundStyle(.textPrimary)
+            .privacyBlur()
+    }
+
+    private func amountString(_ suggestion: RecurrenceSuggestion) -> String {
+        let amount = suggestion.amount.formattedEUR(currency: suggestion.currencyCode)
+        return suggestion.amountsIdentical ? amount : String(localized: "≈ \(amount)")
+    }
+
+    /// "10 Nov" — the year only when it isn't this year's.
+    private func nextDateText(_ date: Date) -> String {
+        let sameYear = Calendar.current.isDate(date, equalTo: .now, toGranularity: .year)
+        return sameYear
+            ? date.formatted(.dateTime.day().month(.abbreviated))
+            : date.formatted(.dateTime.day().month(.abbreviated).year())
     }
 
     private func cadenceLabel(for suggestion: RecurrenceSuggestion) -> String {
         suggestion.frequency.cadenceLabel(interval: suggestion.interval)
     }
 
-    private func formattedSignedAmount(_ amount: Decimal, currencyCode: String) -> String {
-        let magnitude = amount.formattedEUR(currency: currencyCode)
-        return amount >= 0 ? "+\(magnitude)" : magnitude
-    }
-
-    private func toggleSelection(_ id: UUID) {
-        if viewModel.selectedSuggestionIds.contains(id) {
-            viewModel.selectedSuggestionIds.remove(id)
-        } else {
-            viewModel.selectedSuggestionIds.insert(id)
-        }
-    }
-
     private func accessibilityLabel(for suggestion: RecurrenceSuggestion) -> String {
-        let amount = formattedSignedAmount(suggestion.amount, currencyCode: suggestion.currencyCode)
-        let date = suggestion.nextDate.formatted(date: .abbreviated, time: .omitted)
-        return "\(suggestion.note), \(cadenceLabel(for: suggestion)), \(amount), starts \(date), seen \(suggestion.occurrenceCount) times"
+        let amount = suggestion.amountsIdentical
+            ? suggestion.amount.formattedEUR(currency: suggestion.currencyCode)
+            : String(localized: "about \(suggestion.amount.formattedEUR(currency: suggestion.currencyCode))")
+        return String(localized: "\(suggestion.title), \(cadenceLabel(for: suggestion)), \(amount), \(suggestion.occurrenceCount) payments, next \(nextDateText(suggestion.nextDate))")
     }
 }

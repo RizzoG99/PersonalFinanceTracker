@@ -28,6 +28,7 @@ struct PlanView: View {
     @State private var showingAddRecurring = false
     @State private var editingRule: RecurrenceRuleSnapshot?
     @State private var showingBudgets = false
+    @State private var committedSpending = CommittedSpendingModel()
 
     private var upcoming: [UpcomingCharge] { UpcomingCharge.next(rules: rules) }
     private var budgets: [BudgetProgress] { dashboardViewModel.budgetProgress }
@@ -38,12 +39,23 @@ struct PlanView: View {
         NavigationStack {
             ScrollView {
                 if !hasLoaded {
+                    // Full width: the ScrollView sizes to its content, and `.appBackground()` sits on
+                    // the ScrollView — a bare spinner left the gradient a ~20pt strip on a black screen.
                     ProgressView()
+                        .frame(maxWidth: .infinity)
                         .padding(.top, 80)
                 } else if upcoming.isEmpty && budgets.isEmpty && goals.isEmpty {
+                    // A store with history but no plan yet is exactly where fixed expenses get found.
+                    if !committedSpending.isEmpty {
+                        FixedExpensesSection(model: committedSpending)
+                            .padding(16)
+                    }
                     welcome
                 } else {
                     LazyVStack(spacing: 24) {
+                        if !committedSpending.isEmpty {
+                            FixedExpensesSection(model: committedSpending)
+                        }
                         recurringSection
                         budgetsSection
                         GoalsSection(
@@ -64,12 +76,18 @@ struct PlanView: View {
                     .appBackground()
             }
             .appToolbar(showingAddItemView: $showingAddItemView, onScanned: onScanned)
+            .fixedExpenseFeedback(committedSpending)
             .appBackground()
         }
         .task(id: dataChanged.revision) {
             // Goals live on CompassViewModel, which nothing else loads at launch on iPhone until
             // Insights opens — load it here too, or Plan reads an existing goal list as empty.
             async let goals: Void = compassViewModel.reloadData()
+            // A matched payment moves a rule's cursor: bump once so Coming up re-reads it (the
+            // second pass finds nothing new to match).
+            if await committedSpending.reload(repo: transactionListViewModel.repo) {
+                dataChanged.bump()
+            }
             await reloadRules()
             await goals
             hasLoaded = true

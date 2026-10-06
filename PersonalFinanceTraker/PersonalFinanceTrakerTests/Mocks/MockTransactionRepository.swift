@@ -205,10 +205,10 @@ final class MockTransactionRepository: ITransactionRepository {
         stubbedRecurrenceRules.removeAll()
     }
 
-    var linkTransactionsToRecurrenceRuleCalls: [(id: UUID, amount: Decimal, occurrenceDates: [Date])] = []
-    func linkTransactionsToRecurrenceRule(id: UUID, amount: Decimal, occurrenceDates: [Date]) async throws {
+    var advanceRecurrenceRuleCalls: [(id: UUID, cursor: Date, amount: Decimal?)] = []
+    func advanceRecurrenceRule(id: UUID, cursor: Date, amount: Decimal?) async throws {
         if shouldThrow { throw MockError.forced }
-        linkTransactionsToRecurrenceRuleCalls.append((id, amount, occurrenceDates))
+        advanceRecurrenceRuleCalls.append((id, cursor, amount))
     }
 
     // MARK: Health snapshots

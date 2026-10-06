@@ -9,6 +9,9 @@ final class RecurrenceRule {
     var startDate: Date
     var endDate: Date?              // nil = open-ended / active
     var lastMaterializedDate: Date? // catch-up cursor; nil = never materialized
+    /// false = forecast-only fixed expense (#188): never inserts transactions; the cursor above
+    /// advances when a real payment matches instead (see `RecurrenceDetector.paidThrough`).
+    var autoRecord: Bool = true
 
     // Transaction template — mirrors TransactionInput
     var amount: Decimal
@@ -27,6 +30,7 @@ final class RecurrenceRule {
         startDate: Date,
         endDate: Date? = nil,
         lastMaterializedDate: Date? = nil,
+        autoRecord: Bool = true,
         amount: Decimal,
         note: String,
         category: String,
@@ -40,6 +44,7 @@ final class RecurrenceRule {
         self.startDate = startDate
         self.endDate = endDate
         self.lastMaterializedDate = lastMaterializedDate
+        self.autoRecord = autoRecord
         self.amount = amount
         self.note = note
         self.category = category

@@ -93,7 +93,7 @@ protocol ITransactionRepository {
     func deleteOccurrences(recurrenceRuleId: UUID, from cutoffDate: Date) async throws
     func materializeOccurrences(ruleId: UUID, inputs: [TransactionInput], newCursor: Date) async throws
     func deleteAllRecurrenceRules() async throws
-    func linkTransactionsToRecurrenceRule(id: UUID, amount: Decimal, occurrenceDates: [Date]) async throws
+    func advanceRecurrenceRule(id: UUID, cursor: Date, amount: Decimal?) async throws
 
     // Health snapshots
     func saveSnapshot(_ data: HealthScoreSnapshotData) async throws

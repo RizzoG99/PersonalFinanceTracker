@@ -60,8 +60,9 @@ struct RecurrenceDetectorTests {
 
     // MARK: - Test Cases
 
-    @Test func nextDateMustBeAfterToday() {
-        // Rows ending 6 months before today should produce nextDate after today
+    @Test func staleSeriesIsNotSuggested() {
+        // Rows ending 4 months before today: the payment stopped, so it isn't a fixed expense
+        // any more (#188 recency gate) — it used to be suggested with a nextDate after today.
         let today = dateAtMidnight(2026, 8, 15)
         let baseDate = dateAtMidnight(2026, 2, 15)
         var inputs: [TransactionInput] = []
@@ -74,10 +75,7 @@ struct RecurrenceDetectorTests {
 
         let results = RecurrenceDetector.detect(in: inputs, existingRules: [], today: today, calendar: calendar)
 
-        #expect(results.count == 1)
-        let suggestion = results[0]
-        // nextDate must be strictly after today (August 15), so it should be in September or later
-        #expect(suggestion.nextDate > today)
+        #expect(results.isEmpty)
     }
 
     @Test func monthlyPattern12Rows() {
@@ -115,7 +113,12 @@ struct RecurrenceDetectorTests {
 
         let results = RecurrenceDetector.detect(in: inputs, existingRules: [], today: baseDate, calendar: calendar)
 
-        #expect(results.count == 0)
+        // -15 is 50 % off, so it's another bill; the two identical -10s two months apart are
+        // enough on their own (#188: 2 occurrences when the amount never changes).
+        #expect(results.count == 1)
+        #expect(results.first?.amount == -10)
+        #expect(results.first?.occurrenceCount == 2)
+        #expect(results.first?.interval == 2)
     }
 
     @Test func biweeklyPattern() {
@@ -124,7 +127,8 @@ struct RecurrenceDetectorTests {
 
         for i in 0..<5 {
             let date = calendar.date(byAdding: .day, value: i * 14, to: baseDate)!
-            inputs.append(makeTransactionInput(note: "Paycheck", amount: 2000, timestamp: date))
+            // An expense: recurring income is out of #188's scope (payday is PayCycleService's).
+            inputs.append(makeTransactionInput(note: "Babysitter", amount: -200, timestamp: date))
         }
 
         let results = RecurrenceDetector.detect(in: inputs, existingRules: [], today: baseDate, calendar: calendar)
@@ -150,7 +154,7 @@ struct RecurrenceDetectorTests {
         #expect(results.count == 0)
     }
 
-    @Test func onlyTwoOccurrences() {
+    @Test func twoIdenticalOccurrencesAreEnough() {
         let baseDate = dateAtMidnight(2026, 1, 1)
         let inputs = [
             makeTransactionInput(note: "Test", amount: -100, timestamp: baseDate),
@@ -159,7 +163,8 @@ struct RecurrenceDetectorTests {
 
         let results = RecurrenceDetector.detect(in: inputs, existingRules: [], today: baseDate, calendar: calendar)
 
-        #expect(results.count == 0)
+        #expect(results.count == 1)
+        #expect(results.first?.amountsIdentical == true)
     }
 
     @Test func filteredByExistingRule() {
@@ -277,11 +282,10 @@ struct RecurrenceDetectorTests {
         let results = RecurrenceDetector.detect(in: inputs, existingRules: [], today: baseDate, calendar: calendar)
 
         #expect(results.count == 2)
-        // Spotify should be first (6 occurrences > 3 occurrences)
-        #expect(results[0].note.lowercased().contains("spotify"))
-        #expect(results[0].occurrenceCount == 6)
-        #expect(results[1].note.lowercased().contains("netflix"))
-        #expect(results[1].occurrenceCount == 3)
+        // Both certain, so the bigger amount leads (#207): Netflix €12 before Spotify €10.
+        #expect(results[0].note.lowercased().contains("netflix"))
+        #expect(results[1].note.lowercased().contains("spotify"))
+        #expect(results[1].occurrenceCount == 6)
     }
 
     @Test func mostCommonNote() {

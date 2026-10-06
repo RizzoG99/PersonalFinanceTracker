@@ -252,49 +252,6 @@ struct ImportRecurrenceWiringTests {
         #expect(repo.materializeOccurrencesCalls.isEmpty)
     }
 
-    // MARK: - Test 6: addSelectedRecurrenceRules builds rule with startDate == suggestion.nextDate
-
-    @Test @MainActor
-    func addSelectedRecurrenceRulesBuildRuleWithCorrectStartDateAndNoCursor() async {
-        let repo = MockTransactionRepository()
-        repo.stubbedCategories = [
-            .test(name: "Fitness", type: .expense)
-        ]
-
-        let vm = await makeVM(repo)
-
-        let nextDate = Date().addingTimeInterval(86400 * 30)
-        let suggestion = RecurrenceSuggestion(
-            frequency: .monthly,
-            interval: 1,
-            amount: -100,
-            note: "Gym",
-            category: "Fitness",
-            currencyCode: "EUR",
-            categoryPersistentId: repo.stubbedCategories[0].persistentId,
-            occurrenceCount: 3,
-            nextDate: nextDate,
-            occurrenceDates: [Date()]
-        )
-
-        vm.recurrenceSuggestions = [suggestion]
-        vm.selectedSuggestionIds = [suggestion.id]
-
-        // Call addSelectedRecurrenceRules
-        await vm.addSelectedRecurrenceRules()
-
-        // Assert: exactly one rule was added
-        #expect(repo.addRecurrenceRuleCalls.count == 1)
-
-        let addedRule = repo.addRecurrenceRuleCalls[0]
-
-        // startDate must equal suggestion.nextDate (no past date that could cause backfill)
-        #expect(addedRule.startDate == nextDate)
-
-        // lastMaterializedDate must be nil (no cursor that could duplicate first occurrence)
-        #expect(addedRule.lastMaterializedDate == nil)
-    }
-
     // MARK: - Test 7: iPad confirms the import and the rules in one shot
 
     @Test @MainActor
@@ -333,27 +290,19 @@ struct ImportRecurrenceWiringTests {
                                    String(localized: "Added \(1) recurring transactions.")].joined(separator: " "))
     }
 
-    // MARK: - Test 8b: addSelectedRecurrenceRules backfills recurrenceRuleId onto the source rows
+    // MARK: - Test 8b: rules from the import step are forecast-only, cursor on the last payment (#188)
 
-    @Test @MainActor
-    func addSelectedRecurrenceRulesLinksBackToOccurrences() async {
+    @Test @MainActor func addSelectedRecurrenceRulesCreatesForecastOnlyRuleWithCursor() async {
         let repo = MockTransactionRepository()
         repo.stubbedCategories = [.test(name: "Fitness", type: .expense)]
-
         let vm = await makeVM(repo)
-
-        let occurrenceDates = [Date(), Date().addingTimeInterval(-86400 * 30)]
+        let first = Date().addingTimeInterval(-86400 * 30)
+        let last = Date()
         let suggestion = RecurrenceSuggestion(
-            frequency: .monthly,
-            interval: 1,
-            amount: -100,
-            note: "Gym",
-            category: "Fitness",
-            currencyCode: "EUR",
-            categoryPersistentId: repo.stubbedCategories[0].persistentId,
-            occurrenceCount: 2,
-            nextDate: Date().addingTimeInterval(86400),
-            occurrenceDates: occurrenceDates
+            frequency: .monthly, interval: 1, amount: -100, note: "Gym", category: "Fitness",
+            currencyCode: "EUR", categoryPersistentId: repo.stubbedCategories[0].persistentId,
+            occurrenceCount: 2, nextDate: Date().addingTimeInterval(86400),
+            occurrenceDates: [first, last]
         )
         vm.recurrenceSuggestions = [suggestion]
         vm.selectedSuggestionIds = [suggestion.id]
@@ -361,11 +310,35 @@ struct ImportRecurrenceWiringTests {
         await vm.addSelectedRecurrenceRules()
 
         #expect(repo.addRecurrenceRuleCalls.count == 1)
-        #expect(repo.linkTransactionsToRecurrenceRuleCalls.count == 1)
-        let call = repo.linkTransactionsToRecurrenceRuleCalls[0]
-        #expect(call.id == repo.addRecurrenceRuleCalls[0].id)
-        #expect(call.amount == -100)
-        #expect(call.occurrenceDates == occurrenceDates)
+        let rule = repo.addRecurrenceRuleCalls[0]
+        #expect(rule.autoRecord == false)
+        #expect(rule.startDate == last)
+        #expect(rule.lastMaterializedDate == last)
+    }
+
+    @Test @MainActor func onlyExplicitlyUncheckedSuggestionsAreRemembered() async {
+        let repo = MockTransactionRepository()
+        let vm = await makeVM(repo)
+        func suggestion(_ note: String) -> RecurrenceSuggestion {
+            RecurrenceSuggestion(
+                frequency: .monthly, interval: 1, amount: -50, note: note, category: "Bills",
+                currencyCode: "EUR", categoryPersistentId: nil, occurrenceCount: 3,
+                nextDate: Date().addingTimeInterval(86400), occurrenceDates: [Date()]
+            )
+        }
+        let untouched = suggestion("Maybe A"), rejected = suggestion("Rejected B"), kept = suggestion("Kept C")
+        vm.recurrenceSuggestions = [untouched, rejected, kept]
+        vm.selectedSuggestionIds = [rejected.id, kept.id]   // "Maybe A" started unchecked
+        vm.toggleSuggestion(rejected.id)                      // the user unchecks B
+
+        await vm.addSelectedRecurrenceRules()
+
+        #expect(repo.addRecurrenceRuleCalls.map(\.note) == ["Kept C"])
+        #expect(repo.addRecurrenceRuleCalls.allSatisfy { !$0.autoRecord })
+        let dismissed = DismissedRecurrencePatterns.all.map(\.note)
+        #expect(dismissed.contains("rejected b"))
+        #expect(!dismissed.contains("maybe a"))
+        DismissedRecurrencePatterns.removeAll()
     }
 
     // MARK: - Test 8: cancelImport clears all import state
@@ -391,6 +364,7 @@ struct ImportRecurrenceWiringTests {
             )
         ]
         vm.selectedSuggestionIds = Set(vm.recurrenceSuggestions.map(\.id))
+        vm.toggleSuggestion(vm.recurrenceSuggestions[0].id)   // leaves a rejection behind
         vm.importedTransactionCount = 42
         vm.showingImportFlow = true
 
@@ -400,6 +374,7 @@ struct ImportRecurrenceWiringTests {
         // Assert: all import state is cleared
         #expect(vm.recurrenceSuggestions.isEmpty)
         #expect(vm.selectedSuggestionIds.isEmpty)
+        #expect(vm.rejectedSuggestionIds.isEmpty)
         #expect(vm.importedTransactionCount == 0)
         #expect(vm.showingImportFlow == false)
     }

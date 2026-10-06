@@ -106,6 +106,7 @@ extension RecurrenceRuleSnapshot {
         startDate: Date,
         endDate: Date? = nil,
         lastMaterializedDate: Date? = nil,
+        autoRecord: Bool = true,
         amount: Decimal,
         note: String = "",
         category: String,
@@ -115,7 +116,7 @@ extension RecurrenceRuleSnapshot {
         let context = ModelContext(SnapshotTestSupport.container)
         let model = RecurrenceRule(
             id: id, frequency: frequency, interval: interval, startDate: startDate,
-            endDate: endDate, lastMaterializedDate: lastMaterializedDate,
+            endDate: endDate, lastMaterializedDate: lastMaterializedDate, autoRecord: autoRecord,
             amount: amount, note: note, category: category, currencyCode: currencyCode, goalId: goalId
         )
         context.insert(model)

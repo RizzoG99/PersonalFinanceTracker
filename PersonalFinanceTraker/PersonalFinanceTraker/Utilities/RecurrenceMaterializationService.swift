@@ -1,6 +1,7 @@
 import Foundation
 
-/// Materializes due `RecurrenceRule` occurrences into real `TransactionModel` rows.
+/// Materializes due `RecurrenceRule` occurrences into real `TransactionModel` rows, and moves
+/// forecast-only rules' cursors past the occurrences a real payment has covered.
 /// Launch/foreground-triggered only (see MainTabView) — no background execution,
 /// matching how DailyForecastCache and the daily log reminder already work.
 actor RecurrenceMaterializationService {
@@ -26,7 +27,16 @@ actor RecurrenceMaterializationService {
 
     private static func runMaterialization(using repo: any ITransactionRepository, today: Date, calendar: Calendar) async throws {
         let rules = try await repo.fetchActiveRecurrenceRules()
-        for rule in rules {
+        // Forecast-only fixed expenses (#188) never insert: their cursor follows real payments.
+        let forecastOnly = rules.filter { !$0.autoRecord }
+        if !forecastOnly.isEmpty {
+            let transactions = try await repo.fetchAll()
+            for rule in forecastOnly {
+                guard let paid = RecurrenceDetector.paidThrough(rule: rule, transactions: transactions, today: today, calendar: calendar) else { continue }
+                try await repo.advanceRecurrenceRule(id: rule.id, cursor: paid.cursor, amount: paid.amount)
+            }
+        }
+        for rule in rules where rule.autoRecord {
             let dates = RecurrenceOccurrenceCalculator.occurrenceDates(
                 frequency: rule.frequency,
                 interval: rule.interval,

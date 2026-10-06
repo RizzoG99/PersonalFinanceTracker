@@ -34,7 +34,8 @@ enum SafeToSpendSnapshotBuilder {
                     interval: rule.interval,
                     startDate: rule.startDate,
                     ruleEndDate: rule.endDate,
-                    since: now,
+                    // Not before the cursor: an occurrence already paid (early) is in netSoFar.
+                    since: max(now, rule.lastMaterializedDate ?? .distantPast),
                     through: dayDate,
                     calendar: calendar
                 )

@@ -8,120 +8,287 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
     let id = UUID()
     let frequency: RecurrenceFrequency
     let interval: Int
-    let amount: Decimal
+    let amount: Decimal              // median of the group — the forecast for a variable bill
     let note: String                 // representative (most common) raw note from the group
     let category: String
     let currencyCode: String
     let categoryPersistentId: PersistentIdentifier?
     let occurrenceCount: Int
-    let nextDate: Date               // becomes RecurrenceRuleInput.startDate
-    let occurrenceDates: [Date]      // rows that formed this group, so import can backfill recurrenceRuleId
+    /// Next expected payment: one cycle after the latest one, which anchors the rule.
+    let nextDate: Date
+    let occurrenceDates: [Date]      // sorted; the last anchors the rule and is its cursor
+    /// Auto-record is only offered when every payment was the same amount (#188).
+    var amountsIdentical = true
+
+    /// Strong enough evidence to start checked on the import step. Weaker suggestions are still
+    /// shown, unchecked: one tap away, but never planned for by default.
+    var isHighConfidence: Bool {
+        let size = abs(amount)
+        switch frequency {
+        case .weekly, .monthly:
+            return occurrenceCount >= 3 || (amountsIdentical && size >= 15)
+        case .yearly:
+            return occurrenceCount >= 3 && size >= 20
+        }
+    }
+
+    /// Recording transactions for the user needs more than two matching payments.
+    var offersAutoRecord: Bool { amountsIdentical && occurrenceCount >= 3 }
+
+    /// A forecast-only rule (or auto-record, when the user opts in) anchored on the latest payment,
+    /// which is also its cursor: that payment is covered, the next is one cycle later. Anchoring on
+    /// the first payment instead put due dates on its day of the month, so a series that drifted a
+    /// day earlier (26 Aug → 25 Sep) left a phantom "26 Sep" occurrence unpaid — instantly missed.
+    /// ponytail: a month-end clamp (Feb 28) as the latest payment keeps later dates on the 28th.
+    func ruleInput(autoRecord: Bool) -> RecurrenceRuleInput {
+        RecurrenceRuleInput(
+            frequency: frequency,
+            interval: interval,
+            startDate: occurrenceDates[occurrenceDates.count - 1],
+            lastMaterializedDate: occurrenceDates.last,
+            autoRecord: autoRecord && offersAutoRecord,
+            amount: amount,
+            note: note,
+            category: category,
+            currencyCode: currencyCode,
+            categoryPersistentId: categoryPersistentId
+        )
+    }
 }
 
+/// A rejected suggestion ("Not fixed"), matched like an existing rule: same normalised note,
+/// amount within the detector's tolerance.
+struct DismissedRecurrencePattern: Codable, Hashable, Sendable {
+    let note: String
+    let amount: Decimal
+}
+
+/// Committed-spending detection (#188): finds fixed expenses in the whole history and tells
+/// whether a forecast-only rule's payments have arrived.
 enum RecurrenceDetector {
+    /// Amounts within this fraction of each other count as the same bill.
+    static let amountTolerance: Decimal = 0.15
+    /// Below this a repeat is a ticket or a coffee, not a bill.
+    static let minimumAmount: Decimal = 5
+
     static func detect(
         in inputs: [TransactionInput],
         existingRules: [RecurrenceRuleSnapshot],
+        dismissed: [DismissedRecurrencePattern] = [],
         today: Date = .now,
         calendar: Calendar = .current
     ) -> [RecurrenceSuggestion] {
-        // 1. Group by (normalizedNote, amount)
-        let groups = groupTransactions(inputs)
+        // Expenses the user (or a bank file) recorded — generated rows already belong to a rule.
+        let candidates = inputs.filter { $0.amount < 0 && $0.recurrenceRuleId == nil }
+        let byNote = Dictionary(grouping: candidates) { normalizeNote($0.note) }
 
-        // 2. Drop groups with fewer than 3 rows and infer frequency
         var suggestions: [RecurrenceSuggestion] = []
+        for (note, rows) in byNote where !note.isEmpty {
+            for group in amountClusters(rows) {
+                // To the cent: the add form builds Decimal from a Double (8.99 → 8.99000000000000020…)
+                // while CSV import parses the exact string, so the same price isn't bit-equal.
+                let amounts = Set(group.map { $0.amount.roundedToCents })
+                let identical = amounts.count == 1
+                guard group.count >= (identical ? 2 : 3) else { continue }
+                let size = abs(median(group.map(\.amount)))
+                guard size >= minimumAmount else { continue }
+                // Everyday spending: a merchant paid often at many prices (transit, groceries) can
+                // have one price bucket that happens to look periodic. A bill is most of its payments.
+                guard group.count * 2 >= rows.count else { continue }
 
-        for (key, group) in groups {
-            guard group.count >= 3 else { continue }
+                let dates = group.map(\.timestamp).sorted()
+                guard let cadence = inferFrequency(from: dates, calendar: calendar),
+                      isSupported(cadence) else { continue }
+                // Two payments a year apart is the weakest evidence there is (birthday gifts pass
+                // it): yearly needs a third payment, or two identical ones that look like a bill.
+                // Every gap within the yearly match window, so a pattern isn't missed on day one.
+                if cadence.frequency == .yearly {
+                    guard group.count >= 3 || (identical && size >= 50) else { continue }
+                    let gaps = zip(dates, dates.dropFirst()).map { $1.timeIntervalSince($0) / 86_400 }
+                    guard gaps.allSatisfy({ abs($0 - 365.25) <= 14 }) else { continue }
+                }
 
-            let dates = group.map { $0.timestamp }.sorted()
+                // Recency gate: the next payment's match window must still be open, or a
+                // subscription cancelled last year would be suggested (and instantly "missed").
+                let lastDate = dates[dates.count - 1]
+                let upcoming = RecurrenceOccurrenceCalculator.occurrenceDates(
+                    frequency: cadence.frequency,
+                    interval: cadence.interval,
+                    startDate: lastDate,          // same anchor as ruleInput
+                    ruleEndDate: nil,
+                    since: lastDate,
+                    through: lastDate.addingTimeInterval(400 * 86_400),   // > one yearly cycle
+                    calendar: calendar
+                )
+                guard let nextDate = upcoming.first else { continue }
+                let window = matchWindow(cadence.frequency, cadence.interval)
+                guard nextDate.addingTimeInterval(window) >= today else { continue }
 
-            // 3. Infer frequency from day gaps
-            guard let frequencyInfo = inferFrequency(from: dates, calendar: calendar) else {
-                continue
+                let amount = median(group.map(\.amount))
+                if existingRules.contains(where: { normalizeNote($0.note) == note && isSameAmount($0.amount, amount) })
+                    || dismissed.contains(where: { $0.note == note && isSameAmount($0.amount, amount) }) {
+                    continue
+                }
+
+                suggestions.append(RecurrenceSuggestion(
+                    frequency: cadence.frequency,
+                    interval: cadence.interval,
+                    amount: amount,
+                    note: findMostCommonValue(group.map(\.note)) ?? note,
+                    category: findMostCommonValue(group.map(\.category)) ?? group[0].category,
+                    currencyCode: group[0].currencyCode,
+                    categoryPersistentId: group.compactMap(\.categoryPersistentId).first,
+                    occurrenceCount: group.count,
+                    nextDate: nextDate,
+                    occurrenceDates: dates,
+                    amountsIdentical: identical
+                ))
             }
-
-            // 4. Calculate nextDate (must be strictly after max(lastDate, today))
-            guard let nextDate = calculateNextDate(
-                from: dates,
-                frequency: frequencyInfo.frequency,
-                interval: frequencyInfo.interval,
-                today: today,
-                calendar: calendar
-            ) else {
-                continue
-            }
-
-            // 5. Filter out matches with existing rules
-            if isMatchingExistingRule(
-                note: key.normalizedNote,
-                amount: key.amount,
-                frequency: frequencyInfo.frequency,
-                existingRules: existingRules
-            ) {
-                continue
-            }
-
-            // Find the most common raw note and category in the group
-            let mostCommonNote = findMostCommonValue(group.map { $0.note }) ?? key.normalizedNote
-            let mostCommonCategory = findMostCommonValue(group.map { $0.category }) ?? group.first!.category
-
-            let suggestion = RecurrenceSuggestion(
-                frequency: frequencyInfo.frequency,
-                interval: frequencyInfo.interval,
-                amount: key.amount,
-                note: mostCommonNote,
-                category: mostCommonCategory,
-                currencyCode: group.first!.currencyCode,
-                categoryPersistentId: group.first!.categoryPersistentId,
-                occurrenceCount: group.count,
-                nextDate: nextDate,
-                occurrenceDates: dates
-            )
-
-            suggestions.append(suggestion)
         }
 
-        // 6. Sort by occurrenceCount descending, then by note ascending
+        // Likeliest and biggest first: rent before a €6 subscription before a maybe.
         return suggestions.sorted { a, b in
-            if a.occurrenceCount != b.occurrenceCount {
-                return a.occurrenceCount > b.occurrenceCount
-            }
+            if a.isHighConfidence != b.isHighConfidence { return a.isHighConfidence }
+            if abs(a.amount) != abs(b.amount) { return abs(a.amount) > abs(b.amount) }
+            if a.occurrenceCount != b.occurrenceCount { return a.occurrenceCount > b.occurrenceCount }
             return a.note < b.note
         }
     }
 
-    // MARK: - Private Helpers
-
-    private struct GroupKey: Hashable {
-        let normalizedNote: String
-        let amount: Decimal
+    static func dismissalPattern(for suggestion: RecurrenceSuggestion) -> DismissedRecurrencePattern {
+        DismissedRecurrencePattern(note: normalizeNote(suggestion.note), amount: suggestion.amount)
     }
 
-    private static func normalizeNote(_ note: String) -> String {
-        // Lowercase, remove digits and punctuation, collapse and trim whitespace
-        let lowercased = note.lowercased()
-        let cleaned = lowercased.filter { $0.isLetter || $0.isWhitespace }
-        let collapsed = cleaned.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " ")
-        return collapsed
-    }
+    // MARK: - Forecast-only rules
 
-    private static func groupTransactions(
-        _ inputs: [TransactionInput]
-    ) -> [GroupKey: [TransactionInput]] {
-        var groups: [GroupKey: [TransactionInput]] = [:]
-
-        for input in inputs {
-            let key = GroupKey(normalizedNote: normalizeNote(input.note), amount: input.amount)
-            groups[key, default: []].append(input)
+    /// How far from its due date a payment still counts for an occurrence: ±20 % of the cycle,
+    /// 3–14 days (monthly ≈ ±6 days). Below half a cycle, so windows never overlap; the cap keeps
+    /// a yearly bill from waiting ~2 months before "Do you still pay?".
+    static func matchWindow(_ frequency: RecurrenceFrequency, _ interval: Int) -> TimeInterval {
+        let cycle: Double = switch frequency {
+        case .weekly: 7
+        case .monthly: 30.4
+        case .yearly: 365.25
         }
+        return TimeInterval(min(14, max(3, Int((cycle * Double(interval) * 0.2).rounded()))) * 86_400)
+    }
 
-        return groups
+    /// The last occurrence of a forecast-only rule that a real expense has paid (same note,
+    /// amount within tolerance, date within the window — early payments included), and the
+    /// amount paid for it. nil when nothing new matched.
+    static func paidThrough(
+        rule: RecurrenceRuleSnapshot,
+        transactions: [TransactionSnapshot],
+        today: Date = .now,
+        calendar: Calendar = .current
+    ) -> (cursor: Date, amount: Decimal)? {
+        let window = matchWindow(rule.frequency, rule.interval)
+        let note = normalizeNote(rule.note)
+        var payments = transactions.filter {
+            $0.amount < 0 && $0.recurrenceRuleId == nil
+                && isSameAmount($0.amount, rule.amount)
+                && normalizeNote($0.note) == note
+        }
+        let occurrences = RecurrenceOccurrenceCalculator.occurrenceDates(
+            frequency: rule.frequency,
+            interval: rule.interval,
+            startDate: rule.startDate,
+            ruleEndDate: rule.endDate,
+            since: rule.lastMaterializedDate,
+            through: today.addingTimeInterval(window),
+            calendar: calendar
+        )
+        var paid: (cursor: Date, amount: Decimal)?
+        for occurrence in occurrences {
+            let match = payments
+                .filter { abs($0.timestamp.timeIntervalSince(occurrence)) <= window }
+                .min { abs($0.timestamp.timeIntervalSince(occurrence)) < abs($1.timestamp.timeIntervalSince(occurrence)) }
+            guard let match else { continue }
+            payments.removeAll { $0.id == match.id }
+            paid = (occurrence, match.amount)
+        }
+        return paid
+    }
+
+    /// The due date of a forecast-only expense rule whose payment never arrived: its match
+    /// window has closed and nothing paid it. Drives "Do you still pay X?".
+    static func missedOccurrence(
+        rule: RecurrenceRuleSnapshot,
+        today: Date = .now,
+        calendar: Calendar = .current
+    ) -> Date? {
+        guard !rule.autoRecord, rule.amount < 0 else { return nil }
+        let window = matchWindow(rule.frequency, rule.interval)
+        let due = RecurrenceOccurrenceCalculator.occurrenceDates(
+            frequency: rule.frequency,
+            interval: rule.interval,
+            startDate: rule.startDate,
+            ruleEndDate: rule.endDate,
+            since: rule.lastMaterializedDate,
+            through: today.addingTimeInterval(-window),
+            calendar: calendar
+        ).first
+        return due
+    }
+
+    // MARK: - Helpers
+
+    static func normalizeNote(_ note: String) -> String {
+        // Lowercase, keep letters only, drop month names ("affitto ottobre" → "affitto").
+        let lettersOnly = String(note.lowercased().map { (c: Character) -> Character in c.isLetter ? c : " " })
+        let words = lettersOnly.split(separator: " ").map { String($0) }
+        return words.filter { !monthNames.contains($0) }.joined(separator: " ")
+    }
+
+    private static let monthNames: Set<String> = {
+        var names = Set<String>()
+        for id in ["en", "it"] {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: id)
+            for symbols in [formatter.monthSymbols, formatter.shortMonthSymbols, formatter.standaloneMonthSymbols] {
+                names.formUnion((symbols ?? []).map { $0.lowercased().filter(\.isLetter) })
+            }
+        }
+        return names
+    }()
+
+    static func isSameAmount(_ a: Decimal, _ b: Decimal) -> Bool {
+        abs(a - b) <= abs(b) * amountTolerance
+    }
+
+    /// Sorted by size, a new cluster starts whenever an amount is out of tolerance of the
+    /// cluster's smallest. ponytail: greedy; a bill drifting >15 % over years splits in two —
+    /// fine, the recent cluster is the one that passes the recency gate.
+    private static func amountClusters(_ rows: [TransactionInput]) -> [[TransactionInput]] {
+        var clusters: [[TransactionInput]] = []
+        for row in rows.sorted(by: { abs($0.amount) < abs($1.amount) }) {
+            if let base = clusters.last?.first, isSameAmount(row.amount, base.amount) {
+                clusters[clusters.count - 1].append(row)
+            } else {
+                clusters.append([row])
+            }
+        }
+        return clusters
+    }
+
+    private static func median(_ amounts: [Decimal]) -> Decimal {
+        let sorted = amounts.sorted()
+        return sorted[sorted.count / 2]
     }
 
     private struct FrequencyInfo {
         let frequency: RecurrenceFrequency
         let interval: Int
+    }
+
+    /// Only the cadences fixed expenses actually have. With 2 payments there is a single gap,
+    /// which always fits *some* "every N weeks" — irregular cadences are #196.
+    private static func isSupported(_ cadence: FrequencyInfo) -> Bool {
+        switch cadence.frequency {
+        case .weekly: cadence.interval <= 2
+        case .monthly: cadence.interval <= 3
+        case .yearly: cadence.interval == 1
+        }
     }
 
     private static func inferFrequency(
@@ -205,46 +372,6 @@ enum RecurrenceDetector {
         return nil
     }
 
-    private static func calculateNextDate(
-        from dates: [Date],
-        frequency: RecurrenceFrequency,
-        interval: Int,
-        today: Date,
-        calendar: Calendar
-    ) -> Date? {
-        guard let firstDate = dates.first, let lastDate = dates.last else { return nil }
-
-        // nextDate must be strictly after max(lastDate, today) to prevent backfill duplicates.
-        // A 10-year lookahead from the cutoff is sufficient for all valid frequency/interval pairs.
-        // If occurrences returns empty (shouldn't happen), the group is dropped cleanly.
-        let cutoff = lastDate > today ? lastDate : today
-        let farFuture = calendar.date(byAdding: .year, value: 10, to: cutoff) ?? cutoff.addingTimeInterval(365 * 24 * 3600)
-        let occurrences = RecurrenceOccurrenceCalculator.occurrenceDates(
-            frequency: frequency,
-            interval: interval,
-            startDate: firstDate,
-            ruleEndDate: nil,
-            since: cutoff,
-            through: farFuture,
-            calendar: calendar
-        )
-
-        return occurrences.first
-    }
-
-    private static func isMatchingExistingRule(
-        note: String,
-        amount: Decimal,
-        frequency: RecurrenceFrequency,
-        existingRules: [RecurrenceRuleSnapshot]
-    ) -> Bool {
-        existingRules.contains { rule in
-            normalizeNote(rule.note) == note &&
-            rule.amount == amount &&
-            rule.frequency == frequency
-        }
-    }
-
     private static func findMostCommonValue(_ values: [String]) -> String? {
         var counts: [String: Int] = [:]
         for value in values {
@@ -261,4 +388,12 @@ enum RecurrenceDetector {
     }
 }
 
-// ponytail: exact-amount grouping and naive note normalization; fuzzy matching / variable-amount bills if the naive version visibly misses real imports
+extension Decimal {
+    /// Cent-exact, so a Double-built amount equals the same price parsed from text.
+    var roundedToCents: Decimal {
+        var value = self
+        var result = Decimal()
+        NSDecimalRound(&result, &value, 2, .plain)
+        return result
+    }
+}
