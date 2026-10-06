@@ -19,6 +19,8 @@ struct IPadDashboardGrid: View {
     @Environment(TransactionListViewModel.self) private var transactionListViewModel
     @Environment(DataChangedSignal.self) private var dataChanged
     @Binding var showingAddItemView: Bool
+    /// The next-7-days card's "See all": switches the sidebar to Recurring.
+    var onSeeAllUpcoming: (() -> Void)? = nil
 
     // iPad portrait and landscape column sizing:
     // - Landscape ~1200pt: 360pt min supports 3+ columns, but 560pt max constrains to ~2 full-width
@@ -67,6 +69,10 @@ struct IPadDashboardGrid: View {
                             },
                             onDismissReminder: { viewModel.dismissReminderPrompt() }
                         )
+                    }
+
+                    if !viewModel.upcomingWeek.isEmpty {
+                        UpcomingPreviewCard(charges: viewModel.upcomingWeek, onSeeAll: onSeeAllUpcoming)
                     }
 
                     if !viewModel.recentTransactions.isEmpty {

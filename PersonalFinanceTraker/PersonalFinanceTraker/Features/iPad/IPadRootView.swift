@@ -224,7 +224,7 @@ struct IPadRootView: View {
         Group {
             switch section ?? .home {
             case .home:
-                IPadDashboardGrid(showingAddItemView: $showingAddItemView)
+                IPadDashboardGrid(showingAddItemView: $showingAddItemView) { section = .recurring }
             case .activity:
                 IPadLedgerTable(showingAddItemView: $showingAddItemView)
             case .goals:

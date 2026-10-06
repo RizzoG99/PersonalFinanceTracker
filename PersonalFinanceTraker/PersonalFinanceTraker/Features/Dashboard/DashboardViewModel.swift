@@ -21,6 +21,8 @@ final class DashboardViewModel {
     var loadError: String? = nil
     var anomalyCallout: AnomalyCallout? = nil
     var nearLimitBudgets: [BudgetProgress] = []
+    /// Home's slice of the financial calendar (#189): recurring money in and out in the next 7 days.
+    var upcomingWeek: [UpcomingCharge] = []
     /// Every budgeted category this cycle — Plan shows the full list, Home only the at-risk ones.
     var budgetProgress: [BudgetProgress] = []
     var dailyLoggingStatus = DailyLoggingStatus(hasLoggedToday: false, todayCount: 0, currentStreakDays: 0)
@@ -63,8 +65,11 @@ final class DashboardViewModel {
         do {
             async let txs = repo.fetchAll()
             async let cats = repo.fetchCategories()
+            async let rules = repo.fetchAllRecurrenceRules()
             transactions = try await txs
             categories = try await cats
+            // A preview, not the screen's point: rules failing to load just hide it.
+            upcomingWeek = UpcomingCharge.timeline(rules: (try? await rules) ?? [], now: currentDate(), days: 7)
             await calculateMetrics()
         } catch {
             loadError = error.localizedDescription
