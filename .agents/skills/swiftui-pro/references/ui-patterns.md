@@ -57,6 +57,10 @@ For Activity, preserve the established architecture:
 - `SearchFilters.matches` owns filter semantics.
 - `SearchTests` owns behavioral coverage.
 
+- If search is important to the current task, give it a primary, persistent position rather than burying it in an overflow menu. Prefer one clearly identified search location for app-wide content; use local search only when the current scope is genuinely distinct.
+- Make scope explicit through placement, title, placeholder, or scope controls. Suggestions may reduce typing, but must not obscure the active filters or scope.
+- Treat recent searches as sensitive financial data. Show them only when they provide clear value, avoid exposing them casually in shared viewing contexts, apply the app’s privacy behavior where appropriate, and provide a clear way to remove them.
+
 Do not duplicate search with a custom field, hide active constraints, or combine sorting into filter semantics. Provide Clear Search and/or Clear Filters whenever state can otherwise be difficult to unwind. A no-results view must distinguish an empty ledger from a query/filter mismatch.
 
 ## Toolbars and action placement
@@ -66,9 +70,10 @@ Toolbars contain actions for the current screen; navigation belongs to tabs, sid
 - Keep one obvious primary action. On iPhone, the established global primary action is Add Transaction through `AppToolbarModifier` unless the current mode replaces it intentionally.
 - Use leading placement for Back, Cancel, Close, or mode exit; use trailing placement for Add, Save, Set, Done, or the current primary action.
 - Put infrequent screen-level actions in a `Menu` and item-specific actions in swipe/context menus when discoverability remains adequate.
+- Group related toolbar actions semantically with `ToolbarItemGroup`; don’t manufacture visual grouping with fixed spacers. Keep unrelated actions in separate semantic placements or groups.
 - Never make destructive actions the prominent default when they can be secondary and confirmed.
 - During selection or editing modes, remove or replace conflicting global actions instead of displaying both toolbars.
-- Give every symbol-only visual action a semantic text label and preserve a 44x44-point target.
+- Give every non-text-only toolbar action both a title and a symbol, normally with `Label` or `Button(_:systemImage:action:)`, so the system can adapt it between horizontal, vertical, and overflow representations. Preserve a 44x44-point target.
 
 Before finishing, list each toolbar action and answer: does it apply to this screen now, is its placement conventional, and does it compete with the primary action?
 

@@ -9,7 +9,8 @@ Review and modify SwiftUI code for correctness, modern API usage, maintainabilit
 
 ## Project Defaults
 
-- Target iOS 26 and Swift 6 unless the project file says otherwise.
+- The deployment target is iOS 26 and the language mode is Swift 6 unless the project file says otherwise. Treat that minimum separately from knowledge of newer SDKs and HIG guidance.
+- Stable iOS 27.0 APIs are conditional enhancements, not new project defaults. Guard them with availability checks, preserve a functional iOS 26 path, and never raise the deployment target unless the user explicitly asks. Treat iOS 27.1 APIs as preview knowledge only while Apple documents them as beta: do not propose or implement them in ordinary work. Consult them only when the user explicitly asks to evaluate beta APIs, the active SDK exposes the symbols, and an iOS 26 fallback remains available.
 - Prefer SwiftUI and SwiftData; avoid UIKit and third-party frameworks unless explicitly requested.
 - Use MVVM and feature-based folders under `PersonalFinanceTraker/PersonalFinanceTraker/Features`.
 - Split meaningful types into separate files when that matches the surrounding feature.
@@ -22,10 +23,10 @@ Review and modify SwiftUI code for correctness, modern API usage, maintainabilit
 1. Read the active agent's project instructions (`AGENTS.md` for Codex, `CLAUDE.md` for Claude Code) and the relevant source/test files. Other agents should use `AGENTS.md` as the project-default entry point.
 2. For any user-facing UI, read `references/design.md` and inspect the two closest existing screens or components before proposing or implementing the design.
 3. Load only the other reference files needed for the task:
-   - `references/api.md` for deprecated or modernized APIs.
+   - `references/api.md` for deprecated or modernized APIs, including iOS 27/27.1 availability and iOS 26 fallbacks.
    - `references/views.md` for view composition, modifiers, and animation.
    - `references/data.md` for state, SwiftData, bindings, and data flow.
-   - `references/navigation.md` for navigation, sheets, alerts, and dialogs.
+   - `references/navigation.md` for navigation, adaptive primary/secondary layouts, toolbars, sheets, alerts, and dialogs.
    - `references/design.md` for HIG-oriented UI decisions.
    - `references/ui-patterns.md` when the feature includes empty/loading/error states, feedback, search/filter/sort, toolbars, or financial-value presentation.
    - `references/accessibility.md` for Dynamic Type, VoiceOver, Reduce Motion, and touch targets.
