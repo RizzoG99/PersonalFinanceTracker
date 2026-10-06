@@ -282,11 +282,10 @@ struct RecurrenceDetectorTests {
         let results = RecurrenceDetector.detect(in: inputs, existingRules: [], today: baseDate, calendar: calendar)
 
         #expect(results.count == 2)
-        // Spotify should be first (6 occurrences > 3 occurrences)
-        #expect(results[0].note.lowercased().contains("spotify"))
-        #expect(results[0].occurrenceCount == 6)
-        #expect(results[1].note.lowercased().contains("netflix"))
-        #expect(results[1].occurrenceCount == 3)
+        // Both certain, so the bigger amount leads (#207): Netflix €12 before Spotify €10.
+        #expect(results[0].note.lowercased().contains("netflix"))
+        #expect(results[1].note.lowercased().contains("spotify"))
+        #expect(results[1].occurrenceCount == 6)
     }
 
     @Test func mostCommonNote() {

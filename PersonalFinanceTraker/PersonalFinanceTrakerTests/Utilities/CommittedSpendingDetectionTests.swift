@@ -62,6 +62,49 @@ struct CommittedSpendingDetectionTests {
         #expect(results.count == 1)
     }
 
+    // MARK: - False positives (#207)
+
+    @Test func twoYearlyGiftsAreNotSuggested() {
+        // Birthday gift / San Martino outing: once a year twice is a coincidence, not a bill.
+        let results = detect([
+            input("Regalo Sofia", -10, day(2025, 12, 9)), input("Regalo Sofia", -10, day(2026, 12, 9)),
+            input("San Martino", -35, day(2024, 11, 11)), input("San Martino", -35, day(2025, 11, 11)),
+        ], today: day(2025, 11, 20))
+        #expect(results.isEmpty)
+    }
+
+    @Test func yearlyNeedsThreePaymentsOrAnIdenticalBill() {
+        let insurance = [input("Assicurazione", -420, day(2024, 3, 1)), input("Assicurazione", -420, day(2025, 3, 2))]
+        let results = detect(insurance, today: day(2025, 3, 10))
+        #expect(results.count == 1)
+        #expect(results.first?.isHighConfidence == false)   // shown, but starts unchecked
+
+        // A gap 30 days off a year (±10 % used to pass) is not yearly.
+        let drifted = [input("Assicurazione", -420, day(2024, 3, 1)), input("Assicurazione", -420, day(2025, 3, 31))]
+        #expect(detect(drifted, today: day(2025, 4, 5)).isEmpty)
+    }
+
+    @Test func smallAmountsAndFrequentMerchantsAreNotSuggested() {
+        #expect(detect([
+            input("Caffè", -1.20, day(2026, 8, 5)), input("Caffè", -1.20, day(2026, 9, 5)),
+        ], today: day(2026, 9, 10)).isEmpty)
+
+        // Metro: many tickets at other prices; the two €4.50 a month apart are a coincidence.
+        var metro = [input("Metro Roma", -4.50, day(2026, 8, 5)), input("Metro Roma", -4.50, day(2026, 9, 5))]
+        metro += (1...6).map { input("Metro Roma", -1.50, day(2026, 8, $0 * 4)) }
+        #expect(detect(metro, today: day(2026, 9, 10)).isEmpty)
+    }
+
+    @Test func strongSuggestionsStartCheckedAndComeFirst() {
+        let results = detect([
+            input("Affitto", -700, day(2026, 8, 1)), input("Affitto", -700, day(2026, 9, 1)),
+            input("App", -6, day(2026, 8, 3)), input("App", -6, day(2026, 9, 3)),
+        ], today: day(2026, 9, 10))
+        #expect(results.map(\.note) == ["Affitto", "App"])
+        #expect(results[0].isHighConfidence)
+        #expect(results[1].isHighConfidence == false)   // €6 twice: plausible, not proven
+    }
+
     @Test func variableAmountsNeedThreePaymentsWithinTolerance() {
         let two = [input("Enel", -80, day(2026, 8, 10)), input("Enel", -88, day(2026, 9, 10))]
         #expect(detect(two, today: day(2026, 9, 20)).isEmpty)
@@ -141,7 +184,9 @@ struct CommittedSpendingDetectionTests {
         #expect(rule.startDate == day(2026, 9, 1))
         #expect(rule.lastMaterializedDate == day(2026, 9, 1))
         #expect(rule.autoRecord == false)
-        #expect(suggestion.ruleInput(autoRecord: true).autoRecord == true)
+        // Two payments are enough to plan for it, not to record it automatically.
+        #expect(suggestion.offersAutoRecord == false)
+        #expect(suggestion.ruleInput(autoRecord: true).autoRecord == false)
     }
 
     // MARK: - Forecast-only matching
@@ -205,8 +250,10 @@ struct CommittedSpendingDetectionTests {
         let first = day(2026, 9, 3).addingTimeInterval(2 * 3600)
         let last = day(2026, 10, 3).addingTimeInterval(2 * 3600 - 317)
         let suggestion = try #require(detect([
+            input("Netflix", -8.99, first.addingTimeInterval(-31 * 86_400)),
             input("Netflix", -8.99, first), input("Netflix", -8.99, last),
         ], today: day(2026, 10, 4)).first)
+        #expect(suggestion.offersAutoRecord)
         let ruleInput = suggestion.ruleInput(autoRecord: true)
         let repo = MockTransactionRepository()
         repo.stubbedRecurrenceRules = [.test(

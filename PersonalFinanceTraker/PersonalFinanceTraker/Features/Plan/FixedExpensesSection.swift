@@ -291,7 +291,7 @@ private struct FixedExpenseSuggestionCard: View {
                 }
                 .accessibilityElement(children: .combine)
 
-                if suggestion.amountsIdentical {
+                if suggestion.offersAutoRecord {
                     Toggle("Record it for me each time", isOn: $autoRecord)
                         .font(.subheadline)
                         .tint(.accentIndigo)

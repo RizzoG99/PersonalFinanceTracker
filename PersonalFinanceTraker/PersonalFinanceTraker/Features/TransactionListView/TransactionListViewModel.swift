@@ -491,8 +491,25 @@ final class TransactionListViewModel {
     var mappedRows: [MappedRow] = []
     var recurrenceSuggestions: [RecurrenceSuggestion] = []
     var selectedSuggestionIds: Set<UUID> = []
-    /// Checked suggestions the user also wants recorded every cycle (identical amounts only).
-    var autoRecordSuggestionIds: Set<UUID> = []
+    /// Suggestions the user unchecked themselves — the only ones remembered as "Not fixed". One
+    /// that started unchecked (low confidence) and was never touched stays suggestible in Plan.
+    private(set) var rejectedSuggestionIds: Set<UUID> = []
+
+    func toggleSuggestion(_ id: UUID) {
+        if selectedSuggestionIds.remove(id) != nil {
+            rejectedSuggestionIds.insert(id)
+        } else {
+            selectedSuggestionIds.insert(id)
+            rejectedSuggestionIds.remove(id)
+        }
+    }
+
+    /// Checks every suggestion, or unchecks every one (each then counts as rejected).
+    func setAllSuggestions(selected: Bool) {
+        let all = Set(recurrenceSuggestions.map(\.id))
+        selectedSuggestionIds = selected ? all : []
+        rejectedSuggestionIds = selected ? [] : all
+    }
     var importedTransactionCount = 0
     var availableCategories: [CategorySnapshot] = []
     var showingImportFlow = false
@@ -641,7 +658,7 @@ final class TransactionListViewModel {
         csvCategoryTypes = [:]
         recurrenceSuggestions = []
         selectedSuggestionIds = []
-        autoRecordSuggestionIds = []
+        rejectedSuggestionIds = []
         importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
@@ -670,7 +687,7 @@ final class TransactionListViewModel {
         mappedRows = []
         recurrenceSuggestions = []
         selectedSuggestionIds = []
-        autoRecordSuggestionIds = []
+        rejectedSuggestionIds = []
         importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
@@ -885,8 +902,9 @@ final class TransactionListViewModel {
             existingRules: existingRules,
             dismissed: DismissedRecurrencePatterns.all
         )
-        selectedSuggestionIds = Set(recurrenceSuggestions.map(\.id))
-        autoRecordSuggestionIds = []
+        // Only strong evidence starts checked; a maybe needs the user's tap (#188 audit).
+        selectedSuggestionIds = Set(recurrenceSuggestions.filter(\.isHighConfidence).map(\.id))
+        rejectedSuggestionIds = []
     }
 
     private static func duplicateKey(timestamp: Date, amount: Decimal, note: String) -> String {
@@ -1106,14 +1124,15 @@ final class TransactionListViewModel {
         var added = 0
         for suggestion in recurrenceSuggestions where selectedSuggestionIds.contains(suggestion.id) {
             do {
-                try await repo.addRecurrenceRule(suggestion.ruleInput(autoRecord: autoRecordSuggestionIds.contains(suggestion.id)))
+                // Forecast-only: auto-record is offered later, from Plan's card.
+                try await repo.addRecurrenceRule(suggestion.ruleInput(autoRecord: false))
                 added += 1
             } catch {
                 importError = String(localized: "Failed to save recurrence rule: \(error.localizedDescription)")
                 return added
             }
         }
-        DismissedRecurrencePatterns.dismiss(recurrenceSuggestions.filter { !selectedSuggestionIds.contains($0.id) })
+        DismissedRecurrencePatterns.dismiss(recurrenceSuggestions.filter { rejectedSuggestionIds.contains($0.id) })
         return added
     }
 }

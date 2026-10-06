@@ -390,18 +390,18 @@
         }
       }
     },
-    "%@, %@, %@, next %@, seen %lld times" : {
+    "%@, %@, %@, %lld payments, next %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@, %2$@, %3$@, next %4$@, seen %5$lld times"
+            "value" : "%1$@, %2$@, %3$@, %4$lld payments, next %5$@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@, %2$@, %3$@, prossimo il %4$@, visto %5$lld volte"
+            "value" : "%1$@, %2$@, %3$@, %4$lld pagamenti, prossimo %5$@"
           }
         }
       }
@@ -1359,6 +1359,22 @@
         }
       }
     },
+    "about %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "about %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "circa %@"
+          }
+        }
+      }
+    },
     "about the same as previous period" : {
       "localizations" : {
         "en" : {
@@ -1846,6 +1862,22 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Adds it to Coming up" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adds it to Coming up"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aggiunge a In arrivo"
           }
         }
       }
@@ -2963,18 +2995,18 @@
         }
       }
     },
-    "Checked ones are planned for as fixed expenses — we won't add transactions without your permission. Unchecked ones won't be suggested again." : {
+    "Checked ones are planned for in Coming up" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Checked ones are planned for as fixed expenses — we won't add transactions without your permission. Unchecked ones won't be suggested again."
+            "value" : "Checked ones are planned for in Coming up"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quelle selezionate vengono previste come spese fisse: non aggiungeremo transazioni senza il tuo permesso. Quelle non selezionate non verranno più suggerite."
+            "value" : "Quelle selezionate vengono previste in In arrivo"
           }
         }
       }
@@ -2992,6 +3024,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quelle selezionate diventeranno regole di ricorrenza al momento dell'importazione. Deseleziona quelle che non vuoi tracciare."
+          }
+        }
+      }
+    },
+    "Checked ones go to Coming up — we won't add transactions without your permission. Ones you uncheck won't be suggested again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked ones go to Coming up — we won't add transactions without your permission. Ones you uncheck won't be suggested again."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle selezionate vanno in In arrivo: non aggiungeremo transazioni senza il tuo permesso. Quelle che deselezioni non verranno più suggerite."
           }
         }
       }
@@ -3333,6 +3381,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scontrino illeggibile: prova con più luce, oppure inseriscilo a mano"
+          }
+        }
+      }
+    },
+    "Couldn't save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare"
+          }
+        }
+      }
+    },
+    "Couldn't save %@. Please try again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save %@. Please try again."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare %@. Riprova."
           }
         }
       }
@@ -3923,6 +4003,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descrizione"
+          }
+        }
+      }
+    },
+    "Deselect all" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselect all"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deseleziona tutto"
           }
         }
       }
@@ -6883,18 +6979,21 @@
       }
     },
     "next %@" : {
-      "extractionState" : "manual",
+      "comment" : "A subheading that shows the cadence of a recurring rule, including the next date it will occur.",
+      "isCommentAutoGenerated" : true
+    },
+    "Next %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "next %@"
+            "value" : "Next %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "prossima il %@"
+            "value" : "Prossimo: %@"
           }
         }
       }
@@ -7151,22 +7250,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessun limite"
-          }
-        }
-      }
-    },
-    "No longer" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No longer"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non più"
           }
         }
       }
@@ -8070,6 +8153,38 @@
         }
       }
     },
+    "Plan %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevedi %lld"
+          }
+        }
+      }
+    },
+    "Plan for it" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan for it"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevedila"
+          }
+        }
+      }
+    },
     "Plan what's ahead" : {
       "localizations" : {
         "en" : {
@@ -8082,6 +8197,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pianifica cosa ti aspetta"
+          }
+        }
+      }
+    },
+    "Planning for them adds them to Coming up. We won't add transactions without your permission." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planning for them adds them to Coming up. We won't add transactions without your permission."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevederle le aggiunge a In arrivo. Non aggiungeremo transazioni senza il tuo permesso."
           }
         }
       }
@@ -9242,6 +9373,22 @@
         }
       }
     },
+    "Select all" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select all"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona tutto"
+          }
+        }
+      }
+    },
     "Select All" : {
       "localizations" : {
         "en" : {
@@ -9772,6 +9919,22 @@
         }
       }
     },
+    "Skips this payment and keeps planning the next ones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skips this payment and keeps planning the next ones"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salta questo pagamento e continua a prevedere i prossimi"
+          }
+        }
+      }
+    },
     "Solid with room to grow" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9981,6 +10144,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Passaggio %lld di %lld"
+          }
+        }
+      }
+    },
+    "Still paying" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Still paying"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La pago ancora"
+          }
+        }
+      }
+    },
+    "Stopped paying" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stopped paying"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non la pago più"
+          }
+        }
+      }
+    },
+    "Stopped planning for %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stopped planning for %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ non è più prevista"
           }
         }
       }
@@ -10251,22 +10462,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il tipo di transazione nel CSV determina il tipo di questa categoria."
-          }
-        }
-      }
-    },
-    "These look like fixed expenses. Checked ones are planned for as coming up — we won't add transactions without your permission." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "These look like fixed expenses. Checked ones are planned for as coming up — we won't add transactions without your permission."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sembrano spese fisse. Quelle selezionate vengono previste tra le prossime uscite: non aggiungeremo transazioni senza il tuo permesso."
           }
         }
       }
@@ -11500,6 +11695,22 @@
         }
       }
     },
+    "Won't suggest %@ again" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Won't suggest %@ again"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ non verrà più suggerita"
+          }
+        }
+      }
+    },
     "Won't suggest this payment again" : {
       "localizations" : {
         "en" : {
@@ -11580,22 +11791,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "anni"
-          }
-        }
-      }
-    },
-    "Yes" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yes"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sì"
           }
         }
       }
@@ -11796,166 +11991,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La tua spesa varia del %lld%% di mese in mese. Punta a meno del 10%% per il punteggio massimo."
-          }
-        }
-      }
-    },
-    "Planning for them adds them to Coming up. We won't add transactions without your permission." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planning for them adds them to Coming up. We won't add transactions without your permission."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prevederle le aggiunge a In arrivo. Non aggiungeremo transazioni senza il tuo permesso."
-          }
-        }
-      }
-    },
-    "Plan for it" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plan for it"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prevedila"
-          }
-        }
-      }
-    },
-    "Adds it to Coming up" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adds it to Coming up"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La aggiunge a In arrivo"
-          }
-        }
-      }
-    },
-    "Stopped paying" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stopped paying"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non la pago più"
-          }
-        }
-      }
-    },
-    "Still paying" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Still paying"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La pago ancora"
-          }
-        }
-      }
-    },
-    "Skips this payment and keeps planning the next ones" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skips this payment and keeps planning the next ones"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Salta questo pagamento e continua a prevedere i prossimi"
-          }
-        }
-      }
-    },
-    "Couldn't save %@. Please try again." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't save %@. Please try again."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossibile salvare %@. Riprova."
-          }
-        }
-      }
-    },
-    "Won't suggest %@ again" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Won't suggest %@ again"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ non verrà più suggerita"
-          }
-        }
-      }
-    },
-    "Stopped planning for %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stopped planning for %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ non è più prevista"
-          }
-        }
-      }
-    },
-    "Couldn't save" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't save"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossibile salvare"
           }
         }
       }

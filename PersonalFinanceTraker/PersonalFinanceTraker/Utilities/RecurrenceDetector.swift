@@ -20,6 +20,21 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
     /// Auto-record is only offered when every payment was the same amount (#188).
     var amountsIdentical = true
 
+    /// Strong enough evidence to start checked on the import step. Weaker suggestions are still
+    /// shown, unchecked: one tap away, but never planned for by default.
+    var isHighConfidence: Bool {
+        let size = abs(amount)
+        switch frequency {
+        case .weekly, .monthly:
+            return occurrenceCount >= 3 || (amountsIdentical && size >= 15)
+        case .yearly:
+            return occurrenceCount >= 3 && size >= 20
+        }
+    }
+
+    /// Recording transactions for the user needs more than two matching payments.
+    var offersAutoRecord: Bool { amountsIdentical && occurrenceCount >= 3 }
+
     /// A forecast-only rule (or auto-record, when the user opts in) anchored on the latest payment,
     /// which is also its cursor: that payment is covered, the next is one cycle later. Anchoring on
     /// the first payment instead put due dates on its day of the month, so a series that drifted a
@@ -31,7 +46,7 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
             interval: interval,
             startDate: occurrenceDates[occurrenceDates.count - 1],
             lastMaterializedDate: occurrenceDates.last,
-            autoRecord: autoRecord && amountsIdentical,
+            autoRecord: autoRecord && offersAutoRecord,
             amount: amount,
             note: note,
             category: category,
@@ -53,6 +68,8 @@ struct DismissedRecurrencePattern: Codable, Hashable, Sendable {
 enum RecurrenceDetector {
     /// Amounts within this fraction of each other count as the same bill.
     static let amountTolerance: Decimal = 0.15
+    /// Below this a repeat is a ticket or a coffee, not a bill.
+    static let minimumAmount: Decimal = 5
 
     static func detect(
         in inputs: [TransactionInput],
@@ -73,10 +90,23 @@ enum RecurrenceDetector {
                 let amounts = Set(group.map { $0.amount.roundedToCents })
                 let identical = amounts.count == 1
                 guard group.count >= (identical ? 2 : 3) else { continue }
+                let size = abs(median(group.map(\.amount)))
+                guard size >= minimumAmount else { continue }
+                // Everyday spending: a merchant paid often at many prices (transit, groceries) can
+                // have one price bucket that happens to look periodic. A bill is most of its payments.
+                guard group.count * 2 >= rows.count else { continue }
 
                 let dates = group.map(\.timestamp).sorted()
                 guard let cadence = inferFrequency(from: dates, calendar: calendar),
                       isSupported(cadence) else { continue }
+                // Two payments a year apart is the weakest evidence there is (birthday gifts pass
+                // it): yearly needs a third payment, or two identical ones that look like a bill.
+                // Every gap within the yearly match window, so a pattern isn't missed on day one.
+                if cadence.frequency == .yearly {
+                    guard group.count >= 3 || (identical && size >= 50) else { continue }
+                    let gaps = zip(dates, dates.dropFirst()).map { $1.timeIntervalSince($0) / 86_400 }
+                    guard gaps.allSatisfy({ abs($0 - 365.25) <= 14 }) else { continue }
+                }
 
                 // Recency gate: the next payment's match window must still be open, or a
                 // subscription cancelled last year would be suggested (and instantly "missed").
@@ -116,10 +146,11 @@ enum RecurrenceDetector {
             }
         }
 
+        // Likeliest and biggest first: rent before a €6 subscription before a maybe.
         return suggestions.sorted { a, b in
-            if a.occurrenceCount != b.occurrenceCount {
-                return a.occurrenceCount > b.occurrenceCount
-            }
+            if a.isHighConfidence != b.isHighConfidence { return a.isHighConfidence }
+            if abs(a.amount) != abs(b.amount) { return abs(a.amount) > abs(b.amount) }
+            if a.occurrenceCount != b.occurrenceCount { return a.occurrenceCount > b.occurrenceCount }
             return a.note < b.note
         }
     }

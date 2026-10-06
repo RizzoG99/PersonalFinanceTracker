@@ -316,29 +316,29 @@ struct ImportRecurrenceWiringTests {
         #expect(rule.lastMaterializedDate == last)
     }
 
-    @Test @MainActor func autoRecordOnlyWhenChosenAndAmountsIdentical() async {
+    @Test @MainActor func onlyExplicitlyUncheckedSuggestionsAreRemembered() async {
         let repo = MockTransactionRepository()
         let vm = await makeVM(repo)
-        let dates = [Date().addingTimeInterval(-86400 * 30), Date()]
-        let identical = RecurrenceSuggestion(
-            frequency: .monthly, interval: 1, amount: -10, note: "Netflix", category: "Fun",
-            currencyCode: "EUR", categoryPersistentId: nil, occurrenceCount: 2,
-            nextDate: Date().addingTimeInterval(86400), occurrenceDates: dates
-        )
-        let variable = RecurrenceSuggestion(
-            frequency: .monthly, interval: 1, amount: -80, note: "Power", category: "Bills",
-            currencyCode: "EUR", categoryPersistentId: nil, occurrenceCount: 3,
-            nextDate: Date().addingTimeInterval(86400), occurrenceDates: dates, amountsIdentical: false
-        )
-        vm.recurrenceSuggestions = [identical, variable]
-        vm.selectedSuggestionIds = [identical.id, variable.id]
-        vm.autoRecordSuggestionIds = [identical.id, variable.id]
+        func suggestion(_ note: String) -> RecurrenceSuggestion {
+            RecurrenceSuggestion(
+                frequency: .monthly, interval: 1, amount: -50, note: note, category: "Bills",
+                currencyCode: "EUR", categoryPersistentId: nil, occurrenceCount: 3,
+                nextDate: Date().addingTimeInterval(86400), occurrenceDates: [Date()]
+            )
+        }
+        let untouched = suggestion("Maybe A"), rejected = suggestion("Rejected B"), kept = suggestion("Kept C")
+        vm.recurrenceSuggestions = [untouched, rejected, kept]
+        vm.selectedSuggestionIds = [rejected.id, kept.id]   // "Maybe A" started unchecked
+        vm.toggleSuggestion(rejected.id)                      // the user unchecks B
 
         await vm.addSelectedRecurrenceRules()
 
-        let byNote = Dictionary(uniqueKeysWithValues: repo.addRecurrenceRuleCalls.map { ($0.note, $0.autoRecord) })
-        #expect(byNote["Netflix"] == true)
-        #expect(byNote["Power"] == false)
+        #expect(repo.addRecurrenceRuleCalls.map(\.note) == ["Kept C"])
+        #expect(repo.addRecurrenceRuleCalls.allSatisfy { !$0.autoRecord })
+        let dismissed = DismissedRecurrencePatterns.all.map(\.note)
+        #expect(dismissed.contains("rejected b"))
+        #expect(!dismissed.contains("maybe a"))
+        DismissedRecurrencePatterns.removeAll()
     }
 
     // MARK: - Test 8: cancelImport clears all import state
@@ -364,7 +364,7 @@ struct ImportRecurrenceWiringTests {
             )
         ]
         vm.selectedSuggestionIds = Set(vm.recurrenceSuggestions.map(\.id))
-        vm.autoRecordSuggestionIds = Set(vm.recurrenceSuggestions.map(\.id))
+        vm.toggleSuggestion(vm.recurrenceSuggestions[0].id)   // leaves a rejection behind
         vm.importedTransactionCount = 42
         vm.showingImportFlow = true
 
@@ -374,7 +374,7 @@ struct ImportRecurrenceWiringTests {
         // Assert: all import state is cleared
         #expect(vm.recurrenceSuggestions.isEmpty)
         #expect(vm.selectedSuggestionIds.isEmpty)
-        #expect(vm.autoRecordSuggestionIds.isEmpty)
+        #expect(vm.rejectedSuggestionIds.isEmpty)
         #expect(vm.importedTransactionCount == 0)
         #expect(vm.showingImportFlow == false)
     }
