@@ -176,8 +176,8 @@ final class EditAddTransactionViewModel {
                 }
             }
 
-            // Pre-select goal when editing a transfer
-            if let editingItem = editingItem, let goalId = editingItem.goalId {
+            // Pre-select goal when editing a transfer or a goal-linked rule
+            if let goalId = editingItem?.goalId ?? editingRule?.goalId {
                 selectedGoal = availableGoals.first { $0.id == goalId }
             }
 
@@ -201,12 +201,9 @@ final class EditAddTransactionViewModel {
 
     /// Transaction types offered in the picker. Transfer needs a goal to move money into, so it is
     /// hidden when there are no goals — unless the form is already on Transfer (editing an existing
-    /// transfer, or goals still loading), so we never hide the currently-selected type. Also hidden
-    /// in rule-edit mode: switching an "Edit Recurring" sheet to Transfer would clear `isRecurring`
-    /// (see the Type picker's onChange), collapsing the Repeat section this sheet exists to show
-    /// with no toggle left to bring it back — goal-linked recurrence isn't supported anyway.
+    /// transfer, or goals still loading), so we never hide the currently-selected type.
     var availableTypes: [TransactionType] {
-        if editingRule != nil || (availableGoals.isEmpty && transactionType != .transfer) {
+        if availableGoals.isEmpty && transactionType != .transfer {
             return TransactionType.allCases.filter { $0 != .transfer }
         }
         return TransactionType.allCases
@@ -408,10 +405,9 @@ final class EditAddTransactionViewModel {
         )
     }
 
-    /// nil when not recurring, editing an existing transaction, or the type is Transfer
-    /// (goal-linked recurrence is deferred — see docs/superpowers/specs/2026-08-02-recurring-transactions-design.md).
+    /// nil when not recurring or editing an existing transaction. Transfers keep `goalId` (#209).
     func buildRecurrenceRuleInput() -> RecurrenceRuleInput? {
-        guard isRecurring, editingItem == nil, transactionType != .transfer,
+        guard isRecurring, editingItem == nil,
               let input = buildInput() else { return nil }
         return RecurrenceRuleInput(
             frequency: recurrenceFrequency,
@@ -502,7 +498,7 @@ final class EditAddTransactionViewModel {
         amount = abs(Double(truncating: rule.amount as NSDecimalNumber))
         transactionName = rule.note
         currencyCode = rule.currencyCode
-        transactionType = rule.amount < 0 ? .expense : .income
+        transactionType = rule.goalId != nil ? .transfer : rule.amount < 0 ? .expense : .income
         isRecurring = true
         recurrenceFrequency = rule.frequency
         recurrenceInterval = rule.interval

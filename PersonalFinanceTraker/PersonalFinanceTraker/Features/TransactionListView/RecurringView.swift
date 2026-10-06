@@ -156,11 +156,11 @@ private struct RecurringRulesContent: View {
         rules.filter { $0.endDate == nil || $0.endDate! >= .now }
     }
 
-    /// Same note + same cadence among active rules is almost certainly one series detected
+    /// Same title + same cadence among active rules is almost certainly one series detected
     /// twice, not two real commitments — flagged rather than auto-merged, since merging means
     /// picking which rule's history and cursor survive.
     private var duplicateRuleIDs: Set<UUID> {
-        let groups = Dictionary(grouping: activeRules) { "\($0.note.lowercased())#\($0.frequency.rawValue)#\($0.interval)" }
+        let groups = Dictionary(grouping: activeRules) { "\($0.title.lowercased())#\($0.frequency.rawValue)#\($0.interval)" }
         return Set(groups.values.filter { $0.count > 1 }.flatMap { $0.map(\.id) })
     }
 
@@ -268,7 +268,7 @@ private struct RecurringRulesContent: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
-                    Text(rule.note)
+                    Text(rule.title)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.textPrimary)
                     if duplicateRuleIDs.contains(rule.id) {

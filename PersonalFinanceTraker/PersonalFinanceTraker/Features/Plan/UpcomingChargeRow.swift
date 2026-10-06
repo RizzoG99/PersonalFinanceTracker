@@ -11,11 +11,7 @@ struct UpcomingChargeRow: View {
     /// Home's flat preview has no day headers, so the row carries its own day.
     var showsDay = false
 
-    private var title: String {
-        charge.rule.note.isEmpty
-            ? charge.rule.category.removingLeadingEmoji.localizedCategoryDisplay
-            : charge.rule.note
-    }
+    private var title: String { charge.rule.title }
 
     var body: some View {
         HStack(spacing: 12) {

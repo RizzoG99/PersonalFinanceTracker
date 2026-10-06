@@ -9903,6 +9903,22 @@
         }
       }
     },
+    "Skips this transfer and keeps planning the next ones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skips this transfer and keeps planning the next ones"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salta questo trasferimento e continua a prevedere i prossimi"
+          }
+        }
+      }
+    },
     "Skips this payment and keeps planning the next ones" : {
       "localizations" : {
         "en" : {
@@ -10132,6 +10148,38 @@
         }
       }
     },
+    "Still saving for %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Still saving for %@?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Risparmi ancora per %@?"
+          }
+        }
+      }
+    },
+    "Still saving" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Still saving"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuo a risparmiare"
+          }
+        }
+      }
+    },
     "Still paying" : {
       "localizations" : {
         "en" : {
@@ -10144,6 +10192,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La pago ancora"
+          }
+        }
+      }
+    },
+    "Stopped saving" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stopped saving"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ho smesso di risparmiare"
           }
         }
       }
@@ -10176,6 +10240,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ non è più prevista"
+          }
+        }
+      }
+    },
+    "Stops planning for this transfer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stops planning for this transfer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smette di prevedere questo trasferimento"
           }
         }
       }

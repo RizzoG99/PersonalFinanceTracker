@@ -189,6 +189,61 @@ struct CommittedSpendingDetectionTests {
         #expect(suggestion.ruleInput(autoRecord: true).autoRecord == false)
     }
 
+    // MARK: - Goal transfers (#209)
+
+    private func transfer(_ goalId: UUID, _ amount: Decimal, _ date: Date) -> TransactionInput {
+        TransactionInput(timestamp: date, amount: amount, note: "", category: "→ Emergency fund", currencyCode: "EUR", goalId: goalId)
+    }
+
+    @Test func namelessGoalTransfersAreGroupedByGoal() {
+        let goal = UUID()
+        let inputs = [
+            transfer(goal, -200, day(2026, 7, 1)), transfer(goal, -200, day(2026, 8, 1)),
+            transfer(goal, -200, day(2026, 9, 1)),
+            // Another goal, same amount and day: its own commitment, not merged into the first.
+            transfer(UUID(), -200, day(2026, 9, 1)),
+        ]
+        let results = detect(inputs, today: day(2026, 9, 3))
+        #expect(results.count == 1)
+        let suggestion = try! #require(results.first)
+        #expect(suggestion.goalId == goal)
+        // Same auto-record rule as expenses: three identical amounts.
+        #expect(suggestion.offersAutoRecord)
+        #expect(suggestion.ruleInput(autoRecord: false).goalId == goal)
+    }
+
+    @Test func existingOrDismissedGoalRuleSkipsTheSuggestion() {
+        let goal = UUID()
+        let inputs = [transfer(goal, -200, day(2026, 8, 1)), transfer(goal, -200, day(2026, 9, 1))]
+        let today = day(2026, 9, 3)
+        let suggestion = try! #require(detect(inputs, today: today).first)
+        #expect(detect(inputs, today: today, dismissed: [RecurrenceDetector.dismissalPattern(for: suggestion)]).isEmpty)
+
+        let goalRule = RecurrenceRuleSnapshot.test(startDate: day(2026, 1, 1), amount: -200, category: "→ Emergency fund", goalId: goal)
+        #expect(detect(inputs, today: today, rules: [goalRule]).isEmpty)
+        // A nameless expense rule of the same amount is a different commitment.
+        let expenseRule = RecurrenceRuleSnapshot.test(startDate: day(2026, 1, 1), amount: -200, category: "Bills")
+        #expect(detect(inputs, today: today, rules: [expenseRule]).count == 1)
+    }
+
+    @Test func goalRuleIsPaidOnlyByATransferToThatGoal() {
+        let goal = UUID()
+        let rule = RecurrenceRuleSnapshot.test(
+            startDate: day(2026, 1, 1), lastMaterializedDate: day(2026, 9, 1), autoRecord: false,
+            amount: -200, category: "→ Emergency fund", goalId: goal
+        )
+        let expense = TransactionSnapshot.test(timestamp: day(2026, 10, 1), amount: -200, category: "Bills")
+        #expect(RecurrenceDetector.paidThrough(rule: rule, transactions: [expense], today: day(2026, 10, 2), calendar: calendar) == nil)
+
+        let paid = RecurrenceDetector.paidThrough(
+            rule: rule,
+            transactions: [expense, .test(timestamp: day(2026, 10, 2), amount: -200, category: "→ Emergency fund", goalId: goal)],
+            today: day(2026, 10, 2),
+            calendar: calendar
+        )
+        #expect(paid?.cursor == day(2026, 10, 1))
+    }
+
     // MARK: - Forecast-only matching
 
     private func forecastRule(cursor: Date, amount: Decimal = -80) -> RecurrenceRuleSnapshot {
