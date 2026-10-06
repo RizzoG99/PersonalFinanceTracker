@@ -43,6 +43,9 @@ struct DashboardView: View {
                             }
                         }
                     }
+                    if !viewModel.upcomingWeek.isEmpty {
+                        UpcomingPreviewCard(charges: viewModel.upcomingWeek) { selectedTab = .plan }
+                    }
                     if viewModel.hasNoTransactions {
                         EmptyStateView(
                             icon: "plus.circle",

@@ -30,7 +30,19 @@ struct PlanView: View {
     @State private var showingBudgets = false
     @State private var committedSpending = CommittedSpendingModel()
 
-    private var upcoming: [UpcomingCharge] { UpcomingCharge.next(rules: rules) }
+    private var upcoming: [UpcomingCharge] { UpcomingCharge.timeline(rules: rules) }
+    /// Rules not yet stopped (e.g. "Stopped paying", #188, ends one): a store with only stopped
+    /// rules gets the "No recurring payments" empty state, not "Nothing due".
+    private var hasActiveRules: Bool {
+        let today = Calendar.current.startOfDay(for: .now)
+        return rules.contains { $0.endDate.map { $0 >= today } ?? true }
+    }
+    /// The timeline by day (#189), empty days left out.
+    private var upcomingDays: [(day: Date, charges: [UpcomingCharge])] {
+        Dictionary(grouping: upcoming) { Calendar.current.startOfDay(for: $0.date) }
+            .map { (day: $0.key, charges: $0.value) }
+            .sorted { $0.day < $1.day }
+    }
     private var budgets: [BudgetProgress] { dashboardViewModel.budgetProgress }
     private var goals: [GoalSnapshot] { compassViewModel.goals }
 
@@ -44,7 +56,7 @@ struct PlanView: View {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                         .padding(.top, 80)
-                } else if upcoming.isEmpty && budgets.isEmpty && goals.isEmpty {
+                } else if !hasActiveRules && budgets.isEmpty && goals.isEmpty {
                     // A store with history but no plan yet is exactly where fixed expenses get found.
                     if !committedSpending.isEmpty {
                         FixedExpensesSection(model: committedSpending)
@@ -152,10 +164,10 @@ struct PlanView: View {
 
     private var recurringSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Coming up", subtitle: "Your next recurring payments") {
+            sectionHeader("Coming up", subtitle: "Next 14 days") {
                 Button("See all") { showingRecurringView = true }
             }
-            if upcoming.isEmpty {
+            if !hasActiveRules {
                 EmptyStateView(
                     icon: "repeat",
                     message: "No recurring payments",
@@ -163,18 +175,36 @@ struct PlanView: View {
                     actionTitle: "Add recurring payment",
                     action: { showingAddRecurring = true }
                 )
-            } else {
+            } else if upcoming.isEmpty {
                 GlassCard {
-                    VStack(spacing: 8) {
-                        ForEach(upcoming) { charge in
-                            // Opens the rule itself (same edit surface as "See all"), not one
-                            // past occurrence — the row is about the commitment.
-                            Button { editingRule = charge.rule } label: {
-                                UpcomingChargeRow(charge: charge)
+                    Text("Nothing due in the next 14 days.")
+                        .font(.subheadline)
+                        .foregroundStyle(.textMid)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                let totals = UpcomingCharge.totals(upcoming)
+                Text("In \(totals.inflow.formattedEUR()) · Out \(totals.outflow.formattedEUR())")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.textMid)
+                    .privacyBlur()
+                GlassCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(upcomingDays, id: \.day) { group in
+                            Text(UpcomingChargeRow.dayLabel(for: group.day))
+                                .font(.caption.bold())
+                                .foregroundStyle(.textDim)
+                                .accessibilityAddTraits(.isHeader)
+                            ForEach(group.charges) { charge in
+                                // Opens the rule itself (same edit surface as "See all"), not one
+                                // occurrence — the row is about the commitment.
+                                Button { editingRule = charge.rule } label: {
+                                    UpcomingChargeRow(charge: charge)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityHint("Edits this recurring payment")
                             }
-                            .buttonStyle(.plain)
-                            .accessibilityHint("Edits this recurring payment")
-                            if charge.id != upcoming.last?.id {
+                            if group.day != upcomingDays.last?.day {
                                 Divider()
                                     .padding(.horizontal, -16)
                             }
@@ -251,55 +281,6 @@ struct PlanView: View {
                 .tint(.accentIndigo)
                 .frame(minHeight: 44)
         }
-    }
-}
-
-private struct UpcomingChargeRow: View {
-    let charge: UpcomingCharge
-
-    private var title: String {
-        charge.rule.note.isEmpty
-            ? charge.rule.category.removingLeadingEmoji.localizedCategoryDisplay
-            : charge.rule.note
-    }
-
-    /// Day-based, not `.relative`: a charge due earlier today would otherwise read "10 hours ago".
-    private var whenLabel: String {
-        let calendar = Calendar.current
-        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: .now), to: calendar.startOfDay(for: charge.date)).day ?? 0
-        let day = charge.date.formatted(.dateTime.day().month(.abbreviated))
-        return switch days {
-        case 0: String(localized: "Today · \(day)")
-        case 1: String(localized: "Tomorrow · \(day)")
-        default: String(localized: "In \(days) days · \(day)")
-        }
-    }
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: CategoryInfo.info(for: charge.rule.category).symbol)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(CategoryInfo.info(for: charge.rule.category).color)
-                .frame(width: 32, height: 32)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(.textPrimary)
-                    .lineLimit(2)
-                Text(whenLabel)
-                    .font(.caption)
-                    .foregroundStyle(.textDim)
-            }
-            Spacer()
-            Text(charge.rule.amount.formattedEUR())
-                .font(.headline)
-                .foregroundStyle(.textPrimary)
-                .privacyBlur()
-        }
-        // The whole row is the tap target, not just its text — a Spacer isn't hit-testable.
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
     }
 }
 

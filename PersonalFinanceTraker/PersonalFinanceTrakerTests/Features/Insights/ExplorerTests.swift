@@ -154,18 +154,55 @@ struct ExplorerBreakdownTests {
 }
 
 struct UpcomingChargeTests {
-    @Test func soonestNextExpenseChargePerRuleStillToHappen() {
+    @Test func everyOccurrenceInTheNext14DaysIncomeIncluded() {
         let now = date(2026, 9, 15, 18)
         let rules: [RecurrenceRuleSnapshot] = [
-            .test(startDate: date(2026, 1, 20, 9), amount: -13, category: "Netflix"),
-            .test(startDate: date(2026, 1, 15, 8), amount: -800, category: "Rent"),        // today 08:00 already happened → Oct 15
+            .test(frequency: .weekly, startDate: date(2026, 9, 2, 9), amount: -10, category: "Weekly"),  // Sep 16, Sep 23
+            .test(startDate: date(2026, 1, 15, 8), amount: -800, category: "Rent"),        // today 08:00 already happened → Oct 15: out
             .test(startDate: date(2026, 1, 15, 22), amount: -9, category: "Gym"),         // today 22:00 still ahead
-            .test(startDate: date(2026, 1, 27, 9), amount: 2000, category: "Salary"),     // income: skipped
+            .test(startDate: date(2026, 1, 27, 9), amount: 2000, category: "Salary"),
             .test(startDate: date(2026, 1, 16, 9), endDate: date(2026, 6, 1), amount: -5, category: "Ended"),
+            .test(startDate: date(2026, 1, 28, 9), amount: -50, category: "→ Trip", goalId: UUID()),
         ]
-        let charges = UpcomingCharge.next(rules: rules, now: now, calendar: utc)
-        #expect(charges.map(\.rule.category) == ["Gym", "Netflix", "Rent"])
-        #expect(charges.last?.date == date(2026, 10, 15, 8))
+        let charges = UpcomingCharge.timeline(rules: rules, now: now, calendar: utc)
+        #expect(charges.map(\.rule.category) == ["Gym", "Weekly", "Weekly", "Salary", "→ Trip"])
+        #expect(Set(charges.map(\.id)).count == charges.count)
+        let totals = UpcomingCharge.totals(charges)
+        #expect(totals.inflow == 2000)
+        #expect(totals.outflow == 79)
+    }
+
+    @Test func lastDayIsIncludedTheDayAfterIsNot() {
+        let now = date(2026, 9, 1, 8)
+        let rules: [RecurrenceRuleSnapshot] = [
+            .test(startDate: date(2026, 1, 14, 23), amount: -1, category: "Day13"),
+            .test(startDate: date(2026, 1, 15, 0), amount: -1, category: "Day14"),
+        ]
+        #expect(UpcomingCharge.timeline(rules: rules, now: now, calendar: utc).map(\.rule.category) == ["Day13"])
+        #expect(UpcomingCharge.timeline(rules: rules, now: now, days: 7, calendar: utc).isEmpty)
+    }
+
+    /// #188: a forecast-only rule whose payment was matched has its cursor moved past that
+    /// occurrence — it is paid, not coming.
+    @Test func matchedForecastOnlyOccurrenceIsHidden() {
+        let rule = RecurrenceRuleSnapshot.test(
+            startDate: date(2026, 1, 20, 9), lastMaterializedDate: date(2026, 9, 20, 9),
+            autoRecord: false, amount: -240, category: "Loan"
+        )
+        #expect(UpcomingCharge.timeline(rules: [rule], now: date(2026, 9, 15), calendar: utc).isEmpty)
+    }
+
+    /// A forecast-only rule is unpaid until a payment matches it, so today's occurrence stays
+    /// listed after its time of day (the last payment's, e.g. midnight for CSV rows) has passed.
+    @Test func unpaidForecastOnlyStaysOnTodayAllDay() {
+        let now = date(2026, 9, 15, 10)
+        let rule = RecurrenceRuleSnapshot.test(startDate: date(2026, 1, 15, 0), autoRecord: false, amount: -240, category: "Loan")
+        #expect(UpcomingCharge.timeline(rules: [rule], now: now, calendar: utc).first?.date == date(2026, 9, 15, 0))
+        let paid = RecurrenceRuleSnapshot.test(
+            startDate: date(2026, 1, 15, 0), lastMaterializedDate: date(2026, 9, 15, 0),
+            autoRecord: false, amount: -240, category: "Loan"
+        )
+        #expect(UpcomingCharge.timeline(rules: [paid], now: now, calendar: utc).isEmpty)
     }
 
     /// Regression (manual test): a rule created and stopped the same day, after its only charge
@@ -175,11 +212,6 @@ struct UpcomingChargeTests {
             startDate: date(2026, 10, 3, 18), endDate: date(2026, 10, 3, 18).addingTimeInterval(200),
             lastMaterializedDate: date(2026, 10, 3, 18), amount: -20, category: "Streaming Services"
         )
-        #expect(UpcomingCharge.next(rules: [rule], now: date(2026, 10, 3, 20), calendar: utc).isEmpty)
-    }
-
-    @Test func respectsTheLimit() {
-        let rules = (1...8).map { RecurrenceRuleSnapshot.test(startDate: date(2026, 1, $0 + 15), amount: -1, category: "R\($0)") }
-        #expect(UpcomingCharge.next(rules: rules, now: date(2026, 9, 1), limit: 5, calendar: utc).count == 5)
+        #expect(UpcomingCharge.timeline(rules: [rule], now: date(2026, 10, 3, 20), calendar: utc).isEmpty)
     }
 }
