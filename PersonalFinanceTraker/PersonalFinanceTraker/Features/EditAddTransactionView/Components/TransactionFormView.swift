@@ -169,14 +169,13 @@ struct TransactionFormView: View {
                         .onChange(of: viewModel.transactionType) { _, newType in
                             viewModel.selectedCategory = nil
                             viewModel.selectedGoal = nil
-                            if newType == .transfer { viewModel.isRecurring = false }
                         }
                     }
                     .appFormSectionBackground()
 
                     // Recurrence detail reveals up top (only when the toolbar Repeat toggle is on).
                     // The toggle itself lives in the nav bar; this section is just its sub-options.
-                    if viewModel.editingItem == nil && viewModel.transactionType != .transfer && viewModel.isRecurring {
+                    if viewModel.editingItem == nil && viewModel.isRecurring {
                         Section {
                             if let rule = viewModel.editingRule {
                                 // Rule-edit mode (#152): cadence is read-only, shown as plain rows
@@ -372,21 +371,18 @@ struct TransactionFormView: View {
                                 .accessibilityValue(viewModel.addAnother ? String(localized: "On") : String(localized: "Off"))
                                 
                                 // Recurrence is a rare setup action, so it lives as a nav-bar toggle instead of taking
-                                // inline form space. Add mode only, and not for transfers (recurring transfers are
-                                // deferred — matches the type-change guard that also clears isRecurring).
-                                if viewModel.transactionType != .transfer {
-                                    Button {
-                                        viewModel.isRecurring.toggle()
-                                        RepeatTip().invalidate(reason: .actionPerformed)
-                                    } label: {
-                                        Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
-                                    }
-                                    .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
-                                    // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
-                                    // read as "active" while recurrence is actually off.
-                                    .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
-                                    .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
+                                // inline form space. Add mode only.
+                                Button {
+                                    viewModel.isRecurring.toggle()
+                                    RepeatTip().invalidate(reason: .actionPerformed)
+                                } label: {
+                                    Label("Repeat", systemImage: viewModel.isRecurring ? "repeat.circle.fill" : "repeat.circle")
                                 }
+                                .labelStyle(KeyboardBarLabelStyle(showsTitle: isPad))
+                                // Indigo only when on; a neutral glyph when off so the toolbar button doesn't
+                                // read as "active" while recurrence is actually off.
+                                .tint(viewModel.isRecurring ? Color.accentIndigo : Color.primary)
+                                .accessibilityValue(viewModel.isRecurring ? String(localized: "On") : String(localized: "Off"))
                             }
 
                             if mathMode {
@@ -503,7 +499,6 @@ struct TransactionFormView: View {
                     syncTipVisibility()
                     UserDefaults.standard.set(true, forKey: "add_transaction_opened_once")
                 }
-                .onChange(of: viewModel.transactionType) { _, _ in updateTipEligibility() }
                 .onChange(of: viewModel.receiptStatusMessage) { _, _ in dismissedScanBanner = false }
             }
         }
@@ -531,10 +526,10 @@ struct TransactionFormView: View {
 
     /// Keeps the two gated tips' eligibility in step with their buttons' own visibility
     /// conditions, so `TipGroup`'s order can't land on a tip for a control that isn't
-    /// rendered (e.g. opening the sheet in edit mode, or switching to Transfer).
+    /// rendered (e.g. opening the sheet in edit mode).
     private func updateTipEligibility() {
         AddAnotherTip.isEligible = viewModel.editingItem == nil && viewModel.editingRule == nil
-        RepeatTip.isEligible = viewModel.editingItem == nil && viewModel.editingRule == nil && viewModel.transactionType != .transfer
+        RepeatTip.isEligible = viewModel.editingItem == nil && viewModel.editingRule == nil
     }
 
     /// Live-formatted view of `mathExpression` for the bubble — parens are decorative (this

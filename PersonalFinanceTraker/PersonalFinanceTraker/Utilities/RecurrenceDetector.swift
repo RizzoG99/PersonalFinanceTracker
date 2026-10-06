@@ -19,6 +19,8 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
     let occurrenceDates: [Date]      // sorted; the last anchors the rule and is its cursor
     /// Auto-record is only offered when every payment was the same amount (#188).
     var amountsIdentical = true
+    /// Set for a goal transfer: the confirmed rule keeps moving money into that goal (#209).
+    var goalId: UUID? = nil
 
     /// Strong enough evidence to start checked on the import step. Weaker suggestions are still
     /// shown, unchecked: one tap away, but never planned for by default.
@@ -51,16 +53,19 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
             note: note,
             category: category,
             currencyCode: currencyCode,
+            goalId: goalId,
             categoryPersistentId: categoryPersistentId
         )
     }
 }
 
-/// A rejected suggestion ("Not fixed"), matched like an existing rule: same normalised note,
-/// amount within the detector's tolerance.
+/// A rejected suggestion ("Not fixed"), matched like an existing rule: same goal or normalised
+/// note, amount within the detector's tolerance.
 struct DismissedRecurrencePattern: Codable, Hashable, Sendable {
     let note: String
     let amount: Decimal
+    /// Optional so patterns saved before #209 still decode.
+    var goalId: UUID? = nil
 }
 
 /// Committed-spending detection (#188): finds fixed expenses in the whole history and tells
@@ -80,10 +85,10 @@ enum RecurrenceDetector {
     ) -> [RecurrenceSuggestion] {
         // Expenses the user (or a bank file) recorded — generated rows already belong to a rule.
         let candidates = inputs.filter { $0.amount < 0 && $0.recurrenceRuleId == nil }
-        let byNote = Dictionary(grouping: candidates) { normalizeNote($0.note) }
+        let byKey = Dictionary(grouping: candidates) { commitmentKey(goalId: $0.goalId, note: $0.note) }
 
         var suggestions: [RecurrenceSuggestion] = []
-        for (note, rows) in byNote where !note.isEmpty {
+        for (key, rows) in byKey where key.goalId != nil || !key.note.isEmpty {
             for group in amountClusters(rows) {
                 // To the cent: the add form builds Decimal from a Double (8.99 → 8.99000000000000020…)
                 // while CSV import parses the exact string, so the same price isn't bit-equal.
@@ -125,8 +130,8 @@ enum RecurrenceDetector {
                 guard nextDate.addingTimeInterval(window) >= today else { continue }
 
                 let amount = median(group.map(\.amount))
-                if existingRules.contains(where: { normalizeNote($0.note) == note && isSameAmount($0.amount, amount) })
-                    || dismissed.contains(where: { $0.note == note && isSameAmount($0.amount, amount) }) {
+                if existingRules.contains(where: { commitmentKey(goalId: $0.goalId, note: $0.note) == key && isSameAmount($0.amount, amount) })
+                    || dismissed.contains(where: { commitmentKey(goalId: $0.goalId, note: $0.note) == key && isSameAmount($0.amount, amount) }) {
                     continue
                 }
 
@@ -134,14 +139,15 @@ enum RecurrenceDetector {
                     frequency: cadence.frequency,
                     interval: cadence.interval,
                     amount: amount,
-                    note: findMostCommonValue(group.map(\.note)) ?? note,
+                    note: findMostCommonValue(group.map(\.note)) ?? group[0].note,
                     category: findMostCommonValue(group.map(\.category)) ?? group[0].category,
                     currencyCode: group[0].currencyCode,
                     categoryPersistentId: group.compactMap(\.categoryPersistentId).first,
                     occurrenceCount: group.count,
                     nextDate: nextDate,
                     occurrenceDates: dates,
-                    amountsIdentical: identical
+                    amountsIdentical: identical,
+                    goalId: key.goalId
                 ))
             }
         }
@@ -156,7 +162,7 @@ enum RecurrenceDetector {
     }
 
     static func dismissalPattern(for suggestion: RecurrenceSuggestion) -> DismissedRecurrencePattern {
-        DismissedRecurrencePattern(note: normalizeNote(suggestion.note), amount: suggestion.amount)
+        DismissedRecurrencePattern(note: normalizeNote(suggestion.note), amount: suggestion.amount, goalId: suggestion.goalId)
     }
 
     // MARK: - Forecast-only rules
@@ -173,7 +179,7 @@ enum RecurrenceDetector {
         return TimeInterval(min(14, max(3, Int((cycle * Double(interval) * 0.2).rounded()))) * 86_400)
     }
 
-    /// The last occurrence of a forecast-only rule that a real expense has paid (same note,
+    /// The last occurrence of a forecast-only rule that a real expense has paid (same goal or note,
     /// amount within tolerance, date within the window — early payments included), and the
     /// amount paid for it. nil when nothing new matched.
     static func paidThrough(
@@ -183,11 +189,11 @@ enum RecurrenceDetector {
         calendar: Calendar = .current
     ) -> (cursor: Date, amount: Decimal)? {
         let window = matchWindow(rule.frequency, rule.interval)
-        let note = normalizeNote(rule.note)
+        let key = commitmentKey(goalId: rule.goalId, note: rule.note)
         var payments = transactions.filter {
             $0.amount < 0 && $0.recurrenceRuleId == nil
                 && isSameAmount($0.amount, rule.amount)
-                && normalizeNote($0.note) == note
+                && commitmentKey(goalId: $0.goalId, note: $0.note) == key
         }
         let occurrences = RecurrenceOccurrenceCalculator.occurrenceDates(
             frequency: rule.frequency,
@@ -232,6 +238,17 @@ enum RecurrenceDetector {
     }
 
     // MARK: - Helpers
+
+    struct CommitmentKey: Hashable {
+        let goalId: UUID?
+        let note: String
+    }
+
+    /// What makes two payments the same commitment: a goal transfer is its goal (usually
+    /// nameless — the "→ Goal" label lives in category, #209), anything else its normalised note.
+    static func commitmentKey(goalId: UUID?, note: String) -> CommitmentKey {
+        CommitmentKey(goalId: goalId, note: goalId == nil ? normalizeNote(note) : "")
+    }
 
     static func normalizeNote(_ note: String) -> String {
         // Lowercase, keep letters only, drop month names ("affitto ottobre" → "affitto").

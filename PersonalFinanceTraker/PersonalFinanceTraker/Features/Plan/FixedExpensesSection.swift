@@ -5,15 +5,20 @@
 
 import SwiftUI
 
+extension RecurrenceRuleSnapshot {
+    /// The name, or the category when there is none — a goal transfer's "→ Goal" shows as the goal.
+    var title: String {
+        note.isEmpty ? category.removingLeadingEmoji.localizedCategoryDisplay : note
+    }
+}
+
 /// A forecast-only rule whose payment never arrived (#188).
 struct MissedPayment: Identifiable {
     var id: UUID { rule.id }
     let rule: RecurrenceRuleSnapshot
     let due: Date
 
-    var title: String {
-        rule.note.isEmpty ? rule.category.removingLeadingEmoji.localizedCategoryDisplay : rule.note
-    }
+    var title: String { rule.title }
 }
 
 extension RecurrenceSuggestion {
@@ -320,11 +325,26 @@ private struct MissedPaymentCard: View {
     let onStillPaying: () -> Void
     let onStopped: () -> Void
 
+    /// A goal transfer is saving, not paying (#209). Typed `LocalizedStringKey` so the
+    /// ternaries below stay catalog keys rather than plain Strings.
+    private var isGoal: Bool { payment.rule.goalId != nil }
+    private var question: LocalizedStringKey {
+        isGoal ? "Still saving for \(payment.title)?" : "Do you still pay \(payment.title)?"
+    }
+    private var stoppedLabel: LocalizedStringKey { isGoal ? "Stopped saving" : "Stopped paying" }
+    private var stoppedHint: LocalizedStringKey {
+        isGoal ? "Stops planning for this transfer" : "Stops planning for this payment"
+    }
+    private var stillLabel: LocalizedStringKey { isGoal ? "Still saving" : "Still paying" }
+    private var stillHint: LocalizedStringKey {
+        isGoal ? "Skips this transfer and keeps planning the next ones" : "Skips this payment and keeps planning the next ones"
+    }
+
     var body: some View {
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Do you still pay \(payment.title)?")
+                    Text(question)
                         .font(.body.bold())
                         .foregroundStyle(.textPrimary)
                     Text("No payment found around \(payment.due.formatted(.dateTime.day().month(.abbreviated))).")
@@ -342,11 +362,11 @@ private struct MissedPaymentCard: View {
     }
 
     @ViewBuilder private var actions: some View {
-        Button(action: onStopped) { Text("Stopped paying").frame(maxWidth: .infinity) }
+        Button(action: onStopped) { Text(stoppedLabel).frame(maxWidth: .infinity) }
             .buttonStyle(.bordered)
-            .accessibilityHint("Stops planning for this payment")
-        Button(action: onStillPaying) { Text("Still paying").frame(maxWidth: .infinity) }
+            .accessibilityHint(stoppedHint)
+        Button(action: onStillPaying) { Text(stillLabel).frame(maxWidth: .infinity) }
             .buttonStyle(.borderedProminent)
-            .accessibilityHint("Skips this payment and keeps planning the next ones")
+            .accessibilityHint(stillHint)
     }
 }

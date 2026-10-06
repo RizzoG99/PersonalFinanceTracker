@@ -482,14 +482,35 @@ struct EditAddTransactionViewModelTests {
         #expect(vm.buildRecurrenceRuleInput() == nil)
     }
 
-    @Test @MainActor func buildRecurrenceRuleInputIsNilForTransfers() async throws {
+    /// #209: a recurring transfer used to be saved as a one-off; the rule must keep its goal.
+    @Test @MainActor func buildRecurrenceRuleInputKeepsGoalForTransfers() async throws {
         let vm = makeVM()
-        vm.transactionName = "To savings"
+        let goal = GoalSnapshot.test(name: "Vacation", targetAmount: 1000)
+        vm.transactionName = ""
         vm.amount = 200
         vm.transactionType = .transfer
-        vm.selectedGoal = .test(name: "Vacation", targetAmount: 1000)
+        vm.selectedGoal = goal
         vm.isRecurring = true
-        #expect(vm.buildRecurrenceRuleInput() == nil)
+        let rule = try #require(vm.buildRecurrenceRuleInput())
+        #expect(rule.goalId == goal.id)
+        #expect(rule.amount == -200)
+        #expect(rule.category == "→ Vacation")
+    }
+
+    @Test @MainActor func editingGoalRuleOpensAsTransferWithItsGoal() async throws {
+        let goal = GoalSnapshot.test(name: "Emergency fund", targetAmount: 5000)
+        let repo = MockTransactionRepository()
+        repo.stubbedGoals = [goal]
+        let rule = RecurrenceRuleSnapshot.test(startDate: Date(), amount: -200, category: "→ Emergency fund", goalId: goal.id)
+        let vm = EditAddTransactionViewModel(editingRule: rule, repo: repo)
+        #expect(vm.transactionType == .transfer)
+
+        vm.setTransactionViewModel()
+        try await Task.sleep(for: .milliseconds(50))
+
+        #expect(vm.selectedGoal?.id == goal.id)
+        #expect(vm.availableTypes.contains(.transfer))
+        #expect(vm.buildRecurrenceRuleInput(preserving: rule)?.goalId == goal.id)
     }
 
     @Test @MainActor func buildRecurrenceRuleInputMatchesFormWhenRecurring() async throws {
