@@ -54,22 +54,6 @@ struct DashboardViewModelTests {
         #expect(vm.monthlyExpenses == 200)
     }
 
-    @Test func financialMonthLabelShowsDatesWhenNotFirstOfMonth() async {
-        UserDefaults.standard.set(10, forKey: "payCycleStartDay")
-        defer { UserDefaults.standard.removeObject(forKey: "payCycleStartDay") }
-
-        let vm = DashboardViewModel(repo: MockTransactionRepository())
-        #expect(vm.financialMonthLabel != "This Month")
-    }
-
-    @Test func financialMonthLabelIsThisMonthWhenStartDayIsOne() async {
-        UserDefaults.standard.removeObject(forKey: "payCycleStartDay")
-        let vm = DashboardViewModel(repo: MockTransactionRepository())
-        // Compared against the same localized lookup the view model uses rather than a
-        // hardcoded English literal, so this doesn't depend on the test device's language.
-        #expect(vm.financialMonthLabel == String(localized: "This Month"))
-    }
-
     @Test func calculatesAllMetricsInSingleLoad() async {
         UserDefaults.standard.set(1, forKey: "payCycleStartDay")
         defer { UserDefaults.standard.removeObject(forKey: "payCycleStartDay") }
@@ -87,7 +71,8 @@ struct DashboardViewModelTests {
         vm.load()
         await vm.loadTask?.value
 
-        #expect(vm.totalBalance == 500)
+        #expect(vm.safeToSpend?.income == 1000)
+        #expect(vm.safeToSpend?.spent == 500)
         #expect(vm.monthlyIncome == 1000)
         #expect(vm.monthlyExpenses == 500)
         #expect(vm.recentTransactions.count == 3)

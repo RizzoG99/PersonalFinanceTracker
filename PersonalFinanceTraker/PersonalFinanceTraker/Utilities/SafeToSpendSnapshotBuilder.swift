@@ -5,50 +5,67 @@
 
 import Foundation
 
+/// Safe to Spend until payday (#190). Every part is positive, in the base currency.
+struct SafeToSpend: Equatable, Sendable {
+    /// Recorded this cycle plus recurring income still due before payday.
+    let income: Decimal
+    let spent: Decimal
+    /// Recurring expenses still due before payday, goal transfers excluded.
+    let recurring: Decimal
+    /// Recurring goal transfers (rules with a `goalId`) still due before payday.
+    let goals: Decimal
+    let buffer: Decimal
+    let payday: Date
+
+    var amount: Decimal { income - spent - recurring - goals - buffer }
+}
+
 enum SafeToSpendSnapshotBuilder {
-    /// Builds a seven-day cash-flow forecast. Day 0 is the current pay-cycle net;
-    /// later days include future committed recurrence-rule occurrences.
+    static func compute(
+        transactions: [TransactionSnapshot],
+        activeRules: [RecurrenceRuleSnapshot],
+        payCycleStartDay: Int,
+        bufferPercent: Int,
+        currencyService: CurrencyService,
+        now: Date = .now,
+        calendar: Calendar = .current
+    ) -> SafeToSpend {
+        let cycleStart = PayCycleService.financialMonthStart(for: now, startDay: payCycleStartDay, calendar: calendar)
+        let payday = calendar.date(byAdding: .month, value: 1, to: cycleStart) ?? cycleStart
+        let daysLeft = SafeToSpendSnapshot.daysLeft(from: now, until: payday, calendar: calendar)
+
+        var income = Decimal.zero, spent = Decimal.zero, recurring = Decimal.zero, goals = Decimal.zero
+        for tx in transactions where tx.timestamp >= cycleStart && tx.timestamp < payday {
+            let amount = currencyService.convertToBase(tx.amount, from: tx.currencyCode)
+            if amount > 0 { income += amount } else { spent -= amount }
+        }
+        // The timeline already skips what a rule's cursor marks as paid (forecast-only rules included).
+        for charge in UpcomingCharge.timeline(rules: activeRules, now: now, days: daysLeft, calendar: calendar) {
+            let amount = currencyService.convertToBase(charge.rule.amount, from: charge.rule.currencyCode)
+            if amount > 0 { income += amount }
+            else if charge.rule.goalId != nil { goals -= amount }
+            else { recurring -= amount }
+        }
+        return SafeToSpend(
+            income: income, spent: spent, recurring: recurring, goals: goals,
+            buffer: income * Decimal(bufferPercent) / 100,
+            payday: payday
+        )
+    }
+
     static func build(
         transactions: [TransactionSnapshot],
         activeRules: [RecurrenceRuleSnapshot],
         payCycleStartDay: Int,
+        bufferPercent: Int,
         currencyService: CurrencyService,
         now: Date = .now,
-        calendar: Calendar = .current,
-        forwardDays: Int = 7
+        calendar: Calendar = .current
     ) -> SafeToSpendSnapshot {
-        let (cycleStart, cycleEnd) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay, calendar: calendar)
-        let netSoFar = transactions
-            .filter { $0.timestamp >= cycleStart && $0.timestamp <= cycleEnd }
-            .reduce(Decimal.zero) { $0 + currencyService.convertToBase($1.amount, from: $1.currencyCode) }
-        let today = calendar.startOfDay(for: now)
-
-        let days: [SafeToSpendDayValue] = (0..<forwardDays).map { offset in
-            let dayDate = calendar.date(byAdding: .day, value: offset, to: today) ?? today
-            guard offset > 0 else {
-                return SafeToSpendDayValue(date: dayDate, amount: netSoFar)
-            }
-            let committed = activeRules.reduce(Decimal.zero) { total, rule in
-                let occurrences = RecurrenceOccurrenceCalculator.occurrenceDates(
-                    frequency: rule.frequency,
-                    interval: rule.interval,
-                    startDate: rule.startDate,
-                    ruleEndDate: rule.endDate,
-                    // Not before the cursor: an occurrence already paid (early) is in netSoFar.
-                    since: max(now, rule.lastMaterializedDate ?? .distantPast),
-                    through: dayDate,
-                    calendar: calendar
-                )
-                return total + Decimal(occurrences.count) * currencyService.convertToBase(rule.amount, from: rule.currencyCode)
-            }
-            return SafeToSpendDayValue(date: dayDate, amount: netSoFar + committed)
-        }
-
-        return SafeToSpendSnapshot(
-            generatedAt: now,
-            currencyCode: currencyService.baseCurrency,
-            forecastEnd: days.last?.date ?? today,
-            days: days
+        let safe = compute(
+            transactions: transactions, activeRules: activeRules, payCycleStartDay: payCycleStartDay,
+            bufferPercent: bufferPercent, currencyService: currencyService, now: now, calendar: calendar
         )
+        return SafeToSpendSnapshot(generatedAt: now, currencyCode: currencyService.baseCurrency, amount: safe.amount, payday: safe.payday)
     }
 }

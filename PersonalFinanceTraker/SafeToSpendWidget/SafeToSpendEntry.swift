@@ -9,6 +9,6 @@ struct SafeToSpendEntry: TimelineEntry {
     let date: Date
     let amount: Decimal?
     let currencyCode: String
-    let forecastEnd: Date
+    let payday: Date
     let needsRefresh: Bool
 }

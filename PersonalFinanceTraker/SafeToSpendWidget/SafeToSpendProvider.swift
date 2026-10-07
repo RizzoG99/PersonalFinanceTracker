@@ -10,9 +10,9 @@ struct SafeToSpendProvider: TimelineProvider {
     func placeholder(in context: Context) -> SafeToSpendEntry {
         SafeToSpendEntry(
             date: .now,
-            amount: 120,
+            amount: 742,
             currencyCode: "EUR",
-            forecastEnd: Calendar.current.date(byAdding: .day, value: 6, to: .now) ?? .now,
+            payday: Calendar.current.date(byAdding: .day, value: 20, to: .now) ?? .now,
             needsRefresh: false
         )
     }
@@ -40,7 +40,7 @@ struct SafeToSpendProvider: TimelineProvider {
             date: date,
             amount: amount,
             currencyCode: snapshot?.currencyCode ?? "EUR",
-            forecastEnd: snapshot?.forecastEnd ?? date,
+            payday: snapshot?.payday ?? date,
             needsRefresh: amount == nil
         )
     }

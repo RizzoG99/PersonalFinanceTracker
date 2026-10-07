@@ -86,6 +86,15 @@ struct IPadRootView: View {
         }
         // Same wiring MainTabView has: saving anywhere bumps the signal, and every shell has to
         // reload off it or the cards and lists keep showing pre-save data.
+        // Both feed Safe to Spend (#190): the hero and the widget re-read them.
+        .onChange(of: appSettings.payCycleStartDay) { _, _ in
+            models.dashboard.reload()
+            Task { await models.repo.refreshSafeToSpendWidgetSnapshot() }
+        }
+        .onChange(of: appSettings.safeToSpendBufferPercent) { _, _ in
+            models.dashboard.reload()
+            Task { await models.repo.refreshSafeToSpendWidgetSnapshot() }
+        }
         .onChange(of: models.dataChanged.revision) { _, _ in
             models.dashboard.reload()
             models.transactions.reload()

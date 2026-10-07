@@ -12,7 +12,7 @@ struct SafeToSpendWidgetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(String(localized: "widget.seven_day_forecast.title"), systemImage: "chart.line.uptrend.xyaxis")
+            Label(String(localized: "widget.safe_to_spend.title"), systemImage: "wallet.bifold")
                 .font(.subheadline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -22,7 +22,7 @@ struct SafeToSpendWidgetView: View {
             if let amount = entry.amount, !entry.needsRefresh {
                 Text(formattedAmount(amount))
                     .font(.title.bold())
-                    .foregroundStyle(amount < 0 ? Color("negative") : Color("positive"))
+                    .foregroundStyle(amount < 0 ? Color("negative") : Color.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
                     .monospacedDigit()
@@ -30,16 +30,16 @@ struct SafeToSpendWidgetView: View {
 
                 Spacer(minLength: 0)
 
-                Text(String(localized: "widget.seven_day_forecast.on \(entry.forecastEnd.formatted(.dateTime.day().month(.abbreviated)))"))
+                Text(caption(for: amount))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             } else {
-                Text(String(localized: "widget.seven_day_forecast.unavailable"))
+                Text(String(localized: "widget.safe_to_spend.unavailable"))
                     .font(.headline)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
-                Text(String(localized: "widget.seven_day_forecast.open_app_to_refresh"))
+                Text(String(localized: "widget.safe_to_spend.open_app_to_refresh"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -48,7 +48,18 @@ struct SafeToSpendWidgetView: View {
         }
         .accessibilityElement(children: .combine)
         .containerBackground(.background, for: .widget)
-        .widgetURL(URL(string: "personalfinancetraker://insights"))
+        .widgetURL(URL(string: "personalfinancetraker://home"))
+    }
+
+    /// Same wording as Home's hero: per-day figure only while there's something to spread.
+    private func caption(for amount: Decimal) -> String {
+        let payday = entry.payday.formatted(.dateTime.day().month(.abbreviated))
+        if amount < 0 { return String(localized: "widget.safe_to_spend.over_plan \(payday)") }
+        guard let perDay = SafeToSpendSnapshot.perDay(amount, from: entry.date, until: entry.payday) else {
+            return String(localized: "widget.safe_to_spend.until \(payday)")
+        }
+        let daily = perDay.formatted(.currency(code: entry.currencyCode).precision(.fractionLength(0)))
+        return String(localized: "widget.safe_to_spend.until_per_day \(payday) \(daily)")
     }
 
     private func formattedAmount(_ amount: Decimal, locale: Locale = .current) -> String {

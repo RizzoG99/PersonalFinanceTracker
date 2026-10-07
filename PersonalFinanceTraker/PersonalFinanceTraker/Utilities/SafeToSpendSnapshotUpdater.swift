@@ -11,12 +11,14 @@ enum SafeToSpendSnapshotUpdater {
         transactions: [TransactionSnapshot],
         activeRules: [RecurrenceRuleSnapshot],
         payCycleStartDay: Int,
+        bufferPercent: Int,
         currencyService: CurrencyService = CurrencyService()
     ) {
         let snapshot = SafeToSpendSnapshotBuilder.build(
             transactions: transactions,
             activeRules: activeRules,
             payCycleStartDay: payCycleStartDay,
+            bufferPercent: bufferPercent,
             currencyService: currencyService
         )
         try? snapshot.write()

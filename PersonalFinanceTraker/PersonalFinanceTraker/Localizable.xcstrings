@@ -10901,23 +10901,6 @@
         }
       }
     },
-    "Total Balance" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total Balance"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saldo totale"
-          }
-        }
-      }
-    },
     "Total budgeted" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12135,6 +12118,271 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "+ altri %lld"
+          }
+        }
+      }
+    },
+    "Safe to Spend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safe to Spend"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spendibile"
+          }
+        }
+      }
+    },
+    "Add your income to see what's safe to spend until payday." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your income to see what's safe to spend until payday."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi le tue entrate per vedere quanto puoi spendere fino al prossimo stipendio."
+          }
+        }
+      }
+    },
+    "Over plan until %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over plan until %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oltre il piano fino al %@"
+          }
+        }
+      }
+    },
+    "until %@ · %@/day" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "until %1$@ · %2$@/day"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fino al %1$@ · %2$@/giorno"
+          }
+        }
+      }
+    },
+    "until %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "until %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fino al %@"
+          }
+        }
+      }
+    },
+    "How it's calculated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How it's calculated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come viene calcolato"
+          }
+        }
+      }
+    },
+    "Income this cycle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income this cycle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrate del periodo"
+          }
+        }
+      }
+    },
+    "Spent so far" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spent so far"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speso finora"
+          }
+        }
+      }
+    },
+    "Recurring still due" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring still due"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricorrenti ancora da pagare"
+          }
+        }
+      }
+    },
+    "Goal contributions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goal contributions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versamenti agli obiettivi"
+          }
+        }
+      }
+    },
+    "Safety buffer (%lld%%)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safety buffer (%lld%%)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Margine di sicurezza (%lld%%)"
+          }
+        }
+      }
+    },
+    "%lld fixed expenses to confirm" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fixed expense to confirm"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fixed expenses to confirm"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spesa fissa da confermare"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spese fisse da confermare"
+                }
+              }
+            }
+          }
+        }
+      },
+      "extractionState" : "manual"
+    },
+    "Opens Plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens Plan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre la scheda Pianifica"
+          }
+        }
+      }
+    },
+    "Safety buffer: %lld%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safety buffer: %lld%%"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Margine di sicurezza: %lld%%"
+          }
+        }
+      }
+    },
+    "Safe to Spend keeps this share of your income aside for the unexpected." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safe to Spend keeps this share of your income aside for the unexpected."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spendibile mette da parte questa quota delle entrate per gli imprevisti."
           }
         }
       }
