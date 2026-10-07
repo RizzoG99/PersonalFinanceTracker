@@ -55,10 +55,16 @@ struct BalanceCardView: View {
     /// doesn't start on salary day — say so instead of looking like an empty app.
     @ViewBuilder
     private func noIncome(_ safe: SafeToSpend) -> some View {
+        let start = safe.cycleStart.formatted(.dateTime.day().month(.abbreviated))
         if safe.spent > 0 {
-            let start = safe.cycleStart.formatted(.dateTime.day().month(.abbreviated))
             row("Spent so far", safe.spent, sign: "-")
             Text("No income recorded since \(start). If your salary arrives on another day, set it as the pay cycle start in Settings.")
+                .font(.subheadline)
+                .foregroundStyle(.textMid)
+        } else if !viewModel.hasNoTransactions {
+            // Older history only (e.g. an imported statement): Recent Transactions shows it
+            // right below, so "add your income" alone would read as the app ignoring it.
+            Text("No transactions since \(start). Add this period's income to see what you can spend.")
                 .font(.subheadline)
                 .foregroundStyle(.textMid)
         } else {

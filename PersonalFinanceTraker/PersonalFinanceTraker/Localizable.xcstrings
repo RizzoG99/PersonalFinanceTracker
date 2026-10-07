@@ -12420,6 +12420,22 @@
           }
         }
       }
+    },
+    "No transactions since %@. Add this period's income to see what you can spend." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transactions since %@. Add this period's income to see what you can spend."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna transazione dal %@. Aggiungi le entrate di questo periodo per vedere quanto puoi spendere."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
