@@ -65,22 +65,6 @@
         }
       }
     },
-    "widget.safe_to_spend.until_per_day %@ %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "until %1$@ · %2$@/day"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fino al %1$@ · %2$@/giorno"
-          }
-        }
-      }
-    },
     "widget.safe_to_spend.over_plan %@" : {
       "localizations" : {
         "en" : {
@@ -102,13 +86,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Safe to Spend unavailable"
+            "value" : "Not available"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spendibile non disponibile"
+            "value" : "Non disponibile"
           }
         }
       }
@@ -125,6 +109,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apri l’app per aggiornare"
+          }
+        }
+      }
+    },
+    "widget.safe_to_spend.no_income" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your income to see what you can spend"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi le entrate per vedere quanto puoi spendere"
+          }
+        }
+      }
+    },
+    "widget.safe_to_spend.per_day %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/day"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/giorno"
+          }
+        }
+      }
+    },
+    "widget.safe_to_spend.per_day_spoken %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ per day"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ al giorno"
           }
         }
       }

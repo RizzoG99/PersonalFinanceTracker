@@ -25,6 +25,13 @@ struct TransactionItemView: View {
     /// lookup resolved.
     private var namedTravel: TravelSnapshot? { isInTravel ? travel : nil }
 
+    private var categoryName: String { item.category.removingLeadingEmoji.localizedCategoryDisplay }
+
+    /// A name equal to the category ("Spesa" in "Spesa") would just repeat itself underneath.
+    private var showsCategoryLine: Bool {
+        !item.note.isEmpty && item.note.trimmingCharacters(in: .whitespaces).localizedCaseInsensitiveCompare(categoryName) != .orderedSame
+    }
+
     private var categoryColor: Color {
         item.categoryColorToken.map { Color($0) } ?? CategoryInfo.info(for: item.category).color
     }
@@ -44,7 +51,7 @@ struct TransactionItemView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 4) {
-                    Text(item.note.isEmpty ? item.category.removingLeadingEmoji.localizedCategoryDisplay : item.note)
+                    Text(item.note.isEmpty ? categoryName : item.note)
                         .font(.body)
                         .foregroundStyle(.textPrimary)
                     if item.recurrenceRuleId != nil {
@@ -60,17 +67,17 @@ struct TransactionItemView: View {
                 // unable to tell what they were about to move a row out of. Gated on
                 // `isInTravel`, not `namedTravel`: while the travel list reloads the
                 // lookup returns nil, and membership must not blink out of existence.
-                if !item.note.isEmpty || isInTravel {
+                if showsCategoryLine || isInTravel {
                     HStack(spacing: 4) {
                         // Kept even when the row has a custom name: that is the one case
                         // where the category is nowhere else on the row (an unnamed row
                         // shows it as the title), and two categories can share a symbol
                         // *and* a tint, so the tile does not identify it.
-                        if !item.note.isEmpty {
-                            Text(item.category.removingLeadingEmoji.localizedCategoryDisplay)
+                        if showsCategoryLine {
+                            Text(categoryName)
                         }
                         if isInTravel {
-                            if !item.note.isEmpty {
+                            if showsCategoryLine {
                                 Text(verbatim: "·").accessibilityHidden(true)
                             }
                             // Glyphs that describe *this transaction* (recurrence) live on

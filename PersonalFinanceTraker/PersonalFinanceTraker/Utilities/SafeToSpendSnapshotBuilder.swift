@@ -15,6 +15,7 @@ struct SafeToSpend: Equatable, Sendable {
     /// Recurring goal transfers (rules with a `goalId`) still due before payday.
     let goals: Decimal
     let buffer: Decimal
+    let cycleStart: Date
     let payday: Date
 
     var amount: Decimal { income - spent - recurring - goals - buffer }
@@ -49,7 +50,7 @@ enum SafeToSpendSnapshotBuilder {
         return SafeToSpend(
             income: income, spent: spent, recurring: recurring, goals: goals,
             buffer: income * Decimal(bufferPercent) / 100,
-            payday: payday
+            cycleStart: cycleStart, payday: payday
         )
     }
 
@@ -66,6 +67,6 @@ enum SafeToSpendSnapshotBuilder {
             transactions: transactions, activeRules: activeRules, payCycleStartDay: payCycleStartDay,
             bufferPercent: bufferPercent, currencyService: currencyService, now: now, calendar: calendar
         )
-        return SafeToSpendSnapshot(generatedAt: now, currencyCode: currencyService.baseCurrency, amount: safe.amount, payday: safe.payday)
+        return SafeToSpendSnapshot(generatedAt: now, currencyCode: currencyService.baseCurrency, amount: safe.amount, payday: safe.payday, hasIncome: safe.income > 0)
     }
 }

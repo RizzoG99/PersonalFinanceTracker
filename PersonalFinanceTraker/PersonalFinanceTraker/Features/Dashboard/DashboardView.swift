@@ -114,7 +114,6 @@ struct DashboardView: View {
                 .padding(16)
             }
             .safeAreaPadding(.bottom, 128)
-            .safeAreaInset(edge: .top) { Color.clear.frame(height: 44) }
             .navigationBarTitleDisplayMode(.inline)
             .appToolbar(showingAddItemView: $showingAddItemView, onScanned: onScanned)
             // Inside the NavigationStack, not at the app root: TabView hosts each tab in its

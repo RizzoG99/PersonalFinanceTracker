@@ -14,7 +14,7 @@ struct SafeToSpendSnapshotTests {
     }
 
     private func snapshot(amount: Decimal = 600, paydayIn days: Int = 20) -> SafeToSpendSnapshot {
-        SafeToSpendSnapshot(generatedAt: day(0), currencyCode: "EUR", amount: amount, payday: day(days))
+        SafeToSpendSnapshot(generatedAt: day(0), currencyCode: "EUR", amount: amount, payday: day(days), hasIncome: true)
     }
 
     @Test func amountStaysValidUntilTheDayBeforePayday() {
@@ -29,6 +29,15 @@ struct SafeToSpendSnapshotTests {
         let s = snapshot()
         #expect(SafeToSpendSnapshot.perDay(s.amount, from: day(0), until: s.payday) == 30)
         #expect(SafeToSpendSnapshot.perDay(s.amount, from: day(10), until: s.payday) == 60)
+    }
+
+    @Test func perDayRoundsDownSoItNeverPromisesMoreThanThereIs() {
+        // €467.16 over 3 days is €155.72 — "€156/day" would add up to €468.
+        #expect(SafeToSpendSnapshot.perDay(467.16, from: day(0), until: day(3)) == 155)
+    }
+
+    @Test func lastCoveredDayIsTheDayBeforePayday() {
+        #expect(SafeToSpendSnapshot.lastDay(before: day(3)) == day(2))
     }
 
     @Test func roundTripsThroughJSON() throws {

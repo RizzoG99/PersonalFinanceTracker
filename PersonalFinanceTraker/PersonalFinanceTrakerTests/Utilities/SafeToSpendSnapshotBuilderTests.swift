@@ -100,5 +100,15 @@ struct SafeToSpendSnapshotBuilderTests {
         )
 
         #expect(snapshot.amount == compute([salary]).amount)
+        #expect(snapshot.hasIncome)
+    }
+
+    @Test func snapshotFlagsACycleWithNoIncomeSoTheWidgetDoesntShowOverPlan() {
+        let snapshot = SafeToSpendSnapshotBuilder.build(
+            transactions: [.test(timestamp: date(10, 2), amount: -300, category: "Food")], activeRules: [],
+            payCycleStartDay: 27, bufferPercent: 5, currencyService: currencyService, now: date(10, 7), calendar: calendar
+        )
+
+        #expect(!snapshot.hasIncome)
     }
 }

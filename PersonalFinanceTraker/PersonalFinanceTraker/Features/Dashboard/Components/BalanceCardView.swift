@@ -10,6 +10,7 @@ import SwiftData
 struct BalanceCardView: View {
     @Environment(DashboardViewModel.self) private var viewModel
     @Environment(AppSettings.self) private var appSettings
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         GlassCard {
@@ -18,6 +19,7 @@ struct BalanceCardView: View {
                     Text("Safe to Spend")
                         .font(.subheadline)
                         .foregroundStyle(.textMid)
+                        .accessibilityAddTraits(.isHeader)
 
                     Spacer()
 
@@ -26,18 +28,18 @@ struct BalanceCardView: View {
                     } label: {
                         Image(systemName: appSettings.hideAmounts ? "eye.slash" : "eye")
                             .foregroundStyle(.textMid)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(.rect)
                     }
                     .accessibilityLabel(appSettings.hideAmounts ? String(localized: "Show amounts") : String(localized: "Hide amounts"))
                 }
+                .padding(.vertical, -12) // the 44pt eye target shouldn't grow the header
 
                 if let safe = viewModel.safeToSpend {
                     if safe.income == 0 {
-                        Text("Add your income to see what's safe to spend until payday.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        noIncome(safe)
                     } else {
                         hero(safe)
-                        Divider().opacity(0.15)
                         breakdown(safe)
                     }
                 } else {
@@ -49,9 +51,27 @@ struct BalanceCardView: View {
         }
     }
 
+    /// No income this cycle. With spending already recorded the usual cause is a pay cycle that
+    /// doesn't start on salary day — say so instead of looking like an empty app.
+    @ViewBuilder
+    private func noIncome(_ safe: SafeToSpend) -> some View {
+        if safe.spent > 0 {
+            let start = safe.cycleStart.formatted(.dateTime.day().month(.abbreviated))
+            row("Spent so far", safe.spent, sign: "-")
+            Text("No income recorded since \(start). If your salary arrives on another day, set it as the pay cycle start in Settings.")
+                .font(.subheadline)
+                .foregroundStyle(.textMid)
+        } else {
+            Text("Add your income to see what's safe to spend until payday.")
+                .font(.subheadline)
+                .foregroundStyle(.textMid)
+        }
+    }
+
     private func hero(_ safe: SafeToSpend) -> some View {
-        let payday = safe.payday.formatted(.dateTime.day().month(.abbreviated))
+        let lastDay = SafeToSpendSnapshot.lastDay(before: safe.payday).formatted(.dateTime.day().month(.abbreviated))
         let perDay = SafeToSpendSnapshot.perDay(safe.amount, from: viewModel.currentDate(), until: safe.payday)
+            .map { appSettings.hideAmounts ? "••••" : $0.formatted(.currency(code: CurrencyService().baseCurrency).precision(.fractionLength(0))) }
         return VStack(alignment: .leading, spacing: 4) {
             // Fixed-width mask when hidden — a plain blur would still leak the
             // amount's digit count (and thus rough magnitude) via glyph width.
@@ -61,16 +81,18 @@ struct BalanceCardView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .monospacedDigit()
+                .contentTransition(.numericText(value: Double(truncating: safe.amount as NSDecimalNumber)))
+                .animation(.default, value: safe.amount)
                 .privacyBlur(radius: 8)
 
             Group {
                 if safe.amount < 0 {
-                    Text("Over plan until \(payday)")
+                    Text("Over plan until \(lastDay)")
                 } else if let perDay {
-                    // Whole euros, same as the widget: "€26/day".
-                    Text("until \(payday) · \(appSettings.hideAmounts ? "••••" : perDay.formatted(.currency(code: CurrencyService().baseCurrency).precision(.fractionLength(0))))/day")
+                    Text("until \(lastDay) · \(perDay)/day")
+                        .accessibilityLabel(Text("until \(lastDay), \(perDay) per day"))
                 } else {
-                    Text("until \(payday)")
+                    Text("until \(lastDay)")
                 }
             }
             .font(.subheadline)
@@ -81,12 +103,17 @@ struct BalanceCardView: View {
 
     private func breakdown(_ safe: SafeToSpend) -> some View {
         DisclosureGroup {
-            VStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 6) {
                 row("Income this cycle", safe.income, sign: "+")
                 row("Spent so far", safe.spent)
                 if safe.recurring > 0 { row("Recurring still due", safe.recurring) }
                 if safe.goals > 0 { row("Goal contributions", safe.goals) }
                 row("Safety buffer (\(appSettings.safeToSpendBufferPercent)%)", safe.buffer)
+                Text("Safe to Spend keeps this share of your income aside for the unexpected.")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+                Divider()
+                row("Safe to Spend", safe.amount, sign: "", emphasized: true)
             }
             .padding(.top, 8)
         } label: {
@@ -97,16 +124,21 @@ struct BalanceCardView: View {
         .tint(.textMid)
     }
 
-    private func row(_ label: LocalizedStringKey, _ amount: Decimal, sign: String = "−") -> some View {
-        LabeledContent {
-            Text(appSettings.hideAmounts ? "••••" : "\(sign)\(amount.formattedEUR())")
+    /// Label and amount side by side; stacked at accessibility sizes so long Italian labels fit.
+    private func row(_ label: LocalizedStringKey, _ amount: Decimal, sign: String = "-", emphasized: Bool = false) -> some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout())
+        return layout {
+            Text(label)
+            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
+            Text(verbatim: appSettings.hideAmounts ? "••••" : "\(sign)\(amount.formattedEUR())")
                 .monospacedDigit()
                 .privacyBlur()
-        } label: {
-            Text(label)
         }
-        .font(.subheadline)
-        .foregroundStyle(.textMid)
+        .font(.subheadline.weight(emphasized ? .semibold : .regular))
+        .foregroundStyle(emphasized ? Color.textPrimary : Color.textMid)
+        .accessibilityElement(children: .combine)
     }
 
     private func masked(_ amount: Decimal) -> String {

@@ -21,7 +21,12 @@ enum SafeToSpendSnapshotUpdater {
             bufferPercent: bufferPercent,
             currencyService: currencyService
         )
-        try? snapshot.write()
+        do {
+            try snapshot.write()
+        } catch {
+            // The widget keeps showing the previous snapshot — at least leave a trace why.
+            print("Safe to Spend snapshot write failed: \(error)")
+        }
         WidgetCenter.shared.reloadTimelines(ofKind: SafeToSpendWidgetKind.name)
     }
 }

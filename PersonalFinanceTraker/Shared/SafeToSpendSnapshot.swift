@@ -12,6 +12,8 @@ struct SafeToSpendSnapshot: Codable, Sendable, Equatable {
     let amount: Decimal
     /// Start of the next pay cycle — the amount covers every day before it.
     let payday: Date
+    /// False when this cycle has no income — the amount is then just minus the spending.
+    let hasIncome: Bool
 
     private static let fileName = "safe_to_spend_snapshot.json"
 
@@ -46,11 +48,19 @@ struct SafeToSpendSnapshot: Codable, Sendable, Equatable {
         return snapshot.amount
     }
 
-    /// The per-day figure, only while there is something left to spread.
+    /// The per-day figure in whole units, only while there is something left to spread.
+    /// Rounded down: "€156/day" for €467 over 3 days would promise more than there is.
     static func perDay(_ amount: Decimal, from date: Date, until payday: Date, calendar: Calendar = .current) -> Decimal? {
         let days = daysLeft(from: date, until: payday, calendar: calendar)
         guard amount > 0, days > 0 else { return nil }
-        return amount / Decimal(days)
+        var exact = amount / Decimal(days), rounded = Decimal()
+        NSDecimalRound(&rounded, &exact, 0, .down)
+        return rounded
+    }
+
+    /// The last day the amount covers — "until 9 Oct" reads inclusive, payday itself isn't covered.
+    static func lastDay(before payday: Date, calendar: Calendar = .current) -> Date {
+        calendar.date(byAdding: .day, value: -1, to: payday) ?? payday
     }
 }
 
