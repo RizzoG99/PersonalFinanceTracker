@@ -10,15 +10,17 @@ struct SafeToSpendProvider: TimelineProvider {
     func placeholder(in context: Context) -> SafeToSpendEntry {
         SafeToSpendEntry(
             date: .now,
-            amount: 120,
+            amount: 742,
             currencyCode: "EUR",
-            forecastEnd: Calendar.current.date(byAdding: .day, value: 6, to: .now) ?? .now,
+            payday: Calendar.current.date(byAdding: .day, value: 20, to: .now) ?? .now,
+            hasIncome: true,
             needsRefresh: false
         )
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SafeToSpendEntry) -> Void) {
-        completion(makeEntry(for: .now))
+        // The gallery preview shouldn't show the "open the app" state on a fresh install.
+        completion(context.isPreview ? placeholder(in: context) : makeEntry(for: .now))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<SafeToSpendEntry>) -> Void) {
@@ -40,7 +42,8 @@ struct SafeToSpendProvider: TimelineProvider {
             date: date,
             amount: amount,
             currencyCode: snapshot?.currencyCode ?? "EUR",
-            forecastEnd: snapshot?.forecastEnd ?? date,
+            payday: snapshot?.payday ?? date,
+            hasIncome: snapshot?.hasIncome ?? true,
             needsRefresh: amount == nil
         )
     }

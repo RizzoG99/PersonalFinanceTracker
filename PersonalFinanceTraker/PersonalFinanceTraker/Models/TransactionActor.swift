@@ -423,7 +423,7 @@ actor TransactionActor: ITransactionRepository {
         try modelContext.save()
     }
 
-    // MARK: Seven-day forecast widget
+    // MARK: Safe to Spend widget
 
     /// Recomputes the lightweight app-group snapshot after every mutation that affects
     /// cash flow. The app also invokes this when it launches or becomes active.
@@ -431,10 +431,12 @@ actor TransactionActor: ITransactionRepository {
         guard let transactions = try? await fetchAll(),
               let rules = try? await fetchActiveRecurrenceRules() else { return }
         let payCycleStartDay = await AppSettings.storedStartDay
+        let bufferPercent = await AppSettings.storedBufferPercent
         SafeToSpendSnapshotUpdater.refresh(
             transactions: transactions,
             activeRules: rules,
-            payCycleStartDay: payCycleStartDay
+            payCycleStartDay: payCycleStartDay,
+            bufferPercent: bufferPercent
         )
     }
 }

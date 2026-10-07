@@ -28,7 +28,8 @@ struct PlanView: View {
     @State private var showingAddRecurring = false
     @State private var editingRule: RecurrenceRuleSnapshot?
     @State private var showingBudgets = false
-    @State private var committedSpending = CommittedSpendingModel()
+    /// Owned by MainTabView, which reloads it, so Home can show the pending count (#190).
+    let committedSpending: CommittedSpendingModel
 
     private var upcoming: [UpcomingCharge] { UpcomingCharge.timeline(rules: rules) }
     /// Rules not yet stopped (e.g. "Stopped paying", #188, ends one): a store with only stopped
@@ -95,11 +96,6 @@ struct PlanView: View {
             // Goals live on CompassViewModel, which nothing else loads at launch on iPhone until
             // Insights opens — load it here too, or Plan reads an existing goal list as empty.
             async let goals: Void = compassViewModel.reloadData()
-            // A matched payment moves a rule's cursor: bump once so Coming up re-reads it (the
-            // second pass finds nothing new to match).
-            if await committedSpending.reload(repo: transactionListViewModel.repo) {
-                dataChanged.bump()
-            }
             await reloadRules()
             await goals
             hasLoaded = true
@@ -297,7 +293,8 @@ struct PlanView: View {
         materializationService: models.materializationService,
         showingAddItemView: .constant(false),
         showingRecurringView: .constant(false),
-        selectedTab: .constant(.plan)
+        selectedTab: .constant(.plan),
+        committedSpending: CommittedSpendingModel()
     )
     .environment(models.transactions)
     .environment(models.dashboard)

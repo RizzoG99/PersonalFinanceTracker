@@ -65,6 +65,8 @@ struct MainTabView: View {
     @State private var compassViewModel: CompassViewModel
     @State private var profileViewModel: ProfileViewModel
     @State private var dataChanged: DataChangedSignal
+    /// Fixed-expense detection (#188): Plan shows the cards, Home the pending count (#190).
+    @State private var committedSpending = CommittedSpendingModel()
     private let repo: TransactionActor
     private let materializationService: RecurrenceMaterializationService
     // Owned by AuthenticationWrapper (not MainTabView) so hideAmounts survives the
@@ -145,8 +147,11 @@ struct MainTabView: View {
     }
 
     private func consumePendingWidgetDestination() {
-        guard pendingWidgetDestination == "insights" else { return }
-        selectedTab = .insights
+        switch pendingWidgetDestination {
+        case "insights": selectedTab = .insights
+        case "home": selectedTab = .home
+        default: return
+        }
         pendingWidgetDestination = ""
     }
 
@@ -154,7 +159,12 @@ struct MainTabView: View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: selectedTab == .home ? "house.fill" : "house", value: .home) {
-                    DashboardView(showingAddItemView: showingAddItemView, selectedTab: $selectedTab, onScanned: applyScan)
+                    DashboardView(
+                        showingAddItemView: showingAddItemView,
+                        selectedTab: $selectedTab,
+                        onScanned: applyScan,
+                        pendingFixedExpenses: committedSpending.suggestions.count
+                    )
                         .payCycleAware { dashboardViewModel.load() }
                 }
                 Tab("Activity", systemImage: selectedTab == .activity ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", value: .activity) {
@@ -172,7 +182,8 @@ struct MainTabView: View {
                         showingAddItemView: showingAddItemView,
                         showingRecurringView: $showingRecurringView,
                         selectedTab: $selectedTab,
-                        onScanned: applyScan
+                        onScanned: applyScan,
+                        committedSpending: committedSpending
                     )
                 }
                 Tab("Insights", systemImage: "chart.line.uptrend.xyaxis", value: .insights) {
@@ -270,7 +281,22 @@ struct MainTabView: View {
             }
         }
         .onChange(of: appSettings.payCycleStartDay) { _, _ in
+            // payCycleAware's load() is a no-op once loaded; the hero needs the new cycle now.
+            dashboardViewModel.reload()
             Task { await repo.refreshSafeToSpendWidgetSnapshot() }
+        }
+        .onChange(of: appSettings.safeToSpendBufferPercent) { _, _ in
+            dashboardViewModel.reload()
+            Task { await repo.refreshSafeToSpendWidgetSnapshot() }
+        }
+        // ponytail: detection reruns on every data change from launch, not only on Plan visits —
+        // see the cost note in CommittedSpendingModel.reload.
+        .task(id: dataChanged.revision) {
+            // A matched payment moves a rule's cursor: bump once so Plan and Home re-read it
+            // (the second pass finds nothing new to match).
+            if await committedSpending.reload(repo: repo) {
+                dataChanged.bump()
+            }
         }
         .onChange(of: baseCurrency) { _, _ in
             Task { await repo.refreshSafeToSpendWidgetSnapshot() }
@@ -334,7 +360,7 @@ struct MainTabView: View {
             }
         }
         .onChange(of: pendingWidgetDestination) { _, destination in
-            if destination == "insights" { consumePendingWidgetDestination() }
+            if !destination.isEmpty { consumePendingWidgetDestination() }
         }
     }
 }

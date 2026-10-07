@@ -14,6 +14,8 @@ struct DashboardView: View {
     @Binding var showingAddItemView: Bool
     @Binding var selectedTab: TabItem
     var onScanned: ((ReceiptScan) -> Void)? = nil
+    /// Fixed expenses found by #188 waiting for a confirmation in Plan.
+    var pendingFixedExpenses = 0
 
     var body: some View {
         NavigationStack {
@@ -21,6 +23,23 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     GreetingHeaderView()
                     BalanceCardView()
+                    if pendingFixedExpenses > 0 {
+                        Button { selectedTab = .plan } label: {
+                            HStack {
+                                Label("\(pendingFixedExpenses) fixed expenses to confirm", systemImage: "checklist")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .accessibilityHidden(true)
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.accentIndigo)
+                            .frame(minHeight: 44)
+                            .contentShape(.rect)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Opens Plan")
+                    }
                     if let callout = viewModel.anomalyCallout,
                        viewModel.dailyCheckInStatus.isComplete {
                         AnomalyCalloutView(message: callout.message) {
@@ -95,7 +114,6 @@ struct DashboardView: View {
                 .padding(16)
             }
             .safeAreaPadding(.bottom, 128)
-            .safeAreaInset(edge: .top) { Color.clear.frame(height: 44) }
             .navigationBarTitleDisplayMode(.inline)
             .appToolbar(showingAddItemView: $showingAddItemView, onScanned: onScanned)
             // Inside the NavigationStack, not at the app root: TabView hosts each tab in its

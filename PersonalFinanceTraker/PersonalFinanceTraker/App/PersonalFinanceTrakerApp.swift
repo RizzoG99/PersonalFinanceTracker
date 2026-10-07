@@ -80,8 +80,8 @@ struct PersonalFinanceTrakerApp: App {
                         PendingTransactionIntent.shared.shouldReviewHabitTemplate = true
                     case "scan-receipt":
                         PendingTransactionIntent.shared.shouldScanReceipt = true
-                    case "insights":
-                        pendingWidgetDestination = "insights"
+                    case "insights", "home":
+                        pendingWidgetDestination = url.host ?? ""
                     default:
                         break
                     }

@@ -25,6 +25,19 @@ final class AppSettings: BackupSchedulingSettings {
         }
     }
 
+    /// Share of this cycle's income Safe to Spend keeps back for the unexpected (#190).
+    var safeToSpendBufferPercent: Int {
+        didSet {
+            guard Self.bufferRange.contains(safeToSpendBufferPercent) else {
+                safeToSpendBufferPercent = max(Self.bufferRange.lowerBound, min(Self.bufferRange.upperBound, safeToSpendBufferPercent))
+                return
+            }
+            UserDefaults.standard.set(safeToSpendBufferPercent, forKey: "safeToSpendBufferPercent")
+        }
+    }
+
+    static let bufferRange = 0...20
+
     var lastBackupDate: Date? {
         didSet {
             UserDefaults.standard.set(lastBackupDate, forKey: "lastBackupDate")
@@ -34,11 +47,17 @@ final class AppSettings: BackupSchedulingSettings {
     init() {
         let v = UserDefaults.standard.integer(forKey: "payCycleStartDay")
         payCycleStartDay = v == 0 ? 1 : v
+        safeToSpendBufferPercent = Self.storedBufferPercent
         lastBackupDate = UserDefaults.standard.object(forKey: "lastBackupDate") as? Date
     }
 
     static var storedStartDay: Int {
         let v = UserDefaults.standard.integer(forKey: "payCycleStartDay")
         return v == 0 ? 1 : v
+    }
+
+    /// 5% until the user picks a value — 0 is a valid choice, so a missing key isn't 0.
+    static var storedBufferPercent: Int {
+        UserDefaults.standard.object(forKey: "safeToSpendBufferPercent") as? Int ?? 5
     }
 }

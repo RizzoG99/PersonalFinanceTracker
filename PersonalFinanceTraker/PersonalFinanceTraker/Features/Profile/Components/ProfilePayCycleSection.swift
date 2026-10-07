@@ -21,6 +21,14 @@ struct ProfilePayCycleSection: View {
             Text("Periods run from day \(appSettings.payCycleStartDay) to day \(appSettings.payCycleStartDay > 1 ? appSettings.payCycleStartDay - 1 : 28) of the next month.")
                 .font(.caption)
                 .foregroundStyle(.textDim)
+
+            Stepper(value: $appSettings.safeToSpendBufferPercent, in: AppSettings.bufferRange) {
+                Text("Safety buffer: \(appSettings.safeToSpendBufferPercent)%")
+            }
+
+            Text("Safe to Spend keeps this share of your income aside for the unexpected.")
+                .font(.caption)
+                .foregroundStyle(.textDim)
         }
     }
 }

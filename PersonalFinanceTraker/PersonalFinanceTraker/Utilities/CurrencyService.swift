@@ -88,11 +88,24 @@ extension Decimal {
     public func formattedEUR(currency: String? = nil) -> String {
         // ponytail: name says EUR but formats base currency; rename in a follow-up
         let baseCurrency = currency ?? UserDefaults.standard.string(forKey: "app_base_currency") ?? "EUR"
+        let fmt = Self.currencyFormatter(for: baseCurrency)
+        return fmt.string(from: self as NSDecimalNumber) ?? "\(fmt.currencySymbol ?? "€")0.00"
+    }
+
+    // Built once per currency instead of two NumberFormatters per call — it runs for every
+    // amount in every list row. NSCache and NumberFormatter's formatting are thread-safe.
+    // ponytail: keyed by currency only; a locale change mid-session keeps the old formatting
+    // until relaunch (iOS relaunches the app on a language change anyway).
+    nonisolated(unsafe) private static let currencyFormatters = NSCache<NSString, NumberFormatter>()
+
+    private static func currencyFormatter(for currencyCode: String) -> NumberFormatter {
+        if let cached = currencyFormatters.object(forKey: currencyCode as NSString) { return cached }
         let fmt = NumberFormatter()
         fmt.numberStyle = .currency
-        fmt.currencyCode = baseCurrency
-        fmt.currencySymbol = Self.stableCurrencySymbol(for: baseCurrency)
-        return fmt.string(from: self as NSDecimalNumber) ?? "\(fmt.currencySymbol ?? "€")0.00"
+        fmt.currencyCode = currencyCode
+        fmt.currencySymbol = stableCurrencySymbol(for: currencyCode)
+        currencyFormatters.setObject(fmt, forKey: currencyCode as NSString)
+        return fmt
     }
 
     public func formattedEURCompact(currency: String? = nil) -> String {

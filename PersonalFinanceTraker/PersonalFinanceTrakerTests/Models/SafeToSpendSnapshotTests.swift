@@ -13,57 +13,36 @@ struct SafeToSpendSnapshotTests {
         calendar.startOfDay(for: calendar.date(byAdding: .day, value: offset, to: base)!)
     }
 
-    @Test func amountReturnsMatchingDayValue() {
-        let today = day(0)
-        let snapshot = SafeToSpendSnapshot(
-            generatedAt: today,
-            currencyCode: "EUR",
-            forecastEnd: day(1),
-            days: [
-                SafeToSpendDayValue(date: today, amount: 120),
-                SafeToSpendDayValue(date: day(1), amount: 100)
-            ]
-        )
-        #expect(SafeToSpendSnapshot.amount(for: day(1), from: snapshot) == 100)
+    private func snapshot(amount: Decimal = 600, paydayIn days: Int = 20) -> SafeToSpendSnapshot {
+        SafeToSpendSnapshot(generatedAt: day(0), currencyCode: "EUR", amount: amount, payday: day(days), hasIncome: true)
     }
 
-    @Test func projectedAmountUsesTheForecastEndValue() {
-        let today = day(0)
-        let forecastEnd = day(6)
-        let snapshot = SafeToSpendSnapshot(
-            generatedAt: today,
-            currencyCode: "EUR",
-            forecastEnd: forecastEnd,
-            days: [
-                SafeToSpendDayValue(date: today, amount: 120),
-                SafeToSpendDayValue(date: forecastEnd, amount: 75)
-            ]
-        )
-
-        #expect(SafeToSpendSnapshot.projectedAmount(for: today, from: snapshot) == 75)
+    @Test func amountStaysValidUntilTheDayBeforePayday() {
+        #expect(SafeToSpendSnapshot.projectedAmount(for: day(19), from: snapshot()) == 600)
     }
 
-    @Test func projectedAmountExpiresAfterTheForecastHorizon() {
-        let today = day(0)
-        let snapshot = SafeToSpendSnapshot(
-            generatedAt: today,
-            currencyCode: "EUR",
-            forecastEnd: today,
-            days: [SafeToSpendDayValue(date: today, amount: 120)]
-        )
+    @Test func amountExpiresOnPayday() {
+        #expect(SafeToSpendSnapshot.projectedAmount(for: day(20), from: snapshot()) == nil)
+    }
 
-        #expect(SafeToSpendSnapshot.projectedAmount(for: day(1), from: snapshot) == nil)
+    @Test func perDaySpreadsOverTheDaysLeftIncludingToday() {
+        let s = snapshot()
+        #expect(SafeToSpendSnapshot.perDay(s.amount, from: day(0), until: s.payday) == 30)
+        #expect(SafeToSpendSnapshot.perDay(s.amount, from: day(10), until: s.payday) == 60)
+    }
+
+    @Test func perDayRoundsDownSoItNeverPromisesMoreThanThereIs() {
+        // €467.16 over 3 days is €155.72 — "€156/day" would add up to €468.
+        #expect(SafeToSpendSnapshot.perDay(467.16, from: day(0), until: day(3)) == 155)
+    }
+
+    @Test func lastCoveredDayIsTheDayBeforePayday() {
+        #expect(SafeToSpendSnapshot.lastDay(before: day(3)) == day(2))
     }
 
     @Test func roundTripsThroughJSON() throws {
-        let today = day(0)
-        let snapshot = SafeToSpendSnapshot(
-            generatedAt: today,
-            currencyCode: "EUR",
-            forecastEnd: day(6),
-            days: (0..<7).map { SafeToSpendDayValue(date: day($0), amount: Decimal(100 - $0 * 5)) }
-        )
-        let data = try JSONEncoder().encode(snapshot)
-        #expect(try JSONDecoder().decode(SafeToSpendSnapshot.self, from: data) == snapshot)
+        let s = snapshot()
+        let data = try JSONEncoder().encode(s)
+        #expect(try JSONDecoder().decode(SafeToSpendSnapshot.self, from: data) == s)
     }
 }

@@ -14,7 +14,8 @@ struct AnomalyCallout: Equatable {
 @Observable @MainActor
 final class DashboardViewModel {
     var transactions: [TransactionSnapshot] = []
-    var totalBalance: Decimal = 0
+    /// Home's hero (#190); nil until the first load finishes.
+    var safeToSpend: SafeToSpend? = nil
     var monthlyIncome: Decimal = 0
     var monthlyExpenses: Decimal = 0
     var recentTransactions: [TransactionSnapshot] = []
@@ -35,6 +36,7 @@ final class DashboardViewModel {
     private let currencyService = CurrencyService()
     private var isLoaded = false
     private var categories: [CategorySnapshot] = []
+    private var activeRules: [RecurrenceRuleSnapshot] = []
 
     init(repo: any ITransactionRepository) {
         self.repo = repo
@@ -45,6 +47,7 @@ final class DashboardViewModel {
 
     /// Injectable so tests don't race on shared UserDefaults across parallel suites
     @ObservationIgnored var payCycleStartDay: () -> Int = { AppSettings.storedStartDay }
+    @ObservationIgnored var bufferPercent: () -> Int = { AppSettings.storedBufferPercent }
     @ObservationIgnored var currentDate: () -> Date = { .now }
     @ObservationIgnored var noSpendDateKeys: () -> Set<String> = { DailyCheckInStore.noSpendDateKeys() }
 
@@ -66,10 +69,13 @@ final class DashboardViewModel {
             async let txs = repo.fetchAll()
             async let cats = repo.fetchCategories()
             async let rules = repo.fetchAllRecurrenceRules()
+            async let active = repo.fetchActiveRecurrenceRules()
             transactions = try await txs
             categories = try await cats
             // A preview, not the screen's point: rules failing to load just hide it.
             upcomingWeek = UpcomingCharge.timeline(rules: (try? await rules) ?? [], now: currentDate(), days: 7)
+            // Same source as the widget's snapshot, so Home and widget never disagree.
+            activeRules = (try? await active) ?? []
             await calculateMetrics()
         } catch {
             loadError = error.localizedDescription
@@ -85,14 +91,17 @@ final class DashboardViewModel {
         let payCycleStartDay = payCycleStartDay()
         // ponytail: metrics computed off the MainActor from the already-fetched snapshots;
         // move aggregation into TransactionActor if the dataset ever makes the fetch itself the bottleneck
-        let (balance, income, expenses, recent) = await Task.detached(priority: .userInitiated) { [transactions, currencyService] in
+        let (income, expenses, recent) = await Task.detached(priority: .userInitiated) { [transactions, currencyService] in
             Self.computeMetrics(transactions, currencyService: currencyService, payCycleStartDay: payCycleStartDay)
         }.value
 
-        totalBalance = balance
         monthlyIncome = income
         monthlyExpenses = expenses
         recentTransactions = recent
+        safeToSpend = SafeToSpendSnapshotBuilder.compute(
+            transactions: transactions, activeRules: activeRules, payCycleStartDay: payCycleStartDay,
+            bufferPercent: bufferPercent(), currencyService: currencyService, now: currentDate()
+        )
         quickTransactionTemplates = HabitLoggingService.quickTemplates(from: transactions)
         refreshDailyCheckInState()
         anomalyCallout = Self.computeAnomalyCallout(
@@ -134,18 +143,16 @@ final class DashboardViewModel {
         _ transactions: [TransactionSnapshot],
         currencyService: CurrencyService,
         payCycleStartDay: Int
-    ) -> (balance: Decimal, income: Decimal, expenses: Decimal, recent: [TransactionSnapshot]) {
+    ) -> (income: Decimal, expenses: Decimal, recent: [TransactionSnapshot]) {
         let (monthStart, monthEnd) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
 
-        var balance = Decimal(0)
         var income = Decimal(0)
         var expenses = Decimal(0)
         var recent: [TransactionSnapshot] = []
 
-        // ponytail: single pass — balance/metrics + O(n) top-5 (no full sort)
+        // ponytail: single pass — metrics + O(n) top-5 (no full sort)
         for tx in transactions {
             let converted = currencyService.convertToBase(tx.amount, from: tx.currencyCode)
-            balance += converted
             if tx.timestamp >= monthStart && tx.timestamp <= monthEnd {
                 if tx.amount > 0 { income += converted }
                 else if tx.amount < 0 { expenses += abs(converted) }
@@ -157,7 +164,7 @@ final class DashboardViewModel {
             }
         }
 
-        return (balance, income, expenses, recent)
+        return (income, expenses, recent)
     }
 
     private static let dismissedAnomalyDefaultsKey = "dismissedAnomalyCalloutKey"
@@ -197,15 +204,6 @@ final class DashboardViewModel {
             UserDefaults.standard.set(key, forKey: Self.dismissedAnomalyDefaultsKey)
         }
         anomalyCallout = nil
-    }
-
-    var financialMonthLabel: String {
-        let startDay = AppSettings.storedStartDay
-        guard startDay != 1 else { return String(localized: "This Month") }
-        let (start, end) = PayCycleService.currentFinancialMonth(startDay: startDay)
-        let startFormatted = start.formatted(.dateTime.month(.abbreviated).day())
-        let endFormatted = end.formatted(.dateTime.month(.abbreviated).day())
-        return String(localized: "This period · \(startFormatted) – \(endFormatted)")
     }
 
     var hasNoTransactions: Bool {

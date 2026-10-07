@@ -7,82 +7,86 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
+/// Same number and wording as Home's Safe to Spend hero (#190).
 struct SafeToSpendWidgetView: View {
     let entry: SafeToSpendEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(String(localized: "widget.seven_day_forecast.title"), systemImage: "chart.line.uptrend.xyaxis")
+        VStack(alignment: .leading, spacing: 4) {
+            Label(String(localized: "widget.safe_to_spend.title"), systemImage: "wallet.bifold")
                 .font(.subheadline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
+                .widgetAccentable()
 
             Spacer(minLength: 0)
 
             if let amount = entry.amount, !entry.needsRefresh {
-                Text(formattedAmount(amount))
-                    .font(.title.bold())
-                    .foregroundStyle(amount < 0 ? Color("negative") : Color("positive"))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.55)
-                    .monospacedDigit()
-                    .privacySensitive()
-
-                Spacer(minLength: 0)
-
-                Text(String(localized: "widget.seven_day_forecast.on \(entry.forecastEnd.formatted(.dateTime.day().month(.abbreviated)))"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                if entry.hasIncome {
+                    figures(amount)
+                } else {
+                    // Home asks for income here too: a bare "−spent" would read as overspending.
+                    message(String(localized: "widget.safe_to_spend.no_income"))
+                }
             } else {
-                Text(String(localized: "widget.seven_day_forecast.unavailable"))
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                Text(String(localized: "widget.seven_day_forecast.open_app_to_refresh"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                message(String(localized: "widget.safe_to_spend.unavailable"),
+                        detail: String(localized: "widget.safe_to_spend.open_app_to_refresh"))
             }
-
         }
-        .accessibilityElement(children: .combine)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .containerBackground(.background, for: .widget)
-        .widgetURL(URL(string: "personalfinancetraker://insights"))
+        .widgetURL(URL(string: "personalfinancetraker://home"))
     }
 
-    private func formattedAmount(_ amount: Decimal, locale: Locale = .current) -> String {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        numberFormatter.locale = locale
-        numberFormatter.minimumFractionDigits = 2
-        numberFormatter.maximumFractionDigits = 2
-        numberFormatter.usesGroupingSeparator = false
-
-        guard let decimalAmount = numberFormatter.string(from: NSDecimalNumber(decimal: amount)) else {
-            return amount.formatted(.currency(code: entry.currencyCode).precision(.fractionLength(2)))
-        }
-
-        let decimalSeparator = numberFormatter.decimalSeparator ?? "."
-        let components = decimalAmount.split(separator: decimalSeparator.first ?? ".", maxSplits: 1, omittingEmptySubsequences: false)
-        let integerPart = String(components.first ?? "0")
-        let sign = integerPart.hasPrefix("-") ? "-" : ""
-        let digits = sign.isEmpty ? integerPart : String(integerPart.dropFirst())
-        let groupingSeparator = numberFormatter.groupingSeparator ?? ","
-        let groupedDigits = String(digits.reversed().enumerated().reduce(into: "") { result, element in
-            if element.offset > 0, element.offset.isMultiple(of: 3) {
-                result += groupingSeparator
+    private func figures(_ amount: Decimal) -> some View {
+        let lastDay = SafeToSpendSnapshot.lastDay(before: entry.payday).formatted(.dateTime.day().month(.abbreviated))
+        let perDay = SafeToSpendSnapshot.perDay(amount, from: entry.date, until: entry.payday)
+            .map { $0.formatted(.currency(code: entry.currencyCode).precision(.fractionLength(0))) }
+        let until = amount < 0
+            ? String(localized: "widget.safe_to_spend.over_plan \(lastDay)")
+            : String(localized: "widget.safe_to_spend.until \(lastDay)")
+        let formatted = amount.formatted(.currency(code: entry.currencyCode))
+        var spoken = "\(formatted), \(until)"
+        if let perDay { spoken += ", " + String(localized: "widget.safe_to_spend.per_day_spoken \(perDay)") }
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(amount.formatted(.currency(code: entry.currencyCode)))
+                .font(.title.bold())
+                .foregroundStyle(amount < 0 ? Color("negative") : Color.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .monospacedDigit()
+            // Two lines, not one with "·": the per-day figure was the part getting truncated.
+            Text(until)
+                .font(.caption)
+                .foregroundStyle(amount < 0 ? Color("negative") : Color.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            if let perDay {
+                Text(String(localized: "widget.safe_to_spend.per_day \(perDay)"))
+                    .font(.caption.bold())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            result.append(element.element)
-        }.reversed())
-        let fractionalPart = components.count > 1 ? String(components[1]) : "00"
+        }
+        // The per-day figure times the days left gives the amount away just the same.
+        .privacySensitive()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: spoken))
+    }
 
-        let currencyFormatter = NumberFormatter()
-        currencyFormatter.numberStyle = .currency
-        currencyFormatter.currencyCode = entry.currencyCode
-        currencyFormatter.locale = locale
-        let currencySymbol = currencyFormatter.currencySymbol ?? entry.currencyCode
-
-        return "\(sign)\(groupedDigits)\(decimalSeparator)\(fractionalPart) \(currencySymbol)"
+    private func message(_ text: String, detail: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(text)
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(3)
+                .minimumScaleFactor(0.8)
+            if let detail {
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }

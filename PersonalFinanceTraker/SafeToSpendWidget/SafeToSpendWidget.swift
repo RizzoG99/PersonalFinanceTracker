@@ -11,8 +11,8 @@ struct SafeToSpendWidget: Widget {
         StaticConfiguration(kind: SafeToSpendWidgetKind.name, provider: SafeToSpendProvider()) { entry in
             SafeToSpendWidgetView(entry: entry)
         }
-        .configurationDisplayName("widget.seven_day_forecast.configuration_title")
-        .description("widget.seven_day_forecast.configuration_description")
+        .configurationDisplayName("widget.safe_to_spend.configuration_title")
+        .description("widget.safe_to_spend.configuration_description")
         .supportedFamilies([.systemSmall])
     }
 }
