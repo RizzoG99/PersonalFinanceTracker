@@ -123,7 +123,7 @@ struct IPadRecurringSection: View {
         )
         .onChange(of: dataChanged.revision) { Task { await reloadRules() } }
         .navigationTitle("Recurring")
-        .fixedExpenseFeedback(committedSpending)
+        .fixedExpenseFeedback(committedSpending, materializationService: materializationService)
         .task { await reloadRules() }
         .sheet(item: $editingRule) { rule in
             NavigationStack {

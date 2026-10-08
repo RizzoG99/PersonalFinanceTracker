@@ -176,8 +176,8 @@ final class EditAddTransactionViewModel {
                 }
             }
 
-            // Pre-select goal when editing a transfer or a goal-linked rule
-            if let goalId = editingItem?.goalId ?? editingRule?.goalId {
+            // Pre-select goal when editing a transfer or a goal-linked rule, or paying one (#206)
+            if let goalId = editingItem?.goalId ?? editingRule?.goalId ?? draft?.goalId {
                 selectedGoal = availableGoals.first { $0.id == goalId }
             }
 

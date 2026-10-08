@@ -23,6 +23,7 @@ struct PersonalFinanceTrakerApp: App {
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
         configureTips()
         seedSampleDataIfRequested()
+        seedFixedExpenseCardsIfRequested()
     }
 
     // MARK: - Properties
@@ -149,6 +150,58 @@ private extension PersonalFinanceTrakerApp {
         let categories = (try? context.fetch(FetchDescriptor<CategoryModel>())) ?? []
         for category in categories {
             category.monthlyBudget = budgets[category.name]
+        }
+        try? context.save()
+        #endif
+    }
+
+    /// `-seedFixedExpenseCards` replaces transactions, recurring rules and goals with every
+    /// fixed-expense card state (#206): two missed payments (an expense and a goal transfer)
+    /// and four suggestions, one with a varying amount — more than Plan shows inline, so
+    /// "Review N more" appears too. Dates are relative to today, so it works any day.
+    @MainActor
+    func seedFixedExpenseCardsIfRequested() {
+        #if DEBUG
+        guard ProcessInfo.processInfo.arguments.contains("-seedFixedExpenseCards") else { return }
+        let context = AppContainer.shared.mainContext
+        try? context.delete(model: TransactionModel.self)
+        try? context.delete(model: RecurrenceRule.self)
+        try? context.delete(model: GoalModel.self)
+        UserDefaults.standard.removeObject(forKey: "dismissedRecurrencePatterns")
+
+        let calendar = Calendar.current
+        func monthsAgo(_ months: Int, plusDays days: Int) -> Date {
+            let date = calendar.date(byAdding: .month, value: -months, to: .now)!
+            return calendar.date(byAdding: .day, value: -days, to: date)!
+        }
+
+        // Missed: forecast-only rules whose last due date (~10 days ago) has no payment.
+        let goal = GoalModel(name: "Emergency fund", targetAmount: 5000)
+        context.insert(goal)
+        let cursor = monthsAgo(1, plusDays: 10)
+        context.insert(RecurrenceRule(
+            frequency: .monthly, interval: 1, startDate: cursor, lastMaterializedDate: cursor,
+            autoRecord: false, amount: -35, note: "Palestra", category: "Gym & Fitness", currencyCode: "EUR"
+        ))
+        context.insert(RecurrenceRule(
+            frequency: .monthly, interval: 1, startDate: cursor, lastMaterializedDate: cursor,
+            autoRecord: false, amount: -200, note: "", category: "→ Emergency fund", currencyCode: "EUR", goalId: goal.id
+        ))
+
+        // Suggestions: monthly series whose next payment is still a few days away.
+        let series: [(note: String, category: String, amounts: [Decimal])] = [
+            ("Netflix", "Streaming Services", [-13.99, -13.99]),
+            ("Affitto", "Rent/Mortgage", [-650, -650]),
+            ("Fastweb", "Internet", [-29.95, -29.95]),
+            ("Enel", "Utilities", [-80, -86, -83]),
+        ]
+        for (note, category, amounts) in series {
+            for (index, amount) in amounts.enumerated() {
+                context.insert(TransactionModel(
+                    timestamp: monthsAgo(amounts.count - index, plusDays: -5),
+                    amount: amount, note: note, category: category
+                ))
+            }
         }
         try? context.save()
         #endif

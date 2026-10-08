@@ -224,6 +224,9 @@ enum RecurrenceDetector {
         calendar: Calendar = .current
     ) -> Date? {
         guard !rule.autoRecord, rule.amount < 0 else { return nil }
+        // "Stopped paying" ends the rule today: the missed date sits before that end, and the
+        // rule still counts as active until midnight, so without this the card came back.
+        if let endDate = rule.endDate, endDate <= today { return nil }
         let window = matchWindow(rule.frequency, rule.interval)
         let due = RecurrenceOccurrenceCalculator.occurrenceDates(
             frequency: rule.frequency,

@@ -26,7 +26,7 @@ struct DashboardView: View {
                     if pendingFixedExpenses > 0 {
                         Button { selectedTab = .plan } label: {
                             HStack {
-                                Label("\(pendingFixedExpenses) fixed expenses to confirm", systemImage: "checklist")
+                                Label("\(pendingFixedExpenses) fixed expenses to check", systemImage: "checklist")
                                 Spacer()
                                 Image(systemName: "chevron.right")
                                     .font(.footnote.weight(.semibold))
