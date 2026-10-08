@@ -14,29 +14,15 @@ struct UpcomingChargeRow: View {
     private var title: String { charge.rule.title }
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: CategoryInfo.info(for: charge.rule.category).symbol)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(CategoryInfo.info(for: charge.rule.category).color)
-                .frame(width: 32, height: 32)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(.textPrimary)
-                    .lineLimit(2)
-                if showsDay {
-                    Text(Self.dayLabel(for: charge.date))
-                        .font(.caption)
-                        .foregroundStyle(.textDim)
-                }
+        ChargeRowLayout(
+            category: charge.rule.category, title: Text(title),
+            amount: charge.rule.amount, currencyCode: charge.rule.currencyCode
+        ) {
+            if showsDay {
+                Text(Self.dayLabel(for: charge.date))
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
             }
-            Spacer()
-            // Signed, income in green: money in and out now share one timeline.
-            Text(charge.rule.amount, format: .currency(code: charge.rule.currencyCode).sign(strategy: .always()))
-                .font(.headline)
-                .foregroundStyle(charge.rule.amount >= 0 ? .positive : .textPrimary)
-                .privacyBlur()
         }
         // The whole row is the tap target, not just its text — a Spacer isn't hit-testable.
         .contentShape(Rectangle())
@@ -52,5 +38,60 @@ struct UpcomingChargeRow: View {
         case 1: String(localized: "Tomorrow · \(day)")
         default: day
         }
+    }
+}
+
+/// Category tile, title over a subtitle, signed amount on the trailing side: the row shared by
+/// the timeline and the fixed-expense cards (#206), so a charge looks the same in both. At
+/// accessibility sizes the amount moves under the title instead of squeezing it into a sliver.
+struct ChargeRowLayout<Subtitle: View>: View {
+    let category: String
+    let title: Text
+    let amount: Decimal
+    let currencyCode: String
+    /// A median of varying bills: shown as "≈", read as "about … varies".
+    var approximate = false
+    @ViewBuilder let subtitle: Subtitle
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let stacked = dynamicTypeSize.isAccessibilitySize
+        let info = CategoryInfo.info(for: category)
+        HStack(alignment: stacked ? .top : .center, spacing: 12) {
+            // Same tile as Recent Transactions' rows.
+            GlassCard(tint: info.color.opacity(0.12), borderRadius: 12) {
+                Image(systemName: info.symbol)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(info.color)
+                    .frame(width: 16, height: 16)
+            }
+            .accessibilityHidden(true)
+            // AnyLayout keeps the title and amount's identity when the text size crosses over.
+            let layout = stacked
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+                : AnyLayout(HStackLayout(spacing: 12))
+            layout {
+                VStack(alignment: .leading, spacing: 2) {
+                    title
+                        .font(.body)
+                        .foregroundStyle(.textPrimary)
+                        .lineLimit(stacked ? nil : 2)
+                    subtitle
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                amountText
+            }
+        }
+    }
+
+    /// Signed, income in green: money in and out share one timeline.
+    private var amountText: some View {
+        let formatted = amount.formatted(.currency(code: currencyCode).sign(strategy: .always()))
+        return (approximate ? Text("≈ \(formatted)") : Text(verbatim: formatted))
+            .font(.headline)
+            .foregroundStyle(amount >= 0 ? .positive : .textPrimary)
+            .accessibilityLabel(approximate ? Text("About \(formatted), varies") : Text(verbatim: formatted))
+            .privacyBlur()
     }
 }

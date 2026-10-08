@@ -89,7 +89,7 @@ struct PlanView: View {
                     .appBackground()
             }
             .appToolbar(showingAddItemView: $showingAddItemView, onScanned: onScanned)
-            .fixedExpenseFeedback(committedSpending)
+            .fixedExpenseFeedback(committedSpending, materializationService: materializationService)
             .appBackground()
         }
         .task(id: dataChanged.revision) {
@@ -160,7 +160,7 @@ struct PlanView: View {
 
     private var recurringSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Coming up", subtitle: "Next 14 days") {
+            PlanSectionHeader("Coming up", subtitle: "Next 14 days") {
                 Button("See all") { showingRecurringView = true }
             }
             if !hasActiveRules {
@@ -213,7 +213,7 @@ struct PlanView: View {
 
     private var budgetsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Budgets", subtitle: "This cycle, per category") {
+            PlanSectionHeader("Budgets", subtitle: "This cycle, per category") {
                 Button("Manage") { showingBudgets = true }
             }
             if budgets.isEmpty {
@@ -254,30 +254,6 @@ struct PlanView: View {
         .tint(.accentIndigo)
         .padding(.top, 40)
     }
-
-    /// Same header shape as GoalsSection's, with a quieter text action on the trailing side.
-    private func sectionHeader(
-        _ title: LocalizedStringKey,
-        subtitle: LocalizedStringKey,
-        @ViewBuilder action: () -> some View
-    ) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.textDim)
-            }
-            Spacer()
-            action()
-                .font(.subheadline.bold())
-                .tint(.accentIndigo)
-                .frame(minHeight: 44)
-        }
-    }
 }
 
 // MARK: - Preview
@@ -301,6 +277,40 @@ struct PlanView: View {
     .environment(models.dataChanged)
     .environment(ProfileViewModel())
     .modelContainer(container)
+}
+
+/// Plan's section header — same shape as GoalsSection's, with a quieter text action on the
+/// trailing side. Shared with `FixedExpensesSection` (#206).
+struct PlanSectionHeader<Action: View>: View {
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
+    @ViewBuilder let action: Action
+
+    init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey, @ViewBuilder action: () -> Action = { EmptyView() }) {
+        self.title = title
+        self.subtitle = subtitle
+        self.action = action()
+    }
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+            action
+                .font(.subheadline.bold())
+                .tint(.accentIndigo)
+                .frame(minHeight: 44)
+        }
+    }
 }
 
 #Preview { planPreview() }

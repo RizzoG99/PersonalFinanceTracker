@@ -354,6 +354,8 @@ struct CategoryInfo {
     let symbol: String
 
     static func info(for categoryName: String) -> CategoryInfo {
+        // Goal transfers are stored as "→ <goal>" (#209): a goal, not a grey unknown category.
+        if categoryName.hasPrefix("→") { return CategoryInfo(color: .accentIndigo, symbol: "target") }
         let name = categoryName.lowercased()
 
         let color = Color(CategoryConstants.colorToken(forName: categoryName))

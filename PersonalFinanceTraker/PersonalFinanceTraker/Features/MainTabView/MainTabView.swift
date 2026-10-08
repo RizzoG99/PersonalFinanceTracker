@@ -163,7 +163,7 @@ struct MainTabView: View {
                         showingAddItemView: showingAddItemView,
                         selectedTab: $selectedTab,
                         onScanned: applyScan,
-                        pendingFixedExpenses: committedSpending.suggestions.count
+                        pendingFixedExpenses: committedSpending.count
                     )
                         .payCycleAware { dashboardViewModel.load() }
                 }

@@ -297,6 +297,56 @@ struct CommittedSpendingDetectionTests {
         #expect(RecurrenceDetector.missedOccurrence(rule: autoRecord, today: day(2026, 10, 20), calendar: calendar) == nil)
     }
 
+    /// "Stopped paying" closes the rule with `endDate: .now`; the next reload must not ask again.
+    @Test func stoppedRuleIsNoLongerReportedAsMissed() {
+        let stopped = RecurrenceRuleSnapshot.test(
+            startDate: day(2026, 1, 10), endDate: day(2026, 10, 20), lastMaterializedDate: day(2026, 9, 10),
+            autoRecord: false, amount: -80, note: "Enel", category: "Bills"
+        )
+        #expect(RecurrenceDetector.missedOccurrence(rule: stopped, today: day(2026, 10, 20).addingTimeInterval(60), calendar: calendar) == nil)
+    }
+
+    // MARK: - Cards (#206)
+
+    @Test func inlineCardsShowMissedFirstUpToTheLimit() {
+        #expect(CommittedSpendingModel.inlineCounts(missed: 0, suggestions: 5) == (0, 2))
+        #expect(CommittedSpendingModel.inlineCounts(missed: 1, suggestions: 5) == (1, 1))
+        #expect(CommittedSpendingModel.inlineCounts(missed: 3, suggestions: 1) == (2, 0))
+        #expect(CommittedSpendingModel.inlineCounts(missed: 0, suggestions: 1) == (0, 1))
+        #expect(CommittedSpendingModel.inlineCounts(missed: 0, suggestions: 0) == (0, 0))
+    }
+
+    /// "I paid it": the pre-filled form, saved as-is, goes through the real `buildInput` (sign,
+    /// transfer note) and must still match the rule — that's what moves its cursor.
+    @Test @MainActor func savingThePaidFormMatchesTheMissedPayment() async throws {
+        let goal = GoalSnapshot.test(name: "Emergency fund", targetAmount: 5000)
+        let rules = [
+            forecastRule(cursor: day(2026, 9, 10), amount: -12.99),
+            RecurrenceRuleSnapshot.test(
+                startDate: day(2026, 1, 10), lastMaterializedDate: day(2026, 9, 10), autoRecord: false,
+                amount: -200, category: "→ Emergency fund", goalId: goal.id
+            ),
+        ]
+        let today = day(2026, 10, 25)
+        for rule in rules {
+            let due = try #require(RecurrenceDetector.missedOccurrence(rule: rule, today: today, calendar: calendar))
+            let repo = MockTransactionRepository()
+            repo.stubbedCategories = [.test(name: "Bills")]
+            repo.stubbedGoals = [goal]
+            let vm = EditAddTransactionViewModel(draft: MissedPayment(rule: rule, due: due).draft, repo: repo)
+            vm.setTransactionViewModel()
+            try await Task.sleep(for: .milliseconds(50))
+
+            let input = try #require(vm.buildInput())
+            let saved = TransactionSnapshot.test(
+                timestamp: input.timestamp, amount: input.amount, note: input.note,
+                category: input.category, goalId: input.goalId
+            )
+            let paid = RecurrenceDetector.paidThrough(rule: rule, transactions: [saved], today: today, calendar: calendar)
+            #expect(paid?.cursor == due)
+        }
+    }
+
     // MARK: - Materializer
 
     @Test func confirmedAutoRecordRuleDoesNotRecordThePaymentItCameFrom() async throws {

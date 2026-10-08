@@ -14,6 +14,8 @@ struct TransactionDraft: Sendable, Equatable {
     let note: String
     let currencyCode: String
     let date: Date
+    /// A transfer's goal — "I paid it" on a missed goal transfer (#206).
+    let goalId: UUID?
 
     init(
         amount: Double,
@@ -21,7 +23,8 @@ struct TransactionDraft: Sendable, Equatable {
         categoryName: String,
         note: String,
         currencyCode: String = "EUR",
-        date: Date = .now
+        date: Date = .now,
+        goalId: UUID? = nil
     ) {
         self.amount = amount
         self.transactionType = transactionType
@@ -29,6 +32,7 @@ struct TransactionDraft: Sendable, Equatable {
         self.note = note
         self.currencyCode = currencyCode
         self.date = date
+        self.goalId = goalId
     }
 }
 
