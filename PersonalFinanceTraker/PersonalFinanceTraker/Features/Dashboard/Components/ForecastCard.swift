@@ -14,9 +14,14 @@ struct CycleForecastSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                ForecastCard(summary: summary)
-                    .padding(16)
-                    .readableWidth()
+                VStack(spacing: 16) {
+                    ForecastCard(summary: summary)
+                    if !summary.categories.isEmpty {
+                        CycleCategoriesCard(summary: summary)
+                    }
+                }
+                .padding(16)
+                .readableWidth()
             }
             .navigationTitle("This cycle")
             .navigationBarTitleDisplayMode(.inline)
@@ -85,7 +90,17 @@ struct ForecastCard: View {
                 }
 
                 if !actualPoints.isEmpty {
-                    chart
+                    VStack(spacing: 4) {
+                        chart
+                        // The x-axis is hidden; these say where the cycle starts and ends.
+                        HStack {
+                            Text(summary.cycleStart, format: .dateTime.day().month(.abbreviated))
+                            Spacer()
+                            Text("Payday \(summary.payday.formatted(.dateTime.day().month(.abbreviated)))")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.textDim)
+                    }
                 }
 
                 Divider().overlay { Color.hairline }
@@ -127,6 +142,17 @@ struct ForecastCard: View {
                 .lineStyle(StrokeStyle(lineWidth: 2))
             }
 
+            if let today = actualPoints.last {
+                PointMark(x: .value("Day", today.day), y: .value("Spend", today.amount))
+                    .foregroundStyle(trendColor)
+                    .symbolSize(50)
+                    .annotation(position: .top, spacing: 4) {
+                        Text("today")
+                            .font(.caption)
+                            .foregroundStyle(.textDim)
+                    }
+            }
+
             // Dashed projection segment (last actual → cycle end)
             ForEach(projectionPoints) { point in
                 LineMark(
@@ -142,15 +168,16 @@ struct ForecastCard: View {
                 RuleMark(y: .value("Usual", Double(truncating: summary.usualFullCycle as NSDecimalNumber)))
                     .foregroundStyle(.textDim.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                    // Below the rule: above it, a faster projection's dashed line runs through the label.
-                    .annotation(position: .bottom, alignment: .trailing) {
+                    // Bottom-leading: at the trailing end the projection converges on the rule
+                    // and runs through the label; early in the cycle the area is still low.
+                    .annotation(position: .bottom, alignment: .leading) {
                         Text("usual total")
                             .font(.caption)
                             .foregroundStyle(.textDim)
                     }
             }
         }
-        .frame(height: 120)
+        .frame(height: 180)
         .chartXScale(domain: 1...max(cycleDays, 2))
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
@@ -167,9 +194,15 @@ struct ForecastCard: View {
                     .font(.title2.bold())
                     .foregroundStyle(.textPrimary)
                     .privacyBlur()
-                Text("projected this cycle")
+                Text("expected spending by payday")
                     .font(.caption)
                     .foregroundStyle(.textDim)
+                // The verdict's own comparison, so "in line" / "+X" has a number behind it.
+                Text("Usually \(summary.usualFullCycle.formattedEUR()) by payday, \(summary.usualSoFar.formattedEUR()) by today")
+                    .font(.caption)
+                    .foregroundStyle(.textMid)
+                    .padding(.top, 6)
+                    .privacyBlur()
             }
             Spacer()
             if diff == 0 {
@@ -183,13 +216,63 @@ struct ForecastCard: View {
                         .font(.caption.bold())
                         .foregroundStyle(summary.pace == .faster ? Color.negative : Color.textMid)
                         .privacyBlur()
-                    Text("vs usual \(summary.usualFullCycle.formattedEUR())")
+                    Text("vs usual")
                         .font(.caption)
                         .foregroundStyle(.textDim)
-                        .privacyBlur()
                 }
             }
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// Where this cycle's spending went, per category, against the usual at the same point.
+struct CycleCategoriesCard: View {
+    let summary: CycleSummary
+
+    var body: some View {
+        GlassCard(borderRadius: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Where it's going")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                ForEach(summary.categories, id: \.category) { row in
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(row.category)
+                            .font(.subheadline)
+                            .foregroundStyle(.textPrimary)
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(row.spent.formattedEUR())
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.textPrimary)
+                                .monospacedDigit()
+                                .privacyBlur()
+                            if summary.pace != .building {
+                                delta(row.delta)
+                            }
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+    }
+
+    /// Red only for increases while the verdict is "faster", same rule as the forecast delta.
+    private func delta(_ value: Decimal) -> some View {
+        Group {
+            // Separate literals: a ternary would make these plain Strings, which Text never localizes.
+            if value == 0 {
+                Text("as usual")
+            } else if value > 0 {
+                Text("+\(value.formattedEUR()) vs usual").privacyBlur()
+            } else {
+                Text("-\(abs(value).formattedEUR()) vs usual").privacyBlur()
+            }
+        }
+        .font(.caption)
+        .foregroundStyle(value > 0 && summary.pace == .faster ? Color.negative : Color.textDim)
     }
 }

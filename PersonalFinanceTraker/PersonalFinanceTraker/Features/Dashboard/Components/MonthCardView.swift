@@ -9,12 +9,14 @@ import SwiftUI
 /// and one forecast sentence. Tap opens the forecast detail.
 struct MonthCardView: View {
     let summary: CycleSummary
+    /// iPad: opens the forecast in the shell's shared inspector. Nil on iPhone — own sheet.
+    var onShowForecast: (() -> Void)? = nil
     @Environment(AppSettings.self) private var appSettings
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showingForecast = false
 
     var body: some View {
-        Button { showingForecast = true } label: {
+        Button { if let onShowForecast { onShowForecast() } else { showingForecast = true } } label: {
             GlassCard {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
@@ -127,7 +129,11 @@ struct MonthCardView: View {
     let summary = CycleSummary(
         income: 2_000, out: 1_420, spentSoFar: 1_420, pace: .faster,
         usualSoFar: 1_200, usualFullCycle: 1_600,
-        drivers: [.init(category: "🍽️ Restaurants", delta: 90), .init(category: "🚗 Transport", delta: 40)],
+        categories: [
+            .init(category: "🍽️ Restaurants", spent: 300, delta: 90),
+            .init(category: "🛒 Groceries", spent: 240, delta: 0),
+            .init(category: "🚗 Transport", spent: 120, delta: 40),
+        ],
         dailyCumulative: [120, 300, 300, 520, 700, 820, 900, 1_000, 1_180, 1_300, 1_420],
         cycleStart: Calendar.current.date(byAdding: .day, value: -10, to: .now)!,
         payday: Calendar.current.date(byAdding: .day, value: 20, to: .now)!

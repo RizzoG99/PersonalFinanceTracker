@@ -45,7 +45,7 @@ struct IPadDashboardGrid: View {
                     BalanceCardView()
 
                     if let summary = viewModel.cycleSummary {
-                        MonthCardView(summary: summary)
+                        MonthCardView(summary: summary) { viewModel.showingCycleForecast = true }
                     }
 
                     if !viewModel.hasNoTransactions {

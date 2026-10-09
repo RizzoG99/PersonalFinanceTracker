@@ -105,11 +105,12 @@ struct CycleSummaryServiceTests {
             tx(-20, 1, 3, category: "🍽️ Restaurants"), tx(-20, 6, 3, category: "🚗 Transport"), tx(-50, 7, 3),
         ], now: date(20)))
         #expect(s.pace == .faster)
-        #expect(s.drivers == [
-            .init(category: "🍽️ Restaurants", delta: 80),
-            .init(category: "🚗 Transport", delta: 40),
-        ])
+        #expect(s.drivers.map(\.category) == ["🍽️ Restaurants", "🚗 Transport"])
+        #expect(s.drivers.map(\.delta) == [80, 40])
         #expect(s.projected == 210)
+        // The detail's full list: every category, biggest spend first, flat ones included.
+        #expect(s.categories.map(\.category) == ["🍽️ Restaurants", "🚗 Transport", "🛒 Groceries"])
+        #expect(s.categories.last?.delta == 0)
     }
 
     @Test("on track names no drivers")

@@ -18,6 +18,8 @@ final class DashboardViewModel {
     var safeToSpend: SafeToSpend? = nil
     /// Home's month card (#191); nil when the cycle has nothing recorded.
     var cycleSummary: CycleSummary? = nil
+    /// iPad: the forecast detail is open in the shared inspector.
+    var showingCycleForecast = false
     var recentTransactions: [TransactionSnapshot] = []
     var loadError: String? = nil
     var anomalyCallout: AnomalyCallout? = nil

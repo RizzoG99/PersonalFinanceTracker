@@ -8731,16 +8731,6 @@
         }
       }
     },
-    "projected this cycle" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "previsto in questo ciclo"
-          }
-        }
-      }
-    },
     "Public Transport" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11986,16 +11976,6 @@
         }
       }
     },
-    "vs usual %@" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "rispetto al solito %@"
-          }
-        }
-      }
-    },
     "Warning: %@" : {
 
     },
@@ -12533,6 +12513,96 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "speso finora in questo ciclo"
+          }
+        }
+      }
+    },
+    "Payday %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paga %@"
+          }
+        }
+      }
+    },
+    "today" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "oggi"
+          }
+        }
+      }
+    },
+    "expected spending by payday" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spesa prevista a fine ciclo"
+          }
+        }
+      }
+    },
+    "Usually %@ by payday, %@ by today" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di solito %1$@ a fine ciclo, %2$@ a oggi"
+          }
+        }
+      }
+    },
+    "vs usual" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rispetto al solito"
+          }
+        }
+      }
+    },
+    "Where it's going" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dove vanno i soldi"
+          }
+        }
+      }
+    },
+    "as usual" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "come al solito"
+          }
+        }
+      }
+    },
+    "+%@ vs usual" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%@ rispetto al solito"
+          }
+        }
+      }
+    },
+    "-%@ vs usual" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "-%@ rispetto al solito"
           }
         }
       }

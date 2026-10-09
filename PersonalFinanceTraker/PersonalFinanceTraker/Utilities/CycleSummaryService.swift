@@ -9,7 +9,9 @@ import Foundation
 /// faster than usual. Every amount positive, in base currency.
 struct CycleSummary: Equatable, Sendable {
     enum Pace: Equatable, Sendable { case building, onTrack, faster }
-    struct Driver: Equatable, Sendable { let category: String; let delta: Decimal }
+    /// Spent so far in one category, and the change against the usual at the same point
+    /// (meaningless while `.building` — there's no usual yet).
+    struct CategoryPace: Equatable, Sendable { let category: String; let spent: Decimal; let delta: Decimal }
 
     let income: Decimal
     /// Goal transfers excluded — money put towards a goal counts as saved, not spent.
@@ -20,8 +22,8 @@ struct CycleSummary: Equatable, Sendable {
     /// Average of up to 3 earlier cycles at the same elapsed point, and over their whole length.
     let usualSoFar: Decimal
     let usualFullCycle: Decimal
-    /// Up to two categories driving a `.faster` pace, biggest increase first.
-    let drivers: [Driver]
+    /// Every category with spending so far this cycle, biggest first — the forecast detail's list.
+    let categories: [CategoryPace]
     /// Cumulative spend per cycle day (1-based) up to today, for the forecast chart.
     let dailyCumulative: [Decimal]
     let cycleStart: Date
@@ -31,6 +33,12 @@ struct CycleSummary: Equatable, Sendable {
     /// Assumes the rest of the cycle goes as usual — so the forecast sentence can never
     /// contradict the pace verdict, unlike a linear projection skewed by rent on day one.
     var projected: Decimal { spentSoFar + usualFullCycle - usualSoFar }
+
+    /// Up to two categories driving a `.faster` pace, biggest increase first.
+    var drivers: [CategoryPace] {
+        guard pace == .faster else { return [] }
+        return Array(categories.filter { $0.delta > 0 }.sorted { $0.delta > $1.delta }.prefix(2))
+    }
 }
 
 enum CycleSummaryService {
@@ -103,18 +111,19 @@ enum CycleSummaryService {
             pace = .onTrack
         }
 
-        let drivers = pace != .faster ? [] : currentByCategory
-            .map { CycleSummary.Driver(category: $0.key, delta: $0.value - (usualByCategory[$0.key] ?? 0) / count) }
-            .filter { $0.delta > 0 }
-            .sorted { $0.delta > $1.delta }
-            .prefix(2)
+        let categories = currentByCategory
+            .map { CycleSummary.CategoryPace(
+                category: $0.key, spent: $0.value,
+                delta: previous.isEmpty ? 0 : $0.value - (usualByCategory[$0.key] ?? 0) / count
+            ) }
+            .sorted { $0.spent > $1.spent }
 
         var running = Decimal.zero
         let cumulative = daily.map { running += $0; return running }
 
         return CycleSummary(
             income: income, out: out, spentSoFar: spentSoFar, pace: pace,
-            usualSoFar: usualSoFar, usualFullCycle: usualFullCycle, drivers: Array(drivers),
+            usualSoFar: usualSoFar, usualFullCycle: usualFullCycle, categories: categories,
             dailyCumulative: cumulative, cycleStart: cycleStart, payday: payday
         )
     }

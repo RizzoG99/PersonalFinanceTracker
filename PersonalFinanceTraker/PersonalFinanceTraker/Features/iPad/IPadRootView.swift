@@ -95,6 +95,10 @@ struct IPadRootView: View {
             models.dashboard.reload()
             Task { await models.repo.refreshSafeToSpendWidgetSnapshot() }
         }
+        .onChange(of: inspectorShowsOther) { _, other in
+            if other { models.dashboard.showingCycleForecast = false }
+        }
+        .onChange(of: section) { _, _ in models.dashboard.showingCycleForecast = false }
         .onChange(of: models.dataChanged.revision) { _, _ in
             models.dashboard.reload()
             models.transactions.reload()
@@ -279,6 +283,7 @@ struct IPadRootView: View {
                     || models.compass.showingAddGoal
                     || models.compass.goalEditDraft != nil
                     || models.compass.selectedGoal != nil
+                    || (models.dashboard.showingCycleForecast && models.dashboard.cycleSummary != nil)
             },
             set: { presented in
                 guard !presented else { return }
@@ -290,7 +295,18 @@ struct IPadRootView: View {
                 models.compass.goalEditDraft = nil
                 models.compass.goalEditId = nil
                 models.compass.selectedGoal = nil
+                models.dashboard.showingCycleForecast = false
             }
         )
+    }
+
+    /// Anything other than the forecast taking the inspector replaces it for good — otherwise
+    /// closing a transaction would bring back a forecast the user had already moved past.
+    private var inspectorShowsOther: Bool {
+        showingAddItemView
+            || models.transactions.transactionToEdit != nil
+            || models.compass.showingAddGoal
+            || models.compass.goalEditDraft != nil
+            || models.compass.selectedGoal != nil
     }
 }
