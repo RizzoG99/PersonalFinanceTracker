@@ -28,7 +28,6 @@ enum AppContainer {
             GoalModel.self,
             TravelModel.self,
             HealthScoreSnapshot.self,
-            DailyForecastCache.self,  // unused, see its declaration
             RecurrenceRule.self,
             MerchantCategoryMapping.self,
         ])
@@ -64,7 +63,6 @@ enum AppContainer {
                 GoalModel.self,
                 TravelModel.self,
                 HealthScoreSnapshot.self,
-                DailyForecastCache.self,
                 RecurrenceRule.self,
                 MerchantCategoryMapping.self,
             ])
