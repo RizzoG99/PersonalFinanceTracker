@@ -135,6 +135,9 @@ struct ForecastCard: View {
                     .accessibilityElement(children: .combine)
                 }
             }
+            // Stacked rows (accessibility sizes) have no Spacer pushing them wide, so the
+            // card would hug its text and float centred.
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -277,6 +280,9 @@ struct CycleCategoriesCard: View {
                     .accessibilityElement(children: .combine)
                 }
             }
+            // Stacked rows (accessibility sizes) have no Spacer pushing them wide, so the
+            // card would hug its text and float centred.
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
