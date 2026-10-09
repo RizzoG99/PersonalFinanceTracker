@@ -93,9 +93,21 @@ struct ForecastCard: View {
                 if hasUsual {
                     summaryRow
                 } else {
-                    Text("Not enough history for a forecast yet")
-                        .font(.subheadline)
-                        .foregroundStyle(.textMid)
+                    // The chart is hidden from VoiceOver, so its one number has to be said here.
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(summary.spentSoFar.formattedEUR())
+                            .font(.title2.bold())
+                            .foregroundStyle(.textPrimary)
+                            .privacyBlur()
+                        Text("spent so far this cycle")
+                            .font(.caption)
+                            .foregroundStyle(.textDim)
+                        Text("Not enough history for a forecast yet")
+                            .font(.subheadline)
+                            .foregroundStyle(.textMid)
+                            .padding(.top, 4)
+                    }
+                    .accessibilityElement(children: .combine)
                 }
             }
         }

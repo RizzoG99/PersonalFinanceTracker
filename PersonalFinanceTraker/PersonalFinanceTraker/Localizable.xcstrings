@@ -12526,6 +12526,16 @@
           }
         }
       }
+    },
+    "spent so far this cycle" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "speso finora in questo ciclo"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
