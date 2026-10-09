@@ -159,8 +159,9 @@ struct ForecastCard: View {
                 PointMark(x: .value("Day", today.day), y: .value("Spend", today.amount))
                     .foregroundStyle(trendColor)
                     .symbolSize(50)
-                    // Below the point: above it, near the usual line, it ran into "usual total".
-                    .annotation(position: .bottom, spacing: 4) {
+                    // Bottom-trailing: above it ran into "usual total", straight below it sat on
+                    // the actual line arriving flat; to the right there's only the dashed projection.
+                    .annotation(position: .bottomTrailing, spacing: 4) {
                         Text("today")
                             .font(.caption)
                             .foregroundStyle(.textDim)
