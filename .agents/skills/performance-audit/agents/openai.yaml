@@ -1,0 +1,4 @@
+interface:
+  display_name: "Performance Audit"
+  short_description: "Audit repository performance with evidence"
+  default_prompt: "Use $performance-audit to run or resume an evidence-driven performance audit of this repository."

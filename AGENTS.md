@@ -20,6 +20,11 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
   - `$feature-brainstorm`: interactive product brainstorming and concise handoff docs.
   - `$ux-audit`: screenshot-based mobile UX/UI audits.
   - `$graphify`: codebase architecture, relationships, and knowledge graph tasks.
+  - `$diagnosing-bugs`: feedback-loop-first diagnosis for uncertain bugs and performance regressions.
+  - `$performance-audit`: audit-only, project-wide performance investigations with persistent findings and independent validation.
+  - `$retro`: user-invoked retrospective that proposes evidence-backed environment improvements.
+  - `$writing-for-agents`: creation and maintenance of skills and agent-facing steering docs.
+  - `$pft-pr-lifecycle`: user-invoked delivery from issue/worktree through verified PR and authorized cleanup.
 - Prefer `rg` and graphify queries before broad source browsing.
 - Preserve unrelated user changes in the working tree.
 - Keep implementation scoped to the relevant feature folder, model, utility, and test files.
