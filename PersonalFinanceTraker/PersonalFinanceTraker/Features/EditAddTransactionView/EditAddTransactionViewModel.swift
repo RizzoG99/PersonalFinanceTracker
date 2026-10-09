@@ -143,6 +143,10 @@ final class EditAddTransactionViewModel {
     @ObservationIgnored
     private var loadTask: Task<Void, Never>?
 
+    /// Waits for the open-time load. Tests use it instead of a fixed sleep, which raced the
+    /// load on slower CI machines (Xcode Cloud, 2026-10-09).
+    func waitUntilLoaded() async { await loadTask?.value }
+
     func setTransactionViewModel() {
         loadTask = Task {
             availableCategories = (try? await repo.fetchCategories()) ?? []

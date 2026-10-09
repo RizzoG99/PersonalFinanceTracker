@@ -506,7 +506,7 @@ struct EditAddTransactionViewModelTests {
         #expect(vm.transactionType == .transfer)
 
         vm.setTransactionViewModel()
-        try await Task.sleep(for: .milliseconds(50))
+        await vm.waitUntilLoaded()
 
         #expect(vm.selectedGoal?.id == goal.id)
         #expect(vm.availableTypes.contains(.transfer))
@@ -614,7 +614,7 @@ extension EditAddTransactionViewModelTests {
         let vm = EditAddTransactionViewModel(editingRule: rule, repo: repo)
 
         vm.setTransactionViewModel()
-        try await Task.sleep(for: .milliseconds(50))
+        await vm.waitUntilLoaded()
 
         #expect(vm.selectedCategory?.name == "Food")
         #expect(vm.isFormValid == true)

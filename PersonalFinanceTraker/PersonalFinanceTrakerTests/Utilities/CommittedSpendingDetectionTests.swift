@@ -335,7 +335,7 @@ struct CommittedSpendingDetectionTests {
             repo.stubbedGoals = [goal]
             let vm = EditAddTransactionViewModel(draft: MissedPayment(rule: rule, due: due).draft, repo: repo)
             vm.setTransactionViewModel()
-            try await Task.sleep(for: .milliseconds(50))
+            await vm.waitUntilLoaded()
 
             let input = try #require(vm.buildInput())
             let saved = TransactionSnapshot.test(

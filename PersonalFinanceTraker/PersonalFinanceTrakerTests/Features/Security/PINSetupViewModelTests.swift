@@ -34,9 +34,7 @@ struct PINSetupViewModelTests {
     /// silently dropping the second batch while still in `.enterPin` state.
     private func enterAndConfirmPIN(_ pin: String, on viewModel: PINSetupViewModel) async throws {
         for digit in pin { viewModel.appendDigit(String(digit)) }
-        for _ in 0..<40 where viewModel.currentStep != .confirmPin {
-            try await Task.sleep(for: .milliseconds(50))
-        }
+        #expect(await waitUntil { viewModel.currentStep == .confirmPin })
         for digit in pin { viewModel.appendDigit(String(digit)) }
     }
 
@@ -57,9 +55,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(3.0))
-
-        #expect(viewModel.currentStep == .biometricPrompt)
+        #expect(await waitUntil { viewModel.currentStep == .biometricPrompt })
 
         viewModel.skipBiometric()
         #expect(viewModel.currentStep == .nameEntry)
@@ -87,9 +83,7 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(3.0))
-
-        #expect(viewModel.currentStep == .nameEntry)
+        #expect(await waitUntil { viewModel.currentStep == .nameEntry })
     }
 
     @Test("Skip link on biometricPrompt advances without enabling the lock")
@@ -192,12 +186,13 @@ struct PINSetupViewModelTests {
         )
 
         for digit in "0000" { viewModel.appendDigit(String(digit)) }
-        try await Task.sleep(for: .seconds(0.25))
+        // 0.25s against a 0.15s internal delay: when it lost, the new PIN's digits landed
+        // while still verifying the old one and were dropped.
+        #expect(await waitUntil { viewModel.currentStep == .enterPin })
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(3.0))
+        #expect(await waitUntil { viewModel.isComplete })
 
         #expect(viewModel.currentStep == .success)
-        #expect(viewModel.isComplete)
     }
 
     @Test("Forgot-PIN reset flow finalizes immediately and never reaches the new steps")
@@ -217,10 +212,9 @@ struct PINSetupViewModelTests {
         )
 
         try await enterAndConfirmPIN("1234", on: viewModel)
-        try await Task.sleep(for: .seconds(3.0))
+        #expect(await waitUntil { UserDefaults.standard.bool(forKey: "pin_setup_complete") })
 
         #expect(viewModel.currentStep == .success)
-        #expect(UserDefaults.standard.bool(forKey: "pin_setup_complete"))
     }
 }
 
