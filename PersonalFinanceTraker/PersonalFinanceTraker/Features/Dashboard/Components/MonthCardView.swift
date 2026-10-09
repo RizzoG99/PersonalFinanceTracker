@@ -45,6 +45,8 @@ struct MonthCardView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            // .plain only hit-tests drawn pixels; without this the gaps between texts ignore taps.
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
