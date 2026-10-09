@@ -31,7 +31,8 @@ struct CycleForecastSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        // Full height: at .medium the category list sat below the fold, easy to never find.
+        .presentationDetents([.large])
         .presentationBackground { AppBackground() }
     }
 }
