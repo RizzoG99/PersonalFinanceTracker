@@ -100,7 +100,7 @@ struct ForecastCard: View {
                 }
 
                 if !actualPoints.isEmpty {
-                    VStack(spacing: 4) {
+                    VStack(alignment: .leading, spacing: 4) {
                         chart
                         // The x-axis is hidden; these say where the cycle starts and ends.
                         dates {
