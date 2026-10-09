@@ -56,11 +56,14 @@ struct IPadInspector: View {
                 models.compass.selectedGoal = nil
                 models.compass.beginEditingGoal(goal)
             }
+        } else if models.dashboard.showingCycleForecast, let summary = models.dashboard.cycleSummary {
+            // Its Done calls dismiss(), which closes the inspector like the goal detail's does.
+            CycleForecastSheet(summary: summary)
         } else {
             // Not reachable in normal use: `inspectorPresented` is false whenever none of the
             // above is set (showingAddItemView, transactionToEdit, showingAddGoal,
-            // goalEditDraft, or selectedGoal), so the inspector is collapsed rather than
-            // showing this.
+            // goalEditDraft, selectedGoal, or showingCycleForecast), so the inspector is
+            // collapsed rather than showing this.
             ContentUnavailableView(
                 "Nothing Selected",
                 systemImage: "sidebar.right"

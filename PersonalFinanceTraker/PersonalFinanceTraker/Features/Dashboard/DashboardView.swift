@@ -23,6 +23,9 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     GreetingHeaderView()
                     BalanceCardView()
+                    if let summary = viewModel.cycleSummary {
+                        MonthCardView(summary: summary)
+                    }
                     if pendingFixedExpenses > 0 {
                         Button { selectedTab = .plan } label: {
                             HStack {

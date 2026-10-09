@@ -15,7 +15,6 @@ struct DataWipeServiceTests {
             GoalModel.self,
             TravelModel.self,
             HealthScoreSnapshot.self,
-            DailyForecastCache.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: schema, configurations: config)
@@ -32,7 +31,6 @@ struct DataWipeServiceTests {
             timestamp: .now, score: 80, savingsScore: 80,
             stabilityScore: 80, adherenceScore: 80, subscriptionScore: 80
         ))
-        context.insert(DailyForecastCache(monthKey: "2026-07", computedUpToDay: 1, days: [1], amounts: [10]))
         context.insert(RecurrenceRule(
             frequency: .monthly, interval: 1, startDate: .now,
             amount: -9.99, note: "iCloud", category: "Abbonamenti", currencyCode: "EUR"
@@ -53,7 +51,6 @@ struct DataWipeServiceTests {
         #expect(try context.fetchCount(FetchDescriptor<GoalModel>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<TravelModel>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<HealthScoreSnapshot>()) > 0)
-        #expect(try context.fetchCount(FetchDescriptor<DailyForecastCache>()) > 0)
         #expect(try context.fetchCount(FetchDescriptor<RecurrenceRule>()) > 0)
 
         try DataWipeService.wipeAllData(context: context)
@@ -64,7 +61,6 @@ struct DataWipeServiceTests {
         #expect(try context.fetchCount(FetchDescriptor<GoalModel>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<TravelModel>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<HealthScoreSnapshot>()) == 0)
-        #expect(try context.fetchCount(FetchDescriptor<DailyForecastCache>()) == 0)
         // Survivors here re-materialize transactions at the next launch and suppress every
         // import recurrence suggestion, because each candidate still matches a live rule.
         #expect(try context.fetchCount(FetchDescriptor<RecurrenceRule>()) == 0)

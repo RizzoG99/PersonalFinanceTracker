@@ -142,27 +142,6 @@ struct HealthScoreSnapshotData: Sendable, Identifiable {
     }
 }
 
-struct DailyForecastCacheData: Sendable {
-    let monthKey: String
-    let computedUpToDay: Int
-    let days: [Int]
-    let amounts: [Double]
-
-    init(monthKey: String, computedUpToDay: Int, days: [Int], amounts: [Double]) {
-        self.monthKey = monthKey
-        self.computedUpToDay = computedUpToDay
-        self.days = days
-        self.amounts = amounts
-    }
-
-    init(_ model: DailyForecastCache) {
-        self.monthKey = model.monthKey
-        self.computedUpToDay = model.computedUpToDay
-        self.days = model.days
-        self.amounts = model.amounts
-    }
-}
-
 // MARK: - Write inputs (Sendable, no model references)
 
 struct TransactionInput: Sendable {

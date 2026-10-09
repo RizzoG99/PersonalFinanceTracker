@@ -3,7 +3,7 @@ import Foundation
 /// Materializes due `RecurrenceRule` occurrences into real `TransactionModel` rows, and moves
 /// forecast-only rules' cursors past the occurrences a real payment has covered.
 /// Launch/foreground-triggered only (see MainTabView) — no background execution,
-/// matching how DailyForecastCache and the daily log reminder already work.
+/// matching how the daily log reminder already works.
 actor RecurrenceMaterializationService {
     private var inFlight: Task<Void, Error>?
 

@@ -13,7 +13,6 @@ final class MockTransactionRepository: ITransactionRepository {
     var stubbedGoals: [GoalSnapshot] = []
     var stubbedTravels: [TravelSnapshot] = []
     var stubbedSnapshots: [HealthScoreSnapshotData] = []
-    var stubbedForecastCache: DailyForecastCacheData? = nil
     var stubbedRecurrenceRules: [RecurrenceRuleSnapshot] = []
 
     // MARK: Spies
@@ -221,17 +220,6 @@ final class MockTransactionRepository: ITransactionRepository {
     func fetchSnapshots(limit: Int) async throws -> [HealthScoreSnapshotData] {
         if shouldThrow { throw MockError.forced }
         return Array(stubbedSnapshots.prefix(limit))
-    }
-
-    // MARK: Forecast cache
-    func fetchForecastCache() async throws -> DailyForecastCacheData? {
-        if shouldThrow { throw MockError.forced }
-        return stubbedForecastCache
-    }
-
-    func saveForecastCache(_ data: DailyForecastCacheData) async throws {
-        if shouldThrow { throw MockError.forced }
-        stubbedForecastCache = data
     }
 
     // MARK: Receipt scan — learned merchant → category

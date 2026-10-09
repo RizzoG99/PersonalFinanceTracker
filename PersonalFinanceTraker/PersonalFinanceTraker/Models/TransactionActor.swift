@@ -382,25 +382,6 @@ actor TransactionActor: ITransactionRepository {
         return try modelContext.fetch(desc).map(HealthScoreSnapshotData.init)
     }
 
-    // MARK: Forecast cache
-
-    func fetchForecastCache() async throws -> DailyForecastCacheData? {
-        try modelContext.fetch(FetchDescriptor<DailyForecastCache>()).first.map(DailyForecastCacheData.init)
-    }
-
-    func saveForecastCache(_ data: DailyForecastCacheData) async throws {
-        let existing = try modelContext.fetch(FetchDescriptor<DailyForecastCache>())
-        existing.forEach { modelContext.delete($0) }
-        let model = DailyForecastCache(
-            monthKey: data.monthKey,
-            computedUpToDay: data.computedUpToDay,
-            days: data.days,
-            amounts: data.amounts
-        )
-        modelContext.insert(model)
-        try modelContext.save()
-    }
-
     // MARK: Receipt scan — learned merchant → category
 
     func fetchMerchantCategoryMappings() async throws -> [String: UUID] {

@@ -44,6 +44,10 @@ struct IPadDashboardGrid: View {
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
                     BalanceCardView()
 
+                    if let summary = viewModel.cycleSummary {
+                        MonthCardView(summary: summary) { viewModel.showingCycleForecast = true }
+                    }
+
                     if !viewModel.hasNoTransactions {
                         DailyLoggingHabitCard(
                             transactionStatus: viewModel.dailyLoggingStatus,

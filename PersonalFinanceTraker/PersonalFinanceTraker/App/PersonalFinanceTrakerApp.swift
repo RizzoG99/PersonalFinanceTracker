@@ -24,6 +24,7 @@ struct PersonalFinanceTrakerApp: App {
         configureTips()
         seedSampleDataIfRequested()
         seedFixedExpenseCardsIfRequested()
+        seedMonthCardIfRequested()
     }
 
     // MARK: - Properties
@@ -202,6 +203,64 @@ private extension PersonalFinanceTrakerApp {
                     amount: amount, note: note, category: category
                 ))
             }
+        }
+        try? context.save()
+        #endif
+    }
+
+    /// `-seedMonthCard <state>` replaces transactions, rules and goals with three ordinary
+    /// earlier pay cycles plus a current one in the requested Home month card state (#191):
+    /// `onTrack` (with a goal transfer), `faster`, `building`, `noIncome`, `overspent`, `hidden`.
+    /// It also moves the pay-cycle start day so today is 12 days in (3 for `building`).
+    @MainActor
+    func seedMonthCardIfRequested() {
+        #if DEBUG
+        guard let state = UserDefaults.standard.string(forKey: "seedMonthCard") else { return }
+        let context = AppContainer.shared.mainContext
+        try? context.delete(model: TransactionModel.self)
+        try? context.delete(model: RecurrenceRule.self)
+        try? context.delete(model: GoalModel.self)
+
+        let calendar = Calendar.current
+        let elapsed = state == "building" ? 3 : 12
+        let anchor = calendar.date(byAdding: .day, value: -elapsed, to: .now)!
+        let startDay = min(calendar.component(.day, from: anchor), 28)
+        UserDefaults.standard.set(startDay, forKey: "payCycleStartDay")
+        let cycleStart = PayCycleService.financialMonthStart(for: .now, startDay: startDay, calendar: calendar)
+        let daysIn = calendar.dateComponents([.day], from: cycleStart, to: .now).day ?? elapsed
+
+        func add(_ amount: Decimal, _ category: String, day: Int, cyclesAgo: Int, goalId: UUID? = nil) {
+            // The current cycle only gets what has already happened.
+            guard cyclesAgo > 0 || day < daysIn else { return }
+            let start = calendar.date(byAdding: .month, value: -cyclesAgo, to: cycleStart)!
+            let date = calendar.date(byAdding: .hour, value: 10, to: calendar.date(byAdding: .day, value: day, to: start)!)!
+            context.insert(TransactionModel(timestamp: date, amount: amount, note: "", category: category, goalId: goalId))
+        }
+        func usualCycle(_ cyclesAgo: Int, income: Decimal? = 2000) {
+            if let income { add(income, "Salary", day: 0, cyclesAgo: cyclesAgo) }
+            add(-650, "Rent/Mortgage", day: 1, cyclesAgo: cyclesAgo)
+            for day in [2, 6, 10, 14, 18, 22] { add(-60, "Groceries", day: day, cyclesAgo: cyclesAgo) }
+            for day in [4, 11, 20] { add(-30, "Restaurants", day: day, cyclesAgo: cyclesAgo) }
+            for day in [3, 15] { add(-40, "Gas", day: day, cyclesAgo: cyclesAgo) }
+        }
+
+        for cyclesAgo in 1...3 { usualCycle(cyclesAgo) }
+        switch state {
+        case "onTrack":
+            usualCycle(0)
+            let goal = GoalModel(name: "Emergency fund", targetAmount: 5000)
+            context.insert(goal)
+            add(-200, "→ Emergency fund", day: 2, cyclesAgo: 0, goalId: goal.id)
+        case "faster", "overspent":
+            usualCycle(0, income: state == "faster" ? 2000 : 800)
+            for day in [5, 7, 9] { add(-55, "Restaurants", day: day, cyclesAgo: 0) }
+            add(-90, "Gas", day: 8, cyclesAgo: 0)
+        case "building":
+            usualCycle(0)
+        case "noIncome":
+            usualCycle(0, income: nil)
+        default: // "hidden": nothing this cycle
+            break
         }
         try? context.save()
         #endif

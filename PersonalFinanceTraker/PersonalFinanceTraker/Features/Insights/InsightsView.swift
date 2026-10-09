@@ -21,10 +21,6 @@ struct CompassView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 24) {
-                    // Hero and Forecast stay here until the Home month card (#191) takes them.
-                    if let insight = viewModel.heroInsight {
-                        HeroInsightCard(insight: insight)
-                    }
                     BreakdownExplorerSection(viewModel: viewModel)
                     HealthScoreSection(
                         healthScore: viewModel.healthScore,
@@ -37,7 +33,6 @@ struct CompassView: View {
                         showingDetail: $viewModel.showingHealthScoreDetail
                     )
                     HabitsSection(observations: viewModel.habitObservations)
-                    ForecastSection(forecast: viewModel.forecast)
                 }
                 .padding(16)
             }
