@@ -10,6 +10,8 @@ This repository is configured for both Claude Code and Codex.
 - `.claude/skills` and `.codex/skills` contain relative symlinks for native discovery. Edit only `.agents/skills`; when adding a shared skill, add a symlink for each supported agent.
 - Keep shared project facts aligned between this file and `AGENTS.md`; keep tool-specific instructions in the file for that tool.
 
+Shared project skills include `$swiftui-pro`, `$feature-brainstorm`, `$ux-audit`, `$graphify`, `$diagnosing-bugs`, `$performance-audit`, `$retro`, `$writing-for-agents`, and `$pft-pr-lifecycle`. Use `$diagnosing-bugs` for uncertain regressions, `$performance-audit` for audit-only repository-wide performance investigations, `$retro` for an explicitly requested coding-session retrospective, `$writing-for-agents` for agent-facing documentation, and `$pft-pr-lifecycle` for explicitly requested issue-to-PR delivery.
+
 For every new or materially changed user-facing view, use `$swiftui-pro` before implementation. Inspect the two closest existing screens/components and follow its `references/design.md` preflight and quality gate. Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
 
 ## Changelog

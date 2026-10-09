@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "auditStatus": "COMPLETED",
+  "repository": {
+    "path": ".",
+    "commit": "b91ee335d57e535fa736f011bf348188607d178c",
+    "branch": "main",
+    "workingTreeClean": false,
+    "snapshotNote": "The original audit reflects commit b91ee335 plus pre-existing uncommitted user changes. A focused delta review covers the performance-sensitive changes through dcbb22d; audit artifacts do not modify production code."
+  },
+  "createdAt": "2026-10-08T20:20:43Z",
+  "updatedAt": "2026-10-09T13:06:13Z",
+  "workstreams": [
+    {
+      "id": "WS-UI",
+      "scope": "SwiftUI rendering, list and chart behavior, observation granularity, and state-driven invalidation",
+      "status": "COMPLETED",
+      "assignedAgent": "/root/ui_state_screen",
+      "reportPaths": [
+        ".performance-audit/findings/rendering.md",
+        ".performance-audit/findings/state-management.md"
+      ],
+      "findingsCount": 6,
+      "dependencies": ["RECON"],
+      "completionTimestamp": "2026-10-08T20:26:55Z"
+    },
+    {
+      "id": "WS-DATA",
+      "scope": "SwiftData access, import/export, backup, file and network I/O, caching, and data-path algorithms",
+      "status": "COMPLETED",
+      "assignedAgent": "/root/data_algorithm_screen",
+      "reportPaths": [
+        ".performance-audit/findings/network-storage.md",
+        ".performance-audit/findings/algorithms.md"
+      ],
+      "findingsCount": 6,
+      "dependencies": ["RECON"],
+      "completionTimestamp": "2026-10-08T20:26:55Z"
+    },
+    {
+      "id": "WS-RUNTIME",
+      "scope": "Memory, resource lifecycle, concurrency, camera/Vision processing, actor hops, and cancellation",
+      "status": "COMPLETED",
+      "assignedAgent": "/root/runtime_screen",
+      "reportPaths": [
+        ".performance-audit/findings/memory.md",
+        ".performance-audit/findings/concurrency.md",
+        ".performance-audit/findings/platform-specific.md"
+      ],
+      "findingsCount": 6,
+      "dependencies": ["RECON"],
+      "completionTimestamp": "2026-10-08T20:26:55Z"
+    },
+    {
+      "id": "WS-STARTUP",
+      "scope": "Cold and warm launch, authentication shell creation, model-container setup, and eager initialization",
+      "status": "COMPLETED",
+      "assignedAgent": "/root/runtime_screen",
+      "reportPaths": [
+        ".performance-audit/findings/startup.md"
+      ],
+      "findingsCount": 3,
+      "dependencies": ["RECON", "WS-DATA", "WS-RUNTIME"],
+      "completionTimestamp": "2026-10-08T20:34:05Z"
+    },
+    {
+      "id": "WS-VALIDATE",
+      "scope": "Independent challenge and static validation of P0/P1 candidates; define measurement plans without fabricating results",
+      "status": "COMPLETED",
+      "assignedAgent": [
+        "/root/ui_state_screen",
+        "/root/data_algorithm_screen"
+      ],
+      "reportPaths": [
+        ".performance-audit/validation-plan.md",
+        ".performance-audit/validation/data-runtime-review.md",
+        ".performance-audit/validation/ui-state-review.md",
+        ".performance-audit/validation/startup-review.md"
+      ],
+      "findingsCount": 0,
+      "reviewedFindingsCount": 11,
+      "dependencies": ["WS-UI", "WS-DATA", "WS-RUNTIME", "WS-STARTUP"],
+      "completionTimestamp": "2026-10-08T20:34:05Z"
+    },
+    {
+      "id": "WS-DELTA-217",
+      "scope": "Focused review of PR #217 changes intersecting Dashboard, Insights, iPad, forecast, cache, and retained audit findings",
+      "status": "COMPLETED",
+      "assignedAgent": "primary",
+      "reportPaths": [
+        ".performance-audit/validation/pr217-delta-review.md"
+      ],
+      "findingsCount": 0,
+      "reviewedFindingsCount": 7,
+      "dependencies": ["WS-UI", "WS-DATA", "WS-STARTUP", "WS-VALIDATE"],
+      "completionTimestamp": "2026-10-09T13:06:13Z"
+    }
+  ],
+  "consolidatedResult": {
+    "rawFindingsCount": 21,
+    "rootFindingsCount": 16,
+    "priorityCounts": {
+      "P0": 0,
+      "P1": 6,
+      "P2": 7,
+      "P3": 3
+    },
+    "severityCounts": {
+      "Critical": 0,
+      "High": 6,
+      "Medium": 7,
+      "Low": 3
+    },
+    "confidenceCounts": {
+      "Confirmed": 0,
+      "Strong Evidence": 13,
+      "Potential": 3
+    },
+    "summaryPath": ".performance-audit/summary.md",
+    "roadmapPath": ".performance-audit/optimization-roadmap.md",
+    "validationPlanPath": ".performance-audit/validation-plan.md"
+  },
+  "currentDisposition": {
+    "reviewedThroughCommit": "dcbb22ded9a08fb4272c352635ce5796d7d5e825",
+    "activeRootFindingsCount": 15,
+    "priorityCounts": {
+      "P0": 0,
+      "P1": 6,
+      "P2": 7,
+      "P3": 2
+    },
+    "confidenceCounts": {
+      "Confirmed": 0,
+      "Strong Evidence": 12,
+      "Potential": 3
+    },
+    "resolvedRootFindingIds": ["PERF-203"],
+    "retiredSupportingFindingIds": ["PERF-204"],
+    "deltaReviewPath": ".performance-audit/validation/pr217-delta-review.md"
+  },
+  "reconnaissance": {
+    "id": "RECON",
+    "status": "COMPLETED",
+    "reportPaths": [
+      ".performance-audit/architecture.md",
+      ".performance-audit/audit-plan.md"
+    ],
+    "completionTimestamp": "2026-10-08T20:20:43Z"
+  }
+}
