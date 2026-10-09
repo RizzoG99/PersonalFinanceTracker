@@ -1,0 +1,6 @@
+interface:
+  display_name: "PFT PR Lifecycle"
+  short_description: "Deliver PFT changes through verified PRs"
+  default_prompt: "Use $pft-pr-lifecycle to deliver the requested PersonalFinanceTracker issue through a verified pull request."
+policy:
+  allow_implicit_invocation: false
