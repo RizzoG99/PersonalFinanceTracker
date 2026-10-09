@@ -56,8 +56,8 @@ struct BalanceCardView: View {
     @ViewBuilder
     private func noIncome(_ safe: SafeToSpend) -> some View {
         let start = safe.cycleStart.formatted(.dateTime.day().month(.abbreviated))
+        // What's been spent shows on the month card right below (#191).
         if safe.spent > 0 {
-            row("Spent so far", safe.spent, sign: "-")
             Text("No income recorded since \(start). If your salary arrives on another day, set it as the pay cycle start in Settings.")
                 .font(.subheadline)
                 .foregroundStyle(.textMid)
@@ -110,8 +110,9 @@ struct BalanceCardView: View {
     private func breakdown(_ safe: SafeToSpend) -> some View {
         DisclosureGroup {
             VStack(alignment: .leading, spacing: 6) {
-                row("Income this cycle", safe.income, sign: "+")
-                row("Spent so far", safe.spent)
+                // Income and spending themselves live on the month card (#191); here only
+                // what's left of them, so no figure appears twice on Home.
+                row("Still available this cycle", safe.income - safe.spent, sign: "")
                 if safe.recurring > 0 { row("Recurring still due", safe.recurring) }
                 if safe.goals > 0 { row("Goal contributions", safe.goals) }
                 row("Safety buffer (\(appSettings.safeToSpendBufferPercent)%)", safe.buffer)

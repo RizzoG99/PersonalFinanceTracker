@@ -8,7 +8,6 @@ import Foundation
 @Observable @MainActor
 final class CompassViewModel {
     // MARK: - State
-    var heroInsight: HeroInsight?
     var healthScore: HealthScore?
     /// Set once here, never in `reloadData()`: the app reloads this model on every data change
     /// and every foreground, and resetting would throw someone who just edited a transaction
@@ -21,7 +20,6 @@ final class CompassViewModel {
     }
     private(set) var explorer: ExplorerBreakdown = .empty
     var habitObservations: [HabitObservation] = []
-    var forecast: SpendingForecast?
     var goals: [GoalSnapshot] = []
     var averageIncome: Decimal = 0
     var averageExpenses: Decimal = 0
@@ -48,7 +46,6 @@ final class CompassViewModel {
     @ObservationIgnored private let currencyService: CurrencyService
     @ObservationIgnored private let pieDataService = PieChartDataService()
     @ObservationIgnored private let healthService: FinancialHealthService
-    @ObservationIgnored private let forecastService: SpendingForecastService
     @ObservationIgnored private let averagesService: StatisticalAverageService
     @ObservationIgnored private let insightService: SpendingInsightService
 
@@ -70,7 +67,6 @@ final class CompassViewModel {
         let currency = CurrencyService()
         self.currencyService = currency
         self.healthService = FinancialHealthService(currencyService: currency)
-        self.forecastService = SpendingForecastService(currencyService: currency)
         self.averagesService = StatisticalAverageService(currencyService: currency)
         self.insightService = SpendingInsightService(currencyService: currency)
     }
@@ -99,15 +95,12 @@ final class CompassViewModel {
             return
         }
         expenseTransactions = transactions.filter { $0.amount < 0 && $0.goalId == nil }
-        // overlap the two repo-I/O computations with the pure ones; all run on MainActor, awaits interleave
+        // overlap the repo-I/O computation with the pure ones; all run on MainActor, awaits interleave
         async let health: Void = computeHealthScore()
-        async let futureForecast: Void = computeForecast()
-        await computeHeroInsight()
         refreshExplorer()
         await computeHabits()
         calculateAverages()
         await health
-        await futureForecast
     }
 
     // MARK: - Goal CRUD
@@ -170,12 +163,6 @@ final class CompassViewModel {
 
     // MARK: - Computations
 
-    private func computeHeroInsight() async {
-        heroInsight = insightService.heroInsight(
-            expenseTransactions: expenseTransactions, payCycleStartDay: AppSettings.storedStartDay
-        )
-    }
-
     private func computeHealthScore() async {
         let budgetedCategories = (try? await repo.fetchCategories())?.filter { $0.monthlyBudget != nil } ?? []
 
@@ -223,30 +210,6 @@ final class CompassViewModel {
 
     private func computeHabits() async {
         habitObservations = insightService.habitObservations(expenseTransactions: expenseTransactions)
-    }
-
-    private func computeForecast() async {
-        let cacheData = try? await repo.fetchForecastCache()
-        let cacheState = cacheData.map {
-            ForecastCacheState(
-                monthKey: $0.monthKey,
-                computedUpToDay: $0.computedUpToDay,
-                days: $0.days,
-                amounts: $0.amounts
-            )
-        }
-        let (fc, updatedState) = forecastService.compute(
-            expenseTransactions: expenseTransactions,
-            cache: cacheState
-        )
-        let updatedCacheData = DailyForecastCacheData(
-            monthKey: updatedState.monthKey,
-            computedUpToDay: updatedState.computedUpToDay,
-            days: updatedState.days,
-            amounts: updatedState.amounts
-        )
-        try? await repo.saveForecastCache(updatedCacheData)
-        forecast = fc
     }
 
     private func calculateAverages() {

@@ -36,7 +36,7 @@ struct DashboardViewModelTests {
         vm.load()
         await vm.loadTask?.value
 
-        #expect(vm.monthlyIncome == 500)
+        #expect(vm.cycleSummary?.income == 500)
     }
 
     @Test func includesTransactionOnFinancialMonthStart() async {
@@ -51,7 +51,7 @@ struct DashboardViewModelTests {
         vm.load()
         await vm.loadTask?.value
 
-        #expect(vm.monthlyExpenses == 200)
+        #expect(vm.cycleSummary?.out == 200)
     }
 
     @Test func calculatesAllMetricsInSingleLoad() async {
@@ -73,8 +73,8 @@ struct DashboardViewModelTests {
 
         #expect(vm.safeToSpend?.income == 1000)
         #expect(vm.safeToSpend?.spent == 500)
-        #expect(vm.monthlyIncome == 1000)
-        #expect(vm.monthlyExpenses == 500)
+        #expect(vm.cycleSummary?.income == 1000)
+        #expect(vm.cycleSummary?.out == 500)
         #expect(vm.recentTransactions.count == 3)
         // Most recent first
         #expect(vm.recentTransactions.first?.amount == 1000)
@@ -124,8 +124,8 @@ struct DashboardViewModelTests {
         let vm = DashboardViewModel(repo: repo)
         vm.load()
         await vm.loadTask?.value
-        #expect(vm.monthlyIncome == 0)
-        #expect(vm.monthlyExpenses == 0)
+        // Nothing recorded this cycle: the month card hides.
+        #expect(vm.cycleSummary == nil)
     }
 
     /// Three quiet baseline weeks (-200 each) plus one clear outlier week (-1000),

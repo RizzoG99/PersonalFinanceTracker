@@ -16,8 +16,8 @@ final class DashboardViewModel {
     var transactions: [TransactionSnapshot] = []
     /// Home's hero (#190); nil until the first load finishes.
     var safeToSpend: SafeToSpend? = nil
-    var monthlyIncome: Decimal = 0
-    var monthlyExpenses: Decimal = 0
+    /// Home's month card (#191); nil when the cycle has nothing recorded.
+    var cycleSummary: CycleSummary? = nil
     var recentTransactions: [TransactionSnapshot] = []
     var loadError: String? = nil
     var anomalyCallout: AnomalyCallout? = nil
@@ -91,16 +91,18 @@ final class DashboardViewModel {
         let payCycleStartDay = payCycleStartDay()
         // ponytail: metrics computed off the MainActor from the already-fetched snapshots;
         // move aggregation into TransactionActor if the dataset ever makes the fetch itself the bottleneck
-        let (income, expenses, recent) = await Task.detached(priority: .userInitiated) { [transactions, currencyService] in
-            Self.computeMetrics(transactions, currencyService: currencyService, payCycleStartDay: payCycleStartDay)
+        let recent = await Task.detached(priority: .userInitiated) { [transactions] in
+            Self.mostRecent(transactions)
         }.value
 
-        monthlyIncome = income
-        monthlyExpenses = expenses
         recentTransactions = recent
         safeToSpend = SafeToSpendSnapshotBuilder.compute(
             transactions: transactions, activeRules: activeRules, payCycleStartDay: payCycleStartDay,
             bufferPercent: bufferPercent(), currencyService: currencyService, now: currentDate()
+        )
+        cycleSummary = CycleSummaryService.compute(
+            transactions: transactions, payCycleStartDay: payCycleStartDay,
+            currencyService: currencyService, now: currentDate()
         )
         quickTransactionTemplates = HabitLoggingService.quickTemplates(from: transactions)
         refreshDailyCheckInState()
@@ -139,32 +141,15 @@ final class DashboardViewModel {
         ))
     }
 
-    nonisolated private static func computeMetrics(
-        _ transactions: [TransactionSnapshot],
-        currencyService: CurrencyService,
-        payCycleStartDay: Int
-    ) -> (income: Decimal, expenses: Decimal, recent: [TransactionSnapshot]) {
-        let (monthStart, monthEnd) = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay)
-
-        var income = Decimal(0)
-        var expenses = Decimal(0)
+    /// O(n) top-5, no full sort.
+    nonisolated private static func mostRecent(_ transactions: [TransactionSnapshot]) -> [TransactionSnapshot] {
         var recent: [TransactionSnapshot] = []
-
-        // ponytail: single pass — metrics + O(n) top-5 (no full sort)
-        for tx in transactions {
-            let converted = currencyService.convertToBase(tx.amount, from: tx.currencyCode)
-            if tx.timestamp >= monthStart && tx.timestamp <= monthEnd {
-                if tx.amount > 0 { income += converted }
-                else if tx.amount < 0 { expenses += abs(converted) }
-            }
-            if recent.count < 5 || tx.timestamp > (recent.last?.timestamp ?? .distantPast) {
-                recent.append(tx)
-                recent.sort { $0.timestamp > $1.timestamp }
-                if recent.count > 5 { recent.removeLast() }
-            }
+        for tx in transactions where recent.count < 5 || tx.timestamp > (recent.last?.timestamp ?? .distantPast) {
+            recent.append(tx)
+            recent.sort { $0.timestamp > $1.timestamp }
+            if recent.count > 5 { recent.removeLast() }
         }
-
-        return (income, expenses, recent)
+        return recent
     }
 
     private static let dismissedAnomalyDefaultsKey = "dismissedAnomalyCalloutKey"

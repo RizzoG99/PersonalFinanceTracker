@@ -7,63 +7,6 @@
     " " : {
 
     },
-    "%@ · seen %lld times" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ · seen %2$lld times"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ · visto %2$lld volte"
-          }
-        }
-      }
-    },
-    "%lld fixed expenses to check" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld fixed expense to check"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld fixed expenses to check"
-                }
-              }
-            }
-          }
-        },
-        "it" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld spesa fissa da controllare"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld spese fisse da controllare"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "-%@" : {
       "localizations" : {
         "en" : {
@@ -108,190 +51,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ", fuori budget"
-          }
-        }
-      }
-    },
-    "About %@, varies" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About %@, varies"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Circa %@, variabile"
-          }
-        }
-      }
-    },
-    "Check your fixed expenses" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check your fixed expenses"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controlla le spese fisse"
-          }
-        }
-      }
-    },
-    "I paid it" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I paid it"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L'ho pagato"
-          }
-        }
-      }
-    },
-    "I saved it" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I saved it"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L'ho versato"
-          }
-        }
-      }
-    },
-    "More answers for %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "More answers for %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altre risposte per %@"
-          }
-        }
-      }
-    },
-    "No transfer found around %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No transfer found around %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessun trasferimento trovato intorno al %@."
-          }
-        }
-      }
-    },
-    "Opens the payment, ready to save" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens the payment, ready to save"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apre il pagamento, pronto da salvare"
-          }
-        }
-      }
-    },
-    "Opens the transfer, ready to save" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens the transfer, ready to save"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apre il trasferimento, pronto da salvare"
-          }
-        }
-      }
-    },
-    "Review %lld more" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Review %lld more"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Review %lld more"
-                }
-              }
-            }
-          }
-        },
-        "it" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Rivedine un'altra"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Rivedi altre %lld"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "Skip this one" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skip this one"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Salta questo"
           }
         }
       }
@@ -482,6 +241,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · 25 pt per metrica"
+          }
+        }
+      }
+    },
+    "%@ · seen %lld times" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · seen %2$lld times"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · visto %2$lld volte"
           }
         }
       }
@@ -817,6 +592,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld spese"
+          }
+        }
+      }
+    },
+    "%lld fixed expenses to check" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fixed expense to check"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fixed expenses to check"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spesa fissa da controllare"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spese fisse da controllare"
+                }
+              }
+            }
           }
         }
       }
@@ -1628,6 +1444,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "circa %@"
+          }
+        }
+      }
+    },
+    "About %@, varies" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@, varies"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circa %@, variabile"
           }
         }
       }
@@ -2488,6 +2320,36 @@
         }
       }
     },
+    "At this pace you'll end the cycle about %@ above usual." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con questo ritmo chiuderai il ciclo circa %@ sopra il solito."
+          }
+        }
+      }
+    },
+    "At this pace you'll end the cycle about %@ below usual." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con questo ritmo chiuderai il ciclo circa %@ sotto il solito."
+          }
+        }
+      }
+    },
+    "At this pace you'll end the cycle in line with usual." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con questo ritmo chiuderai il ciclo in linea con il solito."
+          }
+        }
+      }
+    },
     "Auto" : {
 
     },
@@ -2543,24 +2405,8 @@
         }
       }
     },
-    "avg" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "avg"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "media"
-          }
-        }
-      }
-    },
     "Avg" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3247,6 +3093,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Controlla oggi"
+          }
+        }
+      }
+    },
+    "Check your fixed expenses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your fixed expenses"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla le spese fisse"
           }
         }
       }
@@ -5145,6 +5007,16 @@
         }
       }
     },
+    "Faster than usual" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più veloce del solito"
+          }
+        }
+      }
+    },
     "File preview, first %lld rows" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5935,6 +5807,38 @@
         }
       }
     },
+    "I paid it" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I paid it"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'ho pagato"
+          }
+        }
+      }
+    },
+    "I saved it" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I saved it"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'ho versato"
+          }
+        }
+      }
+    },
     "iCloud Drive is not available. Enable it in Settings to back up your data." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6109,6 +6013,16 @@
         }
       }
     },
+    "In" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrate"
+          }
+        }
+      }
+    },
     "In %@ · Out %@" : {
       "localizations" : {
         "en" : {
@@ -6163,22 +6077,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrate (%lld)"
-          }
-        }
-      }
-    },
-    "Income this cycle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Income this cycle"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrate del periodo"
           }
         }
       }
@@ -6313,22 +6211,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continua ad aggiungere"
-          }
-        }
-      }
-    },
-    "Keep logging to unlock insights" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep logging to unlock insights"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Continua a registrare per sbloccare le analisi"
           }
         }
       }
@@ -7021,6 +6903,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altro"
+          }
+        }
+      }
+    },
+    "More answers for %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More answers for %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre risposte per %@"
+          }
+        }
+      }
+    },
+    "Mostly %@ and %@." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soprattutto %@ e %@."
+          }
+        }
+      }
+    },
+    "Mostly %@." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soprattutto %@."
           }
         }
       }
@@ -7806,6 +7724,22 @@
         }
       }
     },
+    "No transactions since %@. Add this period's income to see what you can spend." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transactions since %@. Add this period's income to see what you can spend."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna transazione dal %@. Aggiungi le entrate di questo periodo per vedere quanto puoi spendere."
+          }
+        }
+      }
+    },
     "No transactions to back up yet." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7869,6 +7803,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ancora nessuna transazione in questo periodo"
+          }
+        }
+      }
+    },
+    "No transfer found around %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transfer found around %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun trasferimento trovato intorno al %@."
           }
         }
       }
@@ -8158,18 +8108,12 @@
         }
       }
     },
-    "On track this month" : {
+    "On track" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On track this month"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In linea questo mese"
+            "value" : "In linea"
           }
         }
       }
@@ -8224,6 +8168,48 @@
         }
       }
     },
+    "Opens the forecast for this cycle" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre la previsione di questo ciclo"
+          }
+        }
+      }
+    },
+    "Opens the payment, ready to save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the payment, ready to save"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre il pagamento, pronto da salvare"
+          }
+        }
+      }
+    },
+    "Opens the transfer, ready to save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the transfer, ready to save"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre il trasferimento, pronto da salvare"
+          }
+        }
+      }
+    },
     "Optional" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8254,6 +8240,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altro"
+          }
+        }
+      }
+    },
+    "Out" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uscite"
           }
         }
       }
@@ -8735,19 +8731,12 @@
         }
       }
     },
-    "projected this month" : {
-      "extractionState" : "manual",
+    "projected this cycle" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "projected this month"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "previsto questo mese"
+            "value" : "previsto in questo ciclo"
           }
         }
       }
@@ -9342,6 +9331,46 @@
       "comment" : "A label displayed while the user is restoring a backup.",
       "isCommentAutoGenerated" : true
     },
+    "Review %lld more" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Review %lld more"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Review %lld more"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Rivedine un'altra"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Rivedi altre %lld"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Review recurring charges regularly" : {
       "localizations" : {
         "en" : {
@@ -9600,7 +9629,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salvato"
+            "value" : "Risparmiato"
           }
         }
       }
@@ -10376,6 +10405,22 @@
         }
       }
     },
+    "Skip this one" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip this one"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salta questo"
+          }
+        }
+      }
+    },
     "Skipped %lld duplicates." : {
       "localizations" : {
         "en" : {
@@ -10531,70 +10576,6 @@
         }
       }
     },
-    "Spending %lld%% less" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spending %lld%% less"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spendi il %lld%% in meno"
-          }
-        }
-      }
-    },
-    "Spending %lld%% more" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spending %lld%% more"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spendi il %lld%% in più"
-          }
-        }
-      }
-    },
-    "Spending similar to last month" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spending similar to last month"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spesa simile al mese scorso"
-          }
-        }
-      }
-    },
-    "Spent so far" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spent so far"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speso finora"
-          }
-        }
-      }
-    },
     "Stability" : {
       "localizations" : {
         "en" : {
@@ -10673,6 +10654,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Passaggio %lld di %lld"
+          }
+        }
+      }
+    },
+    "Still available this cycle" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancora disponibile in questo ciclo"
           }
         }
       }
@@ -11089,6 +11080,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questa operazione non può essere annullata."
+          }
+        }
+      }
+    },
+    "This cycle" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo ciclo"
           }
         }
       }
@@ -11696,22 +11697,6 @@
         }
       }
     },
-    "Under last month's pace" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Under last month's pace"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sotto il ritmo del mese scorso"
-          }
-        }
-      }
-    },
     "Undo" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11946,6 +11931,10 @@
         }
       }
     },
+    "Usual" : {
+      "comment" : "Label for the line representing the user's usual spending pace.",
+      "isCommentAutoGenerated" : true
+    },
     "Utilities" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11980,23 +11969,6 @@
         }
       }
     },
-    "vs 3-month avg" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "vs 3-month avg"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "vs media 3 mesi"
-          }
-        }
-      }
-    },
     "vs last month" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12014,40 +11986,18 @@
         }
       }
     },
+    "vs usual %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rispetto al solito %@"
+          }
+        }
+      }
+    },
     "Warning: %@" : {
 
-    },
-    "Watch your pace" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch your pace"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controlla il tuo ritmo"
-          }
-        }
-      }
-    },
-    "Watch your pace this month" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch your pace this month"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controlla il tuo ritmo questo mese"
-          }
-        }
-      }
     },
     "We found a backup in iCloud. Restore it to bring back your transactions and categories on this device." : {
       "comment" : "A message that appears when a user has a backup in iCloud and is prompted to restore it.",
@@ -12438,22 +12388,6 @@
         }
       }
     },
-    "You're under last month's pace" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You're under last month's pace"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sei sotto il ritmo del mese scorso"
-          }
-        }
-      }
-    },
     "Your Credit Cards" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12573,18 +12507,22 @@
         }
       }
     },
-    "No transactions since %@. Add this period's income to see what you can spend." : {
+    "usual total" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No transactions since %@. Add this period's income to see what you can spend."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessuna transazione dal %@. Aggiungi le entrate di questo periodo per vedere quanto puoi spendere."
+            "value" : "solito a fine ciclo"
+          }
+        }
+      }
+    },
+    "in line with usual" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in linea con il solito"
           }
         }
       }
