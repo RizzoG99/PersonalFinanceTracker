@@ -39,6 +39,14 @@ struct CycleForecastSheet: View {
 
 struct ForecastCard: View {
     let summary: CycleSummary
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// Side by side normally; stacked at accessibility sizes, where pairs no longer fit a row.
+    private func row(spacing: CGFloat = 4) -> AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: spacing))
+            : AnyLayout(HStackLayout(alignment: .top))
+    }
 
     private struct ChartPoint: Identifiable {
         var id: Int { day }
@@ -78,13 +86,14 @@ struct ForecastCard: View {
     }
 
     var body: some View {
+        let header = row(), dates = row(spacing: 0)
         GlassCard(borderRadius: 14) {
             VStack(alignment: .leading, spacing: 14) {
-                HStack {
+                header {
                     Label("At this pace", systemImage: "chart.line.uptrend.xyaxis")
                         .font(.subheadline.bold())
                         .foregroundStyle(.textPrimary)
-                    Spacer()
+                    Spacer(minLength: 0)
                     Text("\(daysLeft) days left")
                         .font(.caption)
                         .foregroundStyle(.textDim)
@@ -94,9 +103,9 @@ struct ForecastCard: View {
                     VStack(spacing: 4) {
                         chart
                         // The x-axis is hidden; these say where the cycle starts and ends.
-                        HStack {
+                        dates {
                             Text(summary.cycleStart, format: .dateTime.day().month(.abbreviated))
-                            Spacer()
+                            Spacer(minLength: 0)
                             Text("Payday \(summary.payday.formatted(.dateTime.day().month(.abbreviated)))")
                         }
                         .font(.caption)
@@ -147,7 +156,8 @@ struct ForecastCard: View {
                 PointMark(x: .value("Day", today.day), y: .value("Spend", today.amount))
                     .foregroundStyle(trendColor)
                     .symbolSize(50)
-                    .annotation(position: .top, spacing: 4) {
+                    // Below the point: above it, near the usual line, it ran into "usual total".
+                    .annotation(position: .bottom, spacing: 4) {
                         Text("today")
                             .font(.caption)
                             .foregroundStyle(.textDim)
@@ -169,9 +179,9 @@ struct ForecastCard: View {
                 RuleMark(y: .value("Usual", Double(truncating: summary.usualFullCycle as NSDecimalNumber)))
                     .foregroundStyle(.textDim.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                    // Bottom-leading: at the trailing end the projection converges on the rule
-                    // and runs through the label; early in the cycle the area is still low.
-                    .annotation(position: .bottom, alignment: .leading) {
+                    // Top-leading: at the trailing end the projection converges on the rule and
+                    // would run through it; below, the "today" label sits.
+                    .annotation(position: .top, alignment: .leading) {
                         Text("usual total")
                             .font(.caption)
                             .foregroundStyle(.textDim)
@@ -179,6 +189,9 @@ struct ForecastCard: View {
             }
         }
         .frame(height: 180)
+        // In-plot labels can't reflow, so they stop growing here; the chart is hidden from
+        // VoiceOver and every figure it carries is repeated as full-size text below.
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
         .chartXScale(domain: 1...max(cycleDays, 2))
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
@@ -189,7 +202,8 @@ struct ForecastCard: View {
 
     private var summaryRow: some View {
         let diff = summary.projected - summary.usualFullCycle
-        return HStack(alignment: .top) {
+        let layout = row(spacing: 10)
+        return layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text(summary.projected.formattedEUR())
                     .font(.title2.bold())
@@ -205,13 +219,13 @@ struct ForecastCard: View {
                     .padding(.top, 6)
                     .privacyBlur()
             }
-            Spacer()
+            Spacer(minLength: 0)
             if diff == 0 {
                 Text("in line with usual")
                     .font(.caption.bold())
                     .foregroundStyle(.textMid)
             } else {
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: 2) {
                     // Red only with a "faster" verdict: a few % over while on track isn't a warning.
                     Text(diff > 0 ? "+\(diff.formattedEUR())" : "-\(abs(diff).formattedEUR())")
                         .font(.caption.bold())
@@ -230,6 +244,7 @@ struct ForecastCard: View {
 /// Where this cycle's spending went, per category, against the usual at the same point.
 struct CycleCategoriesCard: View {
     let summary: CycleSummary
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         GlassCard(borderRadius: 14) {
@@ -239,12 +254,16 @@ struct CycleCategoriesCard: View {
                     .foregroundStyle(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 ForEach(summary.categories, id: \.category) { row in
-                    HStack(alignment: .firstTextBaseline) {
+                    let stacked = dynamicTypeSize.isAccessibilitySize
+                    let layout = stacked
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+                        : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+                    layout {
                         Text(row.category)
                             .font(.subheadline)
                             .foregroundStyle(.textPrimary)
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
+                        Spacer(minLength: 0)
+                        VStack(alignment: stacked ? .leading : .trailing, spacing: 2) {
                             Text(row.spent.formattedEUR())
                                 .font(.subheadline.bold())
                                 .foregroundStyle(.textPrimary)
