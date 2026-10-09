@@ -350,9 +350,8 @@ struct TransactionListViewModelTests {
 
         vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
         vm.applyRecurrenceDeletionScope(.thisOnly)
-        try await Task.sleep(for: .milliseconds(50))
 
-        #expect(mockRepo.deleteCalledCount == 1)
+        #expect(await waitUntil { mockRepo.deleteCalledCount == 1 })
         #expect(mockRepo.closeRecurrenceRuleCalls.isEmpty)
         #expect(mockRepo.deleteOccurrencesCalls.isEmpty)
         #expect(vm.pendingRecurrenceDeletion == nil)
@@ -368,7 +367,7 @@ struct TransactionListViewModelTests {
 
         vm.deleteItemsFromSection(dayItems: [t1], offsets: IndexSet([0]))
         vm.applyRecurrenceDeletionScope(.thisAndFuture)
-        try await Task.sleep(for: .milliseconds(50))
+        #expect(await waitUntil { mockRepo.deleteOccurrencesCalls.count == 1 })
 
         #expect(mockRepo.deleteCalledCount == 0) // series closed, not the single-row delete path
         #expect(mockRepo.closeRecurrenceRuleCalls.count == 1)

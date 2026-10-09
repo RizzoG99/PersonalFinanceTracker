@@ -33,12 +33,9 @@ struct PINEntryViewModelTests {
 
         #expect(viewModel.pinInput == "1234")
 
-        // Wait for verifyPIN async validation to complete. Generous margin —
-        // under full-suite CPU contention 0.3s wasn't always enough.
-        try await Task.sleep(for: .seconds(1.0))
-
-        // Success should have cleared the input
-        #expect(viewModel.pinInput.isEmpty)
+        // Success clears the input. Polled: a fixed 0.3s, then 1.0s, still raced the
+        // 0.15s verify delay under full-suite load.
+        #expect(await waitUntil { viewModel.pinInput.isEmpty })
         #expect(viewModel.errorMessage.isEmpty)
         #expect(viewModel.isLockedOut == false)
     }
@@ -95,11 +92,8 @@ struct PINEntryViewModelTests {
 
         #expect(viewModel.pinInput == "5678")
 
-        // Wait for verifyPIN to execute (0.15s delay + processing)
-        try await Task.sleep(for: .seconds(0.3))
-
         // Now locked out - check that lockoutMessage is populated
-        #expect(viewModel.isLockedOut)
+        #expect(await waitUntil { viewModel.isLockedOut })
         #expect(!viewModel.lockoutMessage.isEmpty)
         #expect(viewModel.lockoutMessage.contains("Locked out"))
         #expect(viewModel.errorMessage == viewModel.lockoutMessage)
@@ -175,15 +169,13 @@ struct PINEntryViewModelTests {
 
         #expect(viewModel.pinInput == "5678")
 
-        try await Task.sleep(for: .seconds(0.3))
-
-        #expect(viewModel.errorMessage.contains("4 attempts"))
+        // A fixed 0.3s had to land inside a window: after the 0.15s verify, before the
+        // 0.5s shake ends. Waiting for the message instead: the shake starts in the same call.
+        #expect(await waitUntil { viewModel.errorMessage.contains("4 attempts") })
         #expect(viewModel.isShaking)
 
         // Reset fires after shake delay
-        try await Task.sleep(for: .seconds(0.5))
-
-        #expect(viewModel.pinInput.isEmpty)
+        #expect(await waitUntil { viewModel.pinInput.isEmpty })
         #expect(viewModel.eyesOpen)
     }
 

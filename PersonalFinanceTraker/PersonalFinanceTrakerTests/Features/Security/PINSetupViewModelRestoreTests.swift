@@ -44,13 +44,9 @@ struct PINSetupViewModelRestoreTests {
     /// Drives digit entry through to `.nameEntry`, matching `PINSetupViewModelTests`' helper.
     private func advanceToNameEntry(on viewModel: PINSetupViewModel) async throws {
         for digit in "1234" { viewModel.appendDigit(String(digit)) }
-        for _ in 0..<40 where viewModel.currentStep != .confirmPin {
-            try await Task.sleep(for: .milliseconds(50))
-        }
+        #expect(await waitUntil { viewModel.currentStep == .confirmPin })
         for digit in "1234" { viewModel.appendDigit(String(digit)) }
-        for _ in 0..<80 where viewModel.currentStep != .nameEntry {
-            try await Task.sleep(for: .milliseconds(50))
-        }
+        #expect(await waitUntil { viewModel.currentStep == .nameEntry })
     }
 
     @Test("finishNameEntry moves to restorePrompt when a backup exists")
@@ -120,9 +116,7 @@ struct PINSetupViewModelRestoreTests {
         viewModel.currentStep = .restorePrompt
 
         viewModel.restoreFromBackup()
-        for _ in 0..<40 where !UserDefaults.standard.bool(forKey: "pin_setup_complete") {
-            try await Task.sleep(for: .milliseconds(50))
-        }
+        #expect(await waitUntil { UserDefaults.standard.bool(forKey: "pin_setup_complete") })
 
         #expect(repo.deleteAllTransactionsCalledCount == 1)
         #expect(repo.addCalledCount == 1)
