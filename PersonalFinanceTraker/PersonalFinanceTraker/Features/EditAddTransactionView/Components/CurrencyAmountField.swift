@@ -148,6 +148,15 @@ struct CurrencyAmountField: View {
                         if shouldAutoFocus && !hasAutoFocused && !(settings?.hideAmounts ?? false) {
                             hasAutoFocused = true
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                // Never take focus from a field that already has it. This fires
+                                // 0.1s after the field appears, and the field re-appears when the
+                                // app returns from the background — where the form has just put
+                                // focus back on whatever the user was actually typing in. Landing
+                                // on Amount there is wrong twice over: it is not where the user
+                                // was, and the second focus change (with the keyboard switching
+                                // from the default to the decimal pad) drops the keyboard's
+                                // navigation toolbar.
+                                guard focus?.wrappedValue == nil else { return }
                                 setFocus(true)
                             }
                         }
