@@ -20,6 +20,8 @@ final class CompassViewModel {
     }
     private(set) var explorer: ExplorerBreakdown = .empty
     var habitObservations: [HabitObservation] = []
+    /// The pay cycle that just closed vs the one before (#193); nil until a cycle has closed.
+    private(set) var monthlyRecap: MonthlyRecap?
     var goals: [GoalSnapshot] = []
     var averageIncome: Decimal = 0
     var averageExpenses: Decimal = 0
@@ -60,6 +62,7 @@ final class CompassViewModel {
         return explorerPeriod.previous().interval.end > first
     }
     private var categories: [CategorySnapshot] = []
+    private var allRules: [RecurrenceRuleSnapshot] = []
     /// Active recurring transfers into goals — the "planned" pace of a goal projection (#192).
     private var goalRules: [RecurrenceRuleSnapshot] = []
     private var expenseTransactions: [TransactionSnapshot] = []
@@ -89,15 +92,22 @@ final class CompassViewModel {
             async let txs = repo.fetchAll()
             async let fetchedGoals = repo.fetchGoals()
             async let fetchedCategories = repo.fetchCategories()
-            async let fetchedRules = repo.fetchActiveRecurrenceRules()
+            // All rules, stopped ones too: the recap needs what was running last cycle.
+            async let fetchedRules = repo.fetchAllRecurrenceRules()
             transactions = try await txs
             goals = (try? await fetchedGoals) ?? []
             categories = (try? await fetchedCategories) ?? []
-            goalRules = ((try? await fetchedRules) ?? []).filter { $0.goalId != nil }
+            allRules = (try? await fetchedRules) ?? []
         } catch {
             print("CompassViewModel load error: \(error)")
             return
         }
+        let today = Calendar.current.startOfDay(for: .now)
+        goalRules = allRules.filter { $0.goalId != nil && $0.isActive(asOf: today) }
+        monthlyRecap = MonthlyRecap.make(
+            transactions: transactions, rules: allRules,
+            payCycleStartDay: AppSettings.storedStartDay, currencyService: currencyService
+        )
         expenseTransactions = transactions.filter { $0.amount < 0 && $0.goalId == nil }
         // overlap the repo-I/O computation with the pure ones; all run on MainActor, awaits interleave
         async let health: Void = computeHealthScore()

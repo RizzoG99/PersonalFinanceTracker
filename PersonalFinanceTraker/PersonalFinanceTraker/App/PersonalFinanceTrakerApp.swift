@@ -25,6 +25,7 @@ struct PersonalFinanceTrakerApp: App {
         seedSampleDataIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
+        seedMonthlyRecapIfRequested()
         seedGoalProjectionsIfRequested()
     }
 
@@ -263,6 +264,68 @@ private extension PersonalFinanceTrakerApp {
         default: // "hidden": nothing this cycle
             break
         }
+        try? context.save()
+        #endif
+    }
+
+    /// `-seedMonthlyRecap <state>` replaces transactions, rules and goals so a pay cycle closed
+    /// yesterday (#193): `full` (all four lines — less spent, higher savings rate, Restaurants
+    /// cut, Netflix added and the gym stopped, Spotify confirmed late but paid all along),
+    /// `quiet` (same as the cycle before: one "about the same" line), `firstCycle` (no earlier
+    /// cycle: totals only). Moves the pay-cycle start day so today is the cycle's second day.
+    @MainActor
+    func seedMonthlyRecapIfRequested() {
+        #if DEBUG
+        guard let state = UserDefaults.standard.string(forKey: "seedMonthlyRecap") else { return }
+        let context = AppContainer.shared.mainContext
+        try? context.delete(model: TransactionModel.self)
+        try? context.delete(model: RecurrenceRule.self)
+        try? context.delete(model: GoalModel.self)
+
+        let calendar = Calendar.current
+        let anchor = calendar.date(byAdding: .day, value: -1, to: .now)!
+        let startDay = min(calendar.component(.day, from: anchor), 28)
+        UserDefaults.standard.set(startDay, forKey: "payCycleStartDay")
+        let cycleStart = PayCycleService.financialMonthStart(for: .now, startDay: startDay, calendar: calendar)
+        func date(day: Int, cyclesAgo: Int) -> Date {
+            let start = calendar.date(byAdding: .month, value: -cyclesAgo, to: cycleStart)!
+            return calendar.date(byAdding: .hour, value: 10, to: calendar.date(byAdding: .day, value: day, to: start)!)!
+        }
+        func add(_ amount: Decimal, _ category: String, day: Int, cyclesAgo: Int, note: String = "") {
+            context.insert(TransactionModel(timestamp: date(day: day, cyclesAgo: cyclesAgo), amount: amount, note: note, category: category))
+        }
+        func cycle(_ cyclesAgo: Int, restaurants: Int = 3, income: Decimal = 2000) {
+            add(income, "Salary", day: 0, cyclesAgo: cyclesAgo)
+            add(-650, "Rent/Mortgage", day: 1, cyclesAgo: cyclesAgo)
+            for day in [2, 6, 10, 14, 18, 22] { add(-60, "Groceries", day: day, cyclesAgo: cyclesAgo) }
+            for day in [4, 11, 20, 25, 27].prefix(restaurants) { add(-45, "Restaurants", day: day, cyclesAgo: cyclesAgo) }
+        }
+        func rule(_ note: String, _ amount: Decimal, start: Date, end: Date? = nil) {
+            context.insert(RecurrenceRule(
+                frequency: .monthly, interval: 1, startDate: start, endDate: end, lastMaterializedDate: start,
+                autoRecord: false, amount: -amount, note: note, category: "Subscriptions", currencyCode: "EUR"
+            ))
+        }
+
+        switch state {
+        case "quiet":
+            for cyclesAgo in 1...2 { cycle(cyclesAgo) }
+        case "firstCycle":
+            cycle(1)
+        default: // "full"
+            cycle(3, restaurants: 5)
+            cycle(2, restaurants: 5)
+            cycle(1, restaurants: 1, income: 2100)
+            for cyclesAgo in 1...3 { add(-11, "Subscriptions", day: 5, cyclesAgo: cyclesAgo, note: "Spotify") }
+            add(-13, "Subscriptions", day: 8, cyclesAgo: 1, note: "Netflix")
+            // Spotify confirmed last cycle: the rule starts at its last payment (like Plan's
+            // fixed-expense confirmation), yet it was paid all along — not a new cost.
+            rule("Spotify", 11, start: date(day: 5, cyclesAgo: 1))
+            rule("Netflix", 13, start: date(day: 8, cyclesAgo: 1))
+            rule("Gym", 35, start: date(day: 3, cyclesAgo: 3), end: date(day: 15, cyclesAgo: 1))
+        }
+        // Yesterday's payday, so Home and the next recap notification have something.
+        add(2000, "Salary", day: 0, cyclesAgo: 0)
         try? context.save()
         #endif
     }

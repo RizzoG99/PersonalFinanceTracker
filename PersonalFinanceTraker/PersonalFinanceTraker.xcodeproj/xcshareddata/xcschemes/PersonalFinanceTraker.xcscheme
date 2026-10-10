@@ -101,6 +101,18 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-seedMonthlyRecap full"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-seedMonthlyRecap quiet"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-seedMonthlyRecap firstCycle"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-seedGoalProjections YES"
             isEnabled = "NO">
          </CommandLineArgument>

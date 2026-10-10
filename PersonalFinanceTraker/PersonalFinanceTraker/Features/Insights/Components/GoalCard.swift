@@ -58,8 +58,8 @@ struct GoalCard: View {
                     // Whole euros on one line: with cents a half-width column broke "1.800,00 €"
                     // mid-number. The detail sheet keeps the exact amounts.
                     HStack(spacing: 4) {
-                        (Text(currentAmount.wholeEuros).bold().foregroundStyle(goalColor)
-                            + Text(" / \(goal.targetAmount.wholeEuros)").foregroundStyle(.textDim))
+                        Text("\(Text(currentAmount.wholeEuros).bold().foregroundStyle(goalColor)) / \(goal.targetAmount.wholeEuros)")
+                            .foregroundStyle(.textDim)
                             .font(.caption)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
