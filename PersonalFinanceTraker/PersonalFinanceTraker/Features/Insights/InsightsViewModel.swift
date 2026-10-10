@@ -60,6 +60,8 @@ final class CompassViewModel {
         return explorerPeriod.previous().interval.end > first
     }
     private var categories: [CategorySnapshot] = []
+    /// Active recurring transfers into goals — the "planned" pace of a goal projection (#192).
+    private var goalRules: [RecurrenceRuleSnapshot] = []
     private var expenseTransactions: [TransactionSnapshot] = []
 
     init(repo: ITransactionRepository) {
@@ -87,9 +89,11 @@ final class CompassViewModel {
             async let txs = repo.fetchAll()
             async let fetchedGoals = repo.fetchGoals()
             async let fetchedCategories = repo.fetchCategories()
+            async let fetchedRules = repo.fetchActiveRecurrenceRules()
             transactions = try await txs
             goals = (try? await fetchedGoals) ?? []
             categories = (try? await fetchedCategories) ?? []
+            goalRules = ((try? await fetchedRules) ?? []).filter { $0.goalId != nil }
         } catch {
             print("CompassViewModel load error: \(error)")
             return
@@ -251,5 +255,15 @@ final class CompassViewModel {
         transactions
             .filter { $0.goalId == goal.id }
             .reduce(Decimal(0)) { $0 + abs(currencyService.convertToBase($1.amount, from: $1.currencyCode)) }
+    }
+
+    func projection(for goal: GoalSnapshot) -> GoalProjection {
+        let planned = goalRules
+            .filter { $0.goalId == goal.id }
+            .reduce(Decimal(0)) { $0 + abs(currencyService.convertToBase($1.monthlyEquivalent, from: $1.currencyCode)) }
+        let transfers = transactions
+            .filter { $0.goalId == goal.id }
+            .map { (date: $0.timestamp, amount: currencyService.convertToBase($0.amount, from: $0.currencyCode)) }
+        return GoalProjection.make(goal: goal, saved: transferTotal(for: goal), plannedMonthly: planned, transfers: transfers)
     }
 }

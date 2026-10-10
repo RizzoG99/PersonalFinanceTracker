@@ -75,6 +75,7 @@ struct PlanView: View {
                             goals: goals,
                             showingAddGoal: $compass.showingAddGoal,
                             transferTotal: compassViewModel.transferTotal(for:),
+                            projection: compassViewModel.projection(for:),
                             onSelectGoal: { compassViewModel.selectedGoal = $0 },
                             onDeleteGoal: compassViewModel.deleteGoal
                         )

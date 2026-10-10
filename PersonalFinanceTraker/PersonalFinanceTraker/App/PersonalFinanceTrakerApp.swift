@@ -25,6 +25,7 @@ struct PersonalFinanceTrakerApp: App {
         seedSampleDataIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
+        seedGoalProjectionsIfRequested()
     }
 
     // MARK: - Properties
@@ -262,6 +263,63 @@ private extension PersonalFinanceTrakerApp {
         default: // "hidden": nothing this cycle
             break
         }
+        try? context.save()
+        #endif
+    }
+
+    /// `-seedGoalProjections YES` replaces transactions, rules and goals with one goal per
+    /// projection state (#192), all on one Plan screen: planned pace, recent pace, behind,
+    /// on track, deadline with nothing saved, nothing at all, deadline passed, complete.
+    /// Dates are relative to today, so it works any day.
+    @MainActor
+    func seedGoalProjectionsIfRequested() {
+        #if DEBUG
+        guard UserDefaults.standard.bool(forKey: "seedGoalProjections") else { return }
+        let context = AppContainer.shared.mainContext
+        try? context.delete(model: TransactionModel.self)
+        try? context.delete(model: RecurrenceRule.self)
+        try? context.delete(model: GoalModel.self)
+
+        let calendar = Calendar.current
+        func monthsFromNow(_ months: Int) -> Date { calendar.date(byAdding: .month, value: months, to: .now)! }
+
+        @discardableResult
+        func goal(
+            _ name: String, _ target: Decimal, icon: GoalIcon, color: String, deadline: Date? = nil,
+            transfers: [Decimal] = [], monthlyRule: Decimal? = nil
+        ) -> GoalModel {
+            let goal = GoalModel(name: name, targetAmount: target, deadline: deadline, colorToken: color, iconName: icon.rawValue)
+            goal.createdAt = monthsFromNow(-transfers.count)
+            context.insert(goal)
+            // Oldest first, one a month, the latest 5 days ago — inside the 3-month pace window.
+            for (index, amount) in transfers.enumerated() {
+                let date = calendar.date(byAdding: .day, value: -5, to: monthsFromNow(index - transfers.count + 1))!
+                context.insert(TransactionModel(timestamp: date, amount: -amount, note: "", category: "→ \(name)", goalId: goal.id))
+            }
+            if let monthlyRule {
+                // Next due in 10 days: nothing "missed", nothing due today cluttering Home.
+                let start = calendar.date(byAdding: .day, value: 10, to: monthsFromNow(-1))!
+                context.insert(RecurrenceRule(
+                    frequency: .monthly, interval: 1, startDate: start, lastMaterializedDate: start,
+                    autoRecord: false, amount: -monthlyRule, note: "", category: "→ \(name)", currencyCode: "EUR", goalId: goal.id
+                ))
+            }
+            return goal
+        }
+
+        // Two transfers of different amounts each: Plan's fixed-expense detector needs two
+        // identical or three similar ones, so the seed doesn't also fill "Check your fixed expenses".
+        goal("Japan trip", 3000, icon: .vacation, color: "categoryIndigo", transfers: [1000, 800], monthlyRule: 200)
+        goal("New laptop", 1500, icon: .other, color: "categoryTeal", transfers: [200, 250])
+        goal("Emergency fund", 3000, icon: .emergency, color: "categoryAmber",
+             deadline: monthsFromNow(6), transfers: [600, 400], monthlyRule: 220)
+        goal("Christmas gifts", 500, icon: .gift, color: "categoryPink",
+             deadline: calendar.date(byAdding: .day, value: 60, to: .now)!, transfers: [180, 120], monthlyRule: 100)
+        goal("English course", 900, icon: .courses, color: "categoryPurple", deadline: monthsFromNow(5))
+        goal("New bike", 800, icon: .other, color: "categoryGreen")
+        goal("Motorbike", 2000, icon: .other, color: "categoryGray",
+             deadline: monthsFromNow(-1), transfers: [120, 180])
+        goal("Rome weekend", 400, icon: .vacation, color: "categoryIndigo", transfers: [250, 150])
         try? context.save()
         #endif
     }
