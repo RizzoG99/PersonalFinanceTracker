@@ -106,6 +106,8 @@ final class DashboardViewModel {
             transactions: transactions, payCycleStartDay: payCycleStartDay,
             currencyService: currencyService, now: currentDate()
         )
+        // Rescheduled with every Home load (launch, data or pay-cycle change), like the reminder.
+        ReminderService.shared.scheduleMonthlyRecap(cycleHasActivity: cycleSummary != nil)
         quickTransactionTemplates = HabitLoggingService.quickTemplates(from: transactions)
         refreshDailyCheckInState()
         anomalyCallout = Self.computeAnomalyCallout(

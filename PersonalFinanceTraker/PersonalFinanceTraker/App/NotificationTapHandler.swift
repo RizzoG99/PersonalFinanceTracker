@@ -22,9 +22,13 @@ final class NotificationTapHandler: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        let isReminder = response.notification.request.identifier.hasPrefix(ReminderService.idPrefix)
+        let identifier = response.notification.request.identifier
+        let isReminder = identifier.hasPrefix(ReminderService.idPrefix)
+        let isRecap = identifier == ReminderService.recapId
         DispatchQueue.main.async {
             if isReminder { PendingTransactionIntent.shared.shouldPresentAdd = true }
+            // Same hand-off as the Insights widget link: MainTabView / IPadRootView consume it.
+            if isRecap { UserDefaults.standard.set("insights", forKey: "pending_widget_destination") }
             completionHandler()
         }
     }

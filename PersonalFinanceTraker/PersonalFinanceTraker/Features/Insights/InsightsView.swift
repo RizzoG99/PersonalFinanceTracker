@@ -17,11 +17,24 @@ struct CompassView: View {
         self.onScanned = onScanned
     }
 
+    private static let explorerId = "breakdown-explorer"
+
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 24) {
+                    if let recap = viewModel.monthlyRecap {
+                        MonthlyRecapCard(recap: recap) {
+                            let last = Calendar.current.date(byAdding: .day, value: -1, to: recap.cycleEnd) ?? recap.cycleEnd
+                            viewModel.explorerPeriod = .custom(from: recap.cycleStart, through: last)
+                            // The explorer can be below the fold (small screen, large text):
+                            // bring it up so the tap visibly does something.
+                            withAnimation { proxy.scrollTo(Self.explorerId, anchor: .top) }
+                        }
+                    }
                     BreakdownExplorerSection(viewModel: viewModel)
+                        .id(Self.explorerId)
                     HealthScoreSection(
                         healthScore: viewModel.healthScore,
                         snapshots: viewModel.scoreSnapshots,
@@ -35,6 +48,7 @@ struct CompassView: View {
                     HabitsSection(observations: viewModel.habitObservations)
                 }
                 .padding(16)
+            }
             }
             .navigationDestination(for: ExplorerDrillDown.self) { drillDown in
                 CategoryTransactionsView(drillDown: drillDown, viewModel: viewModel)

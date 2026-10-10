@@ -33,6 +33,8 @@ struct IPadRootView: View {
     /// ProfileView takes this binding to drive its own sheet detents on iPhone. As a sidebar
     /// destination there is no sheet to size, so nothing observes it — it just satisfies the API.
     @State private var profileDetent: PresentationDetent = .large
+    /// Widget links and the monthly recap notification (#193) — MainTabView reads the same key.
+    @AppStorage("pending_widget_destination") private var pendingWidgetDestination = ""
 
     var body: some View {
         NavigationSplitView {
@@ -117,11 +119,14 @@ struct IPadRootView: View {
             await models.repo.refreshSafeToSpendWidgetSnapshot()
             models.dataChanged.bump()
             consumeFeatureDiscoveryDestination()
+            consumePendingWidgetDestination()
         }
         .onChange(of: featureDiscovery.pendingDestination) { _, destination in
             if destination != nil { consumeFeatureDiscoveryDestination() }
         }
-        // Outermost, and it has to stay that way: a .sheet or .inspector attached further out than
+        .onChange(of: pendingWidgetDestination) { _, destination in
+            if !destination.isEmpty { consumePendingWidgetDestination() }
+        }        // Outermost, and it has to stay that way: a .sheet or .inspector attached further out than
         // these would present its content outside this environment, and anything reading
         // TransactionListViewModel / DataChangedSignal from it traps at runtime. That's exactly
         // how the import flow crashed on Continue.
@@ -150,6 +155,15 @@ struct IPadRootView: View {
     private func openPendingTravelExpense() {
         guard pendingTravelId != nil else { return }
         showingAddItemView = true
+    }
+
+    private func consumePendingWidgetDestination() {
+        switch pendingWidgetDestination {
+        case "insights": section = .insights
+        case "home": section = .home
+        default: return
+        }
+        pendingWidgetDestination = ""
     }
 
     private func consumeFeatureDiscoveryDestination() {
