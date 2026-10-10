@@ -111,8 +111,13 @@ final class TransactionListViewModel {
         didSet {
             searchDebounceTask?.cancel()
             searchDebounceTask = Task {
-                try? await Task.sleep(for: .milliseconds(250))
-                    await doFilterItemBySearchText()
+                do {
+                    try await Task.sleep(for: .milliseconds(250))
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled else { return }
+                await doFilterItemBySearchText()
             }
         }
     }

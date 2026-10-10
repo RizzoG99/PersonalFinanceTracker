@@ -235,6 +235,20 @@ struct TransactionListViewModelTests {
         #expect(vm.filteredItems.first?.note == "Coffee")
     }
 
+    @Test @MainActor func cancelledSearchDebounceDoesNotStartAFilter() async throws {
+        let vm = await makeLoadedVM()
+        vm.searchText = "Coffee"
+        let cancelledTask = vm.searchDebounceTask
+        try await Task.sleep(for: .milliseconds(50))
+        vm.searchText = "Lunch"
+
+        await cancelledTask?.value
+        #expect(vm.filteredItems.count == vm.transactions.count)
+
+        await vm.searchDebounceTask?.value
+        #expect(vm.filteredItems.allSatisfy { $0.note.localizedStandardContains("Lunch") })
+    }
+
     // MARK: - Deferred delete
 
     @Test @MainActor func deleteItemsFromSectionSetsUndoBannerAndDoesNotCallRepo() async throws {
