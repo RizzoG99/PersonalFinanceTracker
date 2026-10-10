@@ -8,6 +8,7 @@ import SwiftUI
 struct GoalCard: View {
     let goal: GoalSnapshot
     let currentAmount: Decimal
+    let projection: GoalProjection
     let onTap: () -> Void
 
     private var progress: Double {
@@ -31,7 +32,8 @@ struct GoalCard: View {
                             .font(.title3.bold())
                             .foregroundStyle(goalColor)
                         Spacer()
-                        Text(daysLeft.map { "\(max(0, $0))d left" } ?? " ")
+                        // Past the deadline the projection line says "Overdue"; "0d left" would just repeat it.
+                        Text(daysLeft.flatMap { $0 >= 0 ? "\($0)d left" : nil } ?? " ")
                             .font(.caption)
                             .foregroundStyle(.textDim)
                     }
@@ -53,37 +55,28 @@ struct GoalCard: View {
                     }
                     .frame(height: 6)
 
+                    // Whole euros on one line: with cents a half-width column broke "1.800,00 €"
+                    // mid-number. The detail sheet keeps the exact amounts.
                     HStack(spacing: 4) {
-                        Text(currentAmount.formattedEUR())
-                            .font(.caption.bold())
-                            .foregroundStyle(goalColor)
-                            .privacyBlur()
-                        Text("/")
+                        (Text(currentAmount.wholeEuros).bold().foregroundStyle(goalColor)
+                            + Text(" / \(goal.targetAmount.wholeEuros)").foregroundStyle(.textDim))
                             .font(.caption)
-                            .foregroundStyle(.textDim)
-                        Text(goal.targetAmount.formattedEUR())
-                            .font(.caption)
-                            .foregroundStyle(.textDim)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                             .privacyBlur()
-                        Spacer()
-                        Text(String(format: "%.0f%%", progress * 100))
+                        Spacer(minLength: 4)
+                        Text(progress, format: .percent.precision(.fractionLength(0)))
                             .font(.caption.bold())
                             .foregroundStyle(.textMid)
                     }
+
+                    GoalProjectionLine(projection: projection)
                 }
-                .frame(maxWidth: .infinity)
+                // Fills the grid row's height (content pinned to the top), so neighbours match.
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
         }
         .buttonStyle(.plain)
-        // ponytail: the 4:3 ratio is what made these cards ~500pt tall on iPad — at a 640pt-wide
-        // grid column the ratio, not the content, decides the height, and the content (~150pt)
-        // leaves the rest empty. Capping the width first keeps the ratio producing a phone-sized
-        // card on any screen. Cap it at the width iPhone already gives them, so iPhone is
-        // unchanged and iPad simply stops stretching.
-        .frame(maxWidth: 340)
-        .aspectRatio(4/3, contentMode: .fill)
-        .clipped()
         .contentShape(Rectangle())
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -170,17 +170,7 @@ private struct RecurringRulesContent: View {
     private var monthlyRecurringSpend: Decimal {
         activeRules
             .filter { $0.amount < 0 }
-            .reduce(Decimal(0)) { $0 + monthlyEquivalent($1) }
-    }
-
-    private func monthlyEquivalent(_ rule: RecurrenceRuleSnapshot) -> Decimal {
-        guard rule.interval > 0 else { return 0 }
-        let interval = Decimal(rule.interval)
-        switch rule.frequency {
-        case .monthly: return rule.amount / interval
-        case .weekly: return rule.amount * 52 / 12 / interval
-        case .yearly: return rule.amount / 12 / interval
-        }
+            .reduce(Decimal(0)) { $0 + $1.monthlyEquivalent }
     }
 
     var body: some View {

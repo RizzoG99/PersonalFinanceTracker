@@ -19,6 +19,7 @@ struct IPadGoalsView: View {
                 goals: viewModel.goals,
                 showingAddGoal: $viewModel.showingAddGoal,
                 transferTotal: viewModel.transferTotal(for:),
+                projection: viewModel.projection(for:),
                 onSelectGoal: { viewModel.selectedGoal = $0 },
                 onDeleteGoal: viewModel.deleteGoal
             )

@@ -101,6 +101,10 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-seedGoalProjections YES"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-hideTips"
             isEnabled = "NO">
          </CommandLineArgument>
