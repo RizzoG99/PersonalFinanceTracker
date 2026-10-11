@@ -29,10 +29,11 @@ struct PINConfirmationViewModelTests {
         #expect(viewModel.pinInput == "1234")
         #expect(!onConfirmedCalled)
 
-        // The view model waits 0.15s before verifying. Poll for the result rather
-        // than sleeping past it: a fixed wait tuned on an idle machine came up
-        // short under full-suite load and made this test intermittently fail.
-        #expect(await waitUntil { onConfirmedCalled })
+        // The view model waits 0.15s before verifying. Await that task rather than
+        // polling: on Xcode Cloud the main actor stalled for minutes under suite
+        // load, outlasting any wall-clock deadline (a fixed sleep failed too).
+        try await #require(viewModel.pendingVerification).value
+        #expect(onConfirmedCalled)
         #expect(viewModel.errorMessage.isEmpty)
     }
 
@@ -55,7 +56,8 @@ struct PINConfirmationViewModelTests {
         #expect(viewModel.pinInput == "5678")
 
         // Wait for the rejection to land, then assert the callback never fired.
-        #expect(await waitUntil { !viewModel.errorMessage.isEmpty })
+        try await #require(viewModel.pendingVerification).value
+        #expect(!viewModel.errorMessage.isEmpty)
         #expect(!onConfirmedCalled)
         #expect(viewModel.isShaking)
 
