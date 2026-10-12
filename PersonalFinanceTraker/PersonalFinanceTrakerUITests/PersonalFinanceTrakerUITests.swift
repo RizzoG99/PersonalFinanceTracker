@@ -51,6 +51,11 @@ final class PersonalFinanceTrakerUITests: XCTestCase {
 
     @MainActor
     func testLaunchPerformance() throws {
+        // Xcode Cloud simulators take 20-70s per cold launch, so this test brushes the
+        // 300s allowance and its 25s budget is meaningless there. Local runs only; CI
+        // does not guard launch time. `/Volumes/workspace/` is Xcode Cloud's checkout path.
+        try XCTSkipIf(#filePath.hasPrefix("/Volumes/workspace/"), "Launch timing is not meaningful on Xcode Cloud")
+
         // Times launches directly instead of `measure(metrics: [XCTApplicationLaunchMetric()])`.
         //
         // Two reasons that mechanism did not work here. Its three iterations of identical code

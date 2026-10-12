@@ -33,9 +33,10 @@ struct PINEntryViewModelTests {
 
         #expect(viewModel.pinInput == "1234")
 
-        // Success clears the input. Polled: a fixed 0.3s, then 1.0s, still raced the
-        // 0.15s verify delay under full-suite load.
-        #expect(await waitUntil { viewModel.pinInput.isEmpty })
+        // Success clears the input. Await the verify task: fixed sleeps and a 5s poll
+        // both lost to main-actor stalls under suite load.
+        try await #require(viewModel.pendingVerification).value
+        #expect(viewModel.pinInput.isEmpty)
         #expect(viewModel.errorMessage.isEmpty)
         #expect(viewModel.isLockedOut == false)
     }
@@ -93,7 +94,8 @@ struct PINEntryViewModelTests {
         #expect(viewModel.pinInput == "5678")
 
         // Now locked out - check that lockoutMessage is populated
-        #expect(await waitUntil { viewModel.isLockedOut })
+        try await #require(viewModel.pendingVerification).value
+        #expect(viewModel.isLockedOut)
         #expect(!viewModel.lockoutMessage.isEmpty)
         #expect(viewModel.lockoutMessage.contains("Locked out"))
         #expect(viewModel.errorMessage == viewModel.lockoutMessage)
@@ -169,9 +171,9 @@ struct PINEntryViewModelTests {
 
         #expect(viewModel.pinInput == "5678")
 
-        // A fixed 0.3s had to land inside a window: after the 0.15s verify, before the
-        // 0.5s shake ends. Waiting for the message instead: the shake starts in the same call.
-        #expect(await waitUntil { viewModel.errorMessage.contains("4 attempts") })
+        // The shake starts in the same call as the message, and lasts 0.5s past it.
+        try await #require(viewModel.pendingVerification).value
+        #expect(viewModel.errorMessage.contains("4 attempts"))
         #expect(viewModel.isShaking)
 
         // Reset fires after shake delay

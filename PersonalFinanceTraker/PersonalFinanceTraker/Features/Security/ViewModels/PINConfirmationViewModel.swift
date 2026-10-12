@@ -6,6 +6,8 @@ final class PINConfirmationViewModel {
     var isShaking: Bool = false
     var eyesOpen: Bool = true
     var errorMessage: String = ""
+    // Exposed so tests can await verification instead of racing a wall-clock poll.
+    @ObservationIgnored private(set) var pendingVerification: Task<Void, Never>?
 
     private let pinService: PINService
     private let onConfirmed: () -> Void
@@ -20,7 +22,7 @@ final class PINConfirmationViewModel {
         pinInput += digit
         eyesOpen = false
         if pinInput.count == 4 {
-            Task { try? await Task.sleep(for: .seconds(0.15)); self.verifyPIN() }
+            pendingVerification = Task { try? await Task.sleep(for: .seconds(0.15)); self.verifyPIN() }
         }
     }
 

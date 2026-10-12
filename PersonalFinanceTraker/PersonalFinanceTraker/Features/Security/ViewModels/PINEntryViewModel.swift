@@ -17,6 +17,8 @@ final class PINEntryViewModel {
     var showForgotPINSheet: Bool = false
     var isLockedOut: Bool = false
     var lockoutMessage: String = ""
+    // Exposed so tests can await verification instead of racing a wall-clock poll.
+    @ObservationIgnored private(set) var pendingVerification: Task<Void, Never>?
 
     private let pinService: PINService
     let authService: BiometricAuthService
@@ -66,7 +68,7 @@ final class PINEntryViewModel {
         pinInput += digit
         eyesOpen = false
         if pinInput.count == 4 {
-            Task { try? await Task.sleep(for: .seconds(0.15)); self.verifyPIN() }
+            pendingVerification = Task { try? await Task.sleep(for: .seconds(0.15)); self.verifyPIN() }
         }
     }
 
