@@ -336,6 +336,14 @@ struct MainTabView: View {
             viewModel.onDataChanged = { dataChanged.bump() }
             compassViewModel.onDataChanged = { dataChanged.bump() }
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
+            if (try? await repo.repairImportedCategoryNames()) ?? 0 > 0 {
+                viewModel.reload()
+                // Backups store only category names and restore relinks by name, so a pre-repair
+                // backup would bring back unlinked old names. Restore always takes the newest:
+                // make that the repaired data. Clearing the date also retries if iCloud is off now.
+                appSettings.lastBackupDate = nil
+                await BackupScheduler.runIfNeeded(repo: repo, settings: appSettings, backupService: BackupService())
+            }
             try? await materializationService.materialize(using: repo)
             await HabitSnapshotUpdater.refresh(using: repo)
             await repo.refreshSafeToSpendWidgetSnapshot()

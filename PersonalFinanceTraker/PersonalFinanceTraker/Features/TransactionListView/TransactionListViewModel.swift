@@ -491,6 +491,9 @@ final class TransactionListViewModel {
     var mappedRows: [MappedRow] = []
     var recurrenceSuggestions: [RecurrenceSuggestion] = []
     var selectedSuggestionIds: Set<UUID> = []
+    /// Categories `confirmImport` created, by CSV name — so recurrence rules saved afterwards
+    /// link to them instead of keeping the CSV name.
+    private var importCreatedCategories: [String: CategorySnapshot] = [:]
     /// Suggestions the user unchecked themselves — the only ones remembered as "Not fixed". One
     /// that started unchecked (low confidence) and was never touched stays suggestible in Plan.
     private(set) var rejectedSuggestionIds: Set<UUID> = []
@@ -659,6 +662,7 @@ final class TransactionListViewModel {
         recurrenceSuggestions = []
         selectedSuggestionIds = []
         rejectedSuggestionIds = []
+        importCreatedCategories = [:]
         importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
@@ -688,6 +692,7 @@ final class TransactionListViewModel {
         recurrenceSuggestions = []
         selectedSuggestionIds = []
         rejectedSuggestionIds = []
+        importCreatedCategories = [:]
         importedTransactionCount = 0
         importNavigationPath = []
         hasAutoMappedCategories = false
@@ -878,12 +883,21 @@ final class TransactionListViewModel {
             guard let data = raw.data else {
                 return MappedRow(input: nil, error: raw.error, rowIndex: raw.rowIndex)
             }
+            // A blank CSV cell arrives as "Other" with no selection behind it (blank values are
+            // never offered for mapping), so link it to the app's own "Other" of the row's type.
             let resolvedCategory = data.resolvedCategoryUUID.flatMap { categoryById[$0] }
+                ?? (categoryResolutionSelections[data.category] == nil
+                    ? availableCategories.first {
+                        $0.name == data.category && $0.transactionType == (data.amount >= 0 ? .income : .expense)
+                    }
+                    : nil)
             let input = TransactionInput(
                 timestamp: data.timestamp,
                 amount: data.amount,
                 note: data.note,
-                category: data.category,
+                // The mapped category's name, not the CSV's (#232): list, budgets, charts and the
+                // category filter all key on this string.
+                category: resolvedCategory?.name ?? data.category,
                 currencyCode: data.currencyCode,
                 categoryPersistentId: resolvedCategory?.persistentId
             )
@@ -926,7 +940,6 @@ final class TransactionListViewModel {
             importError = nil
 
             // Step 1: Create any new categories that need to be created
-            var newCategoryPersistentIds: [String: PersistentIdentifier] = [:]
             for (csvCatName, selection) in categoryResolutionSelections {
                 guard selection == CategoryAutoMapper.newSentinel else { continue }
                 let draft = pendingCategoryDrafts[csvCatName]
@@ -958,9 +971,10 @@ final class TransactionListViewModel {
                 return
             }
 
-            // Step 3: Map CSV category names to persistentIds for newly created categories
+            // Step 3: Map CSV category names to newly created categories
             // Matched on name AND type: "Other" can now exist for both Expense and Income,
             // so name alone could bind an Income row to the Expense category.
+            var newCategories: [String: CategorySnapshot] = [:]
             for (csvCatName, selection) in categoryResolutionSelections {
                 guard selection == CategoryAutoMapper.newSentinel else { continue }
                 let createdDraft = pendingCategoryDrafts[csvCatName]
@@ -968,9 +982,10 @@ final class TransactionListViewModel {
                 if let catSnapshot = updatedCategories.first(where: {
                     $0.name == createdDraft.name && $0.transactionType == createdDraft.type
                 }) {
-                    newCategoryPersistentIds[csvCatName] = catSnapshot.persistentId
+                    newCategories[csvCatName] = catSnapshot
                 }
             }
+            importCreatedCategories = newCategories
 
             // Persist the profile so the next import of this layout is prefilled.
             // "__new__" selections are stored as the just-created category's UUID.
@@ -995,14 +1010,15 @@ final class TransactionListViewModel {
             var updatedInputs = inputs
             for i in updatedInputs.indices {
                 if updatedInputs[i].categoryPersistentId == nil,
-                   let persistentId = newCategoryPersistentIds[updatedInputs[i].category] {
+                   let created = newCategories[updatedInputs[i].category] {
                     updatedInputs[i] = TransactionInput(
                         timestamp: updatedInputs[i].timestamp,
                         amount: updatedInputs[i].amount,
                         note: updatedInputs[i].note,
-                        category: updatedInputs[i].category,
+                        // The draft may have been renamed in the setup sheet (#232).
+                        category: created.name,
                         currencyCode: updatedInputs[i].currencyCode,
-                        categoryPersistentId: persistentId
+                        categoryPersistentId: created.persistentId
                     )
                 }
             }
@@ -1125,7 +1141,11 @@ final class TransactionListViewModel {
         for suggestion in recurrenceSuggestions where selectedSuggestionIds.contains(suggestion.id) {
             do {
                 // Forecast-only: auto-record is offered later, from Plan's card.
-                try await repo.addRecurrenceRule(suggestion.ruleInput(autoRecord: false))
+                try await repo.addRecurrenceRule(suggestion.ruleInput(
+                    autoRecord: false,
+                    createdCategory: suggestion.categoryPersistentId == nil
+                        ? importCreatedCategories[suggestion.category] : nil
+                ))
                 added += 1
             } catch {
                 importError = String(localized: "Failed to save recurrence rule: \(error.localizedDescription)")

@@ -237,6 +237,36 @@ actor TransactionActor: ITransactionRepository {
 
     // MARK: Categories
 
+    static let categoryNameRepairKey = "didRepairImportedCategoryNames"
+
+    /// One-time repair for #232: imports used to store the CSV's category name in `category`
+    /// while linking `categoryModel` to the mapped app category, so list, budgets and charts
+    /// showed the old name. Walks each category's own transactions — unlinked rows are never
+    /// loaded — and saves once. Idempotent, so an interrupted run simply repeats.
+    /// - Returns: how many transactions and rules were rewritten.
+    @discardableResult
+    func repairImportedCategoryNames(defaults: UserDefaults = .standard) throws -> Int {
+        guard !defaults.bool(forKey: Self.categoryNameRepairKey) else { return 0 }
+        var fixed = 0
+        for category in try modelContext.fetch(FetchDescriptor<CategoryModel>()) {
+            for tx in category.transactions ?? [] where tx.category != category.name {
+                tx.category = category.name
+                fixed += 1
+            }
+        }
+        // Rules carry their own copy and stamp it on every occurrence they materialize. No
+        // inverse to walk from the category side, but there are only ever a handful of rules.
+        for rule in try modelContext.fetch(FetchDescriptor<RecurrenceRule>()) {
+            if let name = rule.categoryModel?.name, rule.category != name {
+                rule.category = name
+                fixed += 1
+            }
+        }
+        if fixed > 0 { try modelContext.save() }
+        defaults.set(true, forKey: Self.categoryNameRepairKey)
+        return fixed
+    }
+
     func fetchCategories() async throws -> [CategorySnapshot] {
         let desc = FetchDescriptor<CategoryModel>(sortBy: [SortDescriptor(\.name)])
         return try modelContext.fetch(desc).map(CategorySnapshot.init)
