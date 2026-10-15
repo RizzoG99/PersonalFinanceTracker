@@ -336,6 +336,7 @@ struct MainTabView: View {
             viewModel.onDataChanged = { dataChanged.bump() }
             compassViewModel.onDataChanged = { dataChanged.bump() }
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
+            if (try? await repo.repairImportedCategoryNames()) ?? 0 > 0 { viewModel.reload() }
             try? await materializationService.materialize(using: repo)
             await HabitSnapshotUpdater.refresh(using: repo)
             await repo.refreshSafeToSpendWidgetSnapshot()

@@ -114,6 +114,7 @@ struct IPadRootView: View {
             models.transactions.onDataChanged = { models.dataChanged.bump() }
             models.compass.onDataChanged = { models.dataChanged.bump() }
             models.transactions.load()
+            if (try? await models.repo.repairImportedCategoryNames()) ?? 0 > 0 { models.transactions.reload() }
             try? await models.materializationService.materialize(using: models.repo)
             await HabitSnapshotUpdater.refresh(using: models.repo)
             await models.repo.refreshSafeToSpendWidgetSnapshot()
