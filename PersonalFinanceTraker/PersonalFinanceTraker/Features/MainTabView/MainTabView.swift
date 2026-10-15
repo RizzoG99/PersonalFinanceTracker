@@ -33,6 +33,7 @@ struct MainTabView: View {
     @State private var showingRecurringView = false
     @State private var showingTravelsView = false
     @State private var showingSiriWidgetsGuide = false
+    @State private var foregroundRefreshGate = ForegroundRefreshGate()
 
     /// One Add Transaction presentation, with whatever opened it.
     private struct AddSheetContext: Identifiable {
@@ -254,7 +255,13 @@ struct MainTabView: View {
             }
             .presentationBackground { AppBackground() }
         }
-        .onChange(of: selectedTab) { _, newTab in
+        .onChange(of: selectedTab) { oldTab, newTab in
+            if newTab == .activity {
+                PerformanceAuditRecorder.event(
+                    "Activity.tab.selected",
+                    metadata: "from=\(String(describing: oldTab))"
+                )
+            }
             shellModels.selectedTab = newTab
         }
         .onChange(of: viewModel.pendingDeletion) { _, pending in
@@ -272,6 +279,7 @@ struct MainTabView: View {
             viewModel.addExpenseTravelId = nil
         }
         .onChange(of: dataChanged.revision) { _, _ in
+            PerformanceAuditRecorder.event("Shell.refreshFanOut", metadata: "shell=iPhone revision=\(dataChanged.revision)")
             dashboardViewModel.reload()
             viewModel.reload()
             compassViewModel.load()
@@ -302,19 +310,26 @@ struct MainTabView: View {
             Task { await repo.refreshSafeToSpendWidgetSnapshot() }
         }
         .onChange(of: scenePhase) { _, phase in
+            PerformanceAuditRecorder.event("Lifecycle.scenePhase", metadata: "phase=\(String(describing: phase))")
             if phase == .background {
+                foregroundRefreshGate.recordBackground()
+                PerformanceAuditRecorder.dump(reason: "scene.background")
                 Task { await viewModel.commitPendingDeletion() }
             }
-            if phase == .active {
-                // Data may have changed outside the UI (App Intent quick-add)
-                dashboardViewModel.reload()
-                viewModel.reload()
-                compassViewModel.load()
+            if phase == .active, foregroundRefreshGate.consumeRefreshOnActivation() {
+                // Data may have changed outside the UI (App Intent quick-add). The first
+                // active phase is deliberately omitted: the bootstrap task already owns it.
                 Task {
-                    try? await materializationService.materialize(using: repo)
+                    let measurement = PerformanceAuditRecorder.begin("Lifecycle.foreground.refresh")
+                    await shellModels.prepareForForegroundReads()
+                    dashboardViewModel.reload()
+                    viewModel.reload()
+                    compassViewModel.load()
+                    let didMaterialize = (try? await materializationService.materialize(using: repo)) ?? false
                     await HabitSnapshotUpdater.refresh(using: repo)
                     await repo.refreshSafeToSpendWidgetSnapshot()
-                    dataChanged.bump()
+                    if didMaterialize { dataChanged.bump() }
+                    PerformanceAuditRecorder.end(measurement)
                 }
             }
             if phase == .active {
@@ -333,17 +348,23 @@ struct MainTabView: View {
             }
         }
         .task {
+            let measurement = PerformanceAuditRecorder.begin("Lifecycle.bootstrap")
             viewModel.onDataChanged = { dataChanged.bump() }
             compassViewModel.onDataChanged = { dataChanged.bump() }
             viewModel.load()  // ponytail: pre-warm Activity while user is on Home; isLoaded guard makes repeat a no-op
-            try? await materializationService.materialize(using: repo)
+            // Let the user-facing Activity preload reach its first stable state before the
+            // launch-only widget refreshes issue competing reads against the repository.
+            await viewModel.loadTask?.value
+            let didMaterialize = (try? await materializationService.materialize(using: repo)) ?? false
             await HabitSnapshotUpdater.refresh(using: repo)
             await repo.refreshSafeToSpendWidgetSnapshot()
-            dataChanged.bump()
+            if didMaterialize { dataChanged.bump() }
             consumePendingAdd()
             consumePendingScan()
             consumePendingHabitTemplate()
             consumePendingWidgetDestination()
+            PerformanceAuditRecorder.end(measurement)
+            await shellModels.bootstrapMaintenanceGate.finishInteractiveBootstrap()
         }
         .onChange(of: PendingTransactionIntent.shared.shouldPresentAdd) { _, pending in
             if pending { consumePendingAdd() }

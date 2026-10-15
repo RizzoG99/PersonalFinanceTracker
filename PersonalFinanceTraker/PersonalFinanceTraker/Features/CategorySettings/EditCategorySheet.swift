@@ -7,6 +7,7 @@ struct EditCategorySheet: View {
 
     @Bindable var category: CategoryModel
     let existingCategories: [CategoryModel]
+    let onPersistedCategoryChange: () -> Void
 
     @State private var editedName: String = ""
     @State private var selectedToken: String = "categoryIndigo"
@@ -58,6 +59,8 @@ struct EditCategorySheet: View {
                 Section {
                     Button("Delete Category", role: .destructive) {
                         modelContext.delete(category)
+                        guard (try? modelContext.save()) != nil else { return }
+                        onPersistedCategoryChange()
                         dismiss()
                     }
                     .frame(maxWidth: .infinity)
@@ -77,7 +80,8 @@ struct EditCategorySheet: View {
                         category.name = editedName.trimmingCharacters(in: .whitespaces)
                         category.systemImage = selectedSymbol
                         category.colorToken = selectedToken
-                        try? modelContext.save()
+                        guard (try? modelContext.save()) != nil else { return }
+                        onPersistedCategoryChange()
                         dismiss()
                     }
                     .disabled(!canSave)

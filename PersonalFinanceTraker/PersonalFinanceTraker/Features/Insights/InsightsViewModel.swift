@@ -74,6 +74,7 @@ final class CompassViewModel {
     // MARK: - Load
 
     func load() {
+        PerformanceAuditRecorder.event("Insights.load.request")
         Task {
             await reloadData()
         }
@@ -83,6 +84,15 @@ final class CompassViewModel {
     /// is fire-and-forget, which left tests with nothing to wait on but a fixed
     /// sleep — the cause of an intermittent failure in CompassViewModelTests.
     func reloadData() async {
+        let measurement = PerformanceAuditRecorder.begin("Insights.load")
+        var outcome: PerformanceAuditRecorder.Outcome = .completed
+        defer {
+            PerformanceAuditRecorder.end(
+                measurement,
+                outcome: Task.isCancelled ? .cancelled : outcome,
+                metadata: "transactions=\(transactions.count)"
+            )
+        }
         do {
             async let txs = repo.fetchAll()
             async let fetchedGoals = repo.fetchGoals()
@@ -91,6 +101,7 @@ final class CompassViewModel {
             goals = (try? await fetchedGoals) ?? []
             categories = (try? await fetchedCategories) ?? []
         } catch {
+            outcome = .failed
             print("CompassViewModel load error: \(error)")
             return
         }
@@ -101,6 +112,7 @@ final class CompassViewModel {
         await computeHabits()
         calculateAverages()
         await health
+        PerformanceAuditRecorder.commit(measurement, metadata: "transactions=\(transactions.count)")
     }
 
     // MARK: - Goal CRUD

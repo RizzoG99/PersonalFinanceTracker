@@ -12,5 +12,8 @@ import Foundation
 final class DataChangedSignal {
     private(set) var revision = 0
 
-    func bump() { revision += 1 }
+    func bump() {
+        revision += 1
+        PerformanceAuditRecorder.event("DataChangedSignal.bump", metadata: "revision=\(revision)")
+    }
 }

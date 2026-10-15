@@ -130,7 +130,11 @@ struct RepeatTransactionTemplateIntent: AppIntent {
 
 enum HabitSnapshotUpdater {
     static func refresh(using repo: any ITransactionRepository) async {
-        guard let transactions = try? await repo.fetchAll() else { return }
+        let measurement = PerformanceAuditRecorder.begin("Habit.refresh")
+        guard let transactions = try? await repo.fetchAll() else {
+            PerformanceAuditRecorder.end(measurement, outcome: .failed)
+            return
+        }
         let now = Date.now
         let status = HabitLoggingService.computeStatus(transactions: transactions, now: now)
         if status.hasLoggedToday {
@@ -148,6 +152,7 @@ enum HabitSnapshotUpdater {
             templates: templates,
             now: now
         ))
+        PerformanceAuditRecorder.end(measurement, metadata: "transactions=\(transactions.count)")
     }
 }
 

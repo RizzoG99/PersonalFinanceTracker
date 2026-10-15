@@ -95,6 +95,139 @@ struct TransactionListViewModelTests {
         #expect(vm.transactions.count == 2)
     }
 
+    @Test @MainActor func activityInitiallyMaterializesOnlyItsFirstPage() async {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = activityFixtures(count: 450)
+        let vm = await loadedVM(mockRepo)
+        await vm.groupingTask?.value
+
+        #expect(vm.activityPage.groups.flatMap(\.1).count == TransactionListViewModel.activityPageSize)
+        #expect(vm.activityPage.remainingRowCount == 250)
+        #expect(vm.activityPage.hasMoreRows)
+    }
+
+    @Test @MainActor func activityPageLoadsMoreRowsWithoutDroppingDateGroups() async {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = activityFixtures(count: 450)
+        let vm = await loadedVM(mockRepo)
+        await vm.groupingTask?.value
+
+        vm.loadNextActivityPage()
+        #expect(vm.activityPage.groups.flatMap(\.1).count == 400)
+        #expect(vm.activityPage.remainingRowCount == 50)
+
+        vm.loadNextActivityPage()
+        #expect(vm.activityPage.groups.flatMap(\.1).count == 450)
+        #expect(!vm.activityPage.hasMoreRows)
+    }
+
+    @Test @MainActor func activityPaginationResetsWhenTheSearchChanges() async {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = activityFixtures(count: 450)
+        let vm = await loadedVM(mockRepo)
+        await vm.groupingTask?.value
+        vm.loadNextActivityPage()
+
+        vm.searchText = "Coffee"
+        await vm.searchDebounceTask?.value
+        await vm.groupingTask?.value
+
+        #expect(vm.activityRowLimit == TransactionListViewModel.activityPageSize)
+        #expect(vm.activityPage.groups.flatMap(\.1).count == 200)
+        #expect(vm.activityPage.remainingRowCount == 25)
+    }
+
+    @Test @MainActor func activityPaginationResetsWhenTheCategoryChanges() async {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = activityFixtures(count: 450)
+        let vm = await loadedVM(mockRepo)
+        await vm.groupingTask?.value
+        vm.loadNextActivityPage()
+
+        vm.selectedCategory = "Food"
+        await vm.groupingTask?.value
+
+        let rows = vm.activityPage.groups.flatMap(\.1)
+        #expect(vm.activityRowLimit == TransactionListViewModel.activityPageSize)
+        #expect(rows.count == 200)
+        #expect(rows.allSatisfy { $0.transaction?.category == "Food" })
+        #expect(vm.activityPage.remainingRowCount == 25)
+    }
+
+    @MainActor
+    private func activityFixtures(count: Int) -> [TransactionSnapshot] {
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        return (0..<count).map { index in
+            TransactionSnapshot.test(
+                timestamp: start.addingTimeInterval(-Double(index) * 86_400),
+                amount: -Decimal(index + 1),
+                note: index.isMultiple(of: 2) ? "Coffee \(index)" : "Groceries \(index)",
+                category: index.isMultiple(of: 2) ? "Food" : "Household"
+            )
+        }
+    }
+
+    @Test @MainActor func reloadsDuringAnActiveLoadCoalesceIntoOneFollowUpLoad() async throws {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.fetchAllDelay = .milliseconds(50)
+        let vm = TransactionListViewModel(repo: mockRepo)
+
+        vm.load()
+        try await Task.sleep(for: .milliseconds(10))
+        vm.reload()
+        vm.reload()
+
+        await vm.loadTask?.value
+        await vm.loadTask?.value
+
+        #expect(mockRepo.fetchAllCallCount == 2)
+    }
+
+    @Test @MainActor func aRevisionDuringAReadEventuallyPublishesTheLatestRowsAndTotals() async {
+        let repo = MockTransactionRepository()
+        repo.stubbedTransactions = [.test(amount: -12, note: "Before", category: "Food")]
+        let vm = TransactionListViewModel(repo: repo)
+        var releaseRead: CheckedContinuation<[TransactionSnapshot], Never>?
+        let captured = repo.stubbedTransactions
+        await withCheckedContinuation { (started: CheckedContinuation<Void, Never>) in
+            repo.fetchAllHandler = {
+                return await withCheckedContinuation { continuation in
+                    releaseRead = continuation
+                    started.resume()
+                }
+            }
+            vm.load()
+        }
+        let originalLoad = vm.loadTask
+        repo.stubbedTransactions = [.test(amount: -20, note: "After", category: "Food")]
+        repo.fetchAllHandler = nil
+        vm.reload()
+        vm.reload()
+        releaseRead?.resume(returning: captured)
+        await originalLoad?.value
+        await vm.loadTask?.value
+        await vm.groupingTask?.value
+
+        #expect(repo.fetchAllCallCount == 2)
+        #expect(vm.transactions.map(\.note) == ["After"])
+        #expect(vm.filteredItems.map(\.note) == ["After"])
+        #expect(vm.totalFilteredExpenses == 20)
+        #expect(vm.activityPage.groups.flatMap(\.1).compactMap(\.transaction).map(\.note) == ["After"])
+    }
+
+    @Test @MainActor func aFailedInitialLoadCanBeRetriedByAppearance() async {
+        let repo = MockTransactionRepository()
+        repo.shouldThrow = true
+        let vm = await loadedVM(repo)
+        repo.shouldThrow = false
+        repo.stubbedTransactions = [.test(amount: -12, note: "Retry", category: "Food")]
+        vm.load()
+        await vm.loadTask?.value
+
+        #expect(repo.fetchAllCallCount == 2)
+        #expect(vm.transactions.map(\.note) == ["Retry"])
+    }
+
     @Test @MainActor func importedCategoryDraftControlsCreatedCategoryAppearance() async throws {
         let (vm, _, _, _, _) = await makeRealRepoVM()
         let csvCategory = "🍿 Movie Night"

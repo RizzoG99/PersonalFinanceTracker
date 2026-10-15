@@ -18,6 +18,10 @@ final class MockTransactionRepository: ITransactionRepository {
     // MARK: Spies
     var fetchAllCalled = false
     var fetchAllCallCount = 0
+    var invalidateTransactionSnapshotCacheCallCount = 0
+    var fetchAllDelay: Duration?
+    /// A controlled suspension at the actual read seam, without timing-based sleeps.
+    var fetchAllHandler: (@MainActor () async throws -> [TransactionSnapshot])?
     var addCalledCount = 0
     var deleteCalledCount = 0
     var updateCalledCount = 0
@@ -45,8 +49,16 @@ final class MockTransactionRepository: ITransactionRepository {
     func fetchAll() async throws -> [TransactionSnapshot] {
         fetchAllCalled = true
         fetchAllCallCount += 1
+        if let fetchAllHandler { return try await fetchAllHandler() }
+        if let fetchAllDelay {
+            try? await Task.sleep(for: fetchAllDelay)
+        }
         if shouldThrow { throw MockError.forced }
         return stubbedTransactions
+    }
+
+    func invalidateTransactionSnapshotCache() async {
+        invalidateTransactionSnapshotCacheCallCount += 1
     }
 
     func add(_ input: TransactionInput) async throws {

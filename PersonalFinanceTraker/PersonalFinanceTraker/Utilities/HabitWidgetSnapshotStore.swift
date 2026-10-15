@@ -78,11 +78,20 @@ enum HabitWidgetSnapshotStore {
     }
 
     static func save(_ snapshot: HabitWidgetSnapshot) {
-        guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        let measurement = PerformanceAuditRecorder.begin("Habit.snapshot.write")
+        guard let data = try? JSONEncoder().encode(snapshot) else {
+            PerformanceAuditRecorder.end(measurement, outcome: .failed)
+            return
+        }
         defaults.set(data, forKey: key)
         #if canImport(WidgetKit)
+        PerformanceAuditRecorder.event("WidgetKit.reload.request", metadata: "kind=DailyLoggingHabitWidget")
         WidgetCenter.shared.reloadTimelines(ofKind: "DailyLoggingHabitWidget")
         #endif
+        PerformanceAuditRecorder.end(
+            measurement,
+            metadata: "templates=\(snapshot.quickTemplates.count) bytes=\(data.count)"
+        )
     }
 
     static func load() -> HabitWidgetSnapshot {

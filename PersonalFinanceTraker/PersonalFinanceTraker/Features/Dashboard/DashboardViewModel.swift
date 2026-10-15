@@ -54,7 +54,11 @@ final class DashboardViewModel {
     @ObservationIgnored var noSpendDateKeys: () -> Set<String> = { DailyCheckInStore.noSpendDateKeys() }
 
     func load() {
-        guard !isLoaded else { return }
+        PerformanceAuditRecorder.event("Dashboard.load.request")
+        guard !isLoaded else {
+            PerformanceAuditRecorder.event("Dashboard.load.skipped")
+            return
+        }
         isLoaded = true  // ponytail: mark loaded before fetch; call reload() to retry after failure
         loadTask = Task {
             await fetchAndCompute()
@@ -62,11 +66,21 @@ final class DashboardViewModel {
     }
 
     func reload() {
+        PerformanceAuditRecorder.event("Dashboard.reload.request")
         isLoaded = false
         load()
     }
 
     private func fetchAndCompute() async {
+        let measurement = PerformanceAuditRecorder.begin("Dashboard.load")
+        var outcome: PerformanceAuditRecorder.Outcome = .completed
+        defer {
+            PerformanceAuditRecorder.end(
+                measurement,
+                outcome: Task.isCancelled ? .cancelled : outcome,
+                metadata: "transactions=\(transactions.count)"
+            )
+        }
         do {
             async let txs = repo.fetchAll()
             async let cats = repo.fetchCategories()
@@ -79,7 +93,9 @@ final class DashboardViewModel {
             // Same source as the widget's snapshot, so Home and widget never disagree.
             activeRules = (try? await active) ?? []
             await calculateMetrics()
+            PerformanceAuditRecorder.commit(measurement, metadata: "transactions=\(transactions.count)")
         } catch {
+            outcome = .failed
             loadError = error.localizedDescription
         }
     }

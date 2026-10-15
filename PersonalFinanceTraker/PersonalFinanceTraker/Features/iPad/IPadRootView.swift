@@ -14,6 +14,7 @@ import SwiftData
 /// column gets the full width until there is actually something to show in it.
 struct IPadRootView: View {
     @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
+    @Environment(\.scenePhase) private var scenePhase
 
     let models: AppShellModels
     let appSettings: AppSettings
@@ -21,6 +22,7 @@ struct IPadRootView: View {
     /// Optional because that's the only `List(selection:)` shape iOS offers; nil is treated as
     /// Home rather than as an empty content column.
     @State private var section: IPadSection? = .home
+    @State private var foregroundRefreshGate = ForegroundRefreshGate()
     @State private var showingAddItemView = false
     /// Set once the sidebar's "Scan receipt" button finishes its own capture+recognition flow
     /// (see ReceiptScanShortcut) — carried into the inspector's Add Transaction, which then
@@ -100,6 +102,7 @@ struct IPadRootView: View {
         }
         .onChange(of: section) { _, _ in models.dashboard.showingCycleForecast = false }
         .onChange(of: models.dataChanged.revision) { _, _ in
+            PerformanceAuditRecorder.event("Shell.refreshFanOut", metadata: "shell=iPad revision=\(models.dataChanged.revision)")
             models.dashboard.reload()
             models.transactions.reload()
             Task {
@@ -109,14 +112,34 @@ struct IPadRootView: View {
             }
         }
         .task {
+            let measurement = PerformanceAuditRecorder.begin("Lifecycle.bootstrap", metadata: "shell=iPad")
             models.transactions.onDataChanged = { models.dataChanged.bump() }
             models.compass.onDataChanged = { models.dataChanged.bump() }
             models.transactions.load()
-            try? await models.materializationService.materialize(using: models.repo)
+            await models.transactions.loadTask?.value
+            let didMaterialize = (try? await models.materializationService.materialize(using: models.repo)) ?? false
             await HabitSnapshotUpdater.refresh(using: models.repo)
             await models.repo.refreshSafeToSpendWidgetSnapshot()
-            models.dataChanged.bump()
+            if didMaterialize { models.dataChanged.bump() }
             consumeFeatureDiscoveryDestination()
+            PerformanceAuditRecorder.end(measurement)
+            await models.bootstrapMaintenanceGate.finishInteractiveBootstrap()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { foregroundRefreshGate.recordBackground() }
+            guard phase == .active, foregroundRefreshGate.consumeRefreshOnActivation() else { return }
+            Task {
+                let measurement = PerformanceAuditRecorder.begin("Lifecycle.foreground.refresh", metadata: "shell=iPad")
+                await models.prepareForForegroundReads()
+                models.dashboard.reload()
+                models.transactions.reload()
+                await models.compass.reloadData()
+                let didMaterialize = (try? await models.materializationService.materialize(using: models.repo)) ?? false
+                await HabitSnapshotUpdater.refresh(using: models.repo)
+                await models.repo.refreshSafeToSpendWidgetSnapshot()
+                if didMaterialize { models.dataChanged.bump() }
+                PerformanceAuditRecorder.end(measurement)
+            }
         }
         .onChange(of: featureDiscovery.pendingDestination) { _, destination in
             if destination != nil { consumeFeatureDiscoveryDestination() }

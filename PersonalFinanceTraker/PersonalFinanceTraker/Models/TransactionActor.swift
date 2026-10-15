@@ -6,14 +6,79 @@ import SwiftData
 
 @ModelActor
 actor TransactionActor: ITransactionRepository {
+    /// A session-scoped value cache shared by Activity, widgets, backups, and dashboard work.
+    /// `TransactionSnapshot` is immutable and `Sendable`, so returning this array across actor
+    /// boundaries does not expose live SwiftData models.
+    private var cachedTransactionSnapshots: [TransactionSnapshot]?
+    private var cachedSnapshotRevision: UInt64?
+    /// Actor-local generation also identifies materializations in traces/tests without
+    /// conflating this repository with shell/widget work in the same test host process.
+    private(set) var snapshotMaterializationGeneration: UInt64 = 0
+
+    /// Allows the few legacy flows that write through a `ModelContext` directly to keep this
+    /// actor-owned cache coherent. Normal transaction mutations clear it internally below.
+    func invalidateTransactionSnapshotCache() {
+        TransactionSnapshotRevision.shared.advance(for: modelContainer)
+        cachedTransactionSnapshots = nil
+        cachedSnapshotRevision = nil
+        PerformanceAuditRecorder.event("TransactionActor.fetchAll.cache.invalidated")
+    }
 
     // MARK: Transactions
 
     func fetchAll() async throws -> [TransactionSnapshot] {
+        let measurement = PerformanceAuditRecorder.begin("TransactionActor.fetchAll")
+        let revisions = TransactionSnapshotRevision.shared
+        let revision = revisions.revision(for: modelContainer)
+        if let cachedTransactionSnapshots, cachedSnapshotRevision == revision {
+            PerformanceAuditRecorder.event("TransactionActor.fetchAll.cache")
+            PerformanceAuditRecorder.end(
+                measurement,
+                metadata: "items=\(cachedTransactionSnapshots.count) source=cache revision=\(revision) generation=\(snapshotMaterializationGeneration)"
+            )
+            return cachedTransactionSnapshots
+        }
+
+        PerformanceAuditRecorder.event("TransactionActor.fetchAll.store")
         let desc = FetchDescriptor<TransactionModel>(
             sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
         )
-        return try modelContext.fetch(desc).map(TransactionSnapshot.init)
+        do {
+            while true {
+                let readRevision = revisions.revision(for: modelContainer)
+                // A long-lived write context may have registered values from before a save
+                // in another context. Each materialization uses a fresh, actor-confined read
+                // context; only immutable Sendable values survive it.
+                let readContext = ModelContext(modelContainer)
+                let fetchMeasurement = PerformanceAuditRecorder.begin("TransactionActor.store.fetch", metadata: "revision=\(readRevision)")
+                let models: [TransactionModel]
+                do {
+                    models = try readContext.fetch(desc)
+                    PerformanceAuditRecorder.end(fetchMeasurement, metadata: "items=\(models.count)")
+                } catch {
+                    PerformanceAuditRecorder.end(fetchMeasurement, outcome: .failed)
+                    throw error
+                }
+                let mapping = PerformanceAuditRecorder.begin("TransactionActor.snapshots.map", metadata: "items=\(models.count) revision=\(readRevision)")
+                let transactions = models.map(TransactionSnapshot.init)
+                PerformanceAuditRecorder.end(mapping)
+                guard readRevision == revisions.revision(for: modelContainer) else {
+                    PerformanceAuditRecorder.event("TransactionActor.snapshots.superseded")
+                    continue
+                }
+                cachedTransactionSnapshots = transactions
+                cachedSnapshotRevision = readRevision
+                snapshotMaterializationGeneration += 1
+                PerformanceAuditRecorder.end(
+                    measurement,
+                    metadata: "items=\(transactions.count) source=store revision=\(readRevision) generation=\(snapshotMaterializationGeneration)"
+                )
+                return transactions
+            }
+        } catch {
+            PerformanceAuditRecorder.end(measurement, outcome: .failed)
+            throw error
+        }
     }
 
     func add(_ input: TransactionInput) async throws {
@@ -33,6 +98,7 @@ actor TransactionActor: ITransactionRepository {
         }
         modelContext.insert(model)
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
         await refreshSafeToSpendWidgetSnapshot()
     }
 
@@ -56,6 +122,7 @@ actor TransactionActor: ITransactionRepository {
             modelContext.insert(model)
         }
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
         await refreshSafeToSpendWidgetSnapshot()
     }
 
@@ -63,6 +130,7 @@ actor TransactionActor: ITransactionRepository {
         guard let model = modelContext.model(for: id) as? TransactionModel else { return }
         modelContext.delete(model)
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
         await refreshSafeToSpendWidgetSnapshot()
     }
 
@@ -72,6 +140,7 @@ actor TransactionActor: ITransactionRepository {
             modelContext.delete(model)
         }
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
         await refreshSafeToSpendWidgetSnapshot()
     }
 
@@ -91,6 +160,7 @@ actor TransactionActor: ITransactionRepository {
             model.categoryModel = nil
         }
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
         await refreshSafeToSpendWidgetSnapshot()
     }
 
@@ -196,6 +266,7 @@ actor TransactionActor: ITransactionRepository {
             rule.lastMaterializedDate = Calendar.current.date(byAdding: .day, value: -1, to: cutoffDate)
         }
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
         await refreshSafeToSpendWidgetSnapshot()
     }
 
@@ -223,6 +294,7 @@ actor TransactionActor: ITransactionRepository {
             rule.lastMaterializedDate = newCursor
         }
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
         await refreshSafeToSpendWidgetSnapshot()
     }
 
@@ -253,12 +325,14 @@ actor TransactionActor: ITransactionRepository {
         )
         modelContext.insert(model)
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
     }
 
     func deleteCategory(id: PersistentIdentifier) async throws {
         guard let model = modelContext.model(for: id) as? CategoryModel else { return }
         modelContext.delete(model)
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
     }
 
     // MARK: Travels
@@ -298,6 +372,7 @@ actor TransactionActor: ITransactionRepository {
             modelContext.delete(model)
         }
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
     }
 
     /// Replaces all travels, preserving ids so restored transactions stay linked.
@@ -318,6 +393,7 @@ actor TransactionActor: ITransactionRepository {
             model.travelId = travelId
         }
         try modelContext.save()
+        invalidateTransactionSnapshotCache()
     }
 
     // MARK: Goals
@@ -409,8 +485,13 @@ actor TransactionActor: ITransactionRepository {
     /// Recomputes the lightweight app-group snapshot after every mutation that affects
     /// cash flow. The app also invokes this when it launches or becomes active.
     func refreshSafeToSpendWidgetSnapshot() async {
+        let measurement = PerformanceAuditRecorder.begin("SafeToSpend.refresh")
         guard let transactions = try? await fetchAll(),
-              let rules = try? await fetchActiveRecurrenceRules() else { return }
+              let rules = try? await fetchActiveRecurrenceRules()
+        else {
+            PerformanceAuditRecorder.end(measurement, outcome: .failed)
+            return
+        }
         let payCycleStartDay = await AppSettings.storedStartDay
         let bufferPercent = await AppSettings.storedBufferPercent
         SafeToSpendSnapshotUpdater.refresh(
@@ -418,6 +499,10 @@ actor TransactionActor: ITransactionRepository {
             activeRules: rules,
             payCycleStartDay: payCycleStartDay,
             bufferPercent: bufferPercent
+        )
+        PerformanceAuditRecorder.end(
+            measurement,
+            metadata: "transactions=\(transactions.count) rules=\(rules.count)"
         )
     }
 }

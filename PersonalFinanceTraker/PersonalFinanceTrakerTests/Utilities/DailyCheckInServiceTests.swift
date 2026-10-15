@@ -70,4 +70,15 @@ struct DailyCheckInServiceTests {
         let key = DailyCheckInService.dateKey(for: now, calendar: calendar)
         #expect(key == "2026-08-15")
     }
+
+    @Test func dateKeyUsesTheProvidedCalendarTimeZone() {
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let instant = utcCalendar.date(from: DateComponents(year: 2026, month: 8, day: 14, hour: 13, minute: 30))!
+
+        var kiritimatiCalendar = Calendar(identifier: .gregorian)
+        kiritimatiCalendar.timeZone = TimeZone(identifier: "Pacific/Kiritimati")!
+
+        #expect(DailyCheckInService.dateKey(for: instant, calendar: kiritimatiCalendar) == "2026-08-15")
+    }
 }

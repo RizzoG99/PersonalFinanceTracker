@@ -221,6 +221,13 @@ struct AuthenticationWrapper: View {
         }
         .onChange(of: overlay) { _, _ in syncLockOverlay() }
         .onAppear {
+            #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("-performanceAudit"),
+               arguments.contains("-performanceAuditSkipLock") {
+                authService.unlock()
+            }
+            #endif
             syncLockOverlay()
             // ponytail: unit tests run inside this app as their host process, so this
             // view's real onAppear fires alongside the test bundle. Without this guard,
@@ -281,6 +288,7 @@ struct AuthenticationWrapper: View {
         .onChange(of: scenePhase) { _, newPhase in
             isEnteringForeground = LockOverlayDecision.isEnteringForeground(isEnteringForeground, phase: newPhase)
             if newPhase == .background {
+                shellModels.recordBackgroundForSnapshotRefresh()
                 // The keyboard is a system-owned window that draws over ours whatever level we
                 // take, so an open keyboard sits on top of the cover, snapshot included, and
                 // dismissing it is the only thing that removes it.
@@ -319,10 +327,13 @@ struct AuthenticationWrapper: View {
                 }
             }
             if newPhase == .active {
-                let repo = TransactionActor.make(modelContainer)
+                let repo = shellModels.repo
                 let settings = appSettings
                 let service = backupService
+                let bootstrapMaintenanceGate = shellModels.bootstrapMaintenanceGate
                 Task {
+                    await bootstrapMaintenanceGate.waitUntilInteractiveBootstrapCompletes()
+                    await shellModels.prepareForForegroundReads()
                     await BackupScheduler.runIfNeeded(repo: repo, settings: settings, backupService: service)
                 }
             }

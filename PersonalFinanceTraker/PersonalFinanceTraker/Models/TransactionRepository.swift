@@ -57,6 +57,8 @@ enum SearchDateRange: Equatable, Sendable {
 protocol ITransactionRepository {
     // Transactions
     func fetchAll() async throws -> [TransactionSnapshot]
+    /// Clears any process-local value cache after a legacy/direct SwiftData write.
+    func invalidateTransactionSnapshotCache() async
     func add(_ input: TransactionInput) async throws
     func addBatch(_ inputs: [TransactionInput]) async throws
     func delete(id: PersistentIdentifier) async throws

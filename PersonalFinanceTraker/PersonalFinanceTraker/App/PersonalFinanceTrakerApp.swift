@@ -25,6 +25,7 @@ struct PersonalFinanceTrakerApp: App {
         seedSampleDataIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
+        PerformanceAuditDataSeeder.seedIfRequested(in: AppContainer.shared)
     }
 
     // MARK: - Properties

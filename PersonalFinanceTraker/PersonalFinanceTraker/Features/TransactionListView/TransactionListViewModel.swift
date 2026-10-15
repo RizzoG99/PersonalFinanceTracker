@@ -13,14 +13,29 @@ enum RecurrenceDeleteScope {
     case thisAndFuture
 }
 
+/// The slice of Activity that is currently materialized by SwiftUI.
+///
+/// The backing data stays complete so totals, search, filters, travels, and bulk selection
+/// retain their existing semantics. Rendering all thousands of rows at once, however, blocks
+/// the first Activity presentation on real devices.
+struct ActivityPage {
+    let groups: [(String, [ActivityRow])]
+    let remainingRowCount: Int
+
+    var hasMoreRows: Bool { remainingRowCount > 0 }
+}
+
 @Observable @MainActor
 final class TransactionListViewModel {
+    static let activityPageSize = 200
+
     var transactions: [TransactionSnapshot] = []
     var hasNoTransactions: Bool { transactions.isEmpty }
     var filteredItems: [TransactionSnapshot] = [] {
         didSet {
-            updateGroupedItems()
+            resetActivityPagination()
             recomputeDerivedFilterState()
+            updateGroupedItems()
             intersectSelectionWithVisible()
         }
     }
@@ -29,6 +44,7 @@ final class TransactionListViewModel {
     var travels: [TravelSnapshot] = [] {
         didSet {
             travelsByID = Dictionary(travels.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            resetActivityPagination()
             updateGroupedItems()
         }
     }
@@ -54,7 +70,7 @@ final class TransactionListViewModel {
     /// the user is looking for individual transactions — and leaving the rows flat keeps
     /// every existing filter and multi-select path working on plain transactions.
     var isCollapsingTravels: Bool {
-        searchText.isEmpty && !filters.isActive && !isSelecting
+        searchText.isEmpty && !filters.isActive && effectiveCategory == nil && !isSelecting
     }
 
     /// Members of `travel`, newest first — the Activity list holds the only fetched copy.
@@ -67,7 +83,9 @@ final class TransactionListViewModel {
     /// Category chip selection on the Activity screen; nil means "All"
     var selectedCategory: String? = nil {
         didSet {
+            resetActivityPagination()
             recomputeDerivedFilterState()
+            updateGroupedItems()
             intersectSelectionWithVisible()
         }
     }
@@ -89,6 +107,8 @@ final class TransactionListViewModel {
     private(set) var totalFilteredExpenses: Decimal = .zero
 
     private func recomputeDerivedFilterState() {
+        let measurement = PerformanceAuditRecorder.begin("Activity.derivedFilters", metadata: "items=\(filteredItems.count)")
+        defer { PerformanceAuditRecorder.end(measurement) }
         let counts = Dictionary(grouping: filteredItems, by: \.category).mapValues(\.count)
         filterCategories = counts.sorted { ($0.value, $1.key) > ($1.value, $0.key) }.map(\.key)
         effectiveCategory = selectedCategory.flatMap { filterCategories.contains($0) ? $0 : nil }
@@ -148,9 +168,64 @@ final class TransactionListViewModel {
     // MARK: - Multi-select
     // Entering selection mode expands travels, so their members can be picked individually.
     var isSelecting = false {
-        didSet { if oldValue != isSelecting { updateGroupedItems() } }
+        didSet {
+            if oldValue != isSelecting {
+                resetActivityPagination()
+                updateGroupedItems()
+            }
+        }
     }
     var selectedIDs: Set<PersistentIdentifier> = []
+
+    /// Number of Activity rows SwiftUI is currently allowed to build. It deliberately counts
+    /// collapsed travel rows as one; entering selection mode resets it and expands those rows
+    /// into the transactions the user can select.
+    private(set) var activityRowLimit: Int
+
+    /// Category chips are applied after grouping because they must leave every chip available.
+    /// When a category is active travels have already been expanded, so this only filters normal
+    /// transaction rows while preserving date sections.
+    private var groupedActivityItems: [(String, [ActivityRow])] {
+        guard let category = effectiveCategory else { return groupedItems }
+        return groupedItems.compactMap { dateString, rows in
+            let filtered = rows.filter { $0.transaction.map { $0.category == category } ?? true }
+            return filtered.isEmpty ? nil : (dateString, filtered)
+        }
+    }
+
+    /// Date-grouped rows for the current Activity page. A partial final date section grows in
+    /// place when the next page is requested, so the list never introduces a duplicate header.
+    var activityPage: ActivityPage {
+        let measurement = PerformanceAuditRecorder.begin("Activity.page.prepare", metadata: "limit=\(activityRowLimit)")
+        defer { PerformanceAuditRecorder.end(measurement) }
+        var rowBudget = activityRowLimit
+        var remainingRowCount = 0
+        var groups: [(String, [ActivityRow])] = []
+
+        for (dateString, rows) in groupedActivityItems {
+            guard rowBudget > 0 else {
+                remainingRowCount += rows.count
+                continue
+            }
+
+            let displayedRows = Array(rows.prefix(rowBudget))
+            groups.append((dateString, displayedRows))
+            rowBudget -= displayedRows.count
+            remainingRowCount += rows.count - displayedRows.count
+        }
+
+        return ActivityPage(groups: groups, remainingRowCount: remainingRowCount)
+    }
+
+    /// Reveals the next fixed-size page at an explicit user request, avoiding expensive eager
+    /// construction of all Activity row views during the first tab switch.
+    func loadNextActivityPage() {
+        activityRowLimit += Self.activityPageSize
+    }
+
+    private func resetActivityPagination() {
+        activityRowLimit = Self.activityPageSize
+    }
 
     var selectedSnapshots: [TransactionSnapshot] {
         transactions.filter { selectedIDs.contains($0.id) }
@@ -199,33 +274,82 @@ final class TransactionListViewModel {
 
     public let currencyService = CurrencyService()
     private var isLoaded = false
+    private var isLoading = false
+    private var reloadPending = false
+    @ObservationIgnored private var loadGeneration = 0
 
     init(repo: any ITransactionRepository) {
         self.repo = repo
+        self.activityRowLimit = Self.activityPageSize
     }
 
     /// Handle to the in-flight fetch so tests (and callers) can await completion
     @ObservationIgnored private(set) var loadTask: Task<Void, Never>?
 
     func load() {
-        guard !isLoaded else { return }
+        PerformanceAuditRecorder.event("Activity.load.request")
+        guard !isLoaded, !isLoading else {
+            PerformanceAuditRecorder.event("Activity.load.skipped")
+            return
+        }
         isLoaded = true
+        isLoading = true
         loadTask = Task {
             await fetchAndRefresh()
         }
     }
 
     func reload() {
+        PerformanceAuditRecorder.event("Activity.reload.request")
+        guard !isLoading else {
+            reloadPending = true
+            return
+        }
         isLoaded = false
         load()
     }
 
     private func fetchAndRefresh() async {
+        loadGeneration += 1
+        let generation = loadGeneration
+        let measurement = PerformanceAuditRecorder.begin("Activity.load", metadata: "generation=\(generation)")
+        var outcome: PerformanceAuditRecorder.Outcome = .completed
+        defer {
+            PerformanceAuditRecorder.end(
+                measurement,
+                outcome: Task.isCancelled ? .cancelled : outcome,
+                metadata: "transactions=\(transactions.count) generation=\(generation)"
+            )
+            isLoading = false
+            if reloadPending {
+                reloadPending = false
+                isLoaded = false
+                load()
+            }
+        }
         do {
-            transactions = try await repo.fetchAll()
-            travels = (try? await repo.fetchTravels()) ?? []
+            let loadedTransactions = try await repo.fetchAll()
+            let loadedTravels = (try? await repo.fetchTravels()) ?? []
+            // A persisted revision arrived while this read was suspended. Keep the current
+            // UI intact; the coalesced follow-up in defer owns publication of the new data.
+            guard !reloadPending, !Task.isCancelled else {
+                outcome = .cancelled
+                isLoaded = false
+                PerformanceAuditRecorder.event("Activity.load.superseded", metadata: "generation=\(generation)")
+                return
+            }
+            transactions = loadedTransactions
+            travels = loadedTravels
             await doFilterItemBySearchText()  // triggers filteredItems.didSet → updateGroupedItems() + chartData
-        } catch { print(error) }
+            // Loading is not settled until the date/travel read model is available. Bootstrap
+            // callers awaiting loadTask must not release maintenance ahead of this work.
+            await groupingTask?.value
+            PerformanceAuditRecorder.commit(measurement, metadata: "transactions=\(transactions.count) generation=\(generation)")
+        } catch {
+            outcome = .failed
+            isLoaded = false
+            print(error)
+        }
     }
 
     func add(_ input: TransactionInput) async {
@@ -253,6 +377,8 @@ final class TransactionListViewModel {
         let filters = filters
         let transactions = transactions
         let filtered = await Task.detached(priority: .userInitiated) {
+            let measurement = PerformanceAuditRecorder.begin("Activity.filter", metadata: "items=\(transactions.count)")
+            defer { PerformanceAuditRecorder.end(measurement) }
             let dateBounds = filters.resolvedDateBounds()
             return transactions.filter { item in
                 let textMatch = searchText.isEmpty || (
@@ -282,10 +408,14 @@ final class TransactionListViewModel {
         groupingTask?.cancel()
         groupingTask = Task { [weak self] in
             let grouped = await Task.detached(priority: .userInitiated) {
-                ActivityRowGrouper.group(items, travels: travels)
+                let measurement = PerformanceAuditRecorder.begin("Activity.group", metadata: "items=\(items.count) travels=\(travels.count)")
+                defer { PerformanceAuditRecorder.end(measurement) }
+                return ActivityRowGrouper.group(items, travels: travels)
             }.value
             guard !Task.isCancelled else { return }
+            let publication = PerformanceAuditRecorder.begin("Activity.group.publish", metadata: "groups=\(grouped.count)")
             self?.groupedItems = grouped
+            PerformanceAuditRecorder.end(publication)
         }
     }
 

@@ -10,6 +10,8 @@ struct CategorySettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \CategoryModel.name) private var categories: [CategoryModel]
 
+    let onPersistedCategoryChange: () -> Void
+
     @State private var editingCategory: CategoryModel?
     @State private var showingAddSheet = false
 
@@ -29,7 +31,7 @@ struct CategorySettingsView: View {
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button(role: .destructive) {
-                            modelContext.delete(category)
+                            delete(category)
                         } label: {
                             Image(systemName: "trash")
                         }
@@ -48,7 +50,7 @@ struct CategorySettingsView: View {
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button(role: .destructive) {
-                            modelContext.delete(category)
+                            delete(category)
                         } label: {
                             Image(systemName: "trash")
                         }
@@ -72,14 +74,26 @@ struct CategorySettingsView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            AddCategorySheet(existingCategories: categories)
+            AddCategorySheet(existingCategories: categories) { _ in
+                onPersistedCategoryChange()
+            }
                 .environment(\.modelContext, modelContext)
         }
         .sheet(item: $editingCategory) { category in
-            EditCategorySheet(category: category, existingCategories: categories)
+            EditCategorySheet(
+                category: category,
+                existingCategories: categories,
+                onPersistedCategoryChange: onPersistedCategoryChange
+            )
                 .environment(\.modelContext, modelContext)
                 .id(category.id)
         }
+    }
+
+    private func delete(_ category: CategoryModel) {
+        modelContext.delete(category)
+        guard (try? modelContext.save()) != nil else { return }
+        onPersistedCategoryChange()
     }
 
     private func sectionHeader(_ title: String) -> some View {
