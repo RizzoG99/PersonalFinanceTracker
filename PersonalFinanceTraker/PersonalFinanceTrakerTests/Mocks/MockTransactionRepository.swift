@@ -92,6 +92,12 @@ final class MockTransactionRepository: ITransactionRepository {
         // Tests that rely on checking updated data after fetch will need to work around this.
     }
 
+    func updateBatch(_ updates: [TransactionUpdate]) async {
+        for update in updates {
+            try? await self.update(id: update.id, with: update.input)
+        }
+    }
+
     // MARK: Categories
     func fetchCategories() async throws -> [CategorySnapshot] {
         if shouldThrow { throw MockError.forced }

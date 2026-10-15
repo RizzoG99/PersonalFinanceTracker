@@ -54,6 +54,12 @@ enum SearchDateRange: Equatable, Sendable {
     }
 }
 
+/// A persisted row and its replacement editable fields; no live models cross actors.
+struct TransactionUpdate: Sendable {
+    let id: PersistentIdentifier
+    let input: TransactionInput
+}
+
 protocol ITransactionRepository {
     // Transactions
     func fetchAll() async throws -> [TransactionSnapshot]
@@ -63,6 +69,9 @@ protocol ITransactionRepository {
     func addBatch(_ inputs: [TransactionInput]) async throws
     func delete(id: PersistentIdentifier) async throws
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws
+    /// Best effort: retain successful rows if another row cannot be saved.
+    /// Flush derived snapshots once after the final successful write.
+    func updateBatch(_ updates: [TransactionUpdate]) async
     func deleteAllTransactions() async throws
 
     // Categories

@@ -846,6 +846,7 @@ final class TransactionListViewModel {
             category: s.category,
             currencyCode: s.currencyCode,
             goalId: s.goalId,
+            travelId: s.travelId,
             categoryPersistentId: s.categoryId,
             recurrenceRuleId: s.recurrenceRuleId
         )
@@ -873,6 +874,7 @@ final class TransactionListViewModel {
                 category: category.name,
                 currencyCode: s.currencyCode,
                 goalId: nil,
+                travelId: s.travelId,
                 categoryPersistentId: category.persistentId,
                 recurrenceRuleId: s.recurrenceRuleId
             )
@@ -966,16 +968,14 @@ final class TransactionListViewModel {
         let targets = selectedSnapshots
         guard !targets.isEmpty else { return }
         let count = targets.count
-        let prior: [(PersistentIdentifier, TransactionInput)] = targets.map { ($0.id, input(from: $0)) }
+        let prior = targets.map { TransactionUpdate(id: $0.id, input: input(from: $0)) }
+        let updates = targets.map { TransactionUpdate(id: $0.id, input: newInput($0)) }
         let text = message(count)
         exitSelection()
         bulkEditTask = Task {
-            // ponytail: loop update; add updateBatch only if it measurably lags
-            for t in targets {
-                try? await repo.update(id: t.id, with: newInput(t))
-            }
+            await repo.updateBatch(updates)
             await armUndo(message: text) {
-                for (id, input) in prior { try? await self.repo.update(id: id, with: input) }
+                await self.repo.updateBatch(prior)
             }
             onDataChanged?()
             reload()

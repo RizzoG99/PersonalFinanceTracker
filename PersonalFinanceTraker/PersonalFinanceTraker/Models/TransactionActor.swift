@@ -146,6 +146,62 @@ actor TransactionActor: ITransactionRepository {
 
     func update(id: PersistentIdentifier, with input: TransactionInput) async throws {
         guard let model = modelContext.model(for: id) as? TransactionModel else { return }
+        apply(input, to: model, in: modelContext)
+        try modelContext.save()
+        invalidateTransactionSnapshotCache()
+        await refreshSafeToSpendWidgetSnapshot()
+    }
+
+    func updateBatch(_ updates: [TransactionUpdate]) async {
+        await updateBatch(updates, saving: { try $0.save() })
+    }
+
+    /// The save seam lets tests fail the real persistence path without replacing the actor.
+    /// A private context owns this operation's pending writes, so rollback cannot discard
+    /// unrelated changes in the actor's long-lived context. No suspension occurs until flush.
+    func updateBatch(_ updates: [TransactionUpdate],
+                     saving save: @Sendable (ModelContext) throws -> Void) async {
+        guard !updates.isEmpty else { return }
+        let context = ModelContext(modelContainer)
+        context.autosaveEnabled = false
+        var saved = false
+        do {
+            for update in updates { try apply(update, in: context) }
+            if context.hasChanges {
+                try save(context)
+                saved = true
+            }
+        } catch {
+            // Preserve best-effort bulk semantics rather than changing to all-or-nothing.
+            // Roll back the failed batch before retrying each row independently; a failed
+            // row must not leak into a later successful row's save or the widget snapshot.
+            context.rollback()
+            for update in updates {
+                do {
+                    try apply(update, in: context)
+                    if context.hasChanges {
+                        try save(context)
+                        saved = true
+                    }
+                } catch {
+                    context.rollback()
+                }
+            }
+        }
+        guard saved else { return }
+        invalidateTransactionSnapshotCache()
+        await refreshSafeToSpendWidgetSnapshot()
+    }
+
+    private func apply(_ update: TransactionUpdate, in context: ModelContext) throws {
+        let id = update.id
+        var descriptor = FetchDescriptor<TransactionModel>(predicate: #Predicate { $0.persistentModelID == id })
+        descriptor.fetchLimit = 1
+        guard let model = try context.fetch(descriptor).first else { return }
+        apply(update.input, to: model, in: context)
+    }
+
+    private func apply(_ input: TransactionInput, to model: TransactionModel, in context: ModelContext) {
         model.timestamp = input.timestamp
         model.amount = input.amount
         model.note = input.note
@@ -154,14 +210,11 @@ actor TransactionActor: ITransactionRepository {
         model.goalId = input.goalId
         model.travelId = input.travelId
         if let pid = input.categoryPersistentId,
-           let cat = modelContext.model(for: pid) as? CategoryModel {
+           let cat = context.model(for: pid) as? CategoryModel {
             model.categoryModel = cat
         } else {
             model.categoryModel = nil
         }
-        try modelContext.save()
-        invalidateTransactionSnapshotCache()
-        await refreshSafeToSpendWidgetSnapshot()
     }
 
     // MARK: Recurrence rules
