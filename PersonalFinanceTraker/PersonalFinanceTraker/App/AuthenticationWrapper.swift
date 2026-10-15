@@ -55,7 +55,9 @@ struct AuthenticationWrapper: View {
             isPINSetup: isPINSetup,
             showSplash: showSplash,
             lockState: authService.lockState,
-            isSystemAuthInFlight: authService.isSystemAuthInFlight,
+            // Any system alert we raised ourselves deactivates the scene without the user
+            // leaving: Face ID, or the notification permission prompt (#193).
+            isSystemAuthInFlight: authService.isSystemAuthInFlight || ReminderService.shared.isPermissionPromptInFlight,
             isEnteringForeground: isEnteringForeground
         )
     }
@@ -287,6 +289,10 @@ struct AuthenticationWrapper: View {
         }
         .onChange(of: scenePhase) { _, newPhase in
             isEnteringForeground = LockOverlayDecision.isEnteringForeground(isEnteringForeground, phase: newPhase)
+            // The permission alert is over once we're active again or really gone — not when
+            // its answer arrives, which is still `.inactive` (a cover flash otherwise). Not
+            // gated on PIN: the cover shows without one too.
+            if newPhase != .inactive { ReminderService.shared.endPermissionPrompt() }
             if newPhase == .background {
                 shellModels.recordBackgroundForSnapshotRefresh()
                 // The keyboard is a system-owned window that draws over ours whatever level we

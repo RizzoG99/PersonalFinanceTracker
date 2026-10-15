@@ -46,5 +46,20 @@ struct ProfileReminderSection: View {
                 "Time", selection: reminderTime, displayedComponents: .hourAndMinute
             )
         }
+        Toggle(isOn: $recapEnabled) {
+            Label("Monthly recap", systemImage: "calendar.badge.checkmark")
+            Text("A notification on payday when last cycle's recap is ready")
+        }
+        .onChange(of: recapEnabled) { _, enabled in
+            Task {
+                if enabled, !(await ReminderService.shared.requestPermission()) {
+                    recapEnabled = false
+                }
+                ReminderService.shared.scheduleMonthlyRecap()
+            }
+        }
     }
+
+    /// On by default (#193); off removes the pending notification.
+    @AppStorage("recapNotificationEnabled") private var recapEnabled = true
 }

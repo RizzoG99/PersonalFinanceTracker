@@ -12,6 +12,7 @@ struct GoalDetailSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var showingFundEntry = false
     @State private var fundAmountText = ""
 
@@ -41,6 +42,7 @@ struct GoalDetailSheet: View {
                 VStack(spacing: 32) {
                     progressRing
                     goalInfo
+                    GoalProjectionCard(projection: viewModel.projection(for: goal))
                     fundSection
                 }
                 .padding(24)
@@ -81,12 +83,13 @@ struct GoalDetailSheet: View {
                 Image(systemName: goal.iconName)
                     .font(.title2)
                     .foregroundStyle(goalColor)
-                Text(String(format: "%.0f%%", progress * 100))
+                Text(progress, format: .percent.precision(.fractionLength(0)))
                     .font(.title.bold())
                     .foregroundStyle(.textPrimary)
             }
         }
-        .frame(width: 180, height: 180)
+        // Smaller in landscape iPhone, so the projection card isn't pushed below the fold.
+        .frame(width: verticalSizeClass == .compact ? 120 : 180, height: verticalSizeClass == .compact ? 120 : 180)
         .padding(.top, 8)
     }
 
@@ -98,7 +101,7 @@ struct GoalDetailSheet: View {
                         .font(.subheadline)
                         .foregroundStyle(.textDim)
                     Spacer()
-                    Text(currentAmount.formattedEURCompact())
+                    Text(currentAmount.formattedEUR())
                         .font(.subheadline.bold())
                         .foregroundStyle(goalColor)
                         .privacyBlur()
@@ -108,7 +111,7 @@ struct GoalDetailSheet: View {
                         .font(.subheadline)
                         .foregroundStyle(.textDim)
                     Spacer()
-                    Text(goal.targetAmount.formattedEURCompact())
+                    Text(goal.targetAmount.formattedEUR())
                         .font(.subheadline.bold())
                         .foregroundStyle(.textPrimary)
                         .privacyBlur()

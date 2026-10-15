@@ -35,6 +35,8 @@ struct IPadRootView: View {
     /// ProfileView takes this binding to drive its own sheet detents on iPhone. As a sidebar
     /// destination there is no sheet to size, so nothing observes it — it just satisfies the API.
     @State private var profileDetent: PresentationDetent = .large
+    /// Widget links and the monthly recap notification (#193) — MainTabView reads the same key.
+    @AppStorage("pending_widget_destination") private var pendingWidgetDestination = ""
 
     var body: some View {
         NavigationSplitView {
@@ -122,6 +124,7 @@ struct IPadRootView: View {
             await models.repo.refreshSafeToSpendWidgetSnapshot()
             if didMaterialize { models.dataChanged.bump() }
             consumeFeatureDiscoveryDestination()
+            consumePendingWidgetDestination()
             PerformanceAuditRecorder.end(measurement)
             await models.bootstrapMaintenanceGate.finishInteractiveBootstrap()
         }
@@ -143,6 +146,9 @@ struct IPadRootView: View {
         }
         .onChange(of: featureDiscovery.pendingDestination) { _, destination in
             if destination != nil { consumeFeatureDiscoveryDestination() }
+        }
+        .onChange(of: pendingWidgetDestination) { _, destination in
+            if !destination.isEmpty { consumePendingWidgetDestination() }
         }
         // Outermost, and it has to stay that way: a .sheet or .inspector attached further out than
         // these would present its content outside this environment, and anything reading
@@ -173,6 +179,15 @@ struct IPadRootView: View {
     private func openPendingTravelExpense() {
         guard pendingTravelId != nil else { return }
         showingAddItemView = true
+    }
+
+    private func consumePendingWidgetDestination() {
+        switch pendingWidgetDestination {
+        case "insights": section = .insights
+        case "home": section = .home
+        default: return
+        }
+        pendingWidgetDestination = ""
     }
 
     private func consumeFeatureDiscoveryDestination() {

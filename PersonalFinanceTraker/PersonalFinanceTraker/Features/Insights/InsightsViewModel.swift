@@ -20,6 +20,8 @@ final class CompassViewModel {
     }
     private(set) var explorer: ExplorerBreakdown = .empty
     var habitObservations: [HabitObservation] = []
+    /// The pay cycle that just closed vs the one before (#193); nil until a cycle has closed.
+    private(set) var monthlyRecap: MonthlyRecap?
     var goals: [GoalSnapshot] = []
     var averageIncome: Decimal = 0
     var averageExpenses: Decimal = 0
@@ -60,6 +62,9 @@ final class CompassViewModel {
         return explorerPeriod.previous().interval.end > first
     }
     private var categories: [CategorySnapshot] = []
+    private var allRules: [RecurrenceRuleSnapshot] = []
+    /// Active recurring transfers into goals — the "planned" pace of a goal projection (#192).
+    private var goalRules: [RecurrenceRuleSnapshot] = []
     private var expenseTransactions: [TransactionSnapshot] = []
 
     init(repo: ITransactionRepository) {
@@ -97,14 +102,23 @@ final class CompassViewModel {
             async let txs = repo.fetchAll()
             async let fetchedGoals = repo.fetchGoals()
             async let fetchedCategories = repo.fetchCategories()
+            // All rules, stopped ones too: the recap needs what was running last cycle.
+            async let fetchedRules = repo.fetchAllRecurrenceRules()
             transactions = try await txs
             goals = (try? await fetchedGoals) ?? []
             categories = (try? await fetchedCategories) ?? []
+            allRules = (try? await fetchedRules) ?? []
         } catch {
             outcome = .failed
             print("CompassViewModel load error: \(error)")
             return
         }
+        let today = Calendar.current.startOfDay(for: .now)
+        goalRules = allRules.filter { $0.goalId != nil && $0.isActive(asOf: today) }
+        monthlyRecap = MonthlyRecap.make(
+            transactions: transactions, rules: allRules,
+            payCycleStartDay: AppSettings.storedStartDay, currencyService: currencyService
+        )
         expenseTransactions = transactions.filter { $0.amount < 0 && $0.goalId == nil }
         // overlap the repo-I/O computation with the pure ones; all run on MainActor, awaits interleave
         async let health: Void = computeHealthScore()
@@ -263,5 +277,15 @@ final class CompassViewModel {
         transactions
             .filter { $0.goalId == goal.id }
             .reduce(Decimal(0)) { $0 + abs(currencyService.convertToBase($1.amount, from: $1.currencyCode)) }
+    }
+
+    func projection(for goal: GoalSnapshot) -> GoalProjection {
+        let planned = goalRules
+            .filter { $0.goalId == goal.id }
+            .reduce(Decimal(0)) { $0 + abs(currencyService.convertToBase($1.monthlyEquivalent, from: $1.currencyCode)) }
+        let transfers = transactions
+            .filter { $0.goalId == goal.id }
+            .map { (date: $0.timestamp, amount: currencyService.convertToBase($0.amount, from: $0.currencyCode)) }
+        return GoalProjection.make(goal: goal, saved: transferTotal(for: goal), plannedMonthly: planned, transfers: transfers)
     }
 }

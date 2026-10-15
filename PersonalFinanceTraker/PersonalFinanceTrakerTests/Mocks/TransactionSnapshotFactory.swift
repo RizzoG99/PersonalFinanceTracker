@@ -89,10 +89,12 @@ extension GoalSnapshot {
     static func test(
         name: String,
         targetAmount: Decimal,
-        deadline: Date? = nil
+        deadline: Date? = nil,
+        createdAt: Date? = nil
     ) -> GoalSnapshot {
         let context = ModelContext(SnapshotTestSupport.container)
         let model = GoalModel(name: name, targetAmount: targetAmount, deadline: deadline)
+        if let createdAt { model.createdAt = createdAt }
         context.insert(model)
         return GoalSnapshot(model)
     }
