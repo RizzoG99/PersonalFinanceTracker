@@ -2,7 +2,13 @@
 
 ## Evidence status
 
-No finding is currently `Confirmed`. This plan defines how to measure the six consolidated P1 findings and how to reject optimizations that do not produce a material benefit without compromising correctness.
+Reconciled 2026-10-16 through review corrections `8dbb9e4` and the TEST/publication checkpoint in [summary.md](summary.md). [summary.md](summary.md) and `manifest.json.currentDisposition` are the current status index. The scenarios below retain original baselines and acceptance gates; they are not all outstanding implementation tasks.
+
+PERF-110's earlier multiplicity and PERF-111's duplicate Insights appearance ownership/overlap were confirmed in the original measurement campaign. Scoped cache, lifecycle and loader fixes are implemented. Insights overlap is mitigated at the shared ViewModel owner under PERF-111/#235; independent CRUD task ownership and physical frequency/latency remain outside that verification. PERF-112's DateFormatter hot path and a measured Home cycle-summary conversion window are corrected; its 5k service baseline is complete, with physical-device/richer-ledger gates retained. PERF-101's original double evaluation is replaced by a single Activity page value per body.
+
+Search now has both a [ViewModel 5k baseline](measurements/Activity-search-5k-baseline.md) and a [saved physical iPhone 14 Pro Max run](measurements/Activity-search-5k-device-r1.md). The old missing-run-3 request is superseded by the separate physical trace, explicitly analyzed at run 1. Filters run off-main at 24–61 ms; group assignment is below 0.54 ms. User reports a substantial overall improvement with mild typing lag and no perceived freeze. Per-key/frame latency and stale-result suppression remain unverified. Further search/first-switch optimization is deferred for now; retain PERF-303's unclosed correctness scenarios, including `clearSearch()`'s multiple derivations.
+
+**PERF-201 baseline completed:** [1/10/100-row bulk note edit and Undo](measurements/PERF-201-baseline.md) on an isolated disk-backed TEST 5k fixture. All 18 samples passed correctness checks and show per-row save/fetch/map/widget amplification. The [implemented batch follow-up](measurements/PERF-201-batch-followup.md) now passes one-save/materialization/widget budgets in all 18 samples, with 100-row medians of 215 ms edit / 204 ms Undo in Debug Simulator. Physical responsiveness remains unmeasured. Exact memory peaks, energy, iPad timing and broader repeated physical-device scenarios remain unmeasured. Later receipt stage/VM observations and the red OCR replay are documented under PERF-301; they do not establish passing accuracy or post-integration physical-camera validation. Earlier tests/profiles are not rerun by this checkpoint; the new PERF-201 test and its exact results are recorded separately.
 
 ## Common protocol
 
@@ -61,6 +67,8 @@ Existing view-model tests plus new delayed-read sequences, repeated navigation, 
 
 ## PERF-112 — Main-actor history analytics
 
+2026-10-16 scoped result: the [5k service baseline and bounded follow-up](measurements/PERF-112-analytics.md) measure synchronous wall/thread CPU separately from async load wall time. Release-TEST Simulator cycle-summary CPU is 12.43 → 2.11 ms after time-windowing conversion; covered Home service CPU is 41.41 → 30.11 ms. All 70 comparable records retain result/count/thread coverage parity. Fixed-date tests cover full summary/chart outputs, pay-cycle/DST boundaries, future spending and USD Decimal conversion. Sequential mutation freshness and selected-period retention are covered; overlapping Insights task supersession is separately mitigated under PERF-111/#235, with its own [reproduction and validation](measurements/PERF-111-insights-overlap.md). Device frame latency, allocations, energy, light/dark and compact/wide layouts, accessibility Dynamic Type and VoiceOver were not checked in this service-only experiment. Stop structural work pending a measurement that changes the decision.
+
 Scenario:
 Open Dashboard and Insights, switch periods/categories, add/edit a transaction, and foreground using each deterministic store size.
 
@@ -84,6 +92,8 @@ Dashboard, Insights, financial-health, forecast, chart, budget, currency, calend
 
 ## PERF-201 — Per-entity mutation amplification
 
+Checkpoint: [baseline completed](measurements/PERF-201-baseline.md) for 1/10/100-row bulk note edit and Undo. For N selected rows, each phase performs N saves/full materializations/snapshot writes/widget requests. The 100-row Debug Simulator median is approximately 11.6 seconds; physical UI latency, broad real-store failure conditions, restore and recurrence remain unmeasured. Completed: one batch boundary and comparable follow-up; one save/materialization/widget request per phase, validated row-retry/rollback, monetary-widget freshness, metadata and Undo. Stop further structural work in this scope; broader failure conditions, restore/recurrence and physical timing remain separate gates. Use the isolated TEST app; [setup](../docs/development/test-app.md).
+
 Scenario:
 Bulk edit and undo for 1/10/100 rows; restore with 0/10/100 recurrence rules; recurrence materialization with multiple due rules; inject a mid-batch failure.
 
@@ -94,7 +104,7 @@ Tools:
 Repository counters, SwiftData/File Activity instruments, points of interest, deterministic failure-injection repository/storage seams.
 
 Optimization strategy:
-Explicit batch transactions with one final guaranteed snapshot flush and material-output equality checks.
+Implemented for bulk edit/Undo: one batch save normally, rollback and independent row retries on failure, then one final snapshot refresh attempt after successful persistence. Material-output equality skipping is not implemented or scheduled; restore/recurrence remain later gates.
 
 Validation:
 Counts scale with a logical batch rather than selected rows/rules; final app/widget state is current; failure and undo semantics match the contract.
@@ -129,6 +139,8 @@ Regression checks:
 Crop/orientation fixtures, camera/photo-library flows, low-light receipts, cancellation/dismissal, and memory stability across repeated scans.
 
 ## PERF-303 — Search cancellation and generation
+
+Checkpoint: partial, further performance work deferred. Canceled sleep exits; the filter worker still lacks a latest-generation publication check, detached work can outlive its owner, and `clearSearch()` schedules multiple derivations. The physical run does not exercise/prove all cancellation races. Reopen with a deterministic correctness loop or disruptive user observation, not solely because the original finding is listed below.
 
 Scenario:
 Type a deterministic rapid sequence, change filter chips during debounce, clear search, and trigger a repository refresh with thousands of transactions.

@@ -1,0 +1,3749 @@
+{
+  "artifact": "traces/Activity-search-5k-PFT-TEST-iPhone-r1.trace",
+  "provenance": {
+    "run": 1,
+    "date": "2026-10-15T23:28:56.950+02:00",
+    "duration_seconds": 65.820671,
+    "platform": "iOS",
+    "device": "iPhone 14 Pro Max",
+    "os": "27.0.1 (24A446)",
+    "process": "PersonalFinanceTraker",
+    "pid": "23775",
+    "tables": [
+      "OSSignpostIntervals",
+      "PointsOfInterestEvents",
+      "StateReportingIntervals",
+      "device-thermal-state-intervals",
+      "dyld-library-load",
+      "hang-risks",
+      "kdebug",
+      "kdebug-strings",
+      "life-cycle-period",
+      "os-log",
+      "os-signpost",
+      "os-signpost-arg",
+      "potential-hangs",
+      "process-info",
+      "runloop-events",
+      "thread-info",
+      "tick",
+      "time-profile",
+      "time-sample"
+    ]
+  },
+  "recorded_subsystem": "rizzoG99.PersonalFinanceTraker.test",
+  "binary_uuid": "B6C1AD37-8471-3691-9142-86E253C9407D",
+  "analysis_checkout_head": "d1b7f5b48a0bf2ee882639cfbc3171fe7d826eb0",
+  "recorded_git_revision_and_build_configuration": "not independently established from trace",
+  "thermal_state": "Nominal throughout recording",
+  "user_observation": "slight typing lag; no perceived freeze",
+  "native_interval_count": 114,
+  "native_event_count": 19,
+  "os_log_row_count": 0,
+  "phase_summaries_after_30_seconds": {
+    "Activity.filter": {
+      "count": 7,
+      "min_ms": 24.000084,
+      "median_ms": 26.502208,
+      "max_ms": 60.683875,
+      "sum_ms": 264.112751
+    },
+    "Activity.group": {
+      "count": 9,
+      "min_ms": 0.009666000000000001,
+      "median_ms": 37.266958,
+      "max_ms": 42.089959,
+      "sum_ms": 232.260042
+    },
+    "Activity.derivedFilters": {
+      "count": 9,
+      "min_ms": 0.010499999999999999,
+      "median_ms": 4.255708,
+      "max_ms": 12.161458,
+      "sum_ms": 34.243457
+    },
+    "Activity.group.publish": {
+      "count": 9,
+      "min_ms": 0.014334,
+      "median_ms": 0.340416,
+      "max_ms": 0.456791,
+      "sum_ms": 2.417499
+    },
+    "Activity.view.body": {
+      "count": 25,
+      "min_ms": 0.069041,
+      "median_ms": 0.19837500000000002,
+      "max_ms": 0.355125,
+      "sum_ms": 5.202627
+    },
+    "Activity.page.prepare": {
+      "count": 25,
+      "min_ms": 0.004416,
+      "median_ms": 0.041041999999999995,
+      "max_ms": 0.135166,
+      "sum_ms": 1.305458
+    }
+  },
+  "filter_intervals": [
+    {
+      "name": "Activity.filter",
+      "start_seconds": 33.119896166,
+      "end_seconds": 33.14448612499999,
+      "duration_ms": 24.589959,
+      "signpost_id": "39",
+      "begin_metadata": "sequence=35 main=0 metadata=items=5000",
+      "end_metadata": "sequence=35 main=0 outcome=completed metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaa49fa) (PersonalFinanceTraker, pid: 23775)",
+      "end_thread": "PersonalFinanceTraker (0xaa49fa) (PersonalFinanceTraker, pid: 23775)"
+    },
+    {
+      "name": "Activity.filter",
+      "start_seconds": 33.514808458,
+      "end_seconds": 33.541310665999994,
+      "duration_ms": 26.502208,
+      "signpost_id": "48",
+      "begin_metadata": "sequence=43 main=0 metadata=items=5000",
+      "end_metadata": "sequence=43 main=0 outcome=completed metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaa4acd) (PersonalFinanceTraker, pid: 23775)",
+      "end_thread": "PersonalFinanceTraker (0xaa4acd) (PersonalFinanceTraker, pid: 23775)"
+    },
+    {
+      "name": "Activity.filter",
+      "start_seconds": 35.416115416,
+      "end_seconds": 35.4401155,
+      "duration_ms": 24.000084,
+      "signpost_id": "78",
+      "begin_metadata": "sequence=65 main=0 metadata=items=5000",
+      "end_metadata": "sequence=65 main=0 outcome=completed metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaa4a79) (PersonalFinanceTraker, pid: 23775)",
+      "end_thread": "PersonalFinanceTraker (0xaa4a79) (PersonalFinanceTraker, pid: 23775)"
+    },
+    {
+      "name": "Activity.filter",
+      "start_seconds": 41.701161833,
+      "end_seconds": 41.726438416,
+      "duration_ms": 25.276583,
+      "signpost_id": "87",
+      "begin_metadata": "sequence=73 main=0 metadata=items=5000",
+      "end_metadata": "sequence=73 main=0 outcome=completed metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaa4a79) (PersonalFinanceTraker, pid: 23775)",
+      "end_thread": "PersonalFinanceTraker (0xaa4a79) (PersonalFinanceTraker, pid: 23775)"
+    },
+    {
+      "name": "Activity.filter",
+      "start_seconds": 43.628306708,
+      "end_seconds": 43.68025375,
+      "duration_ms": 51.947041999999996,
+      "signpost_id": "96",
+      "begin_metadata": "sequence=81 main=0 metadata=items=5000",
+      "end_metadata": "sequence=81 main=0 outcome=completed metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaa49fa) (PersonalFinanceTraker, pid: 23775)",
+      "end_thread": "PersonalFinanceTraker (0xaa49fa) (PersonalFinanceTraker, pid: 23775)"
+    },
+    {
+      "name": "Activity.filter",
+      "start_seconds": 43.939922208,
+      "end_seconds": 43.991035208,
+      "duration_ms": 51.113,
+      "signpost_id": "105",
+      "begin_metadata": "sequence=89 main=0 metadata=items=5000",
+      "end_metadata": "sequence=89 main=0 outcome=completed metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaa4b71) (PersonalFinanceTraker, pid: 23775)",
+      "end_thread": "PersonalFinanceTraker (0xaa4b71) (PersonalFinanceTraker, pid: 23775)"
+    },
+    {
+      "name": "Activity.filter",
+      "start_seconds": 44.223204791,
+      "end_seconds": 44.283888666,
+      "duration_ms": 60.683875,
+      "signpost_id": "114",
+      "begin_metadata": "sequence=97 main=0 metadata=items=5000",
+      "end_metadata": "sequence=97 main=0 outcome=completed metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaa49fa) (PersonalFinanceTraker, pid: 23775)",
+      "end_thread": "PersonalFinanceTraker (0xaa49fa) (PersonalFinanceTraker, pid: 23775)"
+    }
+  ],
+  "temporal_filter_to_next_group_publication_spans": [
+    {
+      "filter_start_seconds": 33.119896166,
+      "filter_end_seconds": 33.14448612499999,
+      "following_group_publish_end_seconds": 33.190495916,
+      "temporal_pipeline_ms": 70.59975000000662
+    },
+    {
+      "filter_start_seconds": 33.514808458,
+      "filter_end_seconds": 33.541310665999994,
+      "following_group_publish_end_seconds": 33.58756225,
+      "temporal_pipeline_ms": 72.75379200000032
+    },
+    {
+      "filter_start_seconds": 35.416115416,
+      "filter_end_seconds": 35.4401155,
+      "following_group_publish_end_seconds": 35.484735916,
+      "temporal_pipeline_ms": 68.62050000000153
+    },
+    {
+      "filter_start_seconds": 41.701161833,
+      "filter_end_seconds": 41.726438416,
+      "following_group_publish_end_seconds": 41.7717815,
+      "temporal_pipeline_ms": 70.61966700000255
+    },
+    {
+      "filter_start_seconds": 43.628306708,
+      "filter_end_seconds": 43.68025375,
+      "following_group_publish_end_seconds": 43.705540791000004,
+      "temporal_pipeline_ms": 77.23408300000756
+    },
+    {
+      "filter_start_seconds": 43.939922208,
+      "filter_end_seconds": 43.991035208,
+      "following_group_publish_end_seconds": 43.99119425,
+      "temporal_pipeline_ms": 51.272042000000795
+    },
+    {
+      "filter_start_seconds": 44.223204791,
+      "filter_end_seconds": 44.283888666,
+      "following_group_publish_end_seconds": 44.284056333,
+      "temporal_pipeline_ms": 60.85154200000176
+    }
+  ],
+  "potential_hangs": [
+    {
+      "start_seconds": 17.346499166,
+      "end_seconds": 17.613071666,
+      "duration_ms": 266.5725,
+      "type": "Microhang"
+    },
+    {
+      "start_seconds": 21.337350375,
+      "end_seconds": 21.699810416,
+      "duration_ms": 362.460041,
+      "type": "Microhang"
+    }
+  ],
+  "windows": {
+    "activity_entry": {
+      "window": {
+        "start_seconds": 17,
+        "end_seconds": 18.5
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 355.0,
+        "main_sample_count": 355,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 22.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 10.0
+          },
+          {
+            "frame": "find(_:key:filter:)",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "getMethodNoSuper_nolock(objc_class*, objc_selector*)",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "swift_retain",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "__kdebug_trace64",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "_xzm_malloc_tc",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 4.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 343.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 319.0
+          },
+          {
+            "frame": "schedulerStepScheduledMainSectionContinue",
+            "sampled_ms": 317.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 323.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameV2",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityRow.ID",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "specialized TransactionListViewModel.access<A>(keyPath:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "ActivityTransactionRow.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ActivityTransactionRow.isRecurringDeletionPresented(for:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameAbstractV2",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in ActivityDateSection.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for TransactionItemView",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivitySummarySection",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityTransactionRow",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for TransactionItemView",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 17.0,
+            "end_seconds": 17.25,
+            "main_sampled_ms": 1.0
+          },
+          {
+            "start_seconds": 17.25,
+            "end_seconds": 17.5,
+            "main_sampled_ms": 166.0
+          },
+          {
+            "start_seconds": 17.5,
+            "end_seconds": 17.75,
+            "main_sampled_ms": 103.0
+          },
+          {
+            "start_seconds": 17.75,
+            "end_seconds": 18.0,
+            "main_sampled_ms": 28.0
+          },
+          {
+            "start_seconds": 18.0,
+            "end_seconds": 18.25,
+            "main_sampled_ms": 34.0
+          },
+          {
+            "start_seconds": 18.25,
+            "end_seconds": 18.5,
+            "main_sampled_ms": 23.0
+          }
+        ]
+      }
+    },
+    "potential_hang_tab": {
+      "window": {
+        "start_seconds": 17.346499166,
+        "end_seconds": 17.613071666
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 222.0,
+        "main_sample_count": 222,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 14.0
+          },
+          {
+            "frame": "find(_:key:filter:)",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "getMethodNoSuper_nolock(objc_class*, objc_selector*)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "swift_retain",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "AutoreleasePoolPage::add(objc_object*)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool, bool)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "-[CUIStructuredThemeStore lookupAssetForKey:]",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 2.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 209.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 209.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 190.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameV2",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityRow.ID",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "specialized TransactionListViewModel.access<A>(keyPath:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "ActivityTransactionRow.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ActivityTransactionRow.isRecurringDeletionPresented(for:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameAbstractV2",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in ActivityDateSection.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for TransactionItemView",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivitySummarySection",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityTransactionRow",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for TransactionItemView",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 17.346499166,
+            "end_seconds": 17.596499166,
+            "main_sampled_ms": 209.0
+          },
+          {
+            "start_seconds": 17.596499166,
+            "end_seconds": 17.613071666,
+            "main_sampled_ms": 13.0
+          }
+        ]
+      }
+    },
+    "keyboard_candidate": {
+      "window": {
+        "start_seconds": 21,
+        "end_seconds": 22.2
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 234.0,
+        "main_sample_count": 234,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 29.0
+          },
+          {
+            "frame": "__open",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "map_images_nolock",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "objc_lookUpImpOrForward",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "-[CUIStructuredThemeStore lookupAssetForKey:]",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "-[TUIKBGraphSerialization objectForOffset:]",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_xzm_malloc_tc",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 2.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 230.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 162.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 162.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 229.0
+          },
+          {
+            "frame": "DYLD-STUB$$type metadata accessor for PersistentIdentifier",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "TransactionListViewModel._filteredItems.didset",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "TransactionListViewModel.recomputeDerivedFilterState()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for ActivityRow",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "specialized Array._createNewBuffer(bufferIsUnique:minimumCapacity:growForAppend:)",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 21.0,
+            "end_seconds": 21.25,
+            "main_sampled_ms": 21.0
+          },
+          {
+            "start_seconds": 21.25,
+            "end_seconds": 21.5,
+            "main_sampled_ms": 76.0
+          },
+          {
+            "start_seconds": 21.5,
+            "end_seconds": 21.75,
+            "main_sampled_ms": 110.0
+          },
+          {
+            "start_seconds": 21.75,
+            "end_seconds": 22.0,
+            "main_sampled_ms": 13.0
+          },
+          {
+            "start_seconds": 22.0,
+            "end_seconds": 22.2,
+            "main_sampled_ms": 14.0
+          }
+        ]
+      }
+    },
+    "potential_hang_keyboard": {
+      "window": {
+        "start_seconds": 21.337350375,
+        "end_seconds": 21.699810416
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 177.0,
+        "main_sample_count": 177,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 26.0
+          },
+          {
+            "frame": "__open",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "map_images_nolock",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "objc_lookUpImpOrForward",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "-[CUIStructuredThemeStore lookupAssetForKey:]",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "-[TUIKBGraphSerialization objectForOffset:]",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "__CFSearchStringROM",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_malloc_tc",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "faccessat",
+            "sampled_ms": 2.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 177.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 129.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 129.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 176.0
+          },
+          {
+            "frame": "DYLD-STUB$$type metadata accessor for PersistentIdentifier",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 21.337350375,
+            "end_seconds": 21.587350375,
+            "main_sampled_ms": 95.0
+          },
+          {
+            "start_seconds": 21.587350375,
+            "end_seconds": 21.699810416,
+            "main_sampled_ms": 82.0
+          }
+        ]
+      }
+    },
+    "typing_first": {
+      "window": {
+        "start_seconds": 32.5,
+        "end_seconds": 35.8
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 554.0,
+        "main_sample_count": 554,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 43.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 16.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 15.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 14.0
+          },
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 10.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 9.0
+          },
+          {
+            "frame": "AG::Subgraph::update(unsigned int)",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "_xzm_malloc_tc",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "class_copyMethodList",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "objc_autoreleaseReturnValue",
+            "sampled_ms": 6.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 532.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 234.0
+          },
+          {
+            "frame": "__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__",
+            "sampled_ms": 194.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 507.0
+          },
+          {
+            "frame": "TransactionListViewModel.recomputeDerivedFilterState()",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "specialized static TransactionSnapshot.__derived_struct_equals(_:_:)",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "destroy for ActivityRow",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityRow",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityRow.ID",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "initializeWithCopy for TransactionSnapshot",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "destroy for TransactionSnapshot",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "0x10462f268",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ActivityRow.ID.hash(into:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ActivityView.$pendingTravelDeletion.getter",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 32.5,
+            "end_seconds": 32.75,
+            "main_sampled_ms": 81.0
+          },
+          {
+            "start_seconds": 32.75,
+            "end_seconds": 33.0,
+            "main_sampled_ms": 27.0
+          },
+          {
+            "start_seconds": 33.0,
+            "end_seconds": 33.25,
+            "main_sampled_ms": 23.0
+          },
+          {
+            "start_seconds": 33.25,
+            "end_seconds": 33.5,
+            "main_sampled_ms": 21.0
+          },
+          {
+            "start_seconds": 33.5,
+            "end_seconds": 33.75,
+            "main_sampled_ms": 17.0
+          },
+          {
+            "start_seconds": 33.75,
+            "end_seconds": 34.0,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 34.0,
+            "end_seconds": 34.25,
+            "main_sampled_ms": 95.0
+          },
+          {
+            "start_seconds": 34.25,
+            "end_seconds": 34.5,
+            "main_sampled_ms": 59.0
+          },
+          {
+            "start_seconds": 34.5,
+            "end_seconds": 34.75,
+            "main_sampled_ms": 83.0
+          },
+          {
+            "start_seconds": 34.75,
+            "end_seconds": 35.0,
+            "main_sampled_ms": 83.0
+          },
+          {
+            "start_seconds": 35.0,
+            "end_seconds": 35.25,
+            "main_sampled_ms": 49.0
+          },
+          {
+            "start_seconds": 35.25,
+            "end_seconds": 35.5,
+            "main_sampled_ms": 16.0
+          },
+          {
+            "start_seconds": 35.5,
+            "end_seconds": 35.75,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 35.75,
+            "end_seconds": 35.8,
+            "main_sampled_ms": 0.0
+          }
+        ]
+      }
+    },
+    "typing_extension": {
+      "window": {
+        "start_seconds": 41,
+        "end_seconds": 44.5
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 285.0,
+        "main_sample_count": 285,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 28.0
+          },
+          {
+            "frame": "objc_autoreleaseReturnValue",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "objc_claimAutoreleasedReturnValue",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "objc_retain",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "AG::Subgraph::update(unsigned int)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "objc_release_x8",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 3.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 276.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 137.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 135.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 270.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "TransactionListViewModel.recomputeDerivedFilterState()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "closure #1 in ActivityView.body.getter",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityRow",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "DYLD-STUB$$swift_bridgeObjectRelease",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for ActivityRow",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for TransactionSnapshot",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for TransactionSnapshot",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "specialized Array._createNewBuffer(bufferIsUnique:minimumCapacity:growForAppend:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "specialized Hashable._rawHashValue(seed:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "specialized static TransactionSnapshot.__derived_struct_equals(_:_:)",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 41.0,
+            "end_seconds": 41.25,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 41.25,
+            "end_seconds": 41.5,
+            "main_sampled_ms": 42.0
+          },
+          {
+            "start_seconds": 41.5,
+            "end_seconds": 41.75,
+            "main_sampled_ms": 9.0
+          },
+          {
+            "start_seconds": 41.75,
+            "end_seconds": 42.0,
+            "main_sampled_ms": 9.0
+          },
+          {
+            "start_seconds": 42.0,
+            "end_seconds": 42.25,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 42.25,
+            "end_seconds": 42.5,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 42.5,
+            "end_seconds": 42.75,
+            "main_sampled_ms": 58.0
+          },
+          {
+            "start_seconds": 42.75,
+            "end_seconds": 43.0,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 43.0,
+            "end_seconds": 43.25,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 43.25,
+            "end_seconds": 43.5,
+            "main_sampled_ms": 65.0
+          },
+          {
+            "start_seconds": 43.5,
+            "end_seconds": 43.75,
+            "main_sampled_ms": 59.0
+          },
+          {
+            "start_seconds": 43.75,
+            "end_seconds": 44.0,
+            "main_sampled_ms": 38.0
+          },
+          {
+            "start_seconds": 44.0,
+            "end_seconds": 44.25,
+            "main_sampled_ms": 2.0
+          },
+          {
+            "start_seconds": 44.25,
+            "end_seconds": 44.5,
+            "main_sampled_ms": 3.0
+          }
+        ]
+      }
+    },
+    "clear_candidate": {
+      "window": {
+        "start_seconds": 51,
+        "end_seconds": 53.5
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 323.0,
+        "main_sample_count": 323,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 30.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "objc_claimAutoreleasedReturnValue",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "AutoreleasePoolPage::add(objc_object*)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "_platform_memcmp",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "_xzm_xzone_malloc_tiny",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "hashProbe",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "objc_release",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "objc_retain",
+            "sampled_ms": 4.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 310.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 227.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 226.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 305.0
+          },
+          {
+            "frame": "TransactionListViewModel.recomputeDerivedFilterState()",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "initializeWithCopy for TransactionSnapshot",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "specialized Array._createNewBuffer(bufferIsUnique:minimumCapacity:growForAppend:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "ActivityTransactionRow.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FilterChipsView.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "TransactionListViewModel._filteredItems.didset",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in ActivityDateSection.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for TransactionItemView",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for TransactionSnapshot",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityTransactionRow",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "specialized _ArrayBuffer._consumeAndCreateNew(bufferIsUnique:minimumCapacity:growForAppend:)",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 51.0,
+            "end_seconds": 51.25,
+            "main_sampled_ms": 35.0
+          },
+          {
+            "start_seconds": 51.25,
+            "end_seconds": 51.5,
+            "main_sampled_ms": 56.0
+          },
+          {
+            "start_seconds": 51.5,
+            "end_seconds": 51.75,
+            "main_sampled_ms": 61.0
+          },
+          {
+            "start_seconds": 51.75,
+            "end_seconds": 52.0,
+            "main_sampled_ms": 17.0
+          },
+          {
+            "start_seconds": 52.0,
+            "end_seconds": 52.25,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 52.25,
+            "end_seconds": 52.5,
+            "main_sampled_ms": 1.0
+          },
+          {
+            "start_seconds": 52.5,
+            "end_seconds": 52.75,
+            "main_sampled_ms": 47.0
+          },
+          {
+            "start_seconds": 52.75,
+            "end_seconds": 53.0,
+            "main_sampled_ms": 102.0
+          },
+          {
+            "start_seconds": 53.0,
+            "end_seconds": 53.25,
+            "main_sampled_ms": 4.0
+          },
+          {
+            "start_seconds": 53.25,
+            "end_seconds": 53.5,
+            "main_sampled_ms": 0.0
+          }
+        ]
+      }
+    },
+    "post_clear": {
+      "window": {
+        "start_seconds": 55,
+        "end_seconds": 61
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 716.0,
+        "main_sample_count": 716,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 67.0
+          },
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 47.0
+          },
+          {
+            "frame": "probeGC",
+            "sampled_ms": 18.0
+          },
+          {
+            "frame": "empty",
+            "sampled_ms": 16.0
+          },
+          {
+            "frame": "objc_autoreleaseReturnValue",
+            "sampled_ms": 16.0
+          },
+          {
+            "frame": "objc_claimAutoreleasedReturnValue",
+            "sampled_ms": 14.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 13.0
+          },
+          {
+            "frame": "CA::Layer::collect_animations_(double, double*, CA::Layer::CollectAnimationsData*)",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "CA::Layer::thread_flags_(CA::Transaction*)",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "cache_getImp",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "object_getMethodImplementation",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "objc_release_x19",
+            "sampled_ms": 10.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 712.0
+          },
+          {
+            "frame": "__CFRunLoopDoSources0",
+            "sampled_ms": 424.0
+          },
+          {
+            "frame": "__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__",
+            "sampled_ms": 418.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 711.0
+          },
+          {
+            "frame": "TransactionListViewModel.recomputeDerivedFilterState()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "initializeWithCopy for ActivityTransactionRow",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "specialized _ArrayBuffer._consumeAndCreateNew(bufferIsUnique:minimumCapacity:growForAppend:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "specialized __RawDictionaryStorage.find<A>(_:)",
+            "sampled_ms": 1.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 55.0,
+            "end_seconds": 55.25,
+            "main_sampled_ms": 15.0
+          },
+          {
+            "start_seconds": 55.25,
+            "end_seconds": 55.5,
+            "main_sampled_ms": 137.0
+          },
+          {
+            "start_seconds": 55.5,
+            "end_seconds": 55.75,
+            "main_sampled_ms": 34.0
+          },
+          {
+            "start_seconds": 55.75,
+            "end_seconds": 56.0,
+            "main_sampled_ms": 20.0
+          },
+          {
+            "start_seconds": 56.0,
+            "end_seconds": 56.25,
+            "main_sampled_ms": 21.0
+          },
+          {
+            "start_seconds": 56.25,
+            "end_seconds": 56.5,
+            "main_sampled_ms": 13.0
+          },
+          {
+            "start_seconds": 56.5,
+            "end_seconds": 56.75,
+            "main_sampled_ms": 16.0
+          },
+          {
+            "start_seconds": 56.75,
+            "end_seconds": 57.0,
+            "main_sampled_ms": 16.0
+          },
+          {
+            "start_seconds": 57.0,
+            "end_seconds": 57.25,
+            "main_sampled_ms": 21.0
+          },
+          {
+            "start_seconds": 57.25,
+            "end_seconds": 57.5,
+            "main_sampled_ms": 27.0
+          },
+          {
+            "start_seconds": 57.5,
+            "end_seconds": 57.75,
+            "main_sampled_ms": 30.0
+          },
+          {
+            "start_seconds": 57.75,
+            "end_seconds": 58.0,
+            "main_sampled_ms": 36.0
+          },
+          {
+            "start_seconds": 58.0,
+            "end_seconds": 58.25,
+            "main_sampled_ms": 30.0
+          },
+          {
+            "start_seconds": 58.25,
+            "end_seconds": 58.5,
+            "main_sampled_ms": 34.0
+          },
+          {
+            "start_seconds": 58.5,
+            "end_seconds": 58.75,
+            "main_sampled_ms": 24.0
+          },
+          {
+            "start_seconds": 58.75,
+            "end_seconds": 59.0,
+            "main_sampled_ms": 33.0
+          },
+          {
+            "start_seconds": 59.0,
+            "end_seconds": 59.25,
+            "main_sampled_ms": 23.0
+          },
+          {
+            "start_seconds": 59.25,
+            "end_seconds": 59.5,
+            "main_sampled_ms": 39.0
+          },
+          {
+            "start_seconds": 59.5,
+            "end_seconds": 59.75,
+            "main_sampled_ms": 31.0
+          },
+          {
+            "start_seconds": 59.75,
+            "end_seconds": 60.0,
+            "main_sampled_ms": 28.0
+          },
+          {
+            "start_seconds": 60.0,
+            "end_seconds": 60.25,
+            "main_sampled_ms": 26.0
+          },
+          {
+            "start_seconds": 60.25,
+            "end_seconds": 60.5,
+            "main_sampled_ms": 33.0
+          },
+          {
+            "start_seconds": 60.5,
+            "end_seconds": 60.75,
+            "main_sampled_ms": 28.0
+          },
+          {
+            "start_seconds": 60.75,
+            "end_seconds": 61,
+            "main_sampled_ms": 1.0
+          }
+        ]
+      }
+    },
+    "tail10": {
+      "window": {
+        "start_seconds": 55.820671,
+        "end_seconds": 65.820671
+      },
+      "cpu": {
+        "cpu_evidence_available": true,
+        "exported_sample_count": 5620,
+        "main_sampled_ms": 536.0,
+        "main_sample_count": 536,
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0,
+        "main_samples_without_weight": 0,
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 51.0
+          },
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 47.0
+          },
+          {
+            "frame": "probeGC",
+            "sampled_ms": 18.0
+          },
+          {
+            "frame": "objc_autoreleaseReturnValue",
+            "sampled_ms": 15.0
+          },
+          {
+            "frame": "empty",
+            "sampled_ms": 14.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "cache_getImp",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "objc_claimAutoreleasedReturnValue",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "CA::Layer::collect_animations_(double, double*, CA::Layer::CollectAnimationsData*)",
+            "sampled_ms": 10.0
+          },
+          {
+            "frame": "CA::Layer::thread_flags_(CA::Transaction*)",
+            "sampled_ms": 10.0
+          },
+          {
+            "frame": "objc_release_x19",
+            "sampled_ms": 10.0
+          },
+          {
+            "frame": "object_getMethodImplementation",
+            "sampled_ms": 9.0
+          }
+        ],
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 536.0
+          },
+          {
+            "frame": "__CFRunLoopDoSources0",
+            "sampled_ms": 390.0
+          },
+          {
+            "frame": "__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__",
+            "sampled_ms": 384.0
+          }
+        ],
+        "nearest_app_top": [
+          {
+            "frame": "static PersonalFinanceTrakerApp.$main()",
+            "sampled_ms": 536.0
+          }
+        ],
+        "buckets": [
+          {
+            "start_seconds": 55.820671,
+            "end_seconds": 56.070671,
+            "main_sampled_ms": 16.0
+          },
+          {
+            "start_seconds": 56.070671,
+            "end_seconds": 56.320671,
+            "main_sampled_ms": 20.0
+          },
+          {
+            "start_seconds": 56.320671,
+            "end_seconds": 56.570671,
+            "main_sampled_ms": 14.0
+          },
+          {
+            "start_seconds": 56.570671,
+            "end_seconds": 56.820671,
+            "main_sampled_ms": 15.0
+          },
+          {
+            "start_seconds": 56.820671,
+            "end_seconds": 57.070671,
+            "main_sampled_ms": 16.0
+          },
+          {
+            "start_seconds": 57.070671,
+            "end_seconds": 57.320671,
+            "main_sampled_ms": 23.0
+          },
+          {
+            "start_seconds": 57.320671,
+            "end_seconds": 57.570671,
+            "main_sampled_ms": 29.0
+          },
+          {
+            "start_seconds": 57.570671,
+            "end_seconds": 57.820671,
+            "main_sampled_ms": 31.0
+          },
+          {
+            "start_seconds": 57.820671,
+            "end_seconds": 58.070671,
+            "main_sampled_ms": 34.0
+          },
+          {
+            "start_seconds": 58.070671,
+            "end_seconds": 58.320671,
+            "main_sampled_ms": 32.0
+          },
+          {
+            "start_seconds": 58.320671,
+            "end_seconds": 58.570671,
+            "main_sampled_ms": 34.0
+          },
+          {
+            "start_seconds": 58.570671,
+            "end_seconds": 58.820671,
+            "main_sampled_ms": 27.0
+          },
+          {
+            "start_seconds": 58.820671,
+            "end_seconds": 59.070671,
+            "main_sampled_ms": 30.0
+          },
+          {
+            "start_seconds": 59.070671,
+            "end_seconds": 59.320671,
+            "main_sampled_ms": 26.0
+          },
+          {
+            "start_seconds": 59.320671,
+            "end_seconds": 59.570671,
+            "main_sampled_ms": 35.0
+          },
+          {
+            "start_seconds": 59.570671,
+            "end_seconds": 59.820671,
+            "main_sampled_ms": 35.0
+          },
+          {
+            "start_seconds": 59.820671,
+            "end_seconds": 60.070671,
+            "main_sampled_ms": 23.0
+          },
+          {
+            "start_seconds": 60.070671,
+            "end_seconds": 60.320671,
+            "main_sampled_ms": 30.0
+          },
+          {
+            "start_seconds": 60.320671,
+            "end_seconds": 60.570671,
+            "main_sampled_ms": 30.0
+          },
+          {
+            "start_seconds": 60.570671,
+            "end_seconds": 60.820671,
+            "main_sampled_ms": 21.0
+          },
+          {
+            "start_seconds": 60.820671,
+            "end_seconds": 61.070671,
+            "main_sampled_ms": 1.0
+          },
+          {
+            "start_seconds": 61.070671,
+            "end_seconds": 61.320671,
+            "main_sampled_ms": 2.0
+          },
+          {
+            "start_seconds": 61.320671,
+            "end_seconds": 61.570671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 61.570671,
+            "end_seconds": 61.820671,
+            "main_sampled_ms": 5.0
+          },
+          {
+            "start_seconds": 61.820671,
+            "end_seconds": 62.070671,
+            "main_sampled_ms": 1.0
+          },
+          {
+            "start_seconds": 62.070671,
+            "end_seconds": 62.320671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 62.320671,
+            "end_seconds": 62.570671,
+            "main_sampled_ms": 3.0
+          },
+          {
+            "start_seconds": 62.570671,
+            "end_seconds": 62.820671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 62.820671,
+            "end_seconds": 63.070671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 63.070671,
+            "end_seconds": 63.320671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 63.320671,
+            "end_seconds": 63.570671,
+            "main_sampled_ms": 1.0
+          },
+          {
+            "start_seconds": 63.570671,
+            "end_seconds": 63.820671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 63.820671,
+            "end_seconds": 64.070671,
+            "main_sampled_ms": 1.0
+          },
+          {
+            "start_seconds": 64.070671,
+            "end_seconds": 64.320671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 64.320671,
+            "end_seconds": 64.570671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 64.570671,
+            "end_seconds": 64.820671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 64.820671,
+            "end_seconds": 65.070671,
+            "main_sampled_ms": 1.0
+          },
+          {
+            "start_seconds": 65.070671,
+            "end_seconds": 65.320671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 65.320671,
+            "end_seconds": 65.570671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 65.570671,
+            "end_seconds": 65.820671,
+            "main_sampled_ms": 0.0
+          },
+          {
+            "start_seconds": 65.820671,
+            "end_seconds": 65.820671,
+            "main_sampled_ms": 0.0
+          }
+        ]
+      }
+    }
+  },
+  "typing_window_without_filter_or_group_work": {
+    "window": {
+      "start_seconds": 34,
+      "end_seconds": 35.2
+    },
+    "cpu": {
+      "cpu_evidence_available": true,
+      "exported_sample_count": 5620,
+      "main_sampled_ms": 369.0,
+      "main_sample_count": 369,
+      "samples_without_stack": 0,
+      "window_samples_without_thread": 0,
+      "main_samples_without_weight": 0,
+      "leaf_top": [
+        {
+          "frame": "objc_msgSend",
+          "sampled_ms": 28.0
+        },
+        {
+          "frame": "AG::Graph::UpdateStack::update()",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "<deduplicated_symbol>",
+          "sampled_ms": 10.0
+        },
+        {
+          "frame": "mach_msg2_trap",
+          "sampled_ms": 9.0
+        },
+        {
+          "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+          "sampled_ms": 8.0
+        },
+        {
+          "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+          "sampled_ms": 8.0
+        },
+        {
+          "frame": "objc_claimAutoreleasedReturnValue",
+          "sampled_ms": 6.0
+        },
+        {
+          "frame": "AG::Subgraph::update(unsigned int)",
+          "sampled_ms": 5.0
+        },
+        {
+          "frame": "cache_getImp",
+          "sampled_ms": 5.0
+        },
+        {
+          "frame": "class_copyMethodList",
+          "sampled_ms": 5.0
+        },
+        {
+          "frame": "swift_getGenericMetadata",
+          "sampled_ms": 5.0
+        },
+        {
+          "frame": "_platform_memmove",
+          "sampled_ms": 4.0
+        }
+      ],
+      "inclusive_top": [
+        {
+          "frame": "GSEventRunModal",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "UIApplicationMain",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "_CFRunLoopRunSpecificWithOptions",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "__CFRunLoopRun",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "closure #1 in KitRendererCommon(_:)",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "main",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "runApp<A>(_:)",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "start",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "static App.main()",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "static PersonalFinanceTrakerApp.$main()",
+          "sampled_ms": 369.0
+        },
+        {
+          "frame": "<deduplicated_symbol>",
+          "sampled_ms": 155.0
+        },
+        {
+          "frame": "__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__",
+          "sampled_ms": 149.0
+        }
+      ],
+      "nearest_app_top": [
+        {
+          "frame": "static PersonalFinanceTrakerApp.$main()",
+          "sampled_ms": 353.0
+        },
+        {
+          "frame": "destroy for ActivityRow",
+          "sampled_ms": 2.0
+        },
+        {
+          "frame": "initializeWithCopy for ActivityRow.ID",
+          "sampled_ms": 2.0
+        },
+        {
+          "frame": "0x10462f268",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "ActivityRow.ID.hash(into:)",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "ActivityView.$pendingTravelDeletion.getter",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "DYLD-STUB$$swift_getEnumCaseMultiPayload",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "TransactionListViewModel.activityPage.getter",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "closure #1 in ActivitySummarySection.body.getter",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "closure #1 in ActivityView.body.getter",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "destroy for ActivityRow.ID",
+          "sampled_ms": 1.0
+        },
+        {
+          "frame": "destroy for TransactionSnapshot",
+          "sampled_ms": 1.0
+        }
+      ],
+      "buckets": [
+        {
+          "start_seconds": 34.0,
+          "end_seconds": 34.2,
+          "main_sampled_ms": 65.0
+        },
+        {
+          "start_seconds": 34.2,
+          "end_seconds": 34.4,
+          "main_sampled_ms": 45.0
+        },
+        {
+          "start_seconds": 34.4,
+          "end_seconds": 34.6,
+          "main_sampled_ms": 78.0
+        },
+        {
+          "start_seconds": 34.6,
+          "end_seconds": 34.8,
+          "main_sampled_ms": 52.0
+        },
+        {
+          "start_seconds": 34.8,
+          "end_seconds": 35.0,
+          "main_sampled_ms": 80.0
+        },
+        {
+          "start_seconds": 35.0,
+          "end_seconds": 35.2,
+          "main_sampled_ms": 49.0
+        }
+      ]
+    },
+    "interval_names": {
+      "Activity.view.body": 8,
+      "Activity.page.prepare": 8
+    },
+    "selected_inclusive_ms": {
+      "-[UIKeyboardTaskQueue continueExecutionOnMainThread]": 124.0,
+      "GraphHost.flushTransactions()": 111.0,
+      "AG::Graph::UpdateStack::update()": 123.0,
+      "UpdateCollectionViewListCoordinator.updateValue()": 47.0,
+      "UICollectionViewListCoordinatorBase.performUpdates(collectionView:shouldSetEditing:)": 36.0
+    }
+  },
+  "focused_stacks": {
+    "keyboard_microhang": {
+      "relevant_inclusive_frames": [
+        {
+          "frame": "-[_UIKeyboardFocusAssistant performWhenReadyForResponder:needsFocus:precedence:reason:readyTask:meanwhileTask:]",
+          "sampled_ms": 90.0
+        },
+        {
+          "frame": "-[UITextField becomeFirstResponder]",
+          "sampled_ms": 52.0
+        },
+        {
+          "frame": "-[UISearchTextField becomeFirstResponder]",
+          "sampled_ms": 52.0
+        },
+        {
+          "frame": "-[UIKeyboardSceneDelegate _setKeyWindowSceneInputViews:animationStyle:]",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "__102-[UIKeyboardSceneDelegate _reloadInputViewsForKeyWindowSceneResponder:force:fromBecomeFirstResponder:]_block_invoke.698",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "-[UIKeyboardSceneDelegate setInputViews:animationStyle:]",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "__70-[UIKeyboardSceneDelegate setKeyWindowSceneInputViews:animationStyle:]_block_invoke",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "-[UIKeyboardSceneDelegate setInputViews:animated:]",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "-[UIKeyboardSceneDelegate setInputViews:]",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "__56-[UIKeyboardSceneDelegate setInputViews:animationStyle:]_block_invoke",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "-[UIKeyboardSceneDelegate setKeyWindowSceneInputViews:animationStyle:]",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "-[UIResponder(UIResponderInputViewAdditions) _reloadInputViewsFromFirstResponder:]",
+          "sampled_ms": 44.0
+        },
+        {
+          "frame": "__88-[UIKeyboardSceneDelegate _reloadInputViewsForResponder:force:fromBecomeFirstResponder:]_block_invoke",
+          "sampled_ms": 44.0
+        },
+        {
+          "frame": "-[UIKeyboardSceneDelegate _reloadInputViewsForResponder:force:fromBecomeFirstResponder:]",
+          "sampled_ms": 44.0
+        },
+        {
+          "frame": "-[UIKeyboardSceneDelegate _reloadInputViewsForKeyWindowSceneResponder:force:fromBecomeFirstResponder:]",
+          "sampled_ms": 44.0
+        },
+        {
+          "frame": "_UIApplicationFlushCATransaction",
+          "sampled_ms": 43.0
+        },
+        {
+          "frame": "-[UIInputWindowController setInputViewSet:]",
+          "sampled_ms": 42.0
+        },
+        {
+          "frame": "-[UIInputWindowController performOperations:withAnimationStyle:]",
+          "sampled_ms": 42.0
+        },
+        {
+          "frame": "CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)",
+          "sampled_ms": 41.0
+        },
+        {
+          "frame": "CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)",
+          "sampled_ms": 41.0
+        },
+        {
+          "frame": "__43-[UIInputWindowController setInputViewSet:]_block_invoke_7",
+          "sampled_ms": 41.0
+        },
+        {
+          "frame": "-[UIInputWindowController performOperations:withTemplateNotificationInfo:]",
+          "sampled_ms": 41.0
+        },
+        {
+          "frame": "-[UIInputWindowController moveFromPlacement:toPlacement:starting:completion:]",
+          "sampled_ms": 40.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager setDelegate:force:delayEndInputSession:]",
+          "sampled_ms": 34.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager _setupDelegate:delegateSame:hardwareKeyboardStateChanged:endingInputSessionIdentifier:force:delayEndInputSession:]",
+          "sampled_ms": 30.0
+        },
+        {
+          "frame": "__43-[UIInputWindowController setInputViewSet:]_block_invoke_8",
+          "sampled_ms": 25.0
+        },
+        {
+          "frame": "-[UIInputWindowController changeToInputViewSet:]",
+          "sampled_ms": 25.0
+        },
+        {
+          "frame": "-[_UISearchControllerInPlaceSearchBarAnimator animateTransition:]",
+          "sampled_ms": 20.0
+        },
+        {
+          "frame": "+[UIKeyboardSceneDelegate _pinInputViewsForKeyboardSceneDelegate:onBehalfOfResponder:duringBlock:]",
+          "sampled_ms": 20.0
+        },
+        {
+          "frame": "+[UIKeyboardImpl sharedInstanceForCustomInputView:]",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "-[UIKeyboardImpl initWithFrame:forCustomInputView:]",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "-[UITextInteraction updateTextInputSourceForScribbleGesture:]",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "CA::Transaction::flush()",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "CA::Transaction::commit()",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "CA::Context::commit_transaction(CA::Transaction*, double, double*)",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager initWithPresentationDelegateView:forCustomInputView:]",
+          "sampled_ms": 16.0
+        },
+        {
+          "frame": "-[UIKeyboardImpl finishLayoutChangeWithArguments:]",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar showKeyboardWithInputMode:renderConfig:inputTraits:screenTraits:splitTraits:reload:]",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "-[UIKeyboardImpl updateLayout]",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "CA::Layer::layout_and_display_if_needed(CA::Transaction*)",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "-[UIInputWindowController updateInputAssistantView:]",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "__82-[UIInputWindowController updateToPlacement:withNormalAnimationsAndNotifications:]_block_invoke",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "-[UIInputSetHostView layoutIfNeeded]",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "-[UIInputWindowController updateToPlacement:withNormalAnimationsAndNotifications:]",
+          "sampled_ms": 13.0
+        },
+        {
+          "frame": "TextInputUILibrary",
+          "sampled_ms": 12.0
+        }
+      ],
+      "leaf_binaries_ms": {
+        "libobjc.A.dylib": 38.0,
+        "libobjcMsgSend.dylib": 25.0,
+        "UIKitCore": 16.0,
+        "libsystem_kernel.dylib": 15.0,
+        "libswiftCore.dylib": 13.0,
+        "unknown": 12.0,
+        "CoreFoundation": 11.0,
+        "dyld": 6.0,
+        "libsystem_malloc.dylib": 6.0,
+        "QuartzCore": 5.0,
+        "CoreUI": 5.0,
+        "Foundation": 4.0,
+        "AttributeGraph": 3.0,
+        "TextInputUI": 3.0,
+        "libsystem_platform.dylib": 2.0,
+        "libdyld.dylib": 2.0,
+        "libobjcMsgSend2.dylib": 1.0,
+        "liblangid.dylib": 1.0,
+        "PersonalFinanceTraker": 1.0,
+        "libobjcMsgSend7.dylib": 1.0,
+        "SwiftUI": 1.0,
+        "libsystem_darwin.dylib": 1.0,
+        "libobjcMsgSend1.dylib": 1.0,
+        "CoreAutoLayout": 1.0,
+        "CoreGraphics": 1.0,
+        "DesignLibrary": 1.0,
+        "TextInput": 1.0
+      },
+      "example_stacks": [
+        {
+          "time": 21.340775833,
+          "frames": [
+            "-[UISearchController _usesSearchSuggestionsMenuForStackedSearch]",
+            "-[_UISearchSuggestionControllerIOS gestureRecognizerShouldBegin:]",
+            "-[UIGestureRecognizer _shouldBegin]",
+            "0x18e010648",
+            "0x18e38d434",
+            "0x18e38aa00",
+            "0x18e02440c",
+            "0x18e00dca8",
+            "0x18e00dbc8",
+            "-[UIGestureRecognizer setState:]",
+            "-[UITapRecognizer _interactionEndedTouch:]",
+            "-[UITapRecognizer touchesEnded:withEvent:]",
+            "-[UIGestureRecognizer _componentsEnded:withEvent:]",
+            "-[UITouchesEvent _sendEventToGestureRecognizer:]",
+            "__47-[UIGestureEnvironment _updateForEvent:window:]_block_invoke",
+            "__47-[UIGestureEnvironment _updateForEvent:window:]_block_invoke.98",
+            "0x18e00e63c",
+            "0x18e00e578",
+            "-[UIGestureEnvironment _updateForEvent:window:]",
+            "-[UIWindow sendEvent:]",
+            "-[UIApplication sendEvent:]",
+            "__dispatchPreprocessedEventFromEventQueue",
+            "updateCycleEntry",
+            "_UIUpdateSequenceRunNext",
+            "schedulerStepScheduledMainSectionContinue",
+            "UC::DriverCore::continueProcessing()",
+            "__CFMachPortPerform",
+            "__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__",
+            "__CFRunLoopDoSource1",
+            "__CFRunLoopRun",
+            "_CFRunLoopRunSpecificWithOptions",
+            "GSEventRunModal",
+            "UIApplicationMain",
+            "closure #1 in KitRendererCommon(_:)",
+            "runApp<A>(_:)"
+          ]
+        },
+        {
+          "time": 21.341773625,
+          "frames": [
+            "-[_UISearchBarVisualProviderIOS _searchBarTextField]",
+            "-[UISearchTextField textualRange]",
+            "-[UISearchTextField text]",
+            "-[UISearchTextField _shouldCenterPlaceholder]",
+            "-[UISearchTextField _searchIconViewRectForBounds:]",
+            "-[UISearchTextField leftViewRectForBounds:]",
+            "-[UITextField _availableTextRectForBounds:forEditing:]",
+            "-[UISearchTextField _availableTextRectForBounds:forEditing:]",
+            "-[UISearchTextField textRectForBounds:]",
+            "-[UITextField _marginTopForBounds:]",
+            "-[UITextField _originForTextFieldLabel:]",
+            "-[UIFieldEditor textContainerOriginForTextAlignment:]",
+            "-[UIFieldEditor textContainerOrigin]",
+            "-[UISearchTextField _characterIndexForTokenTapGestureRecognizer]",
+            "-[UISearchTextField gestureRecognizerShouldBegin:]",
+            "-[UIGestureRecognizer _shouldBegin]",
+            "0x18e010648",
+            "0x18e38d434",
+            "0x18e38aa00",
+            "0x18e02440c",
+            "0x18e00dca8",
+            "0x18e00dbc8",
+            "-[UIGestureRecognizer setState:]",
+            "-[UITapRecognizer _interactionEndedTouch:]",
+            "-[UITapRecognizer touchesEnded:withEvent:]",
+            "-[UIGestureRecognizer _componentsEnded:withEvent:]",
+            "-[UITouchesEvent _sendEventToGestureRecognizer:]",
+            "__47-[UIGestureEnvironment _updateForEvent:window:]_block_invoke",
+            "__47-[UIGestureEnvironment _updateForEvent:window:]_block_invoke.98",
+            "0x18e00e63c",
+            "0x18e00e578",
+            "-[UIGestureEnvironment _updateForEvent:window:]",
+            "-[UIWindow sendEvent:]",
+            "-[UIApplication sendEvent:]",
+            "__dispatchPreprocessedEventFromEventQueue"
+          ]
+        },
+        {
+          "time": 21.342775,
+          "frames": [
+            "dyld4::RuntimeState::cachedDylibLoadAddress(unsigned short) const",
+            "dyld4::PrebuiltLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const",
+            "invocation function for block in dyld4::APIs::findImageContaining(void const*)",
+            "dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)",
+            "dyld4::APIs::findImageContaining(void const*)",
+            "dyld4::APIs::dlopen_from(char const*, int, void*)",
+            "_sl_dlopen",
+            "TextInputUILibrary",
+            "__getTUISmartReplyGeneratorClass_block_invoke",
+            "-[_UIKeyboardStateManager initWithPresentationDelegateView:forCustomInputView:]",
+            "-[UIKeyboardImpl initWithFrame:forCustomInputView:]",
+            "+[UIKeyboardImpl sharedInstanceForCustomInputView:]",
+            "-[UITextInteraction updateTextInputSourceForScribbleGesture:]",
+            "-[UITextInteraction gestureRecognizerShouldBegin:]",
+            "-[UIGestureRecognizer _shouldBegin]",
+            "0x18e010648",
+            "0x18e38d434",
+            "0x18e38aa00",
+            "0x18e02440c",
+            "0x18e00dca8",
+            "0x18e00dbc8",
+            "-[UIGestureRecognizer setState:]",
+            "-[UITextMultiTapRecognizer tapRecognizerRecognizedTap:]",
+            "-[UITapRecognizer _interactionEndedTouch:]",
+            "-[UITapRecognizer touchesEnded:withEvent:]",
+            "-[UITextMultiTapRecognizer touchesEnded:withEvent:]",
+            "-[UIGestureRecognizer _componentsEnded:withEvent:]",
+            "-[UITouchesEvent _sendEventToGestureRecognizer:]",
+            "__47-[UIGestureEnvironment _updateForEvent:window:]_block_invoke",
+            "__47-[UIGestureEnvironment _updateForEvent:window:]_block_invoke.98",
+            "0x18e00e63c",
+            "0x18e00e578",
+            "-[UIGestureEnvironment _updateForEvent:window:]",
+            "-[UIWindow sendEvent:]",
+            "-[UIApplication sendEvent:]"
+          ]
+        }
+      ]
+    },
+    "typing_first": {
+      "relevant_inclusive_frames": [
+        {
+          "frame": "-[UIKeyboardTaskQueue continueExecutionOnMainThread]",
+          "sampled_ms": 167.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskEntry execute:]",
+          "sampled_ms": 165.0
+        },
+        {
+          "frame": "AG::Graph::UpdateStack::update()",
+          "sampled_ms": 165.0
+        },
+        {
+          "frame": "AG::Subgraph::update(unsigned int)",
+          "sampled_ms": 154.0
+        },
+        {
+          "frame": "closure #1 in closure #1 in _UIHostingView.beginTransaction()",
+          "sampled_ms": 151.0
+        },
+        {
+          "frame": "GraphHost.flushTransactions()",
+          "sampled_ms": 151.0
+        },
+        {
+          "frame": "CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)",
+          "sampled_ms": 107.0
+        },
+        {
+          "frame": "CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)",
+          "sampled_ms": 106.0
+        },
+        {
+          "frame": "__64-[_UIKeyboardStateManager handleKeyboardInput:executionContext:]_block_invoke.1070",
+          "sampled_ms": 75.0
+        },
+        {
+          "frame": "UpdateCollectionViewListCoordinator.updateValue()",
+          "sampled_ms": 65.0
+        },
+        {
+          "frame": "ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)",
+          "sampled_ms": 65.0
+        },
+        {
+          "frame": "closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)",
+          "sampled_ms": 64.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager performOperations:withTextInputSource:]",
+          "sampled_ms": 56.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskQueue addTask:breadcrumb:]",
+          "sampled_ms": 55.0
+        },
+        {
+          "frame": "CA::Transaction::flush_as_runloop_observer(bool)",
+          "sampled_ms": 54.0
+        },
+        {
+          "frame": "CA::Transaction::flush()",
+          "sampled_ms": 54.0
+        },
+        {
+          "frame": "CA::Transaction::commit()",
+          "sampled_ms": 54.0
+        },
+        {
+          "frame": "_UIApplicationFlushCATransaction",
+          "sampled_ms": 54.0
+        },
+        {
+          "frame": "CA::Context::commit_transaction(CA::Transaction*, double, double*)",
+          "sampled_ms": 52.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskExecutionContext returnExecutionToParentWithInfo:]",
+          "sampled_ms": 50.0
+        },
+        {
+          "frame": "CA::Layer::layout_and_display_if_needed(CA::Transaction*)",
+          "sampled_ms": 49.0
+        },
+        {
+          "frame": "ModifiedViewList.applyNodes(from:style:list:transform:to:)",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "dispatch #1 () in UpdateGroup.dispatchActions()",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "partial apply for closure #4 in UICollectionViewListCoordinatorBase.performUpdates(collectionView:shouldSetEditing:)",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "UpdateGroup.end()",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "UICollectionViewListCoordinatorBase.performUpdates(collectionView:shouldSetEditing:)",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "UpdateGroup.Action.callAsFunction()",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "UpdateGroup.dispatchActions()",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "closure #2 in UICollectionViewListCoordinatorBase.update(_:to:transaction:performDiff:)",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "partial apply for closure #1 in closure #2 in UICollectionViewListCoordinatorBase.update(_:to:transaction:performDiff:)",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "protocol witness for ViewList.applyNodes(from:style:list:transform:to:) in conformance ForEachList<A, B, C>",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "protocol witness for ViewList.applyNodes(from:style:list:transform:to:) in conformance _ViewList_Group",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "specialized ForEachList.applyNodes(from:style:list:transform:to:)",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "__64-[_UIKeyboardStateManager handleKeyboardInput:executionContext:]_block_invoke.1117",
+          "sampled_ms": 39.0
+        },
+        {
+          "frame": "protocol witness for ViewList.applyNodes(from:style:list:transform:to:) in conformance _ViewList_Section",
+          "sampled_ms": 39.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar setState:forKey:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[UIKBInputDelegateManager insertText:updateInputSource:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager performKeyboardOutput:forwardToRemoteInputSource:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager performKeyboardOutput:checkingDelegate:forwardToRemoteInputSource:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager _performKeyboardOutput:respectingForwardingDelegate:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager performKeyboardOutput:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager performKeyboardOutput:userInfo:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[UIKBInputDelegateManager insertText:]",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar completeHitTestForTouchDown:executionContext:]",
+          "sampled_ms": 37.0
+        },
+        {
+          "frame": "__51-[UIKeyboardLayoutStar touchDown:executionContext:]_block_invoke_2",
+          "sampled_ms": 37.0
+        }
+      ],
+      "leaf_binaries_ms": {
+        "libswiftCore.dylib": 92.0,
+        "libobjc.A.dylib": 82.0,
+        "AttributeGraph": 49.0,
+        "UIKitCore": 43.0,
+        "SwiftUICore": 43.0,
+        "libobjcMsgSend.dylib": 38.0,
+        "unknown": 28.0,
+        "CoreFoundation": 28.0,
+        "libsystem_malloc.dylib": 25.0,
+        "libsystem_kernel.dylib": 21.0,
+        "Foundation": 19.0,
+        "QuartzCore": 12.0,
+        "libsystem_platform.dylib": 11.0,
+        "PersonalFinanceTraker": 8.0,
+        "CoreAutoLayout": 6.0,
+        "UIFoundation": 5.0,
+        "libsystem_pthread.dylib": 5.0,
+        "libobjcMsgSend2.dylib": 5.0,
+        "SwiftUI": 4.0,
+        "TextInputUI": 3.0,
+        "SwiftData": 3.0,
+        "libsystem_trace.dylib": 2.0,
+        "dyld": 2.0,
+        "libobjcMsgSend8.dylib": 2.0,
+        "CoreGraphics": 2.0,
+        "libobjcMsgSend1.dylib": 2.0,
+        "libobjcMsgSend6.dylib": 1.0,
+        "DesignLibrary": 1.0,
+        "BaseBoard": 1.0,
+        "libAccessibility.dylib": 1.0,
+        "libsystem_c.dylib": 1.0,
+        "libobjcMsgSend4.dylib": 1.0,
+        "Gestures": 1.0,
+        "RunningBoardServices": 1.0,
+        "libdyld.dylib": 1.0,
+        "libdispatch.dylib": 1.0,
+        "libswiftObservation.dylib": 1.0,
+        "FrontBoardServices": 1.0,
+        "libobjcMsgSend12.dylib": 1.0,
+        "libcache.dylib": 1.0
+      },
+      "example_stacks": [
+        {
+          "time": 32.5477755,
+          "frames": [
+            "objc_retainAutoreleaseReturnValue",
+            "-[UIScene(KeyboardInputScene) _keyboardScene]",
+            "__62+[UIRemoteKeyboardWindow remoteKeyboardWindowForScene:create:]_block_invoke",
+            "+[UIView(Animation) performWithoutAnimation:]",
+            "-[_UIRemoteKeyboards remoteKeyboardWindowForScene:create:]",
+            "-[_UIRemoteKeyboards keyboardWindow]",
+            "-[UIKeyboardSceneDelegate keyboardWindow]",
+            "+[UIKBScreenTraits _activeKeyboardWindowForScreen:]",
+            "-[UIKBScreenTraits keyboardScreenReferenceSize]",
+            "-[UIKBScreenTraits defaultLayoutClassForScreenTraits]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardLayoutStar _pointAllowedInStaticHitBuffer:]",
+            "-[UIKeyboardLayoutStar pointInside:forEvent:]",
+            "-[UIKeyboardImpl pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:withEvent:]",
+            "-[_UIKBCompatInputView pointInside:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIAutoRotatingWindow hitTest:withEvent:]",
+            "-[UIRemoteKeyboardWindow hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "-[UIWindow _hitTestLocation:sceneLocationZ:inScene:withWindowServerHitTestWindow:event:]"
+          ]
+        },
+        {
+          "time": 32.553774875,
+          "frames": [
+            "0x18bfa3b31",
+            "+[_UIRemoteKeyboards sharedRemoteKeyboards]",
+            "-[UIKeyboardSceneDelegate keyboardWindow]",
+            "+[UIKeyboardImpl keyboardWindowSafeAreaBottomInset]",
+            "+[UIKeyboardImpl showsGlobeAndDictationKeysExternallyForRenderConfig:]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:layoutClass:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardLayoutStar _pointAllowedInStaticHitBuffer:]",
+            "-[UIKeyboardLayoutStar pointInside:forEvent:]",
+            "-[UIKeyboardImpl pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:withEvent:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIKeyboard hitTest:withEvent:]",
+            "-[_UIKBCompatInputView hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIAutoRotatingWindow hitTest:withEvent:]",
+            "-[UIRemoteKeyboardWindow hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "-[UIWindow _hitTestLocation:sceneLocationZ:inScene:withWindowServerHitTestWindow:event:]",
+            "__75+[UIWindow _hitTestToPoint:scenePointZ:forEvent:windowServerHitTestWindow:]_block_invoke",
+            "__64-[UIWindowScene _topVisibleWindowEnumeratingAsCopy:passingTest:]_block_invoke"
+          ]
+        },
+        {
+          "time": 32.555776,
+          "frames": [
+            "objc_retainAutoreleaseReturnValue",
+            "-[FBSScene componentForExtension:ofClass:]",
+            "-[UIScene(SafeArea) ui_safeArea]",
+            "-[UIWindowScene _usesSceneSettingBasedSafeAreaInsets]",
+            "-[UIWindowScene _safeAreaInsetsForInterfaceOrientation:statusBarHidden:]",
+            "-[UIWindow _sceneSafeAreaInsetsIncludingStatusBar:]",
+            "-[UIWindow _normalizedSafeAreaInsets]",
+            "-[UIWindow safeAreaInsets]",
+            "+[UIKeyboardImpl keyboardWindowSafeAreaBottomInset]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:layoutClass:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardLayoutStar _pointAllowedInStaticHitBuffer:]",
+            "-[UIKeyboardLayoutStar pointInside:forEvent:]",
+            "-[UIKeyboardImpl pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:withEvent:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIKeyboard hitTest:withEvent:]",
+            "-[_UIKBCompatInputView hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIAutoRotatingWindow hitTest:withEvent:]",
+            "-[UIRemoteKeyboardWindow hitTest:withEvent:]"
+          ]
+        }
+      ]
+    },
+    "typing_extension": {
+      "relevant_inclusive_frames": [
+        {
+          "frame": "-[UIKeyboardTaskQueue continueExecutionOnMainThread]",
+          "sampled_ms": 101.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskEntry execute:]",
+          "sampled_ms": 100.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskQueue addTask:breadcrumb:]",
+          "sampled_ms": 64.0
+        },
+        {
+          "frame": "closure #1 in closure #1 in _UIHostingView.beginTransaction()",
+          "sampled_ms": 57.0
+        },
+        {
+          "frame": "GraphHost.flushTransactions()",
+          "sampled_ms": 57.0
+        },
+        {
+          "frame": "AG::Graph::UpdateStack::update()",
+          "sampled_ms": 54.0
+        },
+        {
+          "frame": "AG::Subgraph::update(unsigned int)",
+          "sampled_ms": 54.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskExecutionContext returnExecutionToParentWithInfo:]",
+          "sampled_ms": 53.0
+        },
+        {
+          "frame": "-[UIKeyboardLayout touchesBegan:withEvent:]",
+          "sampled_ms": 49.0
+        },
+        {
+          "frame": "-[UIKeyboardLayout touchDown:]",
+          "sampled_ms": 49.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar touchDown:executionContext:]",
+          "sampled_ms": 48.0
+        },
+        {
+          "frame": "__47-[UIKeyboardLayout touchDownTaskForTouchState:]_block_invoke",
+          "sampled_ms": 48.0
+        },
+        {
+          "frame": "__30-[UIKeyboardLayout touchDown:]_block_invoke",
+          "sampled_ms": 48.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar completeHitTestForTouchDown:executionContext:]",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "__51-[UIKeyboardLayoutStar touchDown:executionContext:]_block_invoke_2",
+          "sampled_ms": 47.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar performHitTestForTouchInfo:touchStage:executionContextPassingUIKBTree:]",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar touchDownWithKey:withTouchInfo:atPoint:executionContext:]",
+          "sampled_ms": 46.0
+        },
+        {
+          "frame": "CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)",
+          "sampled_ms": 38.0
+        },
+        {
+          "frame": "CA::Transaction::flush()",
+          "sampled_ms": 35.0
+        },
+        {
+          "frame": "CA::Transaction::commit()",
+          "sampled_ms": 35.0
+        },
+        {
+          "frame": "_UIApplicationFlushCATransaction",
+          "sampled_ms": 35.0
+        },
+        {
+          "frame": "CA::Context::commit_transaction(CA::Transaction*, double, double*)",
+          "sampled_ms": 35.0
+        },
+        {
+          "frame": "CA::Transaction::flush_as_runloop_observer(bool)",
+          "sampled_ms": 35.0
+        },
+        {
+          "frame": "CA::Layer::layout_and_display_if_needed(CA::Transaction*)",
+          "sampled_ms": 34.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar setKeyplaneName:]",
+          "sampled_ms": 32.0
+        },
+        {
+          "frame": "-[UIKeyboardLayout commitTouches:executionContext:]",
+          "sampled_ms": 32.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar createLayoutFromName:]",
+          "sampled_ms": 32.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar completeSendStringActionForTouchDownWithKey:withActions:executionContext:]",
+          "sampled_ms": 32.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar completeCommitTouchesPrecedingTouchDownWithKey:withActions:executionContext:]",
+          "sampled_ms": 32.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar _pointAllowedInStaticHitBuffer:]",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:inputMode:]",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "-[UIKeyboardLayoutStar pointInside:forEvent:]",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "__64-[_UIKeyboardStateManager handleKeyboardInput:executionContext:]_block_invoke.1070",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "dispatch #1 () in UpdateGroup.dispatchActions()",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "UpdateGroup.end()",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "UICollectionViewListCoordinatorBase.performUpdates(collectionView:shouldSetEditing:)",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "UpdateGroup.Action.callAsFunction()",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "UpdateGroup.dispatchActions()",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "closure #2 in UICollectionViewListCoordinatorBase.update(_:to:transaction:performDiff:)",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "partial apply for closure #1 in closure #2 in UICollectionViewListCoordinatorBase.update(_:to:transaction:performDiff:)",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "+[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+          "sampled_ms": 22.0
+        },
+        {
+          "frame": "-[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+          "sampled_ms": 22.0
+        },
+        {
+          "frame": "ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)",
+          "sampled_ms": 21.0
+        },
+        {
+          "frame": "UpdateCollectionViewListCoordinator.updateValue()",
+          "sampled_ms": 20.0
+        }
+      ],
+      "leaf_binaries_ms": {
+        "libobjc.A.dylib": 52.0,
+        "libswiftCore.dylib": 40.0,
+        "UIKitCore": 29.0,
+        "CoreFoundation": 29.0,
+        "libobjcMsgSend.dylib": 29.0,
+        "AttributeGraph": 17.0,
+        "unknown": 14.0,
+        "SwiftUICore": 10.0,
+        "Foundation": 9.0,
+        "libsystem_malloc.dylib": 8.0,
+        "libsystem_platform.dylib": 6.0,
+        "CoreAutoLayout": 6.0,
+        "SwiftUI": 5.0,
+        "QuartzCore": 4.0,
+        "CoreGraphics": 4.0,
+        "libsystem_kernel.dylib": 4.0,
+        "UIFoundation": 3.0,
+        "TextInput": 3.0,
+        "libsystem_pthread.dylib": 2.0,
+        "PersonalFinanceTraker": 2.0,
+        "libFontParser.dylib": 2.0,
+        "BackBoardServices": 2.0,
+        "libsystem_c.dylib": 1.0,
+        "libdyld.dylib": 1.0,
+        "libz.1.dylib": 1.0,
+        "CollectionViewCore": 1.0,
+        "CollectionsInternal": 1.0
+      },
+      "example_stacks": [
+        {
+          "time": 41.353773041,
+          "frames": [
+            "objc_alloc",
+            "+[NSDictionary dictionaryWithDictionary:]",
+            "-[_UIRemoteKeyboards remoteKeyboardWindowForScene:create:]",
+            "-[_UIRemoteKeyboards keyboardWindow]",
+            "-[UIKeyboardSceneDelegate keyboardWindow]",
+            "+[UIKBScreenTraits _activeKeyboardWindowForScreen:]",
+            "-[UIKBScreenTraits keyboardScreenReferenceSize]",
+            "-[UIKBScreenTraits defaultLayoutClassForScreenTraits]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardLayoutStar _pointAllowedInStaticHitBuffer:]",
+            "-[UIKeyboardLayoutStar pointInside:forEvent:]",
+            "-[UIKeyboardImpl pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:withEvent:]",
+            "-[_UIKBCompatInputView pointInside:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIAutoRotatingWindow hitTest:withEvent:]",
+            "-[UIRemoteKeyboardWindow hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "-[UIWindow _hitTestLocation:sceneLocationZ:inScene:withWindowServerHitTestWindow:event:]",
+            "__75+[UIWindow _hitTestToPoint:scenePointZ:forEvent:windowServerHitTestWindow:]_block_invoke",
+            "__64-[UIWindowScene _topVisibleWindowEnumeratingAsCopy:passingTest:]_block_invoke"
+          ]
+        },
+        {
+          "time": 41.354773625,
+          "frames": [
+            "objc_release_x20",
+            "-[FBSScene componentForExtension:ofClass:]",
+            "-[FBSScene ui_keyboardInputScenePairing]",
+            "-[UIScene(KeyboardInputScene) _keyboardScene]",
+            "__62+[UIRemoteKeyboardWindow remoteKeyboardWindowForScene:create:]_block_invoke",
+            "+[UIView(Animation) performWithoutAnimation:]",
+            "-[_UIRemoteKeyboards remoteKeyboardWindowForScene:create:]",
+            "-[_UIRemoteKeyboards keyboardWindow]",
+            "-[UIKeyboardSceneDelegate keyboardWindow]",
+            "+[UIKBScreenTraits _activeKeyboardWindowForScreen:]",
+            "+[UIKBScreenTraits _activeUCBWindowForScreen:]",
+            "-[UIKBScreenTraits initWithScreen:orientation:allowFloating:ignoreRemoteKeyboard:]",
+            "+[UIKBScreenTraits keyboardTraitsForWindowScene:]",
+            "+[UIKBRenderConfig configForAppearance:inputMode:traitEnvironment:]",
+            "-[UIView(UIKB_UIViewExtras) _inheritedRenderConfig]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:layoutClass:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificPaddingForInterfaceOrientation:inputMode:]",
+            "+[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardImpl deviceSpecificStaticHitBufferForInterfaceOrientation:inputMode:]",
+            "-[UIKeyboardLayoutStar _pointAllowedInStaticHitBuffer:]",
+            "-[UIKeyboardLayoutStar pointInside:forEvent:]",
+            "-[UIKeyboardImpl pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:withEvent:]",
+            "-[_UIKBCompatInputView pointInside:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__"
+          ]
+        },
+        {
+          "time": 41.355772208,
+          "frames": [
+            "pthread_mutex_lock",
+            "-[NSConditionLock lockBeforeDate:]",
+            "-[UIKeyboardTaskQueue addTask:breadcrumb:]",
+            "-[UIKeyboardLayout touchDown:]",
+            "-[UIKeyboardLayout touchesBegan:withEvent:]",
+            "-[UIWindow _sendTouchesForEvent:]",
+            "-[UIWindow sendEvent:]",
+            "-[UIApplication sendEvent:]",
+            "__dispatchPreprocessedEventFromEventQueue",
+            "updateCycleEntry",
+            "_UIUpdateSequenceRunNext",
+            "schedulerStepScheduledMainSectionContinue",
+            "UC::DriverCore::continueProcessing()",
+            "__CFMachPortPerform",
+            "__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__",
+            "__CFRunLoopDoSource1",
+            "__CFRunLoopRun",
+            "_CFRunLoopRunSpecificWithOptions",
+            "GSEventRunModal",
+            "UIApplicationMain",
+            "closure #1 in KitRendererCommon(_:)",
+            "runApp<A>(_:)",
+            "static App.main()",
+            "static PersonalFinanceTrakerApp.$main()",
+            "main",
+            "start"
+          ]
+        }
+      ]
+    },
+    "clear": {
+      "relevant_inclusive_frames": [
+        {
+          "frame": "CA::Transaction::flush()",
+          "sampled_ms": 73.0
+        },
+        {
+          "frame": "CA::Transaction::commit()",
+          "sampled_ms": 73.0
+        },
+        {
+          "frame": "_UIApplicationFlushCATransaction",
+          "sampled_ms": 73.0
+        },
+        {
+          "frame": "CA::Transaction::flush_as_runloop_observer(bool)",
+          "sampled_ms": 73.0
+        },
+        {
+          "frame": "CA::Context::commit_transaction(CA::Transaction*, double, double*)",
+          "sampled_ms": 70.0
+        },
+        {
+          "frame": "CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)",
+          "sampled_ms": 67.0
+        },
+        {
+          "frame": "CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)",
+          "sampled_ms": 65.0
+        },
+        {
+          "frame": "CA::Layer::layout_and_display_if_needed(CA::Transaction*)",
+          "sampled_ms": 61.0
+        },
+        {
+          "frame": "AG::Graph::UpdateStack::update()",
+          "sampled_ms": 52.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskQueue continueExecutionOnMainThread]",
+          "sampled_ms": 51.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskEntry execute:]",
+          "sampled_ms": 51.0
+        },
+        {
+          "frame": "UpdateGroup.dispatchImmediately<A>(reason:_:)",
+          "sampled_ms": 48.0
+        },
+        {
+          "frame": "AG::Subgraph::update(unsigned int)",
+          "sampled_ms": 43.0
+        },
+        {
+          "frame": "closure #1 in closure #1 in _UIHostingView.beginTransaction()",
+          "sampled_ms": 37.0
+        },
+        {
+          "frame": "GraphHost.flushTransactions()",
+          "sampled_ms": 37.0
+        },
+        {
+          "frame": "AG::Graph::update_attribute(AG::data::ptr<AG::Node>, unsigned int)",
+          "sampled_ms": 35.0
+        },
+        {
+          "frame": "-[UICollectionView layoutSubviews]",
+          "sampled_ms": 32.0
+        },
+        {
+          "frame": "-[UICollectionView _updateVisibleCellsNow:]",
+          "sampled_ms": 31.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager selectionDidChange:]",
+          "sampled_ms": 29.0
+        },
+        {
+          "frame": "-[UITextField endSelectionChange]",
+          "sampled_ms": 29.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager updateForChangedSelection]",
+          "sampled_ms": 29.0
+        },
+        {
+          "frame": "-[UITextInputController endSelectionChange]",
+          "sampled_ms": 29.0
+        },
+        {
+          "frame": "-[UIKeyboardTaskQueue performSingleTask:breadcrumb:]",
+          "sampled_ms": 29.0
+        },
+        {
+          "frame": "AG::Graph::input_value_ref_slow(AG::data::ptr<AG::Node>, AG::AttributeID, unsigned int, unsigned int, AGSwiftMetadata const*, unsigned char&, long)",
+          "sampled_ms": 29.0
+        },
+        {
+          "frame": "protocol witness for ViewList.applyNodes(from:style:list:transform:to:) in conformance _ViewList_Group",
+          "sampled_ms": 27.0
+        },
+        {
+          "frame": "UpdateCollectionViewListCoordinator.updateValue()",
+          "sampled_ms": 27.0
+        },
+        {
+          "frame": "ModifiedViewList.applyNodes(from:style:list:transform:to:)",
+          "sampled_ms": 26.0
+        },
+        {
+          "frame": "-[UICollectionView _createVisibleViewsForAttributes:fadeForBoundsChange:notifyLayoutForVisibleCellsPass:]",
+          "sampled_ms": 25.0
+        },
+        {
+          "frame": "UpdateCoalescingCollectionView.layoutSubviews()",
+          "sampled_ms": 25.0
+        },
+        {
+          "frame": "@objc UpdateCoalescingCollectionView.layoutSubviews()",
+          "sampled_ms": 25.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager updateForChangedSelectionWithExecutionContext:]",
+          "sampled_ms": 24.0
+        },
+        {
+          "frame": "__52-[_UIKeyboardStateManager updateForChangedSelection]_block_invoke_3",
+          "sampled_ms": 24.0
+        },
+        {
+          "frame": "protocol witness for ViewList.applyNodes(from:style:list:transform:to:) in conformance ForEachList<A, B, C>",
+          "sampled_ms": 24.0
+        },
+        {
+          "frame": "specialized ForEachList.applyNodes(from:style:list:transform:to:)",
+          "sampled_ms": 24.0
+        },
+        {
+          "frame": "-[UICollectionView _createVisibleViewsForSingleCategoryAttributes:limitCreation:fadeForBoundsChange:]",
+          "sampled_ms": 23.0
+        },
+        {
+          "frame": "-[UICollectionView _createPreparedCellForItemAtIndexPath:withLayoutAttributes:applyAttributes:isFocused:notify:]",
+          "sampled_ms": 21.0
+        },
+        {
+          "frame": "AGGraphGetInputValue",
+          "sampled_ms": 20.0
+        },
+        {
+          "frame": "-[_UIKeyboardStateManager clearInputWithCandidatesCleared:]",
+          "sampled_ms": 19.0
+        },
+        {
+          "frame": "protocol witness for ViewList.applyNodes(from:style:list:transform:to:) in conformance _ViewList_Section",
+          "sampled_ms": 18.0
+        },
+        {
+          "frame": "ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)",
+          "sampled_ms": 17.0
+        },
+        {
+          "frame": "-[_UIKBCompatInputView _didChangeKeyplaneWithContext:]",
+          "sampled_ms": 16.0
+        },
+        {
+          "frame": "-[UIKeyboard _didChangeKeyplaneWithContext:]",
+          "sampled_ms": 16.0
+        },
+        {
+          "frame": "-[_UIRemoteKeyboards performOnControllers:]",
+          "sampled_ms": 16.0
+        },
+        {
+          "frame": "-[UIKeyboardImpl updateAssistantView]",
+          "sampled_ms": 16.0
+        }
+      ],
+      "leaf_binaries_ms": {
+        "libobjc.A.dylib": 54.0,
+        "libswiftCore.dylib": 43.0,
+        "CoreFoundation": 36.0,
+        "libobjcMsgSend.dylib": 29.0,
+        "UIKitCore": 20.0,
+        "libsystem_malloc.dylib": 17.0,
+        "Foundation": 16.0,
+        "unknown": 15.0,
+        "AttributeGraph": 14.0,
+        "libsystem_platform.dylib": 13.0,
+        "QuartzCore": 12.0,
+        "libsystem_kernel.dylib": 11.0,
+        "SwiftUICore": 10.0,
+        "SwiftUI": 5.0,
+        "CoreUI": 3.0,
+        "libsystem_pthread.dylib": 3.0,
+        "UIFoundation": 2.0,
+        "libdyld.dylib": 2.0,
+        "libicucore.A.dylib": 2.0,
+        "Gestures": 2.0,
+        "CoreGraphics": 2.0,
+        "CoreText": 1.0,
+        "libobjcMsgSend2.dylib": 1.0,
+        "TextInputUI": 1.0,
+        "dyld": 1.0,
+        "DataDetectorsCore": 1.0,
+        "libdispatch.dylib": 1.0,
+        "libobjcMsgSend7.dylib": 1.0,
+        "libobjcMsgSend8.dylib": 1.0,
+        "libsystem_m.dylib": 1.0,
+        "IOKit": 1.0,
+        "PersonalFinanceTraker": 1.0,
+        "SwiftData": 1.0
+      },
+      "example_stacks": [
+        {
+          "time": 51.182777,
+          "frames": [
+            "objc_msgSend",
+            "-[UIKeyboardImpl _shouldSuppressSoftwareKeyboardByOneness]",
+            "-[UIKeyboardImpl _shouldSuppressSoftwareKeyboard]",
+            "-[UIKeyboardImpl isMinimized]",
+            "-[UIKeyboardImpl pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:forEvent:]",
+            "-[UIKeyboard pointInside:withEvent:]",
+            "-[_UIKBCompatInputView pointInside:withEvent:]",
+            "-[_UIRemoteKeyboardPlaceholderView pointInside:withEvent:]",
+            "-[UIInputSetHostView pointInside:withEvent:]",
+            "-[UITrackingElementHostView pointInside:withEvent:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UITrackingElementHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIAutoRotatingWindow hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "-[UIWindow _hitTestLocation:sceneLocationZ:inScene:withWindowServerHitTestWindow:event:]",
+            "__75+[UIWindow _hitTestToPoint:scenePointZ:forEvent:windowServerHitTestWindow:]_block_invoke",
+            "__64-[UIWindowScene _topVisibleWindowEnumeratingAsCopy:passingTest:]_block_invoke",
+            "-[UIWindowScene _enumerateWindowsIncludingInternalWindows:onlyVisibleWindows:asCopy:stopped:withBlock:]",
+            "-[UIWindowScene _topVisibleWindowEnumeratingAsCopy:passingTest:]",
+            "+[UIWindow _hitTestToPoint:scenePointZ:forEvent:windowServerHitTestWindow:]",
+            "-[UIWindow _targetWindowForPathIndex:atPoint:scenePointZ:forEvent:windowServerHitTestWindow:]",
+            "__startNewUITouch",
+            "____updateTouchesWithDigitizerEventAndDetermineIfShouldSend_block_invoke.103",
+            "_UIEventHIDEnumerateChildren",
+            "__dispatchPreprocessedEventFromEventQueue",
+            "updateCycleEntry",
+            "_UIUpdateSequenceRunNext",
+            "schedulerStepScheduledMainSectionContinue",
+            "UC::DriverCore::continueProcessing()"
+          ]
+        },
+        {
+          "time": 51.183773708,
+          "frames": [
+            "weak_entry_for_referent",
+            "objc_loadWeakRetained",
+            "-[FBSComponentScene scene]",
+            "-[FBSComponentScene isKindOfClass:]",
+            "-[FBSSceneComponent clientScene]",
+            "-[_UIKeyboardInputSceneClientComponent convertRectFromPairedSceneToKeyboardScene:]",
+            "-[_UIKeyboardInputScene convertRectFromPairedSceneToKeyboardScene:]",
+            "-[_UIRemoteKeyboardPlaceholderView pointInside:withEvent:]",
+            "-[UIInputSetHostView pointInside:withEvent:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIInputSetHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UITrackingElementHostView hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIAutoRotatingWindow hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "-[UIWindow _hitTestLocation:sceneLocationZ:inScene:withWindowServerHitTestWindow:event:]",
+            "__75+[UIWindow _hitTestToPoint:scenePointZ:forEvent:windowServerHitTestWindow:]_block_invoke",
+            "__64-[UIWindowScene _topVisibleWindowEnumeratingAsCopy:passingTest:]_block_invoke",
+            "-[UIWindowScene _enumerateWindowsIncludingInternalWindows:onlyVisibleWindows:asCopy:stopped:withBlock:]",
+            "-[UIWindowScene _topVisibleWindowEnumeratingAsCopy:passingTest:]",
+            "+[UIWindow _hitTestToPoint:scenePointZ:forEvent:windowServerHitTestWindow:]",
+            "-[UIWindow _targetWindowForPathIndex:atPoint:scenePointZ:forEvent:windowServerHitTestWindow:]",
+            "__startNewUITouch",
+            "____updateTouchesWithDigitizerEventAndDetermineIfShouldSend_block_invoke.103",
+            "_UIEventHIDEnumerateChildren",
+            "__dispatchPreprocessedEventFromEventQueue"
+          ]
+        },
+        {
+          "time": 51.185773708,
+          "frames": [
+            "-[NSConcreteMutableAttributedString attribute:atIndex:effectiveRange:]",
+            "-[NSConcreteTextStorage attribute:atIndex:effectiveRange:]",
+            "-[_UICascadingTextStorage attribute:atIndex:effectiveRange:]",
+            "-[_UICascadingTextStorage(Accessors) _shadow]",
+            "-[_UICascadingTextStorage(Accessors) shadowBlur]",
+            "-[UITextField _availableTextRectForBounds:forEditing:]",
+            "-[UISearchTextField _availableTextRectForBounds:forEditing:]",
+            "-[UISearchTextField editingRectForBounds:]",
+            "-[UITextField hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UISearchBar hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]",
+            "-[UIView(Geometry) hitTest:withEvent:]",
+            "-[UINavigationBar hitTest:withEvent:]",
+            "-[UIView(Geometry) _hitTest:withEvent:windowServerHitTestWindow:]",
+            "__38-[UIView(Geometry) hitTest:withEvent:]_block_invoke",
+            "__NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__",
+            "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]"
+          ]
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "sample weights are not freeze or key-to-visible-result durations",
+    "no query/debounce/generation/presented-frame markers",
+    "single exploratory recording, not comparable to simulator benchmark",
+    "no app-owned root cause or optimization demonstrated"
+  ]
+}

@@ -1,0 +1,985 @@
+{
+  "finding_id": "PERF-201",
+  "status": "BASELINE_CONFIRMED_IN_SCOPE",
+  "production_optimization_implemented": false,
+  "scope": "Activity bulk note edit and Undo, 1/10/100 selected rows in a 5000-row isolated disk-backed ledger",
+  "provenance": {
+    "branch": "chore/performance-baselines",
+    "head": "d1b7f5b48a0bf2ee882639cfbc3171fe7d826eb0",
+    "dirty_worktree": true,
+    "preexisting_dirty_file_count": 39,
+    "scheme": "PersonalFinanceTraker-TEST",
+    "configuration": "Debug-TEST",
+    "bundle_id": "rizzoG99.PersonalFinanceTraker.test",
+    "architecture": "arm64",
+    "os": "iOS Simulator 27.0 (24A434)",
+    "device": "iPhone 17",
+    "host_os": "macOS 27.0",
+    "fixture_anchor_epoch": 1791547200,
+    "locale": "en_US",
+    "time_zone": "Europe/Rome",
+    "pay_cycle_day": 1,
+    "buffer_percent": 5
+  },
+  "baseline_test_summary": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "F160101A-8C10-4335-A155-D4156F027578",
+          "deviceName": "pft-performance-baselines",
+          "modelName": "iPhone 17",
+          "osBuildNumber": "24A434",
+          "osVersion": "27.0",
+          "platform": "iOS Simulator"
+        },
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "passedTests": 1,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "PersonalFinanceTraker-TEST \u00b7 Built with macOS 27.0",
+    "expectedFailures": 0,
+    "failedTests": 0,
+    "finishTime": 1792101598.112,
+    "passedTests": 1,
+    "result": "Passed",
+    "runtimeWarnings": [],
+    "skippedTests": 0,
+    "startTime": 1792101477.565,
+    "statistics": [],
+    "testFailures": [],
+    "title": "Test - PersonalFinanceTraker-TEST",
+    "topInsights": [],
+    "totalTestCount": 1
+  },
+  "samples": [
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 191.161375,
+      "locale": "en_US",
+      "materializations": 1,
+      "mutation_return_ms": 122.90025,
+      "pay_cycle_day": 1,
+      "round": 0,
+      "SafeToSpend.refresh.elapsed_ms": 114.99625,
+      "SafeToSpend.refresh.starts": 1,
+      "SafeToSpend.snapshot.write.elapsed_ms": 3.772916,
+      "SafeToSpend.snapshot.write.starts": 1,
+      "saves": 1,
+      "selected_rows": 1,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 47.469666,
+      "TransactionActor.snapshots.map.starts": 1,
+      "TransactionActor.store.fetch.elapsed_ms": 57.233625,
+      "TransactionActor.store.fetch.starts": 1,
+      "WidgetKit.reload.request": 1
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 181.154292,
+      "locale": "en_US",
+      "materializations": 1,
+      "mutation_return_ms": 118.781292,
+      "pay_cycle_day": 1,
+      "round": 0,
+      "SafeToSpend.refresh.elapsed_ms": 114.107042,
+      "SafeToSpend.refresh.starts": 1,
+      "SafeToSpend.snapshot.write.elapsed_ms": 3.979167,
+      "SafeToSpend.snapshot.write.starts": 1,
+      "saves": 1,
+      "selected_rows": 1,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 46.819291,
+      "TransactionActor.snapshots.map.starts": 1,
+      "TransactionActor.store.fetch.elapsed_ms": 56.0705,
+      "TransactionActor.store.fetch.starts": 1,
+      "WidgetKit.reload.request": 1
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 1231.364916,
+      "locale": "en_US",
+      "materializations": 10,
+      "mutation_return_ms": 1171.528833,
+      "pay_cycle_day": 1,
+      "round": 0,
+      "SafeToSpend.refresh.elapsed_ms": 1146.019915,
+      "SafeToSpend.refresh.starts": 10,
+      "SafeToSpend.snapshot.write.elapsed_ms": 41.53996,
+      "SafeToSpend.snapshot.write.starts": 10,
+      "saves": 10,
+      "selected_rows": 10,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 482.212582,
+      "TransactionActor.snapshots.map.starts": 10,
+      "TransactionActor.store.fetch.elapsed_ms": 564.178998,
+      "TransactionActor.store.fetch.starts": 10,
+      "WidgetKit.reload.request": 10
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 1233.755208,
+      "locale": "en_US",
+      "materializations": 10,
+      "mutation_return_ms": 1174.250166,
+      "pay_cycle_day": 1,
+      "round": 0,
+      "SafeToSpend.refresh.elapsed_ms": 1151.747834,
+      "SafeToSpend.refresh.starts": 10,
+      "SafeToSpend.snapshot.write.elapsed_ms": 38.024834,
+      "SafeToSpend.snapshot.write.starts": 10,
+      "saves": 10,
+      "selected_rows": 10,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 483.205,
+      "TransactionActor.snapshots.map.starts": 10,
+      "TransactionActor.store.fetch.elapsed_ms": 569.207042,
+      "TransactionActor.store.fetch.starts": 10,
+      "WidgetKit.reload.request": 10
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 11675.4945,
+      "locale": "en_US",
+      "materializations": 100,
+      "mutation_return_ms": 11619.311459,
+      "pay_cycle_day": 1,
+      "round": 0,
+      "SafeToSpend.refresh.elapsed_ms": 11377.443161,
+      "SafeToSpend.refresh.starts": 100,
+      "SafeToSpend.snapshot.write.elapsed_ms": 383.718669,
+      "SafeToSpend.snapshot.write.starts": 100,
+      "saves": 100,
+      "selected_rows": 100,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 4788.557787,
+      "TransactionActor.snapshots.map.starts": 100,
+      "TransactionActor.store.fetch.elapsed_ms": 5630.715159,
+      "TransactionActor.store.fetch.starts": 100,
+      "WidgetKit.reload.request": 100
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 11655.425791,
+      "locale": "en_US",
+      "materializations": 100,
+      "mutation_return_ms": 11586.58925,
+      "pay_cycle_day": 1,
+      "round": 0,
+      "SafeToSpend.refresh.elapsed_ms": 11297.161001,
+      "SafeToSpend.refresh.starts": 100,
+      "SafeToSpend.snapshot.write.elapsed_ms": 424.826091,
+      "SafeToSpend.snapshot.write.starts": 100,
+      "saves": 100,
+      "selected_rows": 100,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 4751.519124,
+      "TransactionActor.snapshots.map.starts": 100,
+      "TransactionActor.store.fetch.elapsed_ms": 5552.759084,
+      "TransactionActor.store.fetch.starts": 100,
+      "WidgetKit.reload.request": 100
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 11558.541375,
+      "locale": "en_US",
+      "materializations": 100,
+      "mutation_return_ms": 11478.927208,
+      "pay_cycle_day": 1,
+      "round": 1,
+      "SafeToSpend.refresh.elapsed_ms": 11234.156751,
+      "SafeToSpend.refresh.starts": 100,
+      "SafeToSpend.snapshot.write.elapsed_ms": 391.48434,
+      "SafeToSpend.snapshot.write.starts": 100,
+      "saves": 100,
+      "selected_rows": 100,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 4715.113715,
+      "TransactionActor.snapshots.map.starts": 100,
+      "TransactionActor.store.fetch.elapsed_ms": 5561.964044,
+      "TransactionActor.store.fetch.starts": 100,
+      "WidgetKit.reload.request": 100
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 11602.62675,
+      "locale": "en_US",
+      "materializations": 100,
+      "mutation_return_ms": 11543.073416,
+      "pay_cycle_day": 1,
+      "round": 1,
+      "SafeToSpend.refresh.elapsed_ms": 11293.745704,
+      "SafeToSpend.refresh.starts": 100,
+      "SafeToSpend.snapshot.write.elapsed_ms": 404.126213,
+      "SafeToSpend.snapshot.write.starts": 100,
+      "saves": 100,
+      "selected_rows": 100,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 4727.012251,
+      "TransactionActor.snapshots.map.starts": 100,
+      "TransactionActor.store.fetch.elapsed_ms": 5590.032997,
+      "TransactionActor.store.fetch.starts": 100,
+      "WidgetKit.reload.request": 100
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 174.330583,
+      "locale": "en_US",
+      "materializations": 1,
+      "mutation_return_ms": 115.764833,
+      "pay_cycle_day": 1,
+      "round": 1,
+      "SafeToSpend.refresh.elapsed_ms": 110.925833,
+      "SafeToSpend.refresh.starts": 1,
+      "SafeToSpend.snapshot.write.elapsed_ms": 4.17775,
+      "SafeToSpend.snapshot.write.starts": 1,
+      "saves": 1,
+      "selected_rows": 1,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 45.556625,
+      "TransactionActor.snapshots.map.starts": 1,
+      "TransactionActor.store.fetch.elapsed_ms": 55.2055,
+      "TransactionActor.store.fetch.starts": 1,
+      "WidgetKit.reload.request": 1
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 170.430958,
+      "locale": "en_US",
+      "materializations": 1,
+      "mutation_return_ms": 112.89525,
+      "pay_cycle_day": 1,
+      "round": 1,
+      "SafeToSpend.refresh.elapsed_ms": 110.3935,
+      "SafeToSpend.refresh.starts": 1,
+      "SafeToSpend.snapshot.write.elapsed_ms": 4.089083,
+      "SafeToSpend.snapshot.write.starts": 1,
+      "saves": 1,
+      "selected_rows": 1,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 45.988,
+      "TransactionActor.snapshots.map.starts": 1,
+      "TransactionActor.store.fetch.elapsed_ms": 54.879583,
+      "TransactionActor.store.fetch.starts": 1,
+      "WidgetKit.reload.request": 1
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 1217.40675,
+      "locale": "en_US",
+      "materializations": 10,
+      "mutation_return_ms": 1161.616,
+      "pay_cycle_day": 1,
+      "round": 1,
+      "SafeToSpend.refresh.elapsed_ms": 1134.380625,
+      "SafeToSpend.refresh.starts": 10,
+      "SafeToSpend.snapshot.write.elapsed_ms": 39.822459,
+      "SafeToSpend.snapshot.write.starts": 10,
+      "saves": 10,
+      "selected_rows": 10,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 478.277377,
+      "TransactionActor.snapshots.map.starts": 10,
+      "TransactionActor.store.fetch.elapsed_ms": 560.069957,
+      "TransactionActor.store.fetch.starts": 10,
+      "WidgetKit.reload.request": 10
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 1224.768291,
+      "locale": "en_US",
+      "materializations": 10,
+      "mutation_return_ms": 1163.102041,
+      "pay_cycle_day": 1,
+      "round": 1,
+      "SafeToSpend.refresh.elapsed_ms": 1139.449417,
+      "SafeToSpend.refresh.starts": 10,
+      "SafeToSpend.snapshot.write.elapsed_ms": 40.520582,
+      "SafeToSpend.snapshot.write.starts": 10,
+      "saves": 10,
+      "selected_rows": 10,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 471.850958,
+      "TransactionActor.snapshots.map.starts": 10,
+      "TransactionActor.store.fetch.elapsed_ms": 568.211377,
+      "TransactionActor.store.fetch.starts": 10,
+      "WidgetKit.reload.request": 10
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 1209.902125,
+      "locale": "en_US",
+      "materializations": 10,
+      "mutation_return_ms": 1157.071625,
+      "pay_cycle_day": 1,
+      "round": 2,
+      "SafeToSpend.refresh.elapsed_ms": 1131.204626,
+      "SafeToSpend.refresh.starts": 10,
+      "SafeToSpend.snapshot.write.elapsed_ms": 40.28171,
+      "SafeToSpend.snapshot.write.starts": 10,
+      "saves": 10,
+      "selected_rows": 10,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 475.691126,
+      "TransactionActor.snapshots.map.starts": 10,
+      "TransactionActor.store.fetch.elapsed_ms": 554.009581,
+      "TransactionActor.store.fetch.starts": 10,
+      "WidgetKit.reload.request": 10
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 1200.934459,
+      "locale": "en_US",
+      "materializations": 10,
+      "mutation_return_ms": 1146.562709,
+      "pay_cycle_day": 1,
+      "round": 2,
+      "SafeToSpend.refresh.elapsed_ms": 1123.573376,
+      "SafeToSpend.refresh.starts": 10,
+      "SafeToSpend.snapshot.write.elapsed_ms": 39.791583,
+      "SafeToSpend.snapshot.write.starts": 10,
+      "saves": 10,
+      "selected_rows": 10,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 473.932584,
+      "TransactionActor.snapshots.map.starts": 10,
+      "TransactionActor.store.fetch.elapsed_ms": 555.566373,
+      "TransactionActor.store.fetch.starts": 10,
+      "WidgetKit.reload.request": 10
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 11410.801833,
+      "locale": "en_US",
+      "materializations": 100,
+      "mutation_return_ms": 11349.223833,
+      "pay_cycle_day": 1,
+      "round": 2,
+      "SafeToSpend.refresh.elapsed_ms": 11101.573921,
+      "SafeToSpend.refresh.starts": 100,
+      "SafeToSpend.snapshot.write.elapsed_ms": 400.902246,
+      "SafeToSpend.snapshot.write.starts": 100,
+      "saves": 100,
+      "selected_rows": 100,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 4639.870453,
+      "TransactionActor.snapshots.map.starts": 100,
+      "TransactionActor.store.fetch.elapsed_ms": 5506.451504,
+      "TransactionActor.store.fetch.starts": 100,
+      "WidgetKit.reload.request": 100
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 11429.963292,
+      "locale": "en_US",
+      "materializations": 100,
+      "mutation_return_ms": 11373.125,
+      "pay_cycle_day": 1,
+      "round": 2,
+      "SafeToSpend.refresh.elapsed_ms": 11120.17229,
+      "SafeToSpend.refresh.starts": 100,
+      "SafeToSpend.snapshot.write.elapsed_ms": 404.516245,
+      "SafeToSpend.snapshot.write.starts": 100,
+      "saves": 100,
+      "selected_rows": 100,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 4656.191377,
+      "TransactionActor.snapshots.map.starts": 100,
+      "TransactionActor.store.fetch.elapsed_ms": 5500.529291,
+      "TransactionActor.store.fetch.starts": 100,
+      "WidgetKit.reload.request": 100
+    },
+    {
+      "action": "edit",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 172.889916,
+      "locale": "en_US",
+      "materializations": 1,
+      "mutation_return_ms": 116.310333,
+      "pay_cycle_day": 1,
+      "round": 2,
+      "SafeToSpend.refresh.elapsed_ms": 111.340666,
+      "SafeToSpend.refresh.starts": 1,
+      "SafeToSpend.snapshot.write.elapsed_ms": 4.096292,
+      "SafeToSpend.snapshot.write.starts": 1,
+      "saves": 1,
+      "selected_rows": 1,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 45.848792,
+      "TransactionActor.snapshots.map.starts": 1,
+      "TransactionActor.store.fetch.elapsed_ms": 55.157833,
+      "TransactionActor.store.fetch.starts": 1,
+      "WidgetKit.reload.request": 1
+    },
+    {
+      "action": "undo",
+      "buffer_percent": 5,
+      "data_change_callbacks": 1,
+      "ledger_rows": 5000,
+      "local_vm_settled_ms": 166.400334,
+      "locale": "en_US",
+      "materializations": 1,
+      "mutation_return_ms": 110.859417,
+      "pay_cycle_day": 1,
+      "round": 2,
+      "SafeToSpend.refresh.elapsed_ms": 108.481709,
+      "SafeToSpend.refresh.starts": 1,
+      "SafeToSpend.snapshot.write.elapsed_ms": 4.100167,
+      "SafeToSpend.snapshot.write.starts": 1,
+      "saves": 1,
+      "selected_rows": 1,
+      "time_zone": "Europe/Rome",
+      "TransactionActor.snapshots.map.elapsed_ms": 45.41875,
+      "TransactionActor.snapshots.map.starts": 1,
+      "TransactionActor.store.fetch.elapsed_ms": 53.888416,
+      "TransactionActor.store.fetch.starts": 1,
+      "WidgetKit.reload.request": 1
+    }
+  ],
+  "aggregates": {
+    "1/edit": {
+      "mutation_return_ms": {
+        "median": 116.310333,
+        "min": 115.764833,
+        "max": 122.90025
+      },
+      "local_vm_settled_ms": {
+        "median": 174.330583,
+        "min": 172.889916,
+        "max": 191.161375
+      },
+      "saves": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "materializations": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "SafeToSpend.refresh.starts": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "SafeToSpend.snapshot.write.starts": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "WidgetKit.reload.request": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "TransactionActor.snapshots.map.elapsed_ms": {
+        "median": 45.848792,
+        "min": 45.556625,
+        "max": 47.469666
+      },
+      "TransactionActor.store.fetch.elapsed_ms": {
+        "median": 55.2055,
+        "min": 55.157833,
+        "max": 57.233625
+      },
+      "SafeToSpend.refresh.elapsed_ms": {
+        "median": 111.340666,
+        "min": 110.925833,
+        "max": 114.99625
+      },
+      "SafeToSpend.snapshot.write.elapsed_ms": {
+        "median": 4.096292,
+        "min": 3.772916,
+        "max": 4.17775
+      }
+    },
+    "1/undo": {
+      "mutation_return_ms": {
+        "median": 112.89525,
+        "min": 110.859417,
+        "max": 118.781292
+      },
+      "local_vm_settled_ms": {
+        "median": 170.430958,
+        "min": 166.400334,
+        "max": 181.154292
+      },
+      "saves": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "materializations": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "SafeToSpend.refresh.starts": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "SafeToSpend.snapshot.write.starts": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "WidgetKit.reload.request": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "TransactionActor.snapshots.map.elapsed_ms": {
+        "median": 45.988,
+        "min": 45.41875,
+        "max": 46.819291
+      },
+      "TransactionActor.store.fetch.elapsed_ms": {
+        "median": 54.879583,
+        "min": 53.888416,
+        "max": 56.0705
+      },
+      "SafeToSpend.refresh.elapsed_ms": {
+        "median": 110.3935,
+        "min": 108.481709,
+        "max": 114.107042
+      },
+      "SafeToSpend.snapshot.write.elapsed_ms": {
+        "median": 4.089083,
+        "min": 3.979167,
+        "max": 4.100167
+      }
+    },
+    "10/edit": {
+      "mutation_return_ms": {
+        "median": 1161.616,
+        "min": 1157.071625,
+        "max": 1171.528833
+      },
+      "local_vm_settled_ms": {
+        "median": 1217.40675,
+        "min": 1209.902125,
+        "max": 1231.364916
+      },
+      "saves": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "materializations": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "SafeToSpend.refresh.starts": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "SafeToSpend.snapshot.write.starts": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "WidgetKit.reload.request": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "TransactionActor.snapshots.map.elapsed_ms": {
+        "median": 478.277377,
+        "min": 475.691126,
+        "max": 482.212582
+      },
+      "TransactionActor.store.fetch.elapsed_ms": {
+        "median": 560.069957,
+        "min": 554.009581,
+        "max": 564.178998
+      },
+      "SafeToSpend.refresh.elapsed_ms": {
+        "median": 1134.380625,
+        "min": 1131.204626,
+        "max": 1146.019915
+      },
+      "SafeToSpend.snapshot.write.elapsed_ms": {
+        "median": 40.28171,
+        "min": 39.822459,
+        "max": 41.53996
+      }
+    },
+    "10/undo": {
+      "mutation_return_ms": {
+        "median": 1163.102041,
+        "min": 1146.562709,
+        "max": 1174.250166
+      },
+      "local_vm_settled_ms": {
+        "median": 1224.768291,
+        "min": 1200.934459,
+        "max": 1233.755208
+      },
+      "saves": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "materializations": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "SafeToSpend.refresh.starts": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "SafeToSpend.snapshot.write.starts": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "WidgetKit.reload.request": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "TransactionActor.snapshots.map.elapsed_ms": {
+        "median": 473.932584,
+        "min": 471.850958,
+        "max": 483.205
+      },
+      "TransactionActor.store.fetch.elapsed_ms": {
+        "median": 568.211377,
+        "min": 555.566373,
+        "max": 569.207042
+      },
+      "SafeToSpend.refresh.elapsed_ms": {
+        "median": 1139.449417,
+        "min": 1123.573376,
+        "max": 1151.747834
+      },
+      "SafeToSpend.snapshot.write.elapsed_ms": {
+        "median": 39.791583,
+        "min": 38.024834,
+        "max": 40.520582
+      }
+    },
+    "100/edit": {
+      "mutation_return_ms": {
+        "median": 11478.927208,
+        "min": 11349.223833,
+        "max": 11619.311459
+      },
+      "local_vm_settled_ms": {
+        "median": 11558.541375,
+        "min": 11410.801833,
+        "max": 11675.4945
+      },
+      "saves": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "materializations": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "SafeToSpend.refresh.starts": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "SafeToSpend.snapshot.write.starts": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "WidgetKit.reload.request": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "TransactionActor.snapshots.map.elapsed_ms": {
+        "median": 4715.113715,
+        "min": 4639.870453,
+        "max": 4788.557787
+      },
+      "TransactionActor.store.fetch.elapsed_ms": {
+        "median": 5561.964044,
+        "min": 5506.451504,
+        "max": 5630.715159
+      },
+      "SafeToSpend.refresh.elapsed_ms": {
+        "median": 11234.156751,
+        "min": 11101.573921,
+        "max": 11377.443161
+      },
+      "SafeToSpend.snapshot.write.elapsed_ms": {
+        "median": 391.48434,
+        "min": 383.718669,
+        "max": 400.902246
+      }
+    },
+    "100/undo": {
+      "mutation_return_ms": {
+        "median": 11543.073416,
+        "min": 11373.125,
+        "max": 11586.58925
+      },
+      "local_vm_settled_ms": {
+        "median": 11602.62675,
+        "min": 11429.963292,
+        "max": 11655.425791
+      },
+      "saves": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "materializations": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "SafeToSpend.refresh.starts": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "SafeToSpend.snapshot.write.starts": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "WidgetKit.reload.request": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "TransactionActor.snapshots.map.elapsed_ms": {
+        "median": 4727.012251,
+        "min": 4656.191377,
+        "max": 4751.519124
+      },
+      "TransactionActor.store.fetch.elapsed_ms": {
+        "median": 5552.759084,
+        "min": 5500.529291,
+        "max": 5590.032997
+      },
+      "SafeToSpend.refresh.elapsed_ms": {
+        "median": 11293.745704,
+        "min": 11120.17229,
+        "max": 11297.161001
+      },
+      "SafeToSpend.snapshot.write.elapsed_ms": {
+        "median": 404.516245,
+        "min": 404.126213,
+        "max": 424.826091
+      }
+    }
+  },
+  "invariants": {
+    "selected_notes_changed_only": true,
+    "undo_restores_all_snapshots": true,
+    "row_count_and_ids_retained": true,
+    "vm_and_grouping_current": true,
+    "one_data_change_callback_per_phase": true,
+    "note_edit_preserves_widget_financial_values": true,
+    "no_failed_or_incomplete_measured_intervals": true,
+    "fixture_owned_save_and_materialization_counts_match_recorder": true
+  },
+  "measurement_boundaries": {
+    "start": "public bulkSetNote or undoPending call",
+    "mutation_return": "bulkEditTask completion",
+    "local_vm_settled": "loadTask and groupingTask completion",
+    "clock": "ContinuousClock wall duration",
+    "repetitions": 3,
+    "round_orders": [
+      [
+        1,
+        10,
+        100
+      ],
+      [
+        100,
+        1,
+        10
+      ],
+      [
+        10,
+        100,
+        1
+      ]
+    ]
+  },
+  "count_result": "For each edit and Undo sample, saves, full fetches/maps, SafeToSpend refreshes/writes and WidgetKit requests equal selected_rows.",
+  "limitations": [
+    "Debug Simulator wall intervals are not physical responsiveness or main-thread CPU measurements.",
+    "ViewModel is not attached to SwiftUI; AppShell callback replaced by counter, excluding global fan-out and frames.",
+    "Nested intervals must not be summed; snapshot.write includes computation and WidgetKit request, not only file I/O.",
+    "Only note edit and Undo tested; amount/category/date edits, concurrent writes, failure injection, restore and recurrence not measured.",
+    "No before/after optimization run."
+  ],
+  "discarded_run": {
+    "reason": "method-only test filter selected zero tests",
+    "total_test_count": 0,
+    "accepted_as_evidence": false
+  },
+  "baseline_command": "rtk proxy env PFT_XCODE_SCHEME=PersonalFinanceTraker-TEST TEST_RUNNER_PFT_BULK_BASELINE=1 scripts/xcb test -only-testing:PersonalFinanceTrakerTests/BulkEditBaselineTests -testLanguage en -testRegion US",
+  "structural_oracle_command": "rtk proxy env PFT_XCODE_SCHEME=PersonalFinanceTraker-TEST TEST_RUNNER_PFT_BULK_SINGLE_FLUSH_CHECK=1 scripts/xcb test -only-testing:PersonalFinanceTrakerTests/BulkEditBaselineTests -testLanguage en -testRegion US",
+  "measured_dirty_source_sha256": {
+    "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/project.pbxproj": "488827ba4c0f56f247c5727edebe08e14668b987b4f52a66f4d883a480dda0a0",
+    "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcschemes/PersonalFinanceTraker-TEST.xcscheme": "750f36d5bcadf0c245a8fdaed7b90f529c5d30de7d84ec7978fa89b8ed64cf40",
+    "PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj/xcshareddata/xcschemes/PersonalFinanceTraker.xcscheme": "49ebd15b8853d234ec659f8cf860b20290e4f25b68d1194b62b882c9411e66ac",
+    "PersonalFinanceTraker/PersonalFinanceTraker/App/PersonalFinanceTrakerApp.swift": "dbf01d40437b9ebdc795b548ee80e58978e268933334f6c63cb4ce049164556f",
+    "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/HabitWidgetSnapshotStore.swift": "7156ddd4b60c89beab8c56942f1146c8d5005ad09f5ad395d01965628bef84ab",
+    "PersonalFinanceTraker/PersonalFinanceTraker/Utilities/PerformanceAuditDataSeeder.swift": "e70a676e8cc0e57f31e31c690d29193b7c68750ec9e6042021e2b669725a7d26",
+    "PersonalFinanceTraker/PersonalFinanceTrakerTests/App/AppIdentityTests.swift": "499a1c365cf28280924909bc78f50e0f551f3a24f3310d9418e45c31a5ff32a1",
+    "PersonalFinanceTraker/PersonalFinanceTrakerTests/Features/TransactionListView/ActivitySearchBaselineTests.swift": "f86e8c564e18396468ba58a3231f1b8a294e5389fe89080786dcbbc08c378e5b",
+    "PersonalFinanceTraker/PersonalFinanceTrakerWidget/DailyLoggingHabitWidget.swift": "8b3a7fc772419bbf3b9b7d032ae7bd404d43be0ca96c5f2e2518550e9dc1cd7c",
+    "PersonalFinanceTraker/PersonalFinanceTrakerWidget/ScanReceiptWidget.swift": "a6c3012ca0c558ab6111cb1191c9019fa5effc77c23c8f68d34af3944b83f549",
+    "PersonalFinanceTraker/SafeToSpendWidget/SafeToSpendWidgetView.swift": "6aa76726068de966cbe06add34620b343131a0c9b36de73852bf38fe225003f6",
+    "PersonalFinanceTraker/Shared/AppGroup.swift": "6e3f067517f6d5bb56fc63a680a8850ea3fdc2cd6ffa9dce1ddd6727704ee1b3",
+    "PersonalFinanceTraker/Shared/AppIdentity.swift": "3ed86c0c7171b8612b4825958a38204168073e7e5fe5883f93fa7b059fbf97a1",
+    "scripts/xcb": "12ad8ab7ac175b5c1ff6e6aca9a3b3af7776c2f049771dc8ebeae42954d43dcf"
+  },
+  "structural_oracle": {
+    "status": "EXPECTED_RED_CONFIRMED",
+    "budget_materializations_per_logical_edit": 1,
+    "arguments": [
+      {
+        "selected_rows": 1,
+        "materializations": 1,
+        "verdict": "Passed"
+      },
+      {
+        "selected_rows": 2,
+        "materializations": 2,
+        "verdict": "Failed"
+      }
+    ],
+    "test_summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "F160101A-8C10-4335-A155-D4156F027578",
+            "deviceName": "pft-performance-baselines",
+            "modelName": "iPhone 17",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 1,
+          "skippedTests": 1,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "PersonalFinanceTraker-TEST \u00b7 Built with macOS 27.0",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1792102187.643,
+      "passedTests": 0,
+      "result": "Failed",
+      "runtimeWarnings": [],
+      "skippedTests": 1,
+      "startTime": 1792101844.554,
+      "statistics": [
+        {
+          "subtitle": "2 test runs",
+          "title": "1 test ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: materializations == 1\nmaterializations \u2192 2: One logical bulk edit should rebuild history once, regardless of selected row count",
+          "targetName": "PersonalFinanceTrakerTests",
+          "testIdentifier": 2,
+          "testIdentifierString": "BulkEditBaselineTests/oneBulkOperationMaterializesHistoryOnce(selectedCount:)",
+          "testIdentifierURL": "test://com.apple.xcode/PersonalFinanceTraker/PersonalFinanceTrakerTests/BulkEditBaselineTests/oneBulkOperationMaterializesHistoryOnce(selectedCount:)",
+          "testName": "oneBulkOperationMaterializesHistoryOnce(selectedCount:)"
+        }
+      ],
+      "title": "Test - PersonalFinanceTraker-TEST",
+      "topInsights": [],
+      "totalTestCount": 2
+    },
+    "argument_results": [
+      {
+        "name": "1",
+        "result": "Passed",
+        "durationInSeconds": 0.30832600593566895
+      },
+      {
+        "name": "2",
+        "result": "Failed",
+        "durationInSeconds": 0.10210514068603516
+      }
+    ],
+    "runner_exit_code": 75,
+    "runner_note": "Both parameter arguments completed; subsequent simulator diagnostic collection stalled. Its child and xcodebuild were interrupted to finalize the result bundle. Verdict checked from exported test tree and tagged stdout; exit code not treated as verdict."
+  }
+}
