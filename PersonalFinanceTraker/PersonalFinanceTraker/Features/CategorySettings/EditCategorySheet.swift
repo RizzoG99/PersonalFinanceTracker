@@ -77,18 +77,14 @@ struct EditCategorySheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        // Compared with what the field was prefilled with, not the stored key:
-                        // saving an untouched built-in must keep "Groceries", or it would be
-                        // stored as "Spesa" and stop following the app language.
-                        let newName = editedName.trimmingCharacters(in: .whitespaces)
-                        let renamed = newName != category.name.localizedCategoryDisplay
+                        let newName = CategoryNameValidator.renamedName(stored: category.name, edited: editedName)
                         // Name written here too, so this list and a reopened sheet show it at once;
                         // the actor then finds it stored and only rewrites the copies.
-                        if renamed { category.name = newName }
+                        if let newName { category.name = newName }
                         category.systemImage = selectedSymbol
                         category.colorToken = selectedToken
                         try? modelContext.save()
-                        if renamed { syncRenamedCategory(newName) }
+                        if let newName { syncRenamedCategory(newName) }
                         dismiss()
                     }
                     .disabled(!canSave)

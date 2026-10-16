@@ -116,7 +116,7 @@ struct MonthCardView: View {
                 : String(localized: "At this pace you'll end the cycle in line with usual.")
         let drivers = summary.drivers.map { driver in
             let delta = appSettings.hideAmounts ? "••••" : driver.delta.formattedEURCompact()
-            return "\(driver.category.removingLeadingEmoji.localizedCategoryDisplay) (+\(delta))"
+            return "\(driver.displayName) (+\(delta))"
         }
         if drivers.count == 2 {
             sentence += " " + String(localized: "Mostly \(drivers[0]) and \(drivers[1]).")
