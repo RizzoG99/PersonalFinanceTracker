@@ -42,7 +42,9 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
     /// the first payment instead put due dates on its day of the month, so a series that drifted a
     /// day earlier (26 Aug → 25 Sep) left a phantom "26 Sep" occurrence unpaid — instantly missed.
     /// ponytail: a month-end clamp (Feb 28) as the latest payment keeps later dates on the 28th.
-    func ruleInput(autoRecord: Bool) -> RecurrenceRuleInput {
+    /// - Parameter createdCategory: the category an import created for this suggestion's CSV
+    ///   name. Detection runs before creation, so without it the rule keeps the CSV name, unlinked.
+    func ruleInput(autoRecord: Bool, createdCategory: CategorySnapshot? = nil) -> RecurrenceRuleInput {
         RecurrenceRuleInput(
             frequency: frequency,
             interval: interval,
@@ -51,10 +53,10 @@ struct RecurrenceSuggestion: Identifiable, Sendable {
             autoRecord: autoRecord && offersAutoRecord,
             amount: amount,
             note: note,
-            category: category,
+            category: createdCategory?.name ?? category,
             currencyCode: currencyCode,
             goalId: goalId,
-            categoryPersistentId: categoryPersistentId
+            categoryPersistentId: createdCategory?.persistentId ?? categoryPersistentId
         )
     }
 }

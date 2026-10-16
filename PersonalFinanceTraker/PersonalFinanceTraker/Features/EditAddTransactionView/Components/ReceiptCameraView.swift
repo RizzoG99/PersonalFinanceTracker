@@ -32,6 +32,8 @@ struct ReceiptCameraView: View {
 
     @State private var model = ReceiptCameraModel()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Compact only on an iPhone in landscape, where height is the scarce axis.
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     var body: some View {
         ZStack {
@@ -134,25 +136,45 @@ struct ReceiptCameraView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(.ultraThinMaterial, in: Capsule())
+                // In landscape, kept clear of the side shutter on both edges so it stays centred
+                // and a long, large-type caption wraps instead of running under the button.
+                .padding(.horizontal, isLandscape ? shutterColumnWidth : 0)
                 .padding(.bottom, 24)
 
-            Button {
-                capture()
-            } label: {
-                // The system shutter: a white disc inside a ring. Sized well past the 44pt minimum
-                // because it is the one thing on screen the user is aiming to press one-handed.
-                ZStack {
-                    Circle().strokeBorder(.white, lineWidth: 4).frame(width: 74, height: 74)
-                    Circle().fill(.white).frame(width: 60, height: 60)
-                }
-                .opacity(model.isCapturing ? 0.4 : 1)
+            if !isLandscape {
+                shutterButton.padding(.bottom, 32)
             }
-            .accessibilityLabel("Capture receipt")
-            .disabled(model.isCapturing || !model.isAuthorized)
-            .padding(.bottom, 32)
+        }
+        // Landscape puts the shutter on the trailing edge, as the system Camera does: stacked under
+        // the caption it would eat a third of an already short viewfinder.
+        .overlay(alignment: .trailing) {
+            if isLandscape {
+                shutterButton.padding(.trailing, 16)
+            }
         }
         .tint(.white)
         .foregroundStyle(.white)
+    }
+
+    private var isLandscape: Bool { verticalSizeClass == .compact }
+
+    /// The shutter's width plus its trailing inset on each side.
+    private let shutterColumnWidth: CGFloat = 74 + 2 * 16
+
+    private var shutterButton: some View {
+        Button {
+            capture()
+        } label: {
+            // The system shutter: a white disc inside a ring. Sized well past the 44pt minimum
+            // because it is the one thing on screen the user is aiming to press one-handed.
+            ZStack {
+                Circle().strokeBorder(.white, lineWidth: 4).frame(width: 74, height: 74)
+                Circle().fill(.white).frame(width: 60, height: 60)
+            }
+            .opacity(model.isCapturing ? 0.4 : 1)
+        }
+        .accessibilityLabel("Capture receipt")
+        .disabled(model.isCapturing || !model.isAuthorized)
     }
 
     private func capture() {
@@ -209,9 +231,24 @@ final class ReceiptCameraModel {
 
     /// The same detection in Vision's normalized space, which is what the captured photo needs.
     /// `detectedQuad` is in preview-layer coordinates and cannot be used for cropping — the preview
-    /// is `.resizeAspectFill`, so it shows less than the sensor captured.
+    /// is `.resizeAspectFill`, so it shows less than the sensor captured. Tagged with the rotation
+    /// Vision read it at, because the normalized space turns with the preview.
     @ObservationIgnored
-    private var normalizedQuad: [CGPoint]?
+    private var normalizedQuad: (corners: [CGPoint], angle: CGFloat)?
+
+    /// The preview's rotation, in `videoRotationAngle` degrees (90 is portrait). The single source
+    /// for the preview, Vision's orientation and the photo's: they must agree, or the outline and
+    /// the crop land on a different region from the one on screen.
+    ///
+    /// Deliberately the *preview* angle and not the coordinator's horizon-level *capture* angle.
+    /// That one follows gravity, so with orientation lock on, or the phone held flat over a
+    /// receipt on a table, it disagrees with what the user framed.
+    @ObservationIgnored
+    private var rotationAngle: CGFloat = 90
+    @ObservationIgnored
+    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    @ObservationIgnored
+    private var rotationObservation: NSKeyValueObservation?
     var isTorchOn = false
 
     @ObservationIgnored
@@ -253,6 +290,7 @@ final class ReceiptCameraModel {
 
     func attach(previewLayer: AVCaptureVideoPreviewLayer) {
         self.previewLayer = previewLayer
+        observeRotation()
     }
 
     func start() async {
@@ -260,13 +298,16 @@ final class ReceiptCameraModel {
         guard isAuthorized else { return }
         if !isConfigured {
             isConfigured = true
-            let delegate = FrameDelegate { [weak self] quad in
-                Task { @MainActor in self?.updateQuad(quad) }
+            let delegate = FrameDelegate { [weak self] quad, angle in
+                Task { @MainActor in self?.updateQuad(quad, angle: angle) }
             }
             frameDelegate = delegate
             device = await configure(frameDelegate: delegate)
             hasTorch = device?.hasTorch ?? false
         }
+        // Called from here *and* from `attach`: the preview only exists once `isAuthorized` flips,
+        // so either the layer or the device can be the last of the two to arrive.
+        observeRotation()
         await onSessionQueue { [session] in session.startRunning() }
 
         // *After* startRunning, deliberately. Device focus/exposure set inside the
@@ -294,6 +335,8 @@ final class ReceiptCameraModel {
     func stop() {
         subjectAreaTask?.cancel()
         subjectAreaTask = nil
+        rotationObservation = nil // deinit invalidates it
+        rotationCoordinator = nil
         detectedQuad = nil
         normalizedQuad = nil
         missedFrames = 0
@@ -317,6 +360,15 @@ final class ReceiptCameraModel {
         isCapturing = true
         defer { isCapturing = false; captureDelegate = nil }
 
+        // The photo is turned to match the preview, so it comes out the way the user framed it and
+        // in the same upright space the outline's normalized corners were measured in.
+        let angle = rotationAngle
+        var isRotated = false
+        if let connection = output.connection(with: .video), connection.isVideoRotationAngleSupported(angle) {
+            connection.videoRotationAngle = angle
+            isRotated = true
+        }
+
         let settings = AVCapturePhotoSettings()
         settings.flashMode = .off // The torch already covers low light, and continuously.
         let photo = await withCheckedContinuation { continuation in
@@ -331,11 +383,13 @@ final class ReceiptCameraModel {
             return nil
         }
         ReceiptScanDebug.log("capture: shutter -> \(ReceiptScanDebug.describe(photo))")
-        guard let quad = normalizedQuad else {
-            ReceiptScanDebug.log("capture: no outline, using full frame")
+        // A quad from another rotation (the phone turned mid-capture) or a photo that could not be
+        // rotated describes a different region of this image; the full frame is the safe answer.
+        guard isRotated, let quad = normalizedQuad, quad.angle == angle else {
+            ReceiptScanDebug.log("capture: no outline at \(angle)°, using full frame")
             return photo
         }
-        let result = Self.cropped(photo, to: quad)
+        let result = Self.cropped(photo, to: quad.corners)
         ReceiptScanDebug.log("capture: cropped -> \(ReceiptScanDebug.describe(result))")
         return result
     }
@@ -474,18 +528,17 @@ final class ReceiptCameraModel {
     /// The subtlety that got this wrong first time: `layerPointConverted(fromCaptureDevicePoint:)`
     /// takes **sensor** coordinates, which are fixed landscape (top-left origin, x along the
     /// sensor's long axis) and do *not* rotate with the interface — the same space
-    /// `captureDevicePointOfInterest` is documented in. Vision, meanwhile, was handed the buffer as
-    /// `.right`, so it answers in the upright portrait space the user is looking at, with a
-    /// bottom-left origin. Feeding one to the other drew the quad rotated a quarter turn.
-    ///
-    /// Derivation, all normalized. Displaying the sensor frame in portrait rotates it 90° clockwise,
-    /// so a sensor point (sx, sy) lands at display (1 - sy, sx). Vision's (vx, vy) is that display
-    /// point with the y axis flipped: display = (vx, 1 - vy). Inverting the rotation gives
-    /// sx = 1 - vy and sy = 1 - vx.
+    /// `captureDevicePointOfInterest` is documented in. Vision, meanwhile, was handed the buffer
+    /// in the preview's orientation, so it answers in the upright space the user is looking at,
+    /// with a bottom-left origin. Feeding one to the other drew the quad rotated a quarter turn.
+    /// `ReceiptCameraGeometry.sensorPoint` undoes that, per rotation.
     ///
     /// The layer conversion then accounts for `.resizeAspectFill` showing only part of the frame,
     /// which is why this goes through the layer at all rather than scaling by the view's size.
-    private func updateQuad(_ normalized: [CGPoint]?) {
+    private func updateQuad(_ normalized: [CGPoint]?, angle: CGFloat) {
+        // Measured before the latest rotation landed: its corners are in a space no longer on
+        // screen, so it is neither a hit nor a miss.
+        guard angle == rotationAngle else { return }
         guard let normalized, normalized.count == 4, let layer = previewLayer else {
             missedFrames += 1
             if missedFrames >= 3 {
@@ -496,15 +549,16 @@ final class ReceiptCameraModel {
         }
         let padded = Self.padded(normalized)
         let points = padded.map { corner in
-            let sensorPoint = CGPoint(x: 1 - corner.y, y: 1 - corner.x)
-            return layer.layerPointConverted(fromCaptureDevicePoint: sensorPoint)
+            layer.layerPointConverted(
+                fromCaptureDevicePoint: ReceiptCameraGeometry.sensorPoint(fromVision: corner, angle: angle)
+            )
         }
         let measured = Quad(
             topLeft: points[0], topRight: points[1],
             bottomRight: points[2], bottomLeft: points[3]
         )
         missedFrames = 0
-        normalizedQuad = padded
+        normalizedQuad = (padded, angle)
         // Eased toward the new reading rather than snapped to it. Segmentation jitters by a few
         // points between frames even on a still receipt, and that jitter reads as a nervous,
         // twitching outline; blending damps it without adding noticeable lag, because the view
@@ -541,6 +595,72 @@ final class ReceiptCameraModel {
         defer { device.unlockForConfiguration() }
         device.torchMode = on ? .on : .off
         isTorchOn = on
+    }
+
+    /// Starts following the interface rotation once both halves the coordinator needs exist.
+    private func observeRotation() {
+        guard rotationCoordinator == nil, let device, let previewLayer else { return }
+        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: previewLayer)
+        rotationCoordinator = coordinator
+        // KVO calls back off the main actor, and `.initial` fires before `observe` even returns,
+        // so the hop is unconditional.
+        rotationObservation = coordinator.observe(
+            \.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]
+        ) { [weak self] _, _ in
+            // Read inside the hop, not captured here: two quick turns could land out of order, and
+            // the coordinator's current value is the only one that is never stale.
+            Task { @MainActor in
+                guard let self, let angle = self.rotationCoordinator?.videoRotationAngleForHorizonLevelPreview else { return }
+                self.applyRotation(angle)
+            }
+        }
+    }
+
+    private func applyRotation(_ angle: CGFloat) {
+        if let connection = previewLayer?.connection, connection.isVideoRotationAngleSupported(angle) {
+            connection.videoRotationAngle = angle
+        }
+        guard angle != rotationAngle else { return }
+        rotationAngle = angle
+        let delegate = frameDelegate
+        frameQueue.async { delegate?.angle = angle }
+        // The outline was drawn for the old layout. Dropped outright rather than faded: the fade
+        // would play at the old coordinates while the view turns underneath it.
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            detectedQuad = nil
+            normalizedQuad = nil
+            missedFrames = 0
+        }
+    }
+}
+
+/// Maps between Vision's normalized space and the camera sensor's, for each rotation the preview
+/// can be in. Angles are `AVCaptureConnection.videoRotationAngle` degrees: how far the landscape
+/// sensor image is turned clockwise to be upright on screen, so 90 is portrait.
+enum ReceiptCameraGeometry {
+    /// What Vision needs to read the unrotated sensor buffer upright.
+    static func visionOrientation(for angle: CGFloat) -> CGImagePropertyOrientation {
+        switch angle {
+        case 0: .up
+        case 180: .down
+        case 270: .left
+        default: .right
+        }
+    }
+
+    /// Inverts the display rotation. A sensor point (sx, sy), top-left origin, turned clockwise by
+    /// `angle` lands on screen at (sx, sy) for 0, (1 - sy, sx) for 90, (1 - sx, 1 - sy) for 180
+    /// and (sy, 1 - sx) for 270. Vision's (vx, vy) is that screen point with y flipped, so
+    /// screen = (vx, 1 - vy); solving each case for (sx, sy) gives the branches below.
+    static func sensorPoint(fromVision point: CGPoint, angle: CGFloat) -> CGPoint {
+        switch angle {
+        case 0: CGPoint(x: point.x, y: 1 - point.y)
+        case 180: CGPoint(x: 1 - point.x, y: point.y)
+        case 270: CGPoint(x: point.y, y: point.x)
+        default: CGPoint(x: 1 - point.y, y: 1 - point.x)
+        }
     }
 }
 
@@ -620,12 +740,15 @@ struct Quad: Equatable, Animatable {
 /// downstream consumes the result, so a bad quad draws a bad outline for a fraction of a second and
 /// the parse is untouched. It informs the user's aim; it never decides what gets read.
 private final class FrameDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, @unchecked Sendable {
-    private let onQuad: @Sendable ([CGPoint]?) -> Void
+    /// Reports the corners together with the rotation they were measured at.
+    private let onQuad: @Sendable ([CGPoint]?, CGFloat) -> Void
     /// Only ever touched on the single sample-buffer queue this delegate is installed on, which is
     /// why `@unchecked Sendable` is honest here rather than a silencer.
     private var lastRun = Date.distantPast
+    /// The preview's rotation. Same rule as `lastRun`: the model writes it via `frameQueue.async`.
+    var angle: CGFloat = 90
 
-    init(onQuad: @escaping @Sendable ([CGPoint]?) -> Void) {
+    init(onQuad: @escaping @Sendable ([CGPoint]?, CGFloat) -> Void) {
         self.onQuad = onQuad
     }
 
@@ -642,16 +765,20 @@ private final class FrameDelegate: NSObject, AVCaptureVideoDataOutputSampleBuffe
 
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let request = VNDetectDocumentSegmentationRequest()
-        // `.right` because the back camera delivers landscape buffers while the UI is portrait;
-        // without it the quad comes back rotated a quarter turn from what is on screen.
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .right)
+        // The back camera delivers landscape buffers whatever the UI is doing, so Vision is told
+        // how the preview turns them; otherwise the quad comes back rotated from what is on screen.
+        let angle = angle
+        let handler = VNImageRequestHandler(
+            cvPixelBuffer: pixelBuffer,
+            orientation: ReceiptCameraGeometry.visionOrientation(for: angle)
+        )
         try? handler.perform([request])
 
         guard let observation = request.results?.first, observation.confidence > 0.6 else {
-            onQuad(nil)
+            onQuad(nil, angle)
             return
         }
-        onQuad([observation.topLeft, observation.topRight, observation.bottomRight, observation.bottomLeft])
+        onQuad([observation.topLeft, observation.topRight, observation.bottomRight, observation.bottomLeft], angle)
     }
 }
 

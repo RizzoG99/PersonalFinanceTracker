@@ -362,6 +362,57 @@ actor TransactionActor: ITransactionRepository {
 
     // MARK: Categories
 
+    /// V2 (#239): reruns the sweep once for categories renamed before renames carried their
+    /// transactions along.
+    static let categoryNameRepairKey = "didRepairImportedCategoryNamesV2"
+
+    /// One-time repair for #232: imports used to store the CSV's category name in `category`
+    /// while linking `categoryModel` to the mapped app category, so list, budgets and charts
+    /// showed the old name. Walks each category's own transactions — unlinked rows are never
+    /// loaded — and saves once. Idempotent, so an interrupted run simply repeats.
+    /// - Returns: how many transactions and rules were rewritten.
+    @discardableResult
+    func repairImportedCategoryNames(defaults: UserDefaults = .standard) throws -> Int {
+        guard !defaults.bool(forKey: Self.categoryNameRepairKey) else { return 0 }
+        let fixed = try syncCategoryNames(of: modelContext.fetch(FetchDescriptor<CategoryModel>()))
+        defaults.set(true, forKey: Self.categoryNameRepairKey)
+        return fixed
+    }
+
+    /// Renames a category and rewrites the `category` copy on its transactions and rules in the
+    /// same save (#239) — otherwise the list, budgets and charts split it in two, as in #232.
+    /// Runs here, off the main thread: a category can own thousands of transactions.
+    /// - Returns: how many transactions and rules were rewritten.
+    @discardableResult
+    func renameCategory(id: PersistentIdentifier, to name: String) throws -> Int {
+        guard let category = modelContext.model(for: id) as? CategoryModel else { return 0 }
+        category.name = name
+        return try syncCategoryNames(of: [category])
+    }
+
+    /// Walks each category's own transactions through the inverse relationship — unlinked rows
+    /// are never loaded — and saves once.
+    private func syncCategoryNames(of categories: [CategoryModel]) throws -> Int {
+        var fixed = 0
+        for category in categories {
+            for tx in category.transactions ?? [] where tx.category != category.name {
+                tx.category = category.name
+                fixed += 1
+            }
+        }
+        // Rules carry their own copy and stamp it on every occurrence they materialize. No
+        // inverse to walk from the category side, but there are only ever a handful of rules.
+        let ids = Set(categories.map(\.persistentModelID))
+        for rule in try modelContext.fetch(FetchDescriptor<RecurrenceRule>()) {
+            if let model = rule.categoryModel, ids.contains(model.persistentModelID), rule.category != model.name {
+                rule.category = model.name
+                fixed += 1
+            }
+        }
+        if modelContext.hasChanges { try modelContext.save() }
+        return fixed
+    }
+
     func fetchCategories() async throws -> [CategorySnapshot] {
         let desc = FetchDescriptor<CategoryModel>(sortBy: [SortDescriptor(\.name)])
         return try modelContext.fetch(desc).map(CategorySnapshot.init)
@@ -564,5 +615,24 @@ extension TransactionActor {
     // #Preview macro expansion can't see the @ModelActor-generated init; this hand-written factory is visible there
     static func make(_ container: ModelContainer) -> TransactionActor {
         TransactionActor(modelContainer: container)
+    }
+
+    /// Everything after a rename in the edit sheet (#239): carry the name onto its rows, tell
+    /// the app, then back up. Restore relinks by name and takes the newest backup, so one
+    /// with the old name would bring the rows back unlinked — hence the forced, fresh one.
+    nonisolated static func renameAndBackUp(
+        container: ModelContainer,
+        id: PersistentIdentifier,
+        to newName: String,
+        signal: DataChangedSignal?,
+        settings: BackupSchedulingSettings?,
+        backupService: BackupService = BackupService()
+    ) async {
+        let actor = make(container)
+        _ = try? await actor.renameCategory(id: id, to: newName)
+        await MainActor.run { signal?.bump() }  // also refreshes widget/Siri templates
+        guard let settings else { return }
+        await MainActor.run { settings.lastBackupDate = nil }
+        await BackupScheduler.runIfNeeded(repo: actor, settings: settings, backupService: backupService)
     }
 }

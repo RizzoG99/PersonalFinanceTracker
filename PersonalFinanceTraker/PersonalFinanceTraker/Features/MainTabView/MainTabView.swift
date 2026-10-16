@@ -355,6 +355,15 @@ struct MainTabView: View {
             // Let the user-facing Activity preload reach its first stable state before the
             // launch-only widget refreshes issue competing reads against the repository.
             await viewModel.loadTask?.value
+            if (try? await repo.repairImportedCategoryNames()) ?? 0 > 0 {
+                viewModel.reload()
+                await viewModel.loadTask?.value
+                // Backups store only category names and restore relinks by name, so a pre-repair
+                // backup would bring back unlinked old names. Restore always takes the newest:
+                // make that the repaired data. Clearing the date also retries if iCloud is off now.
+                appSettings.lastBackupDate = nil
+                await BackupScheduler.runIfNeeded(repo: repo, settings: appSettings, backupService: BackupService())
+            }
             let didMaterialize = (try? await materializationService.materialize(using: repo)) ?? false
             await HabitSnapshotUpdater.refresh(using: repo)
             await repo.refreshSafeToSpendWidgetSnapshot()

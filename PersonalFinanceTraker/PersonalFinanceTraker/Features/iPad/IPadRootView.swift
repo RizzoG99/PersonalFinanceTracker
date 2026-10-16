@@ -119,6 +119,13 @@ struct IPadRootView: View {
             models.compass.onDataChanged = { models.dataChanged.bump() }
             models.transactions.load()
             await models.transactions.loadTask?.value
+            if (try? await models.repo.repairImportedCategoryNames()) ?? 0 > 0 {
+                models.transactions.reload()
+                await models.transactions.loadTask?.value
+                // Same as MainTabView: make the newest backup (the one restore uses) the repaired data.
+                appSettings.lastBackupDate = nil
+                await BackupScheduler.runIfNeeded(repo: models.repo, settings: appSettings, backupService: BackupService())
+            }
             let didMaterialize = (try? await models.materializationService.materialize(using: models.repo)) ?? false
             await HabitSnapshotUpdater.refresh(using: models.repo)
             await models.repo.refreshSafeToSpendWidgetSnapshot()
