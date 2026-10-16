@@ -4,6 +4,7 @@
 //
 
 import Dispatch
+import Darwin
 import Foundation
 import OSLog
 
@@ -24,6 +25,15 @@ enum PerformanceAuditRecorder {
         let activeIntervals: [String: Int]
         let maximumConcurrentIntervals: [String: Int]
         let totalDurationNanoseconds: [String: UInt64]
+        let synchronousSamples: [SynchronousSample]
+    }
+
+    /// Only synchronous scopes: thread CPU must never span an actor hop or suspension.
+    struct SynchronousSample: Equatable, Sendable, Codable {
+        let name: String
+        let wallNanoseconds: UInt64
+        let threadCPUNanoseconds: UInt64
+        let isMainThread: Bool
     }
 
     struct Interval: @unchecked Sendable {
@@ -41,6 +51,7 @@ enum PerformanceAuditRecorder {
         var activeIntervals: [String: Int] = [:]
         var maximumConcurrentIntervals: [String: Int] = [:]
         var totalDurationNanoseconds: [String: UInt64] = [:]
+        var synchronousSamples: [SynchronousSample] = []
     }
 
     private final class LockedStorage: @unchecked Sendable {
@@ -95,8 +106,19 @@ enum PerformanceAuditRecorder {
                 counters: state.counters,
                 activeIntervals: state.activeIntervals,
                 maximumConcurrentIntervals: state.maximumConcurrentIntervals,
-                totalDurationNanoseconds: state.totalDurationNanoseconds
+                totalDurationNanoseconds: state.totalDurationNanoseconds,
+                synchronousSamples: state.synchronousSamples
             )
+        }
+
+        func record(_ sample: SynchronousSample) {
+            lock.lock()
+            defer { lock.unlock() }
+            // Full samples are only needed by short harness runs. Longer device
+            // sessions retain all signposts without growing this in-memory copy.
+            if state.synchronousSamples.count < 4_096 {
+                state.synchronousSamples.append(sample)
+            }
         }
 
         func resetForTesting(isEnabled: Bool) {
@@ -122,6 +144,29 @@ enum PerformanceAuditRecorder {
     )
 
     static var isEnabled: Bool { storage.enabled() }
+
+    static func measure<T>(_ name: StaticString, _ operation: () throws -> T) rethrows -> T {
+        guard isEnabled else { return try operation() }
+        let interval = begin(name)
+        let wall = DispatchTime.now().uptimeNanoseconds
+        let cpu = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)
+        var outcome: Outcome = .completed
+        defer {
+            let cpuElapsed = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID) - cpu
+            let elapsed = DispatchTime.now().uptimeNanoseconds - wall
+            storage.record(SynchronousSample(
+                name: String(describing: name), wallNanoseconds: elapsed,
+                threadCPUNanoseconds: cpuElapsed, isMainThread: Thread.isMainThread
+            ))
+            end(interval, outcome: outcome, metadata: "sync_wall_ns=\(elapsed) thread_cpu_ns=\(cpuElapsed)")
+        }
+        do {
+            return try operation()
+        } catch {
+            outcome = .failed
+            throw error
+        }
+    }
 
     static func event(_ name: StaticString, metadata: @autoclosure () -> String = "") {
         guard isEnabled else { return }

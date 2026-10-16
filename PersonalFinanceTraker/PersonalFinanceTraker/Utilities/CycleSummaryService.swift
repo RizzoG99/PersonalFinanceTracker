@@ -74,7 +74,10 @@ enum CycleSummaryService {
         let todayIndex = max(0, calendar.dateComponents([.day], from: cycleStart, to: now).day ?? 0)
         var daily = Array(repeating: Decimal.zero, count: todayIndex + 1)
 
-        for tx in transactions {
+        // Keep firstRecorded above history-wide, but amounts outside these cycles
+        // cannot contribute. Avoid converting years of irrelevant transactions.
+        let earliestUsefulDate = previous.last?.start ?? cycleStart
+        for tx in transactions where tx.timestamp >= earliestUsefulDate && tx.timestamp < payday {
             let amount = currencyService.convertToBase(tx.amount, from: tx.currencyCode)
             let time = tx.timestamp
             if time >= cycleStart && time < payday {

@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Home's cycle summary refreshes faster with long transaction histories, while keeping the same totals and forecast.
 - Editing several transactions in Activity and undoing those edits avoids repeated full-history widget updates. Bulk edits also keep transactions linked to their trips.
 - Activity now opens large histories in pages of 200 items, with a Show More button. Loading avoids duplicate refreshes, and saved transactions and category changes stay up to date after Siri actions or returning to the app.
 - **Monthly recap in Insights**: when a pay cycle ends, the top of Insights sums it up in a few sentences — how much more or less you spent than the cycle before, how much of your income you put aside compared with before, the category you cut the most, and whether your recurring costs went up or down (a new or stopped subscription; price changes of an existing one aren't tracked). Amounts are in whole euros and in bold. Money moved to a goal counts as put aside. In your first cycle it shows just what you spent and put aside. "See September in detail" scrolls to the breakdown below and shows that cycle. On payday a notification says "Your September recap is ready" and opens Insights; turn it off in Settings → Monthly recap. The first time you tap "See … in detail" the app asks for notification permission if it never did.

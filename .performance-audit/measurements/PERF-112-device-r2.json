@@ -1,0 +1,4721 @@
+{
+  "analysis_checkout": {
+    "branch": "chore/performance-baselines",
+    "dirty": true,
+    "head": "eba7011721064cc71f94a33c880c673eee1f78a5",
+    "worktree": ".worktrees/performance-baselines"
+  },
+  "artifact": ".performance-audit/measurements/traces/Activity-search-5k-PFT-TEST-iPhone-r1.trace",
+  "cpu_whole_recording": {
+    "buckets": [
+      {
+        "end_seconds": 0.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 0.0
+      },
+      {
+        "end_seconds": 1.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 0.5
+      },
+      {
+        "end_seconds": 1.5,
+        "main_sampled_ms": 304.0,
+        "start_seconds": 1.0
+      },
+      {
+        "end_seconds": 2.0,
+        "main_sampled_ms": 126.0,
+        "start_seconds": 1.5
+      },
+      {
+        "end_seconds": 2.5,
+        "main_sampled_ms": 52.0,
+        "start_seconds": 2.0
+      },
+      {
+        "end_seconds": 3.0,
+        "main_sampled_ms": 4.0,
+        "start_seconds": 2.5
+      },
+      {
+        "end_seconds": 3.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 3.0
+      },
+      {
+        "end_seconds": 4.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 3.5
+      },
+      {
+        "end_seconds": 4.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 4.0
+      },
+      {
+        "end_seconds": 5.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 4.5
+      },
+      {
+        "end_seconds": 5.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 5.0
+      },
+      {
+        "end_seconds": 6.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 5.5
+      },
+      {
+        "end_seconds": 6.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 6.0
+      },
+      {
+        "end_seconds": 7.0,
+        "main_sampled_ms": 70.0,
+        "start_seconds": 6.5
+      },
+      {
+        "end_seconds": 7.5,
+        "main_sampled_ms": 126.0,
+        "start_seconds": 7.0
+      },
+      {
+        "end_seconds": 8.0,
+        "main_sampled_ms": 9.0,
+        "start_seconds": 7.5
+      },
+      {
+        "end_seconds": 8.5,
+        "main_sampled_ms": 8.0,
+        "start_seconds": 8.0
+      },
+      {
+        "end_seconds": 9.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 8.5
+      },
+      {
+        "end_seconds": 9.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 9.0
+      },
+      {
+        "end_seconds": 10.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 9.5
+      },
+      {
+        "end_seconds": 10.5,
+        "main_sampled_ms": 179.0,
+        "start_seconds": 10.0
+      },
+      {
+        "end_seconds": 11.0,
+        "main_sampled_ms": 32.0,
+        "start_seconds": 10.5
+      },
+      {
+        "end_seconds": 11.5,
+        "main_sampled_ms": 7.0,
+        "start_seconds": 11.0
+      },
+      {
+        "end_seconds": 12.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 11.5
+      },
+      {
+        "end_seconds": 12.5,
+        "main_sampled_ms": 180.0,
+        "start_seconds": 12.0
+      },
+      {
+        "end_seconds": 13.0,
+        "main_sampled_ms": 180.0,
+        "start_seconds": 12.5
+      },
+      {
+        "end_seconds": 13.5,
+        "main_sampled_ms": 84.0,
+        "start_seconds": 13.0
+      },
+      {
+        "end_seconds": 14.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 13.5
+      },
+      {
+        "end_seconds": 14.5,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 14.0
+      },
+      {
+        "end_seconds": 15.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 14.5
+      },
+      {
+        "end_seconds": 15.5,
+        "main_sampled_ms": 144.0,
+        "start_seconds": 15.0
+      },
+      {
+        "end_seconds": 16.0,
+        "main_sampled_ms": 169.0,
+        "start_seconds": 15.5
+      },
+      {
+        "end_seconds": 16.5,
+        "main_sampled_ms": 29.0,
+        "start_seconds": 16.0
+      },
+      {
+        "end_seconds": 17.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 16.5
+      },
+      {
+        "end_seconds": 17.5,
+        "main_sampled_ms": 88.0,
+        "start_seconds": 17.0
+      },
+      {
+        "end_seconds": 18.0,
+        "main_sampled_ms": 44.0,
+        "start_seconds": 17.5
+      },
+      {
+        "end_seconds": 18.5,
+        "main_sampled_ms": 8.0,
+        "start_seconds": 18.0
+      },
+      {
+        "end_seconds": 19.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 18.5
+      },
+      {
+        "end_seconds": 19.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 19.0
+      },
+      {
+        "end_seconds": 20.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 19.5
+      },
+      {
+        "end_seconds": 20.5,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 20.0
+      },
+      {
+        "end_seconds": 21.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 20.5
+      },
+      {
+        "end_seconds": 21.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 21.0
+      },
+      {
+        "end_seconds": 22.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 21.5
+      },
+      {
+        "end_seconds": 22.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 22.0
+      },
+      {
+        "end_seconds": 23.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 22.5
+      },
+      {
+        "end_seconds": 23.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 23.0
+      },
+      {
+        "end_seconds": 24.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 23.5
+      },
+      {
+        "end_seconds": 24.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 24.0
+      },
+      {
+        "end_seconds": 25.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 24.5
+      },
+      {
+        "end_seconds": 25.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 25.0
+      },
+      {
+        "end_seconds": 26.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 25.5
+      },
+      {
+        "end_seconds": 26.5,
+        "main_sampled_ms": 99.0,
+        "start_seconds": 26.0
+      },
+      {
+        "end_seconds": 27.0,
+        "main_sampled_ms": 111.0,
+        "start_seconds": 26.5
+      },
+      {
+        "end_seconds": 27.5,
+        "main_sampled_ms": 59.0,
+        "start_seconds": 27.0
+      },
+      {
+        "end_seconds": 28.0,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 27.5
+      },
+      {
+        "end_seconds": 28.5,
+        "main_sampled_ms": 16.0,
+        "start_seconds": 28.0
+      },
+      {
+        "end_seconds": 29.0,
+        "main_sampled_ms": 111.0,
+        "start_seconds": 28.5
+      },
+      {
+        "end_seconds": 29.5,
+        "main_sampled_ms": 94.0,
+        "start_seconds": 29.0
+      },
+      {
+        "end_seconds": 30.0,
+        "main_sampled_ms": 84.0,
+        "start_seconds": 29.5
+      },
+      {
+        "end_seconds": 30.5,
+        "main_sampled_ms": 90.0,
+        "start_seconds": 30.0
+      },
+      {
+        "end_seconds": 31.0,
+        "main_sampled_ms": 47.0,
+        "start_seconds": 30.5
+      },
+      {
+        "end_seconds": 31.5,
+        "main_sampled_ms": 227.0,
+        "start_seconds": 31.0
+      },
+      {
+        "end_seconds": 32.0,
+        "main_sampled_ms": 154.0,
+        "start_seconds": 31.5
+      },
+      {
+        "end_seconds": 32.5,
+        "main_sampled_ms": 118.0,
+        "start_seconds": 32.0
+      },
+      {
+        "end_seconds": 33.0,
+        "main_sampled_ms": 45.0,
+        "start_seconds": 32.5
+      },
+      {
+        "end_seconds": 33.5,
+        "main_sampled_ms": 142.0,
+        "start_seconds": 33.0
+      },
+      {
+        "end_seconds": 34.0,
+        "main_sampled_ms": 71.0,
+        "start_seconds": 33.5
+      },
+      {
+        "end_seconds": 34.5,
+        "main_sampled_ms": 50.0,
+        "start_seconds": 34.0
+      },
+      {
+        "end_seconds": 35.0,
+        "main_sampled_ms": 39.0,
+        "start_seconds": 34.5
+      },
+      {
+        "end_seconds": 35.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 35.0
+      },
+      {
+        "end_seconds": 36.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 35.5
+      },
+      {
+        "end_seconds": 36.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 36.0
+      },
+      {
+        "end_seconds": 37.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 36.5
+      },
+      {
+        "end_seconds": 37.5,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 37.0
+      },
+      {
+        "end_seconds": 38.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 37.5
+      },
+      {
+        "end_seconds": 38.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 38.0
+      },
+      {
+        "end_seconds": 39.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 38.5
+      },
+      {
+        "end_seconds": 39.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 39.0
+      },
+      {
+        "end_seconds": 40.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 39.5
+      },
+      {
+        "end_seconds": 40.5,
+        "main_sampled_ms": 135.0,
+        "start_seconds": 40.0
+      },
+      {
+        "end_seconds": 41.0,
+        "main_sampled_ms": 181.0,
+        "start_seconds": 40.5
+      },
+      {
+        "end_seconds": 41.5,
+        "main_sampled_ms": 20.0,
+        "start_seconds": 41.0
+      },
+      {
+        "end_seconds": 42.0,
+        "main_sampled_ms": 115.0,
+        "start_seconds": 41.5
+      },
+      {
+        "end_seconds": 42.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 42.0
+      },
+      {
+        "end_seconds": 43.0,
+        "main_sampled_ms": 2.0,
+        "start_seconds": 42.5
+      },
+      {
+        "end_seconds": 43.5,
+        "main_sampled_ms": 2.0,
+        "start_seconds": 43.0
+      },
+      {
+        "end_seconds": 44.0,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 43.5
+      },
+      {
+        "end_seconds": 44.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 44.0
+      },
+      {
+        "end_seconds": 45.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 44.5
+      },
+      {
+        "end_seconds": 45.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 45.0
+      },
+      {
+        "end_seconds": 46.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 45.5
+      },
+      {
+        "end_seconds": 46.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 46.0
+      },
+      {
+        "end_seconds": 47.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 46.5
+      },
+      {
+        "end_seconds": 47.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 47.0
+      },
+      {
+        "end_seconds": 48.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 47.5
+      },
+      {
+        "end_seconds": 48.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 48.0
+      },
+      {
+        "end_seconds": 49.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 48.5
+      },
+      {
+        "end_seconds": 49.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 49.0
+      },
+      {
+        "end_seconds": 50.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 49.5
+      },
+      {
+        "end_seconds": 50.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 50.0
+      },
+      {
+        "end_seconds": 51.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 50.5
+      },
+      {
+        "end_seconds": 51.5,
+        "main_sampled_ms": 271.0,
+        "start_seconds": 51.0
+      },
+      {
+        "end_seconds": 52.0,
+        "main_sampled_ms": 214.0,
+        "start_seconds": 51.5
+      },
+      {
+        "end_seconds": 52.5,
+        "main_sampled_ms": 20.0,
+        "start_seconds": 52.0
+      },
+      {
+        "end_seconds": 53.0,
+        "main_sampled_ms": 89.0,
+        "start_seconds": 52.5
+      },
+      {
+        "end_seconds": 53.5,
+        "main_sampled_ms": 44.0,
+        "start_seconds": 53.0
+      },
+      {
+        "end_seconds": 54.0,
+        "main_sampled_ms": 44.0,
+        "start_seconds": 53.5
+      },
+      {
+        "end_seconds": 54.5,
+        "main_sampled_ms": 64.0,
+        "start_seconds": 54.0
+      },
+      {
+        "end_seconds": 55.0,
+        "main_sampled_ms": 18.0,
+        "start_seconds": 54.5
+      },
+      {
+        "end_seconds": 55.5,
+        "main_sampled_ms": 65.0,
+        "start_seconds": 55.0
+      },
+      {
+        "end_seconds": 56.0,
+        "main_sampled_ms": 25.0,
+        "start_seconds": 55.5
+      },
+      {
+        "end_seconds": 56.5,
+        "main_sampled_ms": 13.0,
+        "start_seconds": 56.0
+      },
+      {
+        "end_seconds": 57.0,
+        "main_sampled_ms": 72.0,
+        "start_seconds": 56.5
+      },
+      {
+        "end_seconds": 57.5,
+        "main_sampled_ms": 4.0,
+        "start_seconds": 57.0
+      },
+      {
+        "end_seconds": 58.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 57.5
+      },
+      {
+        "end_seconds": 58.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 58.0
+      },
+      {
+        "end_seconds": 59.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 58.5
+      },
+      {
+        "end_seconds": 59.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 59.0
+      },
+      {
+        "end_seconds": 60.0,
+        "main_sampled_ms": 319.0,
+        "start_seconds": 59.5
+      },
+      {
+        "end_seconds": 60.5,
+        "main_sampled_ms": 157.0,
+        "start_seconds": 60.0
+      },
+      {
+        "end_seconds": 61.0,
+        "main_sampled_ms": 124.0,
+        "start_seconds": 60.5
+      },
+      {
+        "end_seconds": 61.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 61.0
+      },
+      {
+        "end_seconds": 62.0,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 61.5
+      },
+      {
+        "end_seconds": 62.5,
+        "main_sampled_ms": 100.0,
+        "start_seconds": 62.0
+      },
+      {
+        "end_seconds": 63.0,
+        "main_sampled_ms": 223.0,
+        "start_seconds": 62.5
+      },
+      {
+        "end_seconds": 63.5,
+        "main_sampled_ms": 157.0,
+        "start_seconds": 63.0
+      },
+      {
+        "end_seconds": 64.0,
+        "main_sampled_ms": 5.0,
+        "start_seconds": 63.5
+      },
+      {
+        "end_seconds": 64.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 64.0
+      },
+      {
+        "end_seconds": 65.0,
+        "main_sampled_ms": 3.0,
+        "start_seconds": 64.5
+      },
+      {
+        "end_seconds": 65.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 65.0
+      },
+      {
+        "end_seconds": 66.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 65.5
+      },
+      {
+        "end_seconds": 66.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 66.0
+      },
+      {
+        "end_seconds": 67.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 66.5
+      },
+      {
+        "end_seconds": 67.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 67.0
+      },
+      {
+        "end_seconds": 68.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 67.5
+      },
+      {
+        "end_seconds": 68.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 68.0
+      },
+      {
+        "end_seconds": 69.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 68.5
+      },
+      {
+        "end_seconds": 69.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 69.0
+      },
+      {
+        "end_seconds": 70.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 69.5
+      },
+      {
+        "end_seconds": 70.5,
+        "main_sampled_ms": 2.0,
+        "start_seconds": 70.0
+      },
+      {
+        "end_seconds": 71.0,
+        "main_sampled_ms": 26.0,
+        "start_seconds": 70.5
+      },
+      {
+        "end_seconds": 71.5,
+        "main_sampled_ms": 213.0,
+        "start_seconds": 71.0
+      },
+      {
+        "end_seconds": 72.0,
+        "main_sampled_ms": 42.0,
+        "start_seconds": 71.5
+      },
+      {
+        "end_seconds": 72.5,
+        "main_sampled_ms": 16.0,
+        "start_seconds": 72.0
+      },
+      {
+        "end_seconds": 73.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 72.5
+      },
+      {
+        "end_seconds": 73.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 73.0
+      },
+      {
+        "end_seconds": 74.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 73.5
+      },
+      {
+        "end_seconds": 74.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 74.0
+      },
+      {
+        "end_seconds": 75.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 74.5
+      },
+      {
+        "end_seconds": 75.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 75.0
+      },
+      {
+        "end_seconds": 76.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 75.5
+      },
+      {
+        "end_seconds": 76.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 76.0
+      },
+      {
+        "end_seconds": 77.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 76.5
+      },
+      {
+        "end_seconds": 77.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 77.0
+      },
+      {
+        "end_seconds": 78.0,
+        "main_sampled_ms": 217.0,
+        "start_seconds": 77.5
+      },
+      {
+        "end_seconds": 78.5,
+        "main_sampled_ms": 216.0,
+        "start_seconds": 78.0
+      },
+      {
+        "end_seconds": 79.0,
+        "main_sampled_ms": 192.0,
+        "start_seconds": 78.5
+      },
+      {
+        "end_seconds": 79.5,
+        "main_sampled_ms": 210.0,
+        "start_seconds": 79.0
+      },
+      {
+        "end_seconds": 80.0,
+        "main_sampled_ms": 208.0,
+        "start_seconds": 79.5
+      },
+      {
+        "end_seconds": 80.5,
+        "main_sampled_ms": 170.0,
+        "start_seconds": 80.0
+      },
+      {
+        "end_seconds": 81.0,
+        "main_sampled_ms": 213.0,
+        "start_seconds": 80.5
+      },
+      {
+        "end_seconds": 81.5,
+        "main_sampled_ms": 188.0,
+        "start_seconds": 81.0
+      },
+      {
+        "end_seconds": 82.0,
+        "main_sampled_ms": 221.0,
+        "start_seconds": 81.5
+      },
+      {
+        "end_seconds": 82.5,
+        "main_sampled_ms": 156.0,
+        "start_seconds": 82.0
+      },
+      {
+        "end_seconds": 83.0,
+        "main_sampled_ms": 140.0,
+        "start_seconds": 82.5
+      },
+      {
+        "end_seconds": 83.5,
+        "main_sampled_ms": 87.0,
+        "start_seconds": 83.0
+      },
+      {
+        "end_seconds": 84.0,
+        "main_sampled_ms": 76.0,
+        "start_seconds": 83.5
+      },
+      {
+        "end_seconds": 84.5,
+        "main_sampled_ms": 64.0,
+        "start_seconds": 84.0
+      },
+      {
+        "end_seconds": 85.0,
+        "main_sampled_ms": 121.0,
+        "start_seconds": 84.5
+      },
+      {
+        "end_seconds": 85.5,
+        "main_sampled_ms": 53.0,
+        "start_seconds": 85.0
+      },
+      {
+        "end_seconds": 86.0,
+        "main_sampled_ms": 167.0,
+        "start_seconds": 85.5
+      },
+      {
+        "end_seconds": 86.5,
+        "main_sampled_ms": 71.0,
+        "start_seconds": 86.0
+      },
+      {
+        "end_seconds": 87.0,
+        "main_sampled_ms": 146.0,
+        "start_seconds": 86.5
+      },
+      {
+        "end_seconds": 87.5,
+        "main_sampled_ms": 56.0,
+        "start_seconds": 87.0
+      },
+      {
+        "end_seconds": 88.0,
+        "main_sampled_ms": 132.0,
+        "start_seconds": 87.5
+      },
+      {
+        "end_seconds": 88.5,
+        "main_sampled_ms": 217.0,
+        "start_seconds": 88.0
+      },
+      {
+        "end_seconds": 89.0,
+        "main_sampled_ms": 211.0,
+        "start_seconds": 88.5
+      },
+      {
+        "end_seconds": 89.5,
+        "main_sampled_ms": 205.0,
+        "start_seconds": 89.0
+      },
+      {
+        "end_seconds": 90.0,
+        "main_sampled_ms": 185.0,
+        "start_seconds": 89.5
+      },
+      {
+        "end_seconds": 90.5,
+        "main_sampled_ms": 36.0,
+        "start_seconds": 90.0
+      },
+      {
+        "end_seconds": 91.0,
+        "main_sampled_ms": 93.0,
+        "start_seconds": 90.5
+      },
+      {
+        "end_seconds": 91.5,
+        "main_sampled_ms": 103.0,
+        "start_seconds": 91.0
+      },
+      {
+        "end_seconds": 92.0,
+        "main_sampled_ms": 160.0,
+        "start_seconds": 91.5
+      },
+      {
+        "end_seconds": 92.5,
+        "main_sampled_ms": 103.0,
+        "start_seconds": 92.0
+      },
+      {
+        "end_seconds": 93.0,
+        "main_sampled_ms": 42.0,
+        "start_seconds": 92.5
+      },
+      {
+        "end_seconds": 93.5,
+        "main_sampled_ms": 3.0,
+        "start_seconds": 93.0
+      },
+      {
+        "end_seconds": 94.0,
+        "main_sampled_ms": 102.0,
+        "start_seconds": 93.5
+      },
+      {
+        "end_seconds": 94.5,
+        "main_sampled_ms": 203.0,
+        "start_seconds": 94.0
+      },
+      {
+        "end_seconds": 95.0,
+        "main_sampled_ms": 203.0,
+        "start_seconds": 94.5
+      },
+      {
+        "end_seconds": 95.5,
+        "main_sampled_ms": 144.0,
+        "start_seconds": 95.0
+      },
+      {
+        "end_seconds": 96.0,
+        "main_sampled_ms": 136.0,
+        "start_seconds": 95.5
+      },
+      {
+        "end_seconds": 96.5,
+        "main_sampled_ms": 116.0,
+        "start_seconds": 96.0
+      },
+      {
+        "end_seconds": 97.0,
+        "main_sampled_ms": 69.0,
+        "start_seconds": 96.5
+      },
+      {
+        "end_seconds": 97.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 97.0
+      },
+      {
+        "end_seconds": 98.0,
+        "main_sampled_ms": 131.0,
+        "start_seconds": 97.5
+      },
+      {
+        "end_seconds": 98.5,
+        "main_sampled_ms": 7.0,
+        "start_seconds": 98.0
+      },
+      {
+        "end_seconds": 99.0,
+        "main_sampled_ms": 136.0,
+        "start_seconds": 98.5
+      },
+      {
+        "end_seconds": 99.5,
+        "main_sampled_ms": 32.0,
+        "start_seconds": 99.0
+      },
+      {
+        "end_seconds": 100.0,
+        "main_sampled_ms": 200.0,
+        "start_seconds": 99.5
+      },
+      {
+        "end_seconds": 100.5,
+        "main_sampled_ms": 173.0,
+        "start_seconds": 100.0
+      },
+      {
+        "end_seconds": 101.0,
+        "main_sampled_ms": 119.0,
+        "start_seconds": 100.5
+      },
+      {
+        "end_seconds": 101.5,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 101.0
+      },
+      {
+        "end_seconds": 102.0,
+        "main_sampled_ms": 1.0,
+        "start_seconds": 101.5
+      },
+      {
+        "end_seconds": 102.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 102.0
+      },
+      {
+        "end_seconds": 103.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 102.5
+      },
+      {
+        "end_seconds": 103.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 103.0
+      },
+      {
+        "end_seconds": 104.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 103.5
+      },
+      {
+        "end_seconds": 104.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 104.0
+      },
+      {
+        "end_seconds": 105.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 104.5
+      },
+      {
+        "end_seconds": 105.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 105.0
+      },
+      {
+        "end_seconds": 106.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 105.5
+      },
+      {
+        "end_seconds": 106.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 106.0
+      },
+      {
+        "end_seconds": 107.0,
+        "main_sampled_ms": 2.0,
+        "start_seconds": 106.5
+      },
+      {
+        "end_seconds": 107.5,
+        "main_sampled_ms": 153.0,
+        "start_seconds": 107.0
+      },
+      {
+        "end_seconds": 108.0,
+        "main_sampled_ms": 59.0,
+        "start_seconds": 107.5
+      },
+      {
+        "end_seconds": 108.5,
+        "main_sampled_ms": 210.0,
+        "start_seconds": 108.0
+      },
+      {
+        "end_seconds": 109.0,
+        "main_sampled_ms": 163.0,
+        "start_seconds": 108.5
+      },
+      {
+        "end_seconds": 109.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 109.0
+      },
+      {
+        "end_seconds": 110.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 109.5
+      },
+      {
+        "end_seconds": 110.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 110.0
+      },
+      {
+        "end_seconds": 111.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 110.5
+      },
+      {
+        "end_seconds": 111.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 111.0
+      },
+      {
+        "end_seconds": 112.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 111.5
+      },
+      {
+        "end_seconds": 112.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 112.0
+      },
+      {
+        "end_seconds": 113.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 112.5
+      },
+      {
+        "end_seconds": 113.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 113.0
+      },
+      {
+        "end_seconds": 114.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 113.5
+      },
+      {
+        "end_seconds": 114.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 114.0
+      },
+      {
+        "end_seconds": 115.0,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 114.5
+      },
+      {
+        "end_seconds": 115.5,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 115.0
+      },
+      {
+        "end_seconds": 115.973998,
+        "main_sampled_ms": 0.0,
+        "start_seconds": 115.5
+      }
+    ],
+    "cpu_evidence_available": true,
+    "exported_sample_count": 16380,
+    "inclusive_top": [
+      {
+        "frame": "start",
+        "sampled_ms": 12361.0
+      },
+      {
+        "frame": "static App.main()",
+        "sampled_ms": 12326.0
+      },
+      {
+        "frame": "main",
+        "sampled_ms": 12323.0
+      },
+      {
+        "frame": "runApp<A>(_:)",
+        "sampled_ms": 12311.0
+      },
+      {
+        "frame": "UIApplicationMain",
+        "sampled_ms": 12306.0
+      },
+      {
+        "frame": "closure #1 in KitRendererCommon(_:)",
+        "sampled_ms": 12306.0
+      },
+      {
+        "frame": "GSEventRunModal",
+        "sampled_ms": 12302.0
+      },
+      {
+        "frame": "_CFRunLoopRunSpecificWithOptions",
+        "sampled_ms": 12302.0
+      },
+      {
+        "frame": "__CFRunLoopRun",
+        "sampled_ms": 12297.0
+      },
+      {
+        "frame": "UC::DriverCore::continueProcessing()",
+        "sampled_ms": 10261.0
+      },
+      {
+        "frame": "schedulerStepScheduledMainSectionContinue",
+        "sampled_ms": 10136.0
+      },
+      {
+        "frame": "_UIUpdateSequenceRunNext",
+        "sampled_ms": 10107.0
+      }
+    ],
+    "leaf_top": [
+      {
+        "frame": "objc_msgSend",
+        "sampled_ms": 587.0
+      },
+      {
+        "frame": "AG::Graph::UpdateStack::update()",
+        "sampled_ms": 558.0
+      },
+      {
+        "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+        "sampled_ms": 451.0
+      },
+      {
+        "frame": "AG::Subgraph::update(unsigned int)",
+        "sampled_ms": 348.0
+      },
+      {
+        "frame": "_platform_memmove",
+        "sampled_ms": 245.0
+      },
+      {
+        "frame": "mach_msg2_trap",
+        "sampled_ms": 226.0
+      },
+      {
+        "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+        "sampled_ms": 154.0
+      },
+      {
+        "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+        "sampled_ms": 131.0
+      },
+      {
+        "frame": "swift_release",
+        "sampled_ms": 127.0
+      },
+      {
+        "frame": "<deduplicated_symbol>",
+        "sampled_ms": 115.0
+      },
+      {
+        "frame": "swift_retain",
+        "sampled_ms": 110.0
+      },
+      {
+        "frame": "swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+        "sampled_ms": 109.0
+      }
+    ],
+    "main_sample_count": 13013,
+    "main_sampled_ms": 13013.0,
+    "main_samples_without_weight": 0,
+    "nearest_app_top": [
+      {
+        "frame": "main",
+        "sampled_ms": 12055.0
+      },
+      {
+        "frame": "TransactionActor.fetchAll()",
+        "sampled_ms": 119.0
+      },
+      {
+        "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+        "sampled_ms": 94.0
+      },
+      {
+        "frame": "specialized PINService.derivePBKDF2(pin:salt:)",
+        "sampled_ms": 91.0
+      },
+      {
+        "frame": "TransactionSnapshot.init(_:)",
+        "sampled_ms": 84.0
+      },
+      {
+        "frame": "PieChartDataService.groupByCategory(_:)",
+        "sampled_ms": 45.0
+      },
+      {
+        "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+        "sampled_ms": 36.0
+      },
+      {
+        "frame": "__swift_instantiateConcreteTypeFromMangledNameV2",
+        "sampled_ms": 20.0
+      },
+      {
+        "frame": "ExplorerBreakdown.init(transactions:categories:period:dataType:now:calendar:service:)",
+        "sampled_ms": 18.0
+      },
+      {
+        "frame": "closure #1 in variable initialization expression of static AppContainer.shared",
+        "sampled_ms": 14.0
+      },
+      {
+        "frame": "<deduplicated_symbol>",
+        "sampled_ms": 11.0
+      },
+      {
+        "frame": "__swift_instantiateConcreteTypeFromMangledNameAbstractV2",
+        "sampled_ms": 11.0
+      }
+    ],
+    "samples_without_stack": 1,
+    "window_samples_without_thread": 0
+  },
+  "events": [
+    {
+      "metadata": "count=3 main=1 metadata=",
+      "name": "Dashboard.load.request",
+      "time_seconds": 31.152861125
+    },
+    {
+      "metadata": "count=2 main=1 metadata=",
+      "name": "Dashboard.load.skipped",
+      "time_seconds": 31.152868041
+    },
+    {
+      "metadata": "count=1 main=1 metadata=",
+      "name": "Dashboard.reload.request",
+      "time_seconds": 31.153078625
+    },
+    {
+      "metadata": "count=4 main=1 metadata=",
+      "name": "Dashboard.load.request",
+      "time_seconds": 31.153087208
+    },
+    {
+      "metadata": "count=5 main=1 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 31.180331666
+    },
+    {
+      "metadata": "count=6 main=0 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 31.182834083
+    },
+    {
+      "metadata": "count=4 main=1 metadata=kind=SafeToSpendWidget",
+      "name": "WidgetKit.reload.request",
+      "time_seconds": 31.18907125
+    },
+    {
+      "metadata": "count=5 main=1 metadata=kind=DailyLoggingHabitWidget",
+      "name": "WidgetKit.reload.request",
+      "time_seconds": 31.209706083
+    },
+    {
+      "metadata": "count=7 main=1 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 51.387454666
+    },
+    {
+      "metadata": "count=1 main=1 metadata=",
+      "name": "TransactionActor.fetchAll.cache.invalidated",
+      "time_seconds": 59.709387583
+    },
+    {
+      "metadata": "count=2 main=1 metadata=",
+      "name": "TransactionActor.fetchAll.store",
+      "time_seconds": 59.709417
+    },
+    {
+      "metadata": "count=6 main=1 metadata=kind=SafeToSpendWidget",
+      "name": "WidgetKit.reload.request",
+      "time_seconds": 59.822218708
+    },
+    {
+      "metadata": "count=1 main=1 metadata=revision=1",
+      "name": "DataChangedSignal.bump",
+      "time_seconds": 59.82238275
+    },
+    {
+      "metadata": "count=1 main=1 metadata=shell=iPhone revision=1",
+      "name": "Shell.refreshFanOut",
+      "time_seconds": 59.825052083
+    },
+    {
+      "metadata": "count=2 main=1 metadata=",
+      "name": "Dashboard.reload.request",
+      "time_seconds": 59.825055
+    },
+    {
+      "metadata": "count=5 main=1 metadata=",
+      "name": "Dashboard.load.request",
+      "time_seconds": 59.825057583
+    },
+    {
+      "metadata": "count=1 main=1 metadata=",
+      "name": "Activity.reload.request",
+      "time_seconds": 59.825210958
+    },
+    {
+      "metadata": "count=2 main=1 metadata=",
+      "name": "Activity.load.request",
+      "time_seconds": 59.825213416
+    },
+    {
+      "metadata": "count=1 main=1 metadata=",
+      "name": "Insights.load.request",
+      "time_seconds": 59.825217375
+    },
+    {
+      "metadata": "count=8 main=1 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 59.825237583
+    },
+    {
+      "metadata": "count=9 main=1 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 59.825750833
+    },
+    {
+      "metadata": "count=10 main=0 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 59.826018875
+    },
+    {
+      "metadata": "count=11 main=0 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 59.826225583
+    },
+    {
+      "metadata": "count=12 main=0 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 59.832473375
+    },
+    {
+      "metadata": "count=7 main=1 metadata=kind=DailyLoggingHabitWidget",
+      "name": "WidgetKit.reload.request",
+      "time_seconds": 59.901544166
+    },
+    {
+      "metadata": "count=8 main=0 metadata=kind=DailyLoggingHabitWidget",
+      "name": "WidgetKit.reload.request",
+      "time_seconds": 59.908139875
+    },
+    {
+      "metadata": "count=13 main=0 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 59.908173041
+    },
+    {
+      "metadata": "count=9 main=1 metadata=kind=SafeToSpendWidget",
+      "name": "WidgetKit.reload.request",
+      "time_seconds": 60.053199166
+    },
+    {
+      "metadata": "count=1 main=1 metadata=source=payCycleAware",
+      "name": "Insights.load.trigger",
+      "time_seconds": 71.109853125
+    },
+    {
+      "metadata": "count=2 main=1 metadata=",
+      "name": "Insights.load.request",
+      "time_seconds": 71.1098585
+    },
+    {
+      "metadata": "count=14 main=0 metadata=",
+      "name": "TransactionActor.fetchAll.cache",
+      "time_seconds": 71.22063275
+    },
+    {
+      "metadata": "count=6 main=1 metadata=",
+      "name": "Dashboard.load.request",
+      "time_seconds": 107.134057958
+    },
+    {
+      "metadata": "count=3 main=1 metadata=",
+      "name": "Dashboard.load.skipped",
+      "time_seconds": 107.134064041
+    },
+    {
+      "metadata": "count=7 main=1 metadata=",
+      "name": "Dashboard.load.request",
+      "time_seconds": 107.134073208
+    },
+    {
+      "metadata": "count=4 main=1 metadata=",
+      "name": "Dashboard.load.skipped",
+      "time_seconds": 107.134074958
+    }
+  ],
+  "focused_windows": {
+    "home_reload": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 31.150000000000002,
+            "main_sampled_ms": 50.0,
+            "start_seconds": 31.05
+          },
+          {
+            "end_seconds": 31.25,
+            "main_sampled_ms": 88.0,
+            "start_seconds": 31.150000000000002
+          },
+          {
+            "end_seconds": 31.35,
+            "main_sampled_ms": 17.0,
+            "start_seconds": 31.25
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 125.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 112.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 112.0
+          },
+          {
+            "frame": "schedulerStepScheduledMainSectionContinue",
+            "sampled_ms": 112.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "0x247c70d41",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateComponents(_:from:in:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "-[UIView traitCollection]",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "__psynch_cvbroad",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 155,
+        "main_sampled_ms": 155.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 119.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+            "sampled_ms": 14.0
+          },
+          {
+            "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "AppSettings.payCycleStartDay.setter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FileManagerBackupStorage.containerURL()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ProfileView.dataSectionContent.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ProfileViewModel.memberSince.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ReminderService.scheduleMonthlyRecap(cycleHasActivity:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "SafeToSpendSnapshot.write()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "TransactionActor.fetchActiveRecurrenceRules()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in ProfileView.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in closure #1 in ProfilePayCycleSection.body.getter",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 31.35,
+      "start_seconds": 31.05
+    },
+    "insights_load": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 71.19999999999999,
+            "main_sampled_ms": 82.0,
+            "start_seconds": 71.1
+          },
+          {
+            "end_seconds": 71.3,
+            "main_sampled_ms": 76.0,
+            "start_seconds": 71.19999999999999
+          },
+          {
+            "end_seconds": 71.39999999999999,
+            "main_sampled_ms": 3.0,
+            "start_seconds": 71.3
+          },
+          {
+            "end_seconds": 71.4,
+            "main_sampled_ms": 0.0,
+            "start_seconds": 71.39999999999999
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 139.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 139.0
+          },
+          {
+            "frame": "schedulerStepScheduledMainSectionContinue",
+            "sampled_ms": 139.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "find(_:key:filter:)",
+            "sampled_ms": 9.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "swift_getGenericMetadata",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "iokit_user_client_trap",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::LayoutDescriptor::Compare::operator()(unsigned char const*, unsigned char const*, unsigned char const*, unsigned long, unsigned long, unsigned int)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "__CFStringCreateImmutableFunnel3",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_malloc_tc",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 161,
+        "main_sampled_ms": 161.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 130.0
+          },
+          {
+            "frame": "MonthlyRecapCard.plain(_:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "TransactionActor.fetchCategories()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in closure #3 in closure #1 in BreakdownExplorerSection.body.getter",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "CategoryTrendRow.accessibilityValue.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FinancialHealthService.compute(transactions:expenseTransactions:budgetedCategories:payCycleStartDay:ignoreSubscriptions:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FinancialHealthService.sumExpenses(_:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "MonthlyRecapCard.range.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "StatisticalAverageService.calculate(transactions:expenseTransactions:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "StatisticalAverageService.sumExpenses(_:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameV2",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 71.4,
+      "start_seconds": 71.1
+    },
+    "largest_explorer_change": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 98.75,
+            "main_sampled_ms": 29.0,
+            "start_seconds": 98.65
+          },
+          {
+            "end_seconds": 98.85000000000001,
+            "main_sampled_ms": 99.0,
+            "start_seconds": 98.75
+          },
+          {
+            "end_seconds": 98.9,
+            "main_sampled_ms": 8.0,
+            "start_seconds": 98.85000000000001
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "__CFMachPortPerform",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "__CFRunLoopDoSource1",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 134.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 134.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "NSDecimal._divide(by:)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::data::zone::realloc_bytes(AG::data::ptr<void>&, unsigned int, unsigned int, unsigned int)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "NSDecimal.copyVariableLengthInteger(_:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 136,
+        "main_sampled_ms": 136.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 95.0
+          },
+          {
+            "frame": "PieChartDataService.groupByCategory(_:)",
+            "sampled_ms": 16.0
+          },
+          {
+            "frame": "ExplorerBreakdown.init(transactions:categories:period:dataType:now:calendar:service:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "CompassViewModel.explorerPeriod.setter",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "CategoryTrendRow.accessibilityValue.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "CategoryTrendRow.trendBadge.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "NSDecimal.formattedEUR(currency:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in CategoryTrendRow.categoryIcon.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #2 in closure #1 in closure #1 in CategoryTrendRow.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for CategoryTrendRow",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "destroy for TransactionSnapshot",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 98.9,
+      "start_seconds": 98.65
+    },
+    "microhang_lead_in": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 26.200000000000003,
+            "main_sampled_ms": 0.0,
+            "start_seconds": 26.1
+          },
+          {
+            "end_seconds": 26.3,
+            "main_sampled_ms": 11.0,
+            "start_seconds": 26.200000000000003
+          },
+          {
+            "end_seconds": 26.400000000000002,
+            "main_sampled_ms": 30.0,
+            "start_seconds": 26.3
+          },
+          {
+            "end_seconds": 26.5,
+            "main_sampled_ms": 58.0,
+            "start_seconds": 26.400000000000002
+          },
+          {
+            "end_seconds": 26.6,
+            "main_sampled_ms": 77.0,
+            "start_seconds": 26.5
+          },
+          {
+            "end_seconds": 26.700000000000003,
+            "main_sampled_ms": 32.0,
+            "start_seconds": 26.6
+          },
+          {
+            "end_seconds": 26.8,
+            "main_sampled_ms": 0.0,
+            "start_seconds": 26.700000000000003
+          },
+          {
+            "end_seconds": 26.9,
+            "main_sampled_ms": 1.0,
+            "start_seconds": 26.8
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 199.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 194.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 194.0
+          },
+          {
+            "frame": "schedulerStepScheduledMainSectionContinue",
+            "sampled_ms": 194.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "find(_:key:filter:)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "objc_claimAutoreleasedReturnValue",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "__CFSearchStringROM",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_xzm_malloc_tc",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "__CFStringHash",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_xzone_malloc_freelist_outlined",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "class_copyMethodList",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 209,
+        "main_sampled_ms": 209.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "BiometricAuthService.checkBiometrics()",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "FileManagerBackupStorage.containerURL()",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameAbstractV2",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameV2",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "closure #1 in ProfileView.body.getter",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "ProfileViewModel.displayName.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "assignWithCopy for ProfileSecuritySection",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #3 in ProfileReminderSection.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "type metadata accessor for ProfileHeader",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "type metadata accessor for Query<CategoryModel, [CategoryModel]>",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 26.9,
+      "start_seconds": 26.1
+    },
+    "mutation_fanout": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 59.7,
+            "main_sampled_ms": 38.0,
+            "start_seconds": 59.6
+          },
+          {
+            "end_seconds": 59.800000000000004,
+            "main_sampled_ms": 98.0,
+            "start_seconds": 59.7
+          },
+          {
+            "end_seconds": 59.9,
+            "main_sampled_ms": 92.0,
+            "start_seconds": 59.800000000000004
+          },
+          {
+            "end_seconds": 60.0,
+            "main_sampled_ms": 91.0,
+            "start_seconds": 59.9
+          },
+          {
+            "end_seconds": 60.1,
+            "main_sampled_ms": 68.0,
+            "start_seconds": 60.0
+          },
+          {
+            "end_seconds": 60.2,
+            "main_sampled_ms": 19.0,
+            "start_seconds": 60.1
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 286.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 217.0
+          },
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 148.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "swift_retain",
+            "sampled_ms": 32.0
+          },
+          {
+            "frame": "swift_release",
+            "sampled_ms": 21.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 10.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateComponents(_:from:in:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "destroy for ClosedRange<>.Index",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "_xzm_xzone_malloc_tiny",
+            "sampled_ms": 4.0
+          }
+        ],
+        "main_sample_count": 406,
+        "main_sampled_ms": 406.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 180.0
+          },
+          {
+            "frame": "TransactionActor.fetchAll()",
+            "sampled_ms": 71.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+            "sampled_ms": 59.0
+          },
+          {
+            "frame": "TransactionSnapshot.init(_:)",
+            "sampled_ms": 36.0
+          },
+          {
+            "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+            "sampled_ms": 20.0
+          },
+          {
+            "frame": "TransactionActor.add(_:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "TransactionModel.__deallocating_deinit",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "specialized static DailyCheckInService.dateKey(for:calendar:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "FinancialHealthService.compute(transactions:expenseTransactions:budgetedCategories:payCycleStartDay:ignoreSubscriptions:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "SafeToSpendSnapshot.write()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "TransactionActor.fetchCategories()",
+            "sampled_ms": 2.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 60.2,
+      "start_seconds": 59.6
+    }
+  },
+  "interval_stats": {
+    "Activity.derivedFilters": {
+      "count": 1,
+      "max_ms": 1.6399590000000002,
+      "median_ms": 1.6399590000000002,
+      "min_ms": 1.6399590000000002
+    },
+    "Activity.group": {
+      "count": 2,
+      "max_ms": 105.12225,
+      "median_ms": 103.16247949999999,
+      "min_ms": 101.202709
+    },
+    "Activity.group.publish": {
+      "count": 1,
+      "max_ms": 0.40858300000000003,
+      "median_ms": 0.40858300000000003,
+      "min_ms": 0.40858300000000003
+    },
+    "Activity.load": {
+      "count": 1,
+      "max_ms": 227.525125,
+      "median_ms": 227.525125,
+      "min_ms": 227.525125
+    },
+    "Dashboard.anomaly": {
+      "count": 2,
+      "max_ms": 0.26487499999999997,
+      "median_ms": 0.258354,
+      "min_ms": 0.25183300000000003
+    },
+    "Dashboard.budgets": {
+      "count": 2,
+      "max_ms": 0.076875,
+      "median_ms": 0.0768335,
+      "min_ms": 0.076792
+    },
+    "Dashboard.cycleSummary": {
+      "count": 2,
+      "max_ms": 1.794333,
+      "median_ms": 1.680229,
+      "min_ms": 1.566125
+    },
+    "Dashboard.dailyCheckIn": {
+      "count": 2,
+      "max_ms": 2.9310840000000002,
+      "median_ms": 2.2762710000000004,
+      "min_ms": 1.621458
+    },
+    "Dashboard.dailyLogging": {
+      "count": 2,
+      "max_ms": 59.282000000000004,
+      "median_ms": 36.778062500000004,
+      "min_ms": 14.274125
+    },
+    "Dashboard.habitWidget": {
+      "count": 2,
+      "max_ms": 0.302416,
+      "median_ms": 0.294354,
+      "min_ms": 0.286292
+    },
+    "Dashboard.load": {
+      "count": 2,
+      "max_ms": 96.710209,
+      "median_ms": 66.636542,
+      "min_ms": 36.562875
+    },
+    "Dashboard.metrics": {
+      "count": 2,
+      "max_ms": 89.66416600000001,
+      "median_ms": 58.444353500000005,
+      "min_ms": 27.224541000000002
+    },
+    "Dashboard.quickTemplates": {
+      "count": 2,
+      "max_ms": 1.6937499999999999,
+      "median_ms": 1.3017915,
+      "min_ms": 0.909833
+    },
+    "Dashboard.recapReminder": {
+      "count": 2,
+      "max_ms": 0.9357080000000001,
+      "median_ms": 0.7980830000000001,
+      "min_ms": 0.6604580000000001
+    },
+    "Dashboard.recent": {
+      "count": 2,
+      "max_ms": 1.234833,
+      "median_ms": 0.914604,
+      "min_ms": 0.594375
+    },
+    "Dashboard.reminderPrompt": {
+      "count": 2,
+      "max_ms": 20.503041,
+      "median_ms": 13.619104,
+      "min_ms": 6.735167000000001
+    },
+    "Dashboard.safeToSpend": {
+      "count": 2,
+      "max_ms": 0.178375,
+      "median_ms": 0.1619585,
+      "min_ms": 0.145542
+    },
+    "Habit.refresh": {
+      "count": 1,
+      "max_ms": 82.22179200000001,
+      "median_ms": 82.22179200000001,
+      "min_ms": 82.22179200000001
+    },
+    "Habit.snapshot.write": {
+      "count": 3,
+      "max_ms": 0.296167,
+      "median_ms": 0.279333,
+      "min_ms": 0.159541
+    },
+    "Insights.averages": {
+      "count": 2,
+      "max_ms": 1.263583,
+      "median_ms": 1.250479,
+      "min_ms": 1.237375
+    },
+    "Insights.expenseFilter": {
+      "count": 2,
+      "max_ms": 0.560667,
+      "median_ms": 0.5522914999999999,
+      "min_ms": 0.543916
+    },
+    "Insights.explorer": {
+      "count": 8,
+      "max_ms": 27.641792,
+      "median_ms": 2.3936875,
+      "min_ms": 1.078917
+    },
+    "Insights.habits": {
+      "count": 2,
+      "max_ms": 0.807833,
+      "median_ms": 0.7846665,
+      "min_ms": 0.7615000000000001
+    },
+    "Insights.healthScore": {
+      "count": 2,
+      "max_ms": 4.883042,
+      "median_ms": 4.2019585,
+      "min_ms": 3.520875
+    },
+    "Insights.load": {
+      "count": 2,
+      "max_ms": 239.432875,
+      "median_ms": 150.34981249999998,
+      "min_ms": 61.26675
+    },
+    "Insights.monthlyRecap": {
+      "count": 2,
+      "max_ms": 1.28725,
+      "median_ms": 1.21475,
+      "min_ms": 1.14225
+    },
+    "SafeToSpend.refresh": {
+      "count": 3,
+      "max_ms": 145.08254200000002,
+      "median_ms": 112.86825,
+      "min_ms": 8.802958
+    },
+    "SafeToSpend.snapshot.write": {
+      "count": 3,
+      "max_ms": 2.7668749999999998,
+      "median_ms": 2.139417,
+      "min_ms": 1.202917
+    },
+    "TransactionActor.fetchAll": {
+      "count": 11,
+      "max_ms": 106.779,
+      "median_ms": 0.011,
+      "min_ms": 0.0045000000000000005
+    },
+    "TransactionActor.snapshots.map": {
+      "count": 1,
+      "max_ms": 39.426209,
+      "median_ms": 39.426209,
+      "min_ms": 39.426209
+    },
+    "TransactionActor.store.fetch": {
+      "count": 1,
+      "max_ms": 67.261125,
+      "median_ms": 67.261125,
+      "min_ms": 67.261125
+    }
+  },
+  "intervals": [
+    {
+      "begin_metadata": "sequence=32 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 36.562875,
+      "end_metadata": "sequence=32 main=1 outcome=completed metadata=transactions=5000",
+      "end_seconds": 31.216843625000003,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.load",
+      "start_seconds": 31.18028075,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=33 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 8.802958,
+      "end_metadata": "sequence=33 main=1 outcome=completed metadata=transactions=5000 rules=0",
+      "end_seconds": 31.189124208,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "SafeToSpend.refresh",
+      "start_seconds": 31.18032125,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=34 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.0135,
+      "end_metadata": "sequence=34 main=1 outcome=completed metadata=items=5000 source=cache revision=0 generation=1",
+      "end_seconds": 31.180339666000002,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 31.180326166,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=35 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4a9c) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.011,
+      "end_metadata": "sequence=35 main=0 outcome=completed metadata=items=5000 source=cache revision=0 generation=1",
+      "end_seconds": 31.182839875,
+      "end_thread": "PersonalFinanceTraker (0xaf4a9c) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 31.182828875,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=36 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 2.7668749999999998,
+      "end_metadata": "sequence=36 main=1 outcome=completed metadata=transactions=5000 rules=0",
+      "end_seconds": 31.189113791,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "SafeToSpend.snapshot.write",
+      "start_seconds": 31.186346916,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=37 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 27.224541000000002,
+      "end_metadata": "sequence=37 main=1 outcome=completed metadata=",
+      "end_seconds": 31.216836666,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.metrics",
+      "start_seconds": 31.189612125,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=38 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4a98) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.594375,
+      "end_metadata": "sequence=38 main=0 outcome=completed metadata=sync_wall_ns=587334 thread_cpu_ns=557875",
+      "end_seconds": 31.190219332999998,
+      "end_thread": "PersonalFinanceTraker (0xaf4a98) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.recent",
+      "start_seconds": 31.189624958,
+      "synchronous_wall_ms": 0.587334,
+      "thread_cpu_ms": 0.557875
+    },
+    {
+      "begin_metadata": "sequence=39 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.145542,
+      "end_metadata": "sequence=39 main=1 outcome=completed metadata=sync_wall_ns=141375 thread_cpu_ns=141000",
+      "end_seconds": 31.190381833,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.safeToSpend",
+      "start_seconds": 31.190236291,
+      "synchronous_wall_ms": 0.141375,
+      "thread_cpu_ms": 0.141
+    },
+    {
+      "begin_metadata": "sequence=40 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.566125,
+      "end_metadata": "sequence=40 main=1 outcome=completed metadata=sync_wall_ns=1562500 thread_cpu_ns=1562042",
+      "end_seconds": 31.191962041,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.cycleSummary",
+      "start_seconds": 31.190395916,
+      "synchronous_wall_ms": 1.5625,
+      "thread_cpu_ms": 1.562042
+    },
+    {
+      "begin_metadata": "sequence=41 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.6604580000000001,
+      "end_metadata": "sequence=41 main=1 outcome=completed metadata=sync_wall_ns=656333 thread_cpu_ns=219500",
+      "end_seconds": 31.192630958,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.recapReminder",
+      "start_seconds": 31.1919705,
+      "synchronous_wall_ms": 0.656333,
+      "thread_cpu_ms": 0.2195
+    },
+    {
+      "begin_metadata": "sequence=42 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.909833,
+      "end_metadata": "sequence=42 main=1 outcome=completed metadata=sync_wall_ns=906125 thread_cpu_ns=905958",
+      "end_seconds": 31.193543541,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.quickTemplates",
+      "start_seconds": 31.192633708,
+      "synchronous_wall_ms": 0.906125,
+      "thread_cpu_ms": 0.905958
+    },
+    {
+      "begin_metadata": "sequence=43 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 14.274125,
+      "end_metadata": "sequence=43 main=1 outcome=completed metadata=sync_wall_ns=14269625 thread_cpu_ns=14042667",
+      "end_seconds": 31.207820583,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.dailyLogging",
+      "start_seconds": 31.193546458,
+      "synchronous_wall_ms": 14.269625,
+      "thread_cpu_ms": 14.042667
+    },
+    {
+      "begin_metadata": "sequence=44 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.621458,
+      "end_metadata": "sequence=44 main=1 outcome=completed metadata=sync_wall_ns=1618333 thread_cpu_ns=1618166",
+      "end_seconds": 31.209445083,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.dailyCheckIn",
+      "start_seconds": 31.207823625,
+      "synchronous_wall_ms": 1.618333,
+      "thread_cpu_ms": 1.618166
+    },
+    {
+      "begin_metadata": "sequence=45 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.286292,
+      "end_metadata": "sequence=45 main=1 outcome=completed metadata=sync_wall_ns=283166 thread_cpu_ns=82959",
+      "end_seconds": 31.209733707999998,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.habitWidget",
+      "start_seconds": 31.209447416,
+      "synchronous_wall_ms": 0.283166,
+      "thread_cpu_ms": 0.082959
+    },
+    {
+      "begin_metadata": "sequence=46 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.279333,
+      "end_metadata": "sequence=46 main=1 outcome=completed metadata=templates=0 bytes=159",
+      "end_seconds": 31.209729416000002,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Habit.snapshot.write",
+      "start_seconds": 31.209450083,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=47 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.25183300000000003,
+      "end_metadata": "sequence=47 main=1 outcome=completed metadata=sync_wall_ns=248750 thread_cpu_ns=248542",
+      "end_seconds": 31.209987708,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.anomaly",
+      "start_seconds": 31.209735875,
+      "synchronous_wall_ms": 0.24875,
+      "thread_cpu_ms": 0.248542
+    },
+    {
+      "begin_metadata": "sequence=48 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.076792,
+      "end_metadata": "sequence=48 main=1 outcome=completed metadata=sync_wall_ns=73958 thread_cpu_ns=73667",
+      "end_seconds": 31.210072083,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.budgets",
+      "start_seconds": 31.209995291,
+      "synchronous_wall_ms": 0.073958,
+      "thread_cpu_ms": 0.073667
+    },
+    {
+      "begin_metadata": "sequence=49 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 6.735167000000001,
+      "end_metadata": "sequence=49 main=1 outcome=completed metadata=sync_wall_ns=6731875 thread_cpu_ns=6731584",
+      "end_seconds": 31.216830583,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.reminderPrompt",
+      "start_seconds": 31.210095416,
+      "synchronous_wall_ms": 6.731875,
+      "thread_cpu_ms": 6.731584
+    },
+    {
+      "begin_metadata": "sequence=50 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.010166999999999999,
+      "end_metadata": "sequence=50 main=1 outcome=completed metadata=items=5000 source=cache revision=0 generation=1",
+      "end_seconds": 51.387459625,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 51.387449458,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=51 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 112.86825,
+      "end_metadata": "sequence=51 main=1 outcome=completed metadata=transactions=5001 rules=0",
+      "end_seconds": 59.822271666,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "SafeToSpend.refresh",
+      "start_seconds": 59.709403416,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=52 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 106.779,
+      "end_metadata": "sequence=52 main=1 outcome=completed metadata=items=5001 source=store revision=2 generation=2",
+      "end_seconds": 59.816191708000005,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 59.709412708,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=53 main=1 metadata=revision=2",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 67.261125,
+      "end_metadata": "sequence=53 main=1 outcome=completed metadata=items=5001",
+      "end_seconds": 59.776755166,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.store.fetch",
+      "start_seconds": 59.709494041,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=54 main=1 metadata=items=5001 revision=2",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 39.426209,
+      "end_metadata": "sequence=54 main=1 outcome=completed metadata=",
+      "end_seconds": 59.816186875,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.snapshots.map",
+      "start_seconds": 59.776760666,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=55 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 2.139417,
+      "end_metadata": "sequence=55 main=1 outcome=completed metadata=transactions=5001 rules=0",
+      "end_seconds": 59.822261208,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "SafeToSpend.snapshot.write",
+      "start_seconds": 59.820121791,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=56 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.007417,
+      "end_metadata": "sequence=56 main=1 outcome=completed metadata=items=5001 source=cache revision=2 generation=2",
+      "end_seconds": 59.825241208,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 59.825233791,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=57 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 96.710209,
+      "end_metadata": "sequence=57 main=1 outcome=completed metadata=transactions=5001",
+      "end_seconds": 59.922447,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.load",
+      "start_seconds": 59.825736791,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=58 main=1 metadata=generation=2",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 227.525125,
+      "end_metadata": "sequence=58 main=1 outcome=completed metadata=transactions=5001 generation=2",
+      "end_seconds": 60.053270624999996,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Activity.load",
+      "start_seconds": 59.8257455,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=59 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.004792,
+      "end_metadata": "sequence=59 main=1 outcome=completed metadata=items=5001 source=cache revision=2 generation=2",
+      "end_seconds": 59.825753958,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 59.825749166,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=60 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 239.432875,
+      "end_metadata": "sequence=60 main=1 outcome=completed metadata=transactions=5001",
+      "end_seconds": 60.065362666,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.load",
+      "start_seconds": 59.825929791,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=61 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4bc3) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 82.22179200000001,
+      "end_metadata": "sequence=61 main=0 outcome=completed metadata=transactions=5001",
+      "end_seconds": 59.90816375,
+      "end_thread": "PersonalFinanceTraker (0xaf4992) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Habit.refresh",
+      "start_seconds": 59.825941958,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=62 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4bc3) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.006709,
+      "end_metadata": "sequence=62 main=0 outcome=completed metadata=items=5001 source=cache revision=2 generation=2",
+      "end_seconds": 59.826023125,
+      "end_thread": "PersonalFinanceTraker (0xaf4bc3) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 59.826016416,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=63 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4bc5) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.02425,
+      "end_metadata": "sequence=63 main=0 outcome=completed metadata=items=5001 source=cache revision=2 generation=2",
+      "end_seconds": 59.826239208000004,
+      "end_thread": "PersonalFinanceTraker (0xaf4bc5) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 59.826214958,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=64 main=1 metadata=items=5001",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.6399590000000002,
+      "end_metadata": "sequence=64 main=1 outcome=completed metadata=",
+      "end_seconds": 59.828049125,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Activity.derivedFilters",
+      "start_seconds": 59.826409166,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=65 main=0 metadata=items=5000 travels=0",
+      "begin_thread": "PersonalFinanceTraker (0xaf4a99) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 101.202709,
+      "end_metadata": "sequence=65 main=0 outcome=completed metadata=",
+      "end_seconds": 59.93363575,
+      "end_thread": "PersonalFinanceTraker (0xaf4a99) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Activity.group",
+      "start_seconds": 59.832433041,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=66 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4bf9) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.045250000000000005,
+      "end_metadata": "sequence=66 main=0 outcome=completed metadata=items=5001 source=cache revision=2 generation=2",
+      "end_seconds": 59.8324875,
+      "end_thread": "PersonalFinanceTraker (0xaf4bf9) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 59.83244225,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=67 main=0 metadata=items=5001 travels=0",
+      "begin_thread": "PersonalFinanceTraker (0xaf4bf9) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 105.12225,
+      "end_metadata": "sequence=67 main=0 outcome=completed metadata=",
+      "end_seconds": 59.937666375,
+      "end_thread": "PersonalFinanceTraker (0xaf4bf9) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Activity.group",
+      "start_seconds": 59.832544125,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=68 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 89.66416600000001,
+      "end_metadata": "sequence=68 main=1 outcome=completed metadata=",
+      "end_seconds": 59.922440916,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.metrics",
+      "start_seconds": 59.83277675,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=69 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4bc4) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.234833,
+      "end_metadata": "sequence=69 main=0 outcome=completed metadata=sync_wall_ns=1219666 thread_cpu_ns=1060334",
+      "end_seconds": 59.834377208,
+      "end_thread": "PersonalFinanceTraker (0xaf4bc4) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.recent",
+      "start_seconds": 59.833142375,
+      "synchronous_wall_ms": 1.219666,
+      "thread_cpu_ms": 1.060334
+    },
+    {
+      "begin_metadata": "sequence=70 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.178375,
+      "end_metadata": "sequence=70 main=1 outcome=completed metadata=sync_wall_ns=173500 thread_cpu_ns=173000",
+      "end_seconds": 59.834590082999995,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.safeToSpend",
+      "start_seconds": 59.834411708,
+      "synchronous_wall_ms": 0.1735,
+      "thread_cpu_ms": 0.173
+    },
+    {
+      "begin_metadata": "sequence=71 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.794333,
+      "end_metadata": "sequence=71 main=1 outcome=completed metadata=sync_wall_ns=1790208 thread_cpu_ns=1789875",
+      "end_seconds": 59.836390791,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.cycleSummary",
+      "start_seconds": 59.834596458,
+      "synchronous_wall_ms": 1.790208,
+      "thread_cpu_ms": 1.789875
+    },
+    {
+      "begin_metadata": "sequence=72 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.9357080000000001,
+      "end_metadata": "sequence=72 main=1 outcome=completed metadata=sync_wall_ns=931167 thread_cpu_ns=230209",
+      "end_seconds": 59.837331458,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.recapReminder",
+      "start_seconds": 59.83639575,
+      "synchronous_wall_ms": 0.931167,
+      "thread_cpu_ms": 0.230209
+    },
+    {
+      "begin_metadata": "sequence=73 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.6937499999999999,
+      "end_metadata": "sequence=73 main=1 outcome=completed metadata=sync_wall_ns=1690375 thread_cpu_ns=1690083",
+      "end_seconds": 59.839028416,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.quickTemplates",
+      "start_seconds": 59.837334666,
+      "synchronous_wall_ms": 1.690375,
+      "thread_cpu_ms": 1.690083
+    },
+    {
+      "begin_metadata": "sequence=74 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 59.282000000000004,
+      "end_metadata": "sequence=74 main=1 outcome=completed metadata=sync_wall_ns=59276083 thread_cpu_ns=59148250",
+      "end_seconds": 59.898313375,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.dailyLogging",
+      "start_seconds": 59.839031375,
+      "synchronous_wall_ms": 59.276083,
+      "thread_cpu_ms": 59.14825
+    },
+    {
+      "begin_metadata": "sequence=75 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 2.9310840000000002,
+      "end_metadata": "sequence=75 main=1 outcome=completed metadata=sync_wall_ns=2927083 thread_cpu_ns=2926750",
+      "end_seconds": 59.90126562499999,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.dailyCheckIn",
+      "start_seconds": 59.898334541,
+      "synchronous_wall_ms": 2.927083,
+      "thread_cpu_ms": 2.92675
+    },
+    {
+      "begin_metadata": "sequence=76 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.302416,
+      "end_metadata": "sequence=76 main=1 outcome=completed metadata=sync_wall_ns=299875 thread_cpu_ns=82875",
+      "end_seconds": 59.901571915999995,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.habitWidget",
+      "start_seconds": 59.9012695,
+      "synchronous_wall_ms": 0.299875,
+      "thread_cpu_ms": 0.082875
+    },
+    {
+      "begin_metadata": "sequence=77 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.296167,
+      "end_metadata": "sequence=77 main=1 outcome=completed metadata=templates=0 bytes=168",
+      "end_seconds": 59.901568250000004,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Habit.snapshot.write",
+      "start_seconds": 59.901272083,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=78 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.26487499999999997,
+      "end_metadata": "sequence=78 main=1 outcome=completed metadata=sync_wall_ns=260917 thread_cpu_ns=260667",
+      "end_seconds": 59.901844499999996,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.anomaly",
+      "start_seconds": 59.901579625,
+      "synchronous_wall_ms": 0.260917,
+      "thread_cpu_ms": 0.260667
+    },
+    {
+      "begin_metadata": "sequence=79 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.076875,
+      "end_metadata": "sequence=79 main=1 outcome=completed metadata=sync_wall_ns=74333 thread_cpu_ns=74125",
+      "end_seconds": 59.901923833,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.budgets",
+      "start_seconds": 59.901846958,
+      "synchronous_wall_ms": 0.074333,
+      "thread_cpu_ms": 0.074125
+    },
+    {
+      "begin_metadata": "sequence=80 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 20.503041,
+      "end_metadata": "sequence=80 main=1 outcome=completed metadata=sync_wall_ns=20498292 thread_cpu_ns=20492666",
+      "end_seconds": 59.922437791,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Dashboard.reminderPrompt",
+      "start_seconds": 59.90193475,
+      "synchronous_wall_ms": 20.498292,
+      "thread_cpu_ms": 20.492666
+    },
+    {
+      "begin_metadata": "sequence=81 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4992) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.159541,
+      "end_metadata": "sequence=81 main=0 outcome=completed metadata=templates=0 bytes=168",
+      "end_seconds": 59.908160541,
+      "end_thread": "PersonalFinanceTraker (0xaf4992) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Habit.snapshot.write",
+      "start_seconds": 59.908001,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=82 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4992) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 145.08254200000002,
+      "end_metadata": "sequence=82 main=1 outcome=completed metadata=transactions=5001 rules=0",
+      "end_seconds": 60.053251583,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "SafeToSpend.refresh",
+      "start_seconds": 59.908169041,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=83 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4992) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.0045000000000000005,
+      "end_metadata": "sequence=83 main=0 outcome=completed metadata=items=5001 source=cache revision=2 generation=2",
+      "end_seconds": 59.908175750000005,
+      "end_thread": "PersonalFinanceTraker (0xaf4992) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 59.90817125,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=84 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.28725,
+      "end_metadata": "sequence=84 main=1 outcome=completed metadata=sync_wall_ns=1276583 thread_cpu_ns=1260125",
+      "end_seconds": 59.973541083,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.monthlyRecap",
+      "start_seconds": 59.972253833,
+      "synchronous_wall_ms": 1.276583,
+      "thread_cpu_ms": 1.260125
+    },
+    {
+      "begin_metadata": "sequence=85 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.543916,
+      "end_metadata": "sequence=85 main=1 outcome=completed metadata=sync_wall_ns=538833 thread_cpu_ns=525125",
+      "end_seconds": 59.974115540999996,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.expenseFilter",
+      "start_seconds": 59.973571625,
+      "synchronous_wall_ms": 0.538833,
+      "thread_cpu_ms": 0.525125
+    },
+    {
+      "begin_metadata": "sequence=86 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.201209,
+      "end_metadata": "sequence=86 main=1 outcome=completed metadata=sync_wall_ns=1197042 thread_cpu_ns=1053291",
+      "end_seconds": 59.9753345,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 59.974133291,
+      "synchronous_wall_ms": 1.197042,
+      "thread_cpu_ms": 1.053291
+    },
+    {
+      "begin_metadata": "sequence=87 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.7615000000000001,
+      "end_metadata": "sequence=87 main=1 outcome=completed metadata=sync_wall_ns=757584 thread_cpu_ns=757250",
+      "end_seconds": 59.976107250000005,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.habits",
+      "start_seconds": 59.97534575,
+      "synchronous_wall_ms": 0.757584,
+      "thread_cpu_ms": 0.75725
+    },
+    {
+      "begin_metadata": "sequence=88 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.237375,
+      "end_metadata": "sequence=88 main=1 outcome=completed metadata=sync_wall_ns=1233125 thread_cpu_ns=1232667",
+      "end_seconds": 59.977358416,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.averages",
+      "start_seconds": 59.976121041,
+      "synchronous_wall_ms": 1.233125,
+      "thread_cpu_ms": 1.232667
+    },
+    {
+      "begin_metadata": "sequence=89 main=1 metadata=groups=1827",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.40858300000000003,
+      "end_metadata": "sequence=89 main=1 outcome=completed metadata=",
+      "end_seconds": 59.978277791000004,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Activity.group.publish",
+      "start_seconds": 59.977869208,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=90 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.202917,
+      "end_metadata": "sequence=90 main=1 outcome=completed metadata=transactions=5001 rules=0",
+      "end_seconds": 60.053246625,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "SafeToSpend.snapshot.write",
+      "start_seconds": 60.052043708,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=91 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 4.883042,
+      "end_metadata": "sequence=91 main=1 outcome=completed metadata=sync_wall_ns=4869250 thread_cpu_ns=4543875",
+      "end_seconds": 60.060484625,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.healthScore",
+      "start_seconds": 60.055601583,
+      "synchronous_wall_ms": 4.86925,
+      "thread_cpu_ms": 4.543875
+    },
+    {
+      "begin_metadata": "sequence=92 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 61.26675,
+      "end_metadata": "sequence=92 main=1 outcome=completed metadata=transactions=5001",
+      "end_seconds": 71.281115583,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.load",
+      "start_seconds": 71.219848833,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=93 main=0 metadata=",
+      "begin_thread": "PersonalFinanceTraker (0xaf4bc4) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.026125000000000002,
+      "end_metadata": "sequence=93 main=0 outcome=completed metadata=items=5001 source=cache revision=2 generation=2",
+      "end_seconds": 71.220646916,
+      "end_thread": "PersonalFinanceTraker (0xaf4bc4) (PersonalFinanceTraker, pid: 29052)",
+      "name": "TransactionActor.fetchAll",
+      "start_seconds": 71.220620791,
+      "synchronous_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_metadata": "sequence=94 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.14225,
+      "end_metadata": "sequence=94 main=1 outcome=completed metadata=sync_wall_ns=1132541 thread_cpu_ns=1131791",
+      "end_seconds": 71.224511416,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.monthlyRecap",
+      "start_seconds": 71.223369166,
+      "synchronous_wall_ms": 1.132541,
+      "thread_cpu_ms": 1.131791
+    },
+    {
+      "begin_metadata": "sequence=95 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.560667,
+      "end_metadata": "sequence=95 main=1 outcome=completed metadata=sync_wall_ns=556083 thread_cpu_ns=555875",
+      "end_seconds": 71.225077958,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.expenseFilter",
+      "start_seconds": 71.224517291,
+      "synchronous_wall_ms": 0.556083,
+      "thread_cpu_ms": 0.555875
+    },
+    {
+      "begin_metadata": "sequence=96 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.078917,
+      "end_metadata": "sequence=96 main=1 outcome=completed metadata=sync_wall_ns=1069625 thread_cpu_ns=1001250",
+      "end_seconds": 71.22743725,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 71.226358333,
+      "synchronous_wall_ms": 1.069625,
+      "thread_cpu_ms": 1.00125
+    },
+    {
+      "begin_metadata": "sequence=97 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 0.807833,
+      "end_metadata": "sequence=97 main=1 outcome=completed metadata=sync_wall_ns=801875 thread_cpu_ns=749708",
+      "end_seconds": 71.228260833,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.habits",
+      "start_seconds": 71.227453,
+      "synchronous_wall_ms": 0.801875,
+      "thread_cpu_ms": 0.749708
+    },
+    {
+      "begin_metadata": "sequence=98 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.263583,
+      "end_metadata": "sequence=98 main=1 outcome=completed metadata=sync_wall_ns=1258875 thread_cpu_ns=1258542",
+      "end_seconds": 71.229533541,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.averages",
+      "start_seconds": 71.228269958,
+      "synchronous_wall_ms": 1.258875,
+      "thread_cpu_ms": 1.258542
+    },
+    {
+      "begin_metadata": "sequence=99 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 3.520875,
+      "end_metadata": "sequence=99 main=1 outcome=completed metadata=sync_wall_ns=3511916 thread_cpu_ns=3511209",
+      "end_seconds": 71.27298962500001,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.healthScore",
+      "start_seconds": 71.26946875,
+      "synchronous_wall_ms": 3.511916,
+      "thread_cpu_ms": 3.511209
+    },
+    {
+      "begin_metadata": "sequence=100 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 1.3797080000000002,
+      "end_metadata": "sequence=100 main=1 outcome=completed metadata=sync_wall_ns=1358541 thread_cpu_ns=1356834",
+      "end_seconds": 83.416428041,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 83.415048333,
+      "synchronous_wall_ms": 1.358541,
+      "thread_cpu_ms": 1.356834
+    },
+    {
+      "begin_metadata": "sequence=101 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 2.072959,
+      "end_metadata": "sequence=101 main=1 outcome=completed metadata=sync_wall_ns=2035333 thread_cpu_ns=2022583",
+      "end_seconds": 84.568386625,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 84.566313666,
+      "synchronous_wall_ms": 2.035333,
+      "thread_cpu_ms": 2.022583
+    },
+    {
+      "begin_metadata": "sequence=102 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 2.714416,
+      "end_metadata": "sequence=102 main=1 outcome=completed metadata=sync_wall_ns=2676042 thread_cpu_ns=2665292",
+      "end_seconds": 86.523862416,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 86.521148,
+      "synchronous_wall_ms": 2.676042,
+      "thread_cpu_ms": 2.665292
+    },
+    {
+      "begin_metadata": "sequence=103 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 23.489458000000003,
+      "end_metadata": "sequence=103 main=1 outcome=completed metadata=sync_wall_ns=23456125 thread_cpu_ns=23076209",
+      "end_seconds": 91.732100791,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 91.708611333,
+      "synchronous_wall_ms": 23.456125,
+      "thread_cpu_ms": 23.076209
+    },
+    {
+      "begin_metadata": "sequence=104 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 27.080541999999998,
+      "end_metadata": "sequence=104 main=1 outcome=completed metadata=sync_wall_ns=27049166 thread_cpu_ns=27028416",
+      "end_seconds": 97.835540833,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 97.808460291,
+      "synchronous_wall_ms": 27.049166,
+      "thread_cpu_ms": 27.028416
+    },
+    {
+      "begin_metadata": "sequence=105 main=1 metadata=",
+      "begin_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "duration_ms": 27.641792,
+      "end_metadata": "sequence=105 main=1 outcome=completed metadata=sync_wall_ns=27593959 thread_cpu_ns=27573875",
+      "end_seconds": 98.784134375,
+      "end_thread": "Main Thread (0xaf484e) (PersonalFinanceTraker, pid: 29052)",
+      "name": "Insights.explorer",
+      "start_seconds": 98.756492583,
+      "synchronous_wall_ms": 27.593959,
+      "thread_cpu_ms": 27.573875
+    }
+  ],
+  "limits": [
+    "Recorded Git revision and configuration name are not independently encoded in the trace.",
+    "Single exploratory device run; no equivalent before/after device comparison.",
+    "Synchronous thread CPU, async interval wall and Time Profiler sample weights are distinct metrics.",
+    "User reports satisfactory fluidity and authorizes committing the scoped fix.",
+    "One main-thread sample lacks a stack in the whole-recording CPU export; focused windows have no missing stacks."
+  ],
+  "potential_hangs": [
+    {
+      "duration_ms": 253.4125,
+      "end_seconds": 26.629556083,
+      "start_seconds": 26.376143583,
+      "type": "Microhang"
+    }
+  ],
+  "provenance": {
+    "date": "2026-10-16T10:15:32.939+02:00",
+    "device": "iPhone 14 Pro Max",
+    "duration_seconds": 115.973998,
+    "os": "27.0.1 (24A446)",
+    "pid": "29052",
+    "platform": "iOS",
+    "process": "PersonalFinanceTraker",
+    "run": 2,
+    "tables": [
+      "OSSignpostIntervals",
+      "PointsOfInterestEvents",
+      "StateReportingIntervals",
+      "device-thermal-state-intervals",
+      "dyld-library-load",
+      "hang-risks",
+      "kdebug",
+      "kdebug-strings",
+      "life-cycle-period",
+      "os-log",
+      "os-signpost",
+      "os-signpost-arg",
+      "potential-hangs",
+      "process-info",
+      "runloop-events",
+      "thread-info",
+      "tick",
+      "time-profile",
+      "time-sample"
+    ]
+  },
+  "recorded_binary_uuid": "C877A110-907C-3418-8095-ECFE803938A4",
+  "recorded_subsystem": "rizzoG99.PersonalFinanceTraker.test",
+  "service_cpu_groups": [
+    {
+      "covered_main_thread_cpu_ms": 25.626085,
+      "covered_services": 10,
+      "name": "Dashboard.metrics",
+      "start_seconds": 31.189612125,
+      "wall_ms": 27.224541000000002
+    },
+    {
+      "covered_main_thread_cpu_ms": 9.372333,
+      "covered_services": 6,
+      "name": "Insights.load",
+      "start_seconds": 59.825929791,
+      "wall_ms": 239.432875
+    },
+    {
+      "covered_main_thread_cpu_ms": 86.8685,
+      "covered_services": 10,
+      "name": "Dashboard.metrics",
+      "start_seconds": 59.83277675,
+      "wall_ms": 89.66416600000001
+    },
+    {
+      "covered_main_thread_cpu_ms": 8.208375,
+      "covered_services": 6,
+      "name": "Insights.load",
+      "start_seconds": 71.219848833,
+      "wall_ms": 61.26675
+    }
+  ],
+  "service_windows": [
+    {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 31.189612125,
+            "main_sampled_ms": 80.0,
+            "start_seconds": 31.089612125
+          },
+          {
+            "end_seconds": 31.289612124999998,
+            "main_sampled_ms": 58.0,
+            "start_seconds": 31.189612125
+          },
+          {
+            "end_seconds": 31.316836666,
+            "main_sampled_ms": 6.0,
+            "start_seconds": 31.289612124999998
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 114.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 106.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 106.0
+          },
+          {
+            "frame": "schedulerStepScheduledMainSectionContinue",
+            "sampled_ms": 106.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x247c70d41",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateComponents(_:from:in:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "-[UIView traitCollection]",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "__psynch_cvbroad",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 144,
+        "main_sampled_ms": 144.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+            "sampled_ms": 14.0
+          },
+          {
+            "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "AppSettings.payCycleStartDay.setter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FileManagerBackupStorage.containerURL()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ProfileView.dataSectionContent.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ProfileViewModel.memberSince.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ReminderService.scheduleMonthlyRecap(cycleHasActivity:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "SafeToSpendSnapshot.write()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "TransactionActor.fetchActiveRecurrenceRules()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in ProfileView.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in closure #1 in ProfilePayCycleSection.body.getter",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "name": "Dashboard.metrics",
+      "window": [
+        31.089612125,
+        31.316836666
+      ]
+    },
+    {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 31.190395916,
+            "main_sampled_ms": 80.0,
+            "start_seconds": 31.090395916
+          },
+          {
+            "end_seconds": 31.290395915999998,
+            "main_sampled_ms": 58.0,
+            "start_seconds": 31.190395916
+          },
+          {
+            "end_seconds": 31.291962041,
+            "main_sampled_ms": 0.0,
+            "start_seconds": 31.290395915999998
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 108.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 104.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 104.0
+          },
+          {
+            "frame": "schedulerStepScheduledMainSectionContinue",
+            "sampled_ms": 104.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateComponents(_:from:in:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "-[UIView traitCollection]",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_malloc_tc",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "method_t* getMethodFromListArray<method_list_t**>(method_list_t**, unsigned int, objc_selector*)",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 138,
+        "main_sampled_ms": 138.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 102.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+            "sampled_ms": 14.0
+          },
+          {
+            "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "AppSettings.payCycleStartDay.setter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FileManagerBackupStorage.containerURL()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ProfileView.dataSectionContent.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ProfileViewModel.memberSince.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "ReminderService.scheduleMonthlyRecap(cycleHasActivity:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "SafeToSpendSnapshot.write()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "TransactionActor.fetchActiveRecurrenceRules()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in ProfileView.body.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in closure #1 in ProfilePayCycleSection.body.getter",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "name": "Dashboard.cycleSummary",
+      "window": [
+        31.090395916,
+        31.291962041
+      ]
+    },
+    {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 59.825929791,
+            "main_sampled_ms": 99.0,
+            "start_seconds": 59.725929791
+          },
+          {
+            "end_seconds": 59.925929791,
+            "main_sampled_ms": 91.0,
+            "start_seconds": 59.825929791
+          },
+          {
+            "end_seconds": 60.025929790999996,
+            "main_sampled_ms": 93.0,
+            "start_seconds": 59.925929791
+          },
+          {
+            "end_seconds": 60.125929791,
+            "main_sampled_ms": 49.0,
+            "start_seconds": 60.025929790999996
+          },
+          {
+            "end_seconds": 60.165362666,
+            "main_sampled_ms": 6.0,
+            "start_seconds": 60.125929791
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 253.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 190.0
+          },
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 141.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 108.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "swift_retain",
+            "sampled_ms": 32.0
+          },
+          {
+            "frame": "swift_release",
+            "sampled_ms": 21.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateComponents(_:from:in:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "destroy for ClosedRange<>.Index",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "specialized static _CalendarGregorian.yearMonthDayFromJulianDay(_:useJulianRef:)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::Graph::propagate_dirty(AG::AttributeID)",
+            "sampled_ms": 3.0
+          }
+        ],
+        "main_sample_count": 338,
+        "main_sampled_ms": 338.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 139.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+            "sampled_ms": 59.0
+          },
+          {
+            "frame": "TransactionActor.fetchAll()",
+            "sampled_ms": 54.0
+          },
+          {
+            "frame": "TransactionSnapshot.init(_:)",
+            "sampled_ms": 36.0
+          },
+          {
+            "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+            "sampled_ms": 20.0
+          },
+          {
+            "frame": "TransactionModel.__deallocating_deinit",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "specialized static DailyCheckInService.dateKey(for:calendar:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "FinancialHealthService.compute(transactions:expenseTransactions:budgetedCategories:payCycleStartDay:ignoreSubscriptions:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "SafeToSpendSnapshot.write()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "TransactionActor.fetchCategories()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.quickTemplates(from:now:calendar:limit:)",
+            "sampled_ms": 2.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "name": "Insights.load",
+      "window": [
+        59.725929791,
+        60.165362666
+      ]
+    },
+    {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 59.83277675,
+            "main_sampled_ms": 94.0,
+            "start_seconds": 59.73277675
+          },
+          {
+            "end_seconds": 59.93277675,
+            "main_sampled_ms": 95.0,
+            "start_seconds": 59.83277675
+          },
+          {
+            "end_seconds": 60.022440916,
+            "main_sampled_ms": 83.0,
+            "start_seconds": 59.93277675
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 223.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 182.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:_:)",
+            "sampled_ms": 91.0
+          },
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 90.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 90.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "swift_retain",
+            "sampled_ms": 32.0
+          },
+          {
+            "frame": "swift_release",
+            "sampled_ms": 21.0
+          },
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateComponents(_:from:in:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "destroy for ClosedRange<>.Index",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "specialized static _CalendarGregorian.yearMonthDayFromJulianDay(_:useJulianRef:)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "_xzm_xzone_malloc_tiny",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 3.0
+          }
+        ],
+        "main_sample_count": 272,
+        "main_sampled_ms": 272.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 88.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+            "sampled_ms": 59.0
+          },
+          {
+            "frame": "TransactionActor.fetchAll()",
+            "sampled_ms": 47.0
+          },
+          {
+            "frame": "TransactionSnapshot.init(_:)",
+            "sampled_ms": 36.0
+          },
+          {
+            "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+            "sampled_ms": 20.0
+          },
+          {
+            "frame": "TransactionModel.__deallocating_deinit",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "specialized static DailyCheckInService.dateKey(for:calendar:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.quickTemplates(from:now:calendar:limit:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "CurrencyAmountField.currencySymbol.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "SafeToSpendSnapshot.write()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "SpendingInsightService.habitObservations(expenseTransactions:)",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "name": "Dashboard.metrics",
+      "window": [
+        59.73277675,
+        60.022440916
+      ]
+    },
+    {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 59.834596458,
+            "main_sampled_ms": 93.0,
+            "start_seconds": 59.734596458
+          },
+          {
+            "end_seconds": 59.934596458,
+            "main_sampled_ms": 96.0,
+            "start_seconds": 59.834596458
+          },
+          {
+            "end_seconds": 59.936390791,
+            "main_sampled_ms": 1.0,
+            "start_seconds": 59.934596458
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 190.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 174.0
+          },
+          {
+            "frame": "DashboardViewModel.calculateMetrics()",
+            "sampled_ms": 86.0
+          },
+          {
+            "frame": "DashboardViewModel.fetchAndCompute()",
+            "sampled_ms": 86.0
+          },
+          {
+            "frame": "TransactionActor.add(_:)",
+            "sampled_ms": 86.0
+          },
+          {
+            "frame": "TransactionActor.refreshSafeToSpendWidgetSnapshot()",
+            "sampled_ms": 86.0
+          },
+          {
+            "frame": "closure #2 in EditAddTransactionView.saveTransaction()",
+            "sampled_ms": 86.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:_:)",
+            "sampled_ms": 86.0
+          },
+          {
+            "frame": "TransactionActor.fetchAll()",
+            "sampled_ms": 85.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateInterval(of:for:)",
+            "sampled_ms": 78.0
+          },
+          {
+            "frame": "DashboardViewModel.refreshDailyCheckInState()",
+            "sampled_ms": 62.0
+          },
+          {
+            "frame": "closure #1 in DashboardViewModel.refreshDailyCheckInState()",
+            "sampled_ms": 59.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "swift_retain",
+            "sampled_ms": 32.0
+          },
+          {
+            "frame": "swift_release",
+            "sampled_ms": 20.0
+          },
+          {
+            "frame": "_CalendarGregorian._dateComponents(_:from:in:)",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "_CalendarGregorian.dateComponents(_:from:in:)",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "specialized static _CalendarGregorian.yearMonthDayFromJulianDay(_:useJulianRef:)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x19d1efa0c",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "0x19d20365c",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_TimeZoneSingleDSTRule._rawAndDSTOffsetForLocalDate(_:nonExistingTimeOpt:duplicatedTimeOpt:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "destroy for ClosedRange<>.Index",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 190,
+        "main_sampled_ms": 190.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "specialized static HabitLoggingService.computeStatus(transactions:now:calendar:)",
+            "sampled_ms": 59.0
+          },
+          {
+            "frame": "TransactionActor.fetchAll()",
+            "sampled_ms": 45.0
+          },
+          {
+            "frame": "TransactionSnapshot.init(_:)",
+            "sampled_ms": 36.0
+          },
+          {
+            "frame": "specialized static DashboardViewModel.computeShowsReminderPrompt(_:remindersEnabled:promptDismissed:)",
+            "sampled_ms": 20.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 16.0
+          },
+          {
+            "frame": "TransactionModel.__deallocating_deinit",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "specialized static DailyCheckInService.dateKey(for:calendar:)",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "specialized static HabitLoggingService.quickTemplates(from:now:calendar:limit:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "SafeToSpendSnapshot.write()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "TransactionListViewModel.recomputeDerivedFilterState()",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #2 in DashboardViewModel.calculateMetrics()",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "name": "Dashboard.cycleSummary",
+      "window": [
+        59.734596458,
+        59.936390791
+      ]
+    },
+    {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 71.219848833,
+            "main_sampled_ms": 81.0,
+            "start_seconds": 71.119848833
+          },
+          {
+            "end_seconds": 71.31984883300001,
+            "main_sampled_ms": 59.0,
+            "start_seconds": 71.219848833
+          },
+          {
+            "end_seconds": 71.381115583,
+            "main_sampled_ms": 2.0,
+            "start_seconds": 71.31984883300001
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 16380,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 122.0
+          },
+          {
+            "frame": "UC::DriverCore::continueProcessing()",
+            "sampled_ms": 120.0
+          },
+          {
+            "frame": "_UIUpdateSequenceRunNext",
+            "sampled_ms": 120.0
+          },
+          {
+            "frame": "schedulerStepScheduledMainSectionContinue",
+            "sampled_ms": 120.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "find(_:key:filter:)",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "std::__1::pair<swift::GenericCacheEntry*, swift::MetadataResponse> swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "AG::Graph::UpdateStack::update()",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "iokit_user_client_trap",
+            "sampled_ms": 3.0
+          },
+          {
+            "frame": "__CFStringCreateImmutableFunnel3",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_free_tc",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "_xzm_xzone_malloc_tiny",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "handleRefCountsDestroy(swift::TargetMetadata<swift::InProcess> const*, swift::LayoutStringReader1&, unsigned long&, unsigned char*)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "swift_bridgeObjectRelease",
+            "sampled_ms": 2.0
+          }
+        ],
+        "main_sample_count": 142,
+        "main_sampled_ms": 142.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 113.0
+          },
+          {
+            "frame": "MonthlyRecapCard.plain(_:)",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "TransactionActor.fetchCategories()",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in closure #3 in closure #1 in BreakdownExplorerSection.body.getter",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "CategoryTrendRow.accessibilityValue.getter",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FinancialHealthService.compute(transactions:expenseTransactions:budgetedCategories:payCycleStartDay:ignoreSubscriptions:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "FinancialHealthService.sumExpenses(_:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "StatisticalAverageService.calculate(transactions:expenseTransactions:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "StatisticalAverageService.sumExpenses(_:)",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "__swift_instantiateConcreteTypeFromMangledNameV2",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in BreakdownExplorerSection.navigator.getter",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "name": "Insights.load",
+      "window": [
+        71.119848833,
+        71.381115583
+      ]
+    }
+  ],
+  "thermal_state": {
+    "end_seconds": 115.973998,
+    "start_seconds": 0,
+    "state": "Nominal"
+  }
+}

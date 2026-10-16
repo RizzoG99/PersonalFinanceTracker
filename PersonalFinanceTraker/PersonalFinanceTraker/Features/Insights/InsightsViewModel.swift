@@ -115,11 +115,15 @@ final class CompassViewModel {
         }
         let today = Calendar.current.startOfDay(for: .now)
         goalRules = allRules.filter { $0.goalId != nil && $0.isActive(asOf: today) }
-        monthlyRecap = MonthlyRecap.make(
-            transactions: transactions, rules: allRules,
-            payCycleStartDay: AppSettings.storedStartDay, currencyService: currencyService
-        )
-        expenseTransactions = transactions.filter { $0.amount < 0 && $0.goalId == nil }
+        monthlyRecap = PerformanceAuditRecorder.measure("Insights.monthlyRecap") {
+            MonthlyRecap.make(
+                transactions: transactions, rules: allRules,
+                payCycleStartDay: AppSettings.storedStartDay, currencyService: currencyService
+            )
+        }
+        expenseTransactions = PerformanceAuditRecorder.measure("Insights.expenseFilter") {
+            transactions.filter { $0.amount < 0 && $0.goalId == nil }
+        }
         // overlap the repo-I/O computation with the pure ones; all run on MainActor, awaits interleave
         async let health: Void = computeHealthScore()
         refreshExplorer()
@@ -204,26 +208,30 @@ final class CompassViewModel {
         if !hasRecentIncome && !hasRecentExpense {
             healthScore = nil
         } else {
-            healthScore = healthService.compute(
-                transactions: transactions,
-                expenseTransactions: expenseTransactions,
-                budgetedCategories: budgetedCategories,
-                payCycleStartDay: AppSettings.storedStartDay,
-                ignoreSubscriptions: ignoreSubscriptions
-            )
+            healthScore = PerformanceAuditRecorder.measure("Insights.healthScore") {
+                healthService.compute(
+                    transactions: transactions,
+                    expenseTransactions: expenseTransactions,
+                    budgetedCategories: budgetedCategories,
+                    payCycleStartDay: AppSettings.storedStartDay,
+                    ignoreSubscriptions: ignoreSubscriptions
+                )
+            }
         }
         await saveSnapshotIfNeeded()
         scoreSnapshots = (try? await repo.fetchSnapshots(limit: 6)) ?? []
     }
 
     private func refreshExplorer() {
-        explorer = ExplorerBreakdown(
-            transactions: transactions,
-            categories: categories,
-            period: explorerPeriod,
-            dataType: explorerType,
-            service: pieDataService
-        )
+        explorer = PerformanceAuditRecorder.measure("Insights.explorer") {
+            ExplorerBreakdown(
+                transactions: transactions,
+                categories: categories,
+                period: explorerPeriod,
+                dataType: explorerType,
+                service: pieDataService
+            )
+        }
     }
 
     /// A category row's drill-down, through the same filter as the slice it came from, so the
@@ -235,14 +243,18 @@ final class CompassViewModel {
     }
 
     private func computeHabits() async {
-        habitObservations = insightService.habitObservations(expenseTransactions: expenseTransactions)
+        habitObservations = PerformanceAuditRecorder.measure("Insights.habits") {
+            insightService.habitObservations(expenseTransactions: expenseTransactions)
+        }
     }
 
     private func calculateAverages() {
-        let (inc, exp, sav) = averagesService.calculate(
-            transactions: transactions,
-            expenseTransactions: expenseTransactions
-        )
+        let (inc, exp, sav) = PerformanceAuditRecorder.measure("Insights.averages") {
+            averagesService.calculate(
+                transactions: transactions,
+                expenseTransactions: expenseTransactions
+            )
+        }
         averageIncome = inc
         averageExpenses = exp
         averageSavings = sav
