@@ -99,7 +99,7 @@ struct EditCategorySheet: View {
         .presentationBackground { AppBackground() }
     }
 
-    /// Rewrites the name copy on this category's transactions and rules (#239). Detached: an
+    /// Rewrites the name copy on this category's transactions and rules, then backs up (#239). Detached: an
     /// actor created from the main actor can end up on the main queue, and a category can own
     /// thousands of rows.
     private func syncRenamedCategory(_ newName: String) {
@@ -108,15 +108,7 @@ struct EditCategorySheet: View {
         let signal = dataChanged
         let settings = appSettings
         Task.detached {
-            let actor = TransactionActor.make(container)
-            _ = try? await actor.renameCategory(id: id, to: newName)
-            await MainActor.run { signal?.bump() }  // also refreshes widget/Siri templates
-            // Restore relinks by name: a backup with the old name would bring rows back
-            // unlinked. Restore takes the newest, so make that the renamed data.
-            if let settings {
-                await MainActor.run { settings.lastBackupDate = nil }
-                await BackupScheduler.runIfNeeded(repo: actor, settings: settings, backupService: BackupService())
-            }
+            await TransactionActor.renameAndBackUp(container: container, id: id, to: newName, signal: signal, settings: settings)
         }
     }
 }

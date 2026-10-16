@@ -478,4 +478,23 @@ extension TransactionActor {
     static func make(_ container: ModelContainer) -> TransactionActor {
         TransactionActor(modelContainer: container)
     }
+
+    /// Everything after a rename in the edit sheet (#239): carry the name onto its rows, tell
+    /// the app, then back up. Restore relinks by name and takes the newest backup, so one
+    /// with the old name would bring the rows back unlinked — hence the forced, fresh one.
+    nonisolated static func renameAndBackUp(
+        container: ModelContainer,
+        id: PersistentIdentifier,
+        to newName: String,
+        signal: DataChangedSignal?,
+        settings: BackupSchedulingSettings?,
+        backupService: BackupService = BackupService()
+    ) async {
+        let actor = make(container)
+        _ = try? await actor.renameCategory(id: id, to: newName)
+        await MainActor.run { signal?.bump() }  // also refreshes widget/Siri templates
+        guard let settings else { return }
+        await MainActor.run { settings.lastBackupDate = nil }
+        await BackupScheduler.runIfNeeded(repo: actor, settings: settings, backupService: backupService)
+    }
 }
