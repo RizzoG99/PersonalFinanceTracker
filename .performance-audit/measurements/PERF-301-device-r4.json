@@ -1,0 +1,741 @@
+{
+  "artifact": ".performance-audit/measurements/traces/Activity-search-5k-PFT-TEST-iPhone-r1.trace",
+  "capture_count": 3,
+  "captures": [
+    {
+      "capture": 1,
+      "crop_nearest_app_top": [
+        {
+          "frame": "UIImage.renderUprightPixels()",
+          "sampled_ms": 164.0
+        },
+        {
+          "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+          "sampled_ms": 46.0
+        }
+      ],
+      "crop_pixels": [
+        2029,
+        3261
+      ],
+      "crop_sampled_main_ms": 216.0,
+      "dismiss_request_seconds": 15.812702625,
+      "intervals": [
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.529347791,
+          "name": "Receipt.camera.wait",
+          "signpost_wall_ms": 599.3760409999993,
+          "start_seconds": 14.92997175,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.530092625,
+          "name": "Receipt.photo.data",
+          "signpost_wall_ms": 0.7076250000004336,
+          "start_seconds": 15.529385,
+          "sync_wall_ms": 0.681416,
+          "thread_cpu_ms": 0.679542
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.54133025,
+          "name": "Receipt.photo.construct",
+          "signpost_wall_ms": 11.22408400000019,
+          "start_seconds": 15.530106166,
+          "sync_wall_ms": 11.163417,
+          "thread_cpu_ms": 7.136416
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.555954541,
+          "name": "Receipt.fixture.export",
+          "signpost_wall_ms": 14.53441600000005,
+          "start_seconds": 15.541420125,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.560482083,
+          "name": "Receipt.fixture.export",
+          "signpost_wall_ms": 3.1979579999994456,
+          "start_seconds": 15.557284125,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.763794333,
+          "name": "Receipt.orientation",
+          "signpost_wall_ms": 203.26720799999975,
+          "start_seconds": 15.560527125,
+          "sync_wall_ms": 203.240834,
+          "thread_cpu_ms": 167.777375
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.812370791,
+          "name": "Receipt.crop.render",
+          "signpost_wall_ms": 48.559291000000115,
+          "start_seconds": 15.7638115,
+          "sync_wall_ms": 48.530583,
+          "thread_cpu_ms": 47.990625
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.812379541,
+          "name": "Receipt.crop.total",
+          "signpost_wall_ms": 251.8607080000006,
+          "start_seconds": 15.560518833,
+          "sync_wall_ms": 251.85625,
+          "thread_cpu_ms": 215.853417
+        },
+        {
+          "begin_main": true,
+          "capture": 1,
+          "end_main": true,
+          "end_seconds": 15.812696958,
+          "name": "Receipt.camera.stopRequest",
+          "signpost_wall_ms": 0.28308299999935116,
+          "start_seconds": 15.812413875,
+          "sync_wall_ms": 0.278417,
+          "thread_cpu_ms": 0.080333
+        },
+        {
+          "begin_main": false,
+          "capture": 1,
+          "end_main": false,
+          "end_seconds": 15.912442083,
+          "name": "Receipt.ocr.prepare",
+          "signpost_wall_ms": 75.14245800000019,
+          "start_seconds": 15.837299625,
+          "sync_wall_ms": 75.124917,
+          "thread_cpu_ms": 72.390542
+        },
+        {
+          "begin_main": false,
+          "capture": 1,
+          "end_main": false,
+          "end_seconds": 16.783531916,
+          "name": "Receipt.ocr.plain",
+          "signpost_wall_ms": 870.2437910000018,
+          "start_seconds": 15.913288125,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": false,
+          "capture": 1,
+          "end_main": false,
+          "end_seconds": 16.861509583,
+          "name": "Receipt.ocr.enhance",
+          "signpost_wall_ms": 77.96766699999935,
+          "start_seconds": 16.783541916,
+          "sync_wall_ms": 77.945708,
+          "thread_cpu_ms": 30.652
+        },
+        {
+          "begin_main": false,
+          "capture": 1,
+          "end_main": false,
+          "end_seconds": 17.094035833,
+          "name": "Receipt.ocr.enhanced",
+          "signpost_wall_ms": 232.516167,
+          "start_seconds": 16.861519666,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        }
+      ],
+      "ocr_pixels": [
+        1244,
+        2000
+      ],
+      "shutter_seconds": 14.927819041,
+      "source_pixels": [
+        4032,
+        3024
+      ]
+    },
+    {
+      "capture": 2,
+      "crop_nearest_app_top": [
+        {
+          "frame": "UIImage.renderUprightPixels()",
+          "sampled_ms": 146.0
+        },
+        {
+          "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+          "sampled_ms": 53.0
+        }
+      ],
+      "crop_pixels": [
+        1981,
+        3243
+      ],
+      "crop_sampled_main_ms": 201.0,
+      "dismiss_request_seconds": 36.533440666,
+      "intervals": [
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.286906875,
+          "name": "Receipt.camera.wait",
+          "signpost_wall_ms": 649.7757919999998,
+          "start_seconds": 35.637131083,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.287425166,
+          "name": "Receipt.photo.data",
+          "signpost_wall_ms": 0.47762499999493,
+          "start_seconds": 36.286947541,
+          "sync_wall_ms": 0.45575,
+          "thread_cpu_ms": 0.453583
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.288030625,
+          "name": "Receipt.photo.construct",
+          "signpost_wall_ms": 0.592791999999065,
+          "start_seconds": 36.287437833,
+          "sync_wall_ms": 0.572375,
+          "thread_cpu_ms": 0.571
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.307480291,
+          "name": "Receipt.fixture.export",
+          "signpost_wall_ms": 19.374332999994692,
+          "start_seconds": 36.288105958,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.310886,
+          "name": "Receipt.fixture.export",
+          "signpost_wall_ms": 2.761750000004781,
+          "start_seconds": 36.30812425,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.475325333,
+          "name": "Receipt.orientation",
+          "signpost_wall_ms": 164.40187500000292,
+          "start_seconds": 36.310923458,
+          "sync_wall_ms": 164.379167,
+          "thread_cpu_ms": 146.902791
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.533149041,
+          "name": "Receipt.crop.render",
+          "signpost_wall_ms": 57.81025000000284,
+          "start_seconds": 36.475338791,
+          "sync_wall_ms": 57.795375,
+          "thread_cpu_ms": 55.232666
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.53315475,
+          "name": "Receipt.crop.total",
+          "signpost_wall_ms": 222.2400420000028,
+          "start_seconds": 36.310914708,
+          "sync_wall_ms": 222.236,
+          "thread_cpu_ms": 202.197208
+        },
+        {
+          "begin_main": true,
+          "capture": 2,
+          "end_main": true,
+          "end_seconds": 36.533432375,
+          "name": "Receipt.camera.stopRequest",
+          "signpost_wall_ms": 0.2432919999932892,
+          "start_seconds": 36.533189083,
+          "sync_wall_ms": 0.238125,
+          "thread_cpu_ms": 0.07275
+        },
+        {
+          "begin_main": false,
+          "capture": 2,
+          "end_main": false,
+          "end_seconds": 36.609025125,
+          "name": "Receipt.ocr.prepare",
+          "signpost_wall_ms": 71.37099999999919,
+          "start_seconds": 36.537654125,
+          "sync_wall_ms": 71.355292,
+          "thread_cpu_ms": 69.233042
+        },
+        {
+          "begin_main": false,
+          "capture": 2,
+          "end_main": false,
+          "end_seconds": 37.0228205,
+          "name": "Receipt.ocr.plain",
+          "signpost_wall_ms": 413.7831669999983,
+          "start_seconds": 36.609037333,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": false,
+          "capture": 2,
+          "end_main": false,
+          "end_seconds": 37.062071291,
+          "name": "Receipt.ocr.enhance",
+          "signpost_wall_ms": 39.243708000000765,
+          "start_seconds": 37.022827583,
+          "sync_wall_ms": 39.223041,
+          "thread_cpu_ms": 12.329
+        },
+        {
+          "begin_main": false,
+          "capture": 2,
+          "end_main": false,
+          "end_seconds": 37.309781083,
+          "name": "Receipt.ocr.enhanced",
+          "signpost_wall_ms": 247.70208300000007,
+          "start_seconds": 37.062079,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        }
+      ],
+      "ocr_pixels": [
+        1222,
+        2000
+      ],
+      "shutter_seconds": 35.634898125,
+      "source_pixels": [
+        4032,
+        3024
+      ]
+    },
+    {
+      "capture": 3,
+      "crop_nearest_app_top": [
+        {
+          "frame": "UIImage.renderUprightPixels()",
+          "sampled_ms": 166.0
+        },
+        {
+          "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+          "sampled_ms": 44.0
+        }
+      ],
+      "crop_pixels": [
+        1570,
+        2898
+      ],
+      "crop_sampled_main_ms": 217.0,
+      "dismiss_request_seconds": 53.565079625,
+      "intervals": [
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.310023583,
+          "name": "Receipt.camera.wait",
+          "signpost_wall_ms": 547.4374170000046,
+          "start_seconds": 52.762586166,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.311001,
+          "name": "Receipt.photo.data",
+          "signpost_wall_ms": 0.9155839999976934,
+          "start_seconds": 53.310085416,
+          "sync_wall_ms": 0.871,
+          "thread_cpu_ms": 0.846958
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.3119775,
+          "name": "Receipt.photo.construct",
+          "signpost_wall_ms": 0.9553749999966499,
+          "start_seconds": 53.311022125,
+          "sync_wall_ms": 0.901875,
+          "thread_cpu_ms": 0.846084
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.326853625,
+          "name": "Receipt.fixture.export",
+          "signpost_wall_ms": 14.798083999998823,
+          "start_seconds": 53.312055541,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.330829416,
+          "name": "Receipt.fixture.export",
+          "signpost_wall_ms": 3.507290999998247,
+          "start_seconds": 53.327322125,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.518893625,
+          "name": "Receipt.orientation",
+          "signpost_wall_ms": 187.957499999996,
+          "start_seconds": 53.330936125,
+          "sync_wall_ms": 187.925916,
+          "thread_cpu_ms": 167.706083
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.564677958,
+          "name": "Receipt.crop.render",
+          "signpost_wall_ms": 45.76875000000058,
+          "start_seconds": 53.518909208,
+          "sync_wall_ms": 45.753625,
+          "thread_cpu_ms": 45.720958
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.564691666,
+          "name": "Receipt.crop.total",
+          "signpost_wall_ms": 233.76575000000344,
+          "start_seconds": 53.330925916,
+          "sync_wall_ms": 233.760666,
+          "thread_cpu_ms": 213.508291
+        },
+        {
+          "begin_main": true,
+          "capture": 3,
+          "end_main": true,
+          "end_seconds": 53.565073875,
+          "name": "Receipt.camera.stopRequest",
+          "signpost_wall_ms": 0.3362920000000713,
+          "start_seconds": 53.564737583,
+          "sync_wall_ms": 0.331708,
+          "thread_cpu_ms": 0.08775
+        },
+        {
+          "begin_main": false,
+          "capture": 3,
+          "end_main": false,
+          "end_seconds": 53.631945833,
+          "name": "Receipt.ocr.prepare",
+          "signpost_wall_ms": 56.376000000000204,
+          "start_seconds": 53.575569833,
+          "sync_wall_ms": 56.35075,
+          "thread_cpu_ms": 55.057584
+        },
+        {
+          "begin_main": false,
+          "capture": 3,
+          "end_main": false,
+          "end_seconds": 54.181577916,
+          "name": "Receipt.ocr.plain",
+          "signpost_wall_ms": 549.615750000001,
+          "start_seconds": 53.631962166,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        },
+        {
+          "begin_main": false,
+          "capture": 3,
+          "end_main": false,
+          "end_seconds": 54.218407791,
+          "name": "Receipt.ocr.enhance",
+          "signpost_wall_ms": 36.82308299999448,
+          "start_seconds": 54.181584708,
+          "sync_wall_ms": 36.805958,
+          "thread_cpu_ms": 14.697917
+        },
+        {
+          "begin_main": false,
+          "capture": 3,
+          "end_main": false,
+          "end_seconds": 54.554128083,
+          "name": "Receipt.ocr.enhanced",
+          "signpost_wall_ms": 335.71095799999995,
+          "start_seconds": 54.218417125,
+          "sync_wall_ms": null,
+          "thread_cpu_ms": null
+        }
+      ],
+      "ocr_pixels": [
+        1084,
+        2000
+      ],
+      "shutter_seconds": 52.761014125,
+      "source_pixels": [
+        4032,
+        3024
+      ]
+    }
+  ],
+  "decision": {
+    "automated_real_photo_ocr_parity": "pending local TEST-container fixtures and human labels",
+    "processing_optimization": "none",
+    "reason": "Prior user observation reports no noticeable slowdown/OCR errors; no new repeated visible-delay symptom. Memory is sampled, not a physical-footprint or leak diagnosis."
+  },
+  "deduplicated_receipt_rows": 108,
+  "limits": [
+    "Fixture export was active in all three captures; no clean export-disabled memory/latency comparison",
+    "VM snapshots are spaced about four seconds apart and can miss short-lived crop peaks",
+    "Resident/dirty aggregates are not physical footprint and do not identify per-allocation ownership",
+    "Last dirty sample is above earlier plateaus and still declining; three captures/short tail do not prove either a leak or full settling",
+    "No Allocations instrument data; no allocation-lifetime/leak validation",
+    "No app code change or new app-test run in this analysis"
+  ],
+  "provenance": {
+    "allocations_instrument_recorded": false,
+    "binary_uuids": [
+      "DA03F06F-2D8F-368C-884F-6FD7F3F6AE8C"
+    ],
+    "configuration_source": "saved form.template localExecutablePath",
+    "date": "2026-10-16T13:02:29.555+02:00",
+    "device": "iPhone 14 Pro Max",
+    "duration_seconds": 63.399504,
+    "fixture_export_active": true,
+    "git_revision_embedded": false,
+    "identity": "rizzoG99.PersonalFinanceTraker.test",
+    "os": "27.0.1 (24A446)",
+    "pid": 30811,
+    "platform": "iOS",
+    "recorded_product_configuration": "Release-TEST-iphoneos",
+    "recording_end_reason": "User pressed Stop",
+    "run": 4,
+    "template_name": "Time Profiler",
+    "thermal_state": "Nominal",
+    "vm_tracker_instrument_recorded": true
+  },
+  "raw_receipt_rows": 216,
+  "source_hashes": {
+    "native_archive_sha256": "4ebdf6457d3cc8d54033ef6e967c2aa589a14f0515c53da6937bc08db568f4eb",
+    "native_extractor_sha256": "d7d862f36d4007480b709b0e555badcc3c16a22b9b6bc8fdca6df2fe1eb54382",
+    "native_json_sha256": "98f4cb61b92d490c2ccbe5ef27f2e2dbeaf303300534fca006c086b1b43219ca"
+  },
+  "vm_tracker": {
+    "last_observed_dirty_bytes": 318291968,
+    "last_observed_resident_bytes": 783007744,
+    "mach_timebase_denom": 3,
+    "mach_timebase_numer": 125,
+    "max_observed_dirty_bytes": 369688576,
+    "max_observed_resident_bytes": 814317568,
+    "native_decoder": "Xcode 27.0 DVTInstrumentsFoundation + MemoryPlugin NSUnarchiver, XRVMState counters",
+    "physical_footprint_available": false,
+    "sample_interval_seconds": {
+      "max": 4.076989749999999,
+      "median": 3.8281979374999997,
+      "min": 3.4420326666666665
+    },
+    "snapshot_count": 17,
+    "snapshots": [
+      {
+        "dirty_bytes": 81920,
+        "index": 0,
+        "region_count": 179,
+        "resident_bytes": 38535168,
+        "seconds_since_first_snapshot": 0.0,
+        "swap_bytes": 0,
+        "virtual_size_bytes": 468889698304
+      },
+      {
+        "dirty_bytes": 52117504,
+        "index": 1,
+        "region_count": 8788,
+        "resident_bytes": 574521344,
+        "seconds_since_first_snapshot": 3.4420326666666665,
+        "swap_bytes": 0,
+        "virtual_size_bytes": 471015161856
+      },
+      {
+        "dirty_bytes": 51937280,
+        "index": 2,
+        "region_count": 9355,
+        "resident_bytes": 599392256,
+        "seconds_since_first_snapshot": 7.281600125,
+        "swap_bytes": 0,
+        "virtual_size_bytes": 471410278400
+      },
+      {
+        "dirty_bytes": 71925760,
+        "index": 3,
+        "region_count": 9893,
+        "resident_bytes": 543866880,
+        "seconds_since_first_snapshot": 11.059268833333334,
+        "swap_bytes": 9879552,
+        "virtual_size_bytes": 471483613184
+      },
+      {
+        "dirty_bytes": 287834112,
+        "index": 4,
+        "region_count": 9805,
+        "resident_bytes": 775389184,
+        "seconds_since_first_snapshot": 14.905944125,
+        "swap_bytes": 11747328,
+        "virtual_size_bytes": 471729979392
+      },
+      {
+        "dirty_bytes": 225591296,
+        "index": 5,
+        "region_count": 10378,
+        "resident_bytes": 789807104,
+        "seconds_since_first_snapshot": 18.773747208333333,
+        "swap_bytes": 10436608,
+        "virtual_size_bytes": 471690018816
+      },
+      {
+        "dirty_bytes": 225427456,
+        "index": 6,
+        "region_count": 10113,
+        "resident_bytes": 788643840,
+        "seconds_since_first_snapshot": 22.850736958333332,
+        "swap_bytes": 10321920,
+        "virtual_size_bytes": 471678894080
+      },
+      {
+        "dirty_bytes": 224739328,
+        "index": 7,
+        "region_count": 10316,
+        "resident_bytes": 790757376,
+        "seconds_since_first_snapshot": 26.618046,
+        "swap_bytes": 10354688,
+        "virtual_size_bytes": 471683694592
+      },
+      {
+        "dirty_bytes": 225083392,
+        "index": 8,
+        "region_count": 10378,
+        "resident_bytes": 794558464,
+        "seconds_since_first_snapshot": 30.649659333333332,
+        "swap_bytes": 10027008,
+        "virtual_size_bytes": 471691804672
+      },
+      {
+        "dirty_bytes": 243974144,
+        "index": 9,
+        "region_count": 10316,
+        "resident_bytes": 716242944,
+        "seconds_since_first_snapshot": 34.542006375,
+        "swap_bytes": 10027008,
+        "virtual_size_bytes": 471708598272
+      },
+      {
+        "dirty_bytes": 226426880,
+        "index": 10,
+        "region_count": 9965,
+        "resident_bytes": 700416000,
+        "seconds_since_first_snapshot": 38.350744375,
+        "swap_bytes": 12091392,
+        "virtual_size_bytes": 471713939456
+      },
+      {
+        "dirty_bytes": 226590720,
+        "index": 11,
+        "region_count": 10210,
+        "resident_bytes": 702038016,
+        "seconds_since_first_snapshot": 42.226534375,
+        "swap_bytes": 12075008,
+        "virtual_size_bytes": 471715823616
+      },
+      {
+        "dirty_bytes": 225902592,
+        "index": 12,
+        "region_count": 10133,
+        "resident_bytes": 702201856,
+        "seconds_since_first_snapshot": 46.04336279166667,
+        "swap_bytes": 11730944,
+        "virtual_size_bytes": 471712841728
+      },
+      {
+        "dirty_bytes": 245874688,
+        "index": 13,
+        "region_count": 10134,
+        "resident_bytes": 724402176,
+        "seconds_since_first_snapshot": 49.824293875,
+        "swap_bytes": 11681792,
+        "virtual_size_bytes": 471736483840
+      },
+      {
+        "dirty_bytes": 369688576,
+        "index": 14,
+        "region_count": 10416,
+        "resident_bytes": 814317568,
+        "seconds_since_first_snapshot": 53.593834916666665,
+        "swap_bytes": 15417344,
+        "virtual_size_bytes": 471876698112
+      },
+      {
+        "dirty_bytes": 333987840,
+        "index": 15,
+        "region_count": 10484,
+        "resident_bytes": 789053440,
+        "seconds_since_first_snapshot": 57.488078333333334,
+        "swap_bytes": 15450112,
+        "virtual_size_bytes": 471839817728
+      },
+      {
+        "dirty_bytes": 318291968,
+        "index": 16,
+        "region_count": 10473,
+        "resident_bytes": 783007744,
+        "seconds_since_first_snapshot": 61.23440970833334,
+        "swap_bytes": 15433728,
+        "virtual_size_bytes": 471830429696
+      }
+    ],
+    "source_archive": "instrument_data/2991E8D9-0521-489A-899D-82DE82973FA8/run_data/4.run.zip",
+    "timeline_origin": "elapsed from first native VM snapshot; no exact sub-frame alignment inferred from wall clocks",
+    "true_transient_peak_available": false
+  }
+}

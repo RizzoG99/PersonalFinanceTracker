@@ -37,8 +37,10 @@ enum ReceiptTextRecognizer {
         // content was cut. Vision reads handheld, moderately angled receipts perfectly well on its
         // own — all six well-lit fixtures pass on the uncorrected frame — so the correction was pure
         // downside. Revisit only with a fixture that actually fails without it.
+        ReceiptImageAudit.image("Receipt.ocr.input", image)
         guard let cgImage = image.preparedForRecognition() else { return ReceiptDocument() }
-        let plain = try await recognize(cgImage)
+        ReceiptImageAudit.pixels("Receipt.ocr.prepared", cgImage)
+        let plain = try await recognize(cgImage, phase: "Receipt.ocr.plain")
 
         // Low light does not produce *fewer* lines, it produces wrong characters, which is why an
         // earlier version of this that retried only when the page looked empty never once fired.
@@ -51,12 +53,15 @@ enum ReceiptTextRecognizer {
         // ponytail: this doubles OCR time on every scan, roughly a second, behind a progress
         // indicator the user already sees. Gate it on the plain pass's confidence if that ever
         // becomes the complaint.
-        guard let boosted = Self.enhanced(cgImage) else { return plain }
-        let enhanced = try await recognize(boosted)
+        guard let boosted = ReceiptImageAudit.measure("Receipt.ocr.enhance", { Self.enhanced(cgImage) }) else { return plain }
+        let enhanced = try await recognize(boosted, phase: "Receipt.ocr.enhanced")
         return enhanced.meanConfidence > plain.meanConfidence ? enhanced : plain
     }
 
-    private static func recognize(_ cgImage: CGImage) async throws -> ReceiptDocument {
+    private static func recognize(_ cgImage: CGImage, phase: StaticString) async throws -> ReceiptDocument {
+        let interval = PerformanceAuditRecorder.begin(phase, metadata: ReceiptImageAudit.context)
+        var outcome: PerformanceAuditRecorder.Outcome = .failed
+        defer { PerformanceAuditRecorder.end(interval, outcome: outcome, metadata: ReceiptImageAudit.context) }
         var request = RecognizeDocumentsRequest()
         request.textRecognitionOptions.recognitionLanguages = [Locale.Language(identifier: "it-IT")]
         request.textRecognitionOptions.useLanguageCorrection = true
@@ -67,6 +72,7 @@ enum ReceiptTextRecognizer {
             append(observation.document.text, to: &document)
             document.rows.append(contentsOf: observation.document.tables.flatMap(rows(in:)))
         }
+        outcome = .completed
         return document
     }
 
@@ -185,7 +191,7 @@ enum ReceiptTextRecognizer {
     }
 }
 
-private extension UIImage {
+extension UIImage {
     /// The longest side Vision is given. A modern camera's full 12MP is far more than receipt text
     /// needs, and every pixel is paid for three times over: this bitmap, then each of the two OCR
     /// passes.
@@ -207,6 +213,10 @@ private extension UIImage {
     /// old VisionKit scanner hid this: its output was already `.up`, so the rotation redraw that
     /// triggers it never ran.
     func preparedForRecognition() -> CGImage? {
+        ReceiptImageAudit.measure("Receipt.ocr.prepare") { renderForRecognition() }
+    }
+
+    private func renderForRecognition() -> CGImage? {
         let longest = max(size.width, size.height)
         let ratio = longest > Self.recognitionMaxDimension ? Self.recognitionMaxDimension / longest : 1
         // Already upright and already small enough: hand back the pixels untouched.

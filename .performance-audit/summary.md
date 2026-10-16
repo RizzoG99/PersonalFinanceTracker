@@ -1,5 +1,30 @@
 # Performance Audit Summary
 
+## Final performance checkpoint — 2026-10-16
+
+PR #230 retains scoped Activity/cache, bulk edit/Undo, Home cycle-summary and
+Insights ownership fixes. PERF-301/#241 is an accepted measured stop: its single-pass
+renderer was rejected because one of eight real photos changed crop/OCR-input pixels
+and recognized lines, despite local CPU savings. The original renderer is retained.
+
+Receipt work retained here consists of opt-in phase instrumentation, regression
+oracles, isolated synthetic/private-fixture harnesses, summary/native VM tools and
+redacted measurements. Original photos, labels, OCR text, raw traces, TEST app
+configuration and unrelated WIP remain excluded. The async recognizer-counter
+harness is explicitly opt-in and TEST-only so ordinary parallel test execution
+does not share its process-wide recorder experiment.
+
+PERF-301 is accepted only in the verified conditions. Existing OCR correctness
+failures are tracked separately in #244/#245; PERF-303/#237 remains deferred.
+Physical memory peaks, older-device performance and broad UI/accessibility QA are
+not established. The historical audit sections below are retained as snapshots;
+use the linked scoped reports and PR's final integration results for current evidence.
+
+- [Receipt baseline and accepted conditions](measurements/PERF-301-receipt-processing.md)
+- [Rejected experiment and restored pipeline](measurements/PERF-301-single-pass-experiment.md)
+- [Insights ownership correction](measurements/PERF-111-insights-overlap.md)
+- [Home analytics measurements](measurements/PERF-112-analytics.md)
+
 ## PERF-111 / #235 follow-up — 2026-10-16
 
 Insights reload ownership is mitigated in the verified ViewModel scope. Before

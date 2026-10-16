@@ -69,6 +69,7 @@ private struct ReceiptScanShortcut: ViewModifier {
             }
             .fullScreenCover(isPresented: $showingDocumentScanner) {
                 ReceiptCameraView { result in
+                    PerformanceAuditRecorder.event("Receipt.dismiss.request", metadata: ReceiptImageAudit.context)
                     showingDocumentScanner = false
                     switch result {
                     case .success(let images):

@@ -145,9 +145,13 @@ enum PerformanceAuditRecorder {
 
     static var isEnabled: Bool { storage.enabled() }
 
-    static func measure<T>(_ name: StaticString, _ operation: () throws -> T) rethrows -> T {
+    static func measure<T>(
+        _ name: StaticString, metadata: @autoclosure () -> String = "",
+        _ operation: () throws -> T
+    ) rethrows -> T {
         guard isEnabled else { return try operation() }
-        let interval = begin(name)
+        let detail = metadata()
+        let interval = begin(name, metadata: detail)
         let wall = DispatchTime.now().uptimeNanoseconds
         let cpu = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)
         var outcome: Outcome = .completed
@@ -158,7 +162,7 @@ enum PerformanceAuditRecorder {
                 name: String(describing: name), wallNanoseconds: elapsed,
                 threadCPUNanoseconds: cpuElapsed, isMainThread: Thread.isMainThread
             ))
-            end(interval, outcome: outcome, metadata: "sync_wall_ns=\(elapsed) thread_cpu_ns=\(cpuElapsed)")
+            end(interval, outcome: outcome, metadata: "\(detail) sync_wall_ns=\(elapsed) thread_cpu_ns=\(cpuElapsed)")
         }
         do {
             return try operation()

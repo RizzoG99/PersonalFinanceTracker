@@ -1,0 +1,984 @@
+{
+  "binary_uuid": "DA03F06F-2D8F-368C-884F-6FD7F3F6AE8C",
+  "byte_row_ocr": 7968,
+  "crop_pixels": [
+    1450,
+    2917
+  ],
+  "deduplicated_receipt_rows": 36,
+  "exact_build_config_embedded": false,
+  "extraction_sha256": {
+    "run3-OSSignpostIntervals.xml": "dbf0831d9a810b188d551adcd10504789cc512b7a0627466bf0e60c1b244ca03",
+    "run3-PointsOfInterestEvents.xml": "7ceadd2d1db4b0be19b56057553c6277dcab969418fcdc04f287bfe6279e88a1",
+    "run3-device-thermal-state-intervals.xml": "d4b89df0e33a13c568005c81ae1afcba29825ebd18d12e47b2e6a3de4a1be904",
+    "run3-os-log.xml": "03b157a7ab0ac75e484fc8e4ded2984f0bf5b367df22d6e1f7e1de42a70392d2",
+    "run3-os-signpost.xml": "3a584419ed408ff7258d909797926c35ac9c6ce039aad79d47ce5c6f6e177008",
+    "run3-time-profile.xml": "081df286eb1def168c51bc151aa74dd33813a1ea48c2b0b4e4d52269b519bc8e"
+  },
+  "fixture_export_active": true,
+  "fixture_export_total_signpost_ms": 17.325166999995645,
+  "intervals": [
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.366555541,
+      "name": "Receipt.camera.wait",
+      "outcome": "completed",
+      "signpost_wall_ms": 550.2163330000087,
+      "start_seconds": 197.816339208,
+      "sync_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.367249458,
+      "name": "Receipt.photo.data",
+      "outcome": "completed",
+      "signpost_wall_ms": 0.6460000000174659,
+      "start_seconds": 198.366603458,
+      "sync_wall_ms": 0.621667,
+      "thread_cpu_ms": 0.60375
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.369897,
+      "name": "Receipt.photo.construct",
+      "outcome": "completed",
+      "signpost_wall_ms": 2.6261670000167214,
+      "start_seconds": 198.367270833,
+      "sync_wall_ms": 2.584917,
+      "thread_cpu_ms": 1.612
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.385019708,
+      "name": "Receipt.fixture.export",
+      "outcome": "completed",
+      "signpost_wall_ms": 15.062791999980618,
+      "start_seconds": 198.369956916,
+      "sync_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.388712916,
+      "name": "Receipt.fixture.export",
+      "outcome": "completed",
+      "signpost_wall_ms": 2.2623750000150267,
+      "start_seconds": 198.386450541,
+      "sync_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.559012291,
+      "name": "Receipt.orientation",
+      "outcome": "completed",
+      "signpost_wall_ms": 170.24524999999358,
+      "start_seconds": 198.388767041,
+      "sync_wall_ms": 170.222083,
+      "thread_cpu_ms": 155.532417
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.617620916,
+      "name": "Receipt.crop.render",
+      "outcome": "completed",
+      "signpost_wall_ms": 58.59366599997884,
+      "start_seconds": 198.55902725,
+      "sync_wall_ms": 58.57275,
+      "thread_cpu_ms": 51.370417
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.617629291,
+      "name": "Receipt.crop.total",
+      "outcome": "completed",
+      "signpost_wall_ms": 228.87437499997532,
+      "start_seconds": 198.388754916,
+      "sync_wall_ms": 228.867208,
+      "thread_cpu_ms": 206.975416
+    },
+    {
+      "begin_main": true,
+      "end_main": true,
+      "end_seconds": 198.61781675,
+      "name": "Receipt.camera.stopRequest",
+      "outcome": "completed",
+      "signpost_wall_ms": 0.13733400001569862,
+      "start_seconds": 198.617679416,
+      "sync_wall_ms": 0.131791,
+      "thread_cpu_ms": 0.065791
+    },
+    {
+      "begin_main": false,
+      "end_main": false,
+      "end_seconds": 198.678635958,
+      "name": "Receipt.ocr.prepare",
+      "outcome": "completed",
+      "signpost_wall_ms": 55.83858299999633,
+      "start_seconds": 198.622797375,
+      "sync_wall_ms": 55.817083,
+      "thread_cpu_ms": 53.064583
+    },
+    {
+      "begin_main": false,
+      "end_main": false,
+      "end_seconds": 198.982534,
+      "name": "Receipt.ocr.plain",
+      "outcome": "completed",
+      "signpost_wall_ms": 303.87833399998954,
+      "start_seconds": 198.678655666,
+      "sync_wall_ms": null,
+      "thread_cpu_ms": null
+    },
+    {
+      "begin_main": false,
+      "end_main": false,
+      "end_seconds": 199.017735041,
+      "name": "Receipt.ocr.enhance",
+      "outcome": "completed",
+      "signpost_wall_ms": 35.194458000006534,
+      "start_seconds": 198.982540583,
+      "sync_wall_ms": 35.180458,
+      "thread_cpu_ms": 10.275334
+    },
+    {
+      "begin_main": false,
+      "end_main": false,
+      "end_seconds": 199.275383916,
+      "name": "Receipt.ocr.enhanced",
+      "outcome": "completed",
+      "signpost_wall_ms": 257.64108300001,
+      "start_seconds": 199.017742833,
+      "sync_wall_ms": null,
+      "thread_cpu_ms": null
+    }
+  ],
+  "limits": [
+    "Fixture acquisition session, not clean export-disabled latency baseline",
+    "Only capture with app event count=5 has retained complete markers; no five-capture timing distribution",
+    "Empty os-log table; receipt evidence parsed directly from os-signpost and cross-checked against OSSignpostIntervals",
+    "Duplicate raw signpost rows deduplicated by name/type/timestamp/signpost id/subsystem",
+    "No presented-frame latency or automated OCR accuracy proof",
+    "No Allocations/VM Tracker tables"
+  ],
+  "memory_peak_available": false,
+  "ocr_pixels": [
+    994,
+    2000
+  ],
+  "provenance": {
+    "date": "2026-10-16T12:42:35.210+02:00",
+    "device": "iPhone 14 Pro Max",
+    "duration_seconds": 256.266551,
+    "os": "27.0.1 (24A446)",
+    "pid": "30528",
+    "platform": "iOS",
+    "process": "PersonalFinanceTraker",
+    "run": 3,
+    "tables": [
+      "OSSignpostIntervals",
+      "PointsOfInterestEvents",
+      "StateReportingIntervals",
+      "device-thermal-state-intervals",
+      "dyld-library-load",
+      "hang-risks",
+      "kdebug",
+      "kdebug-strings",
+      "life-cycle-period",
+      "os-log",
+      "os-signpost",
+      "os-signpost-arg",
+      "potential-hangs",
+      "process-info",
+      "runloop-events",
+      "thread-info",
+      "tick",
+      "time-profile",
+      "time-sample"
+    ]
+  },
+  "raw_receipt_rows": 72,
+  "receipt_capture_count_with_complete_markers": 1,
+  "receipt_marker_count_reported_by_app": 5,
+  "receipt_marker_window_seconds": [
+    197.814684125,
+    199.275383916
+  ],
+  "source_orientation_raw": 3,
+  "source_pixels": [
+    4032,
+    3024
+  ],
+  "subsystem": "rizzoG99.PersonalFinanceTraker.test",
+  "thermal_state": "Nominal",
+  "trace_relative_path": ".performance-audit/measurements/traces/Activity-search-5k-PFT-TEST-iPhone-r1.trace",
+  "user_observation": {
+    "automated_device_ocr_parity_verified": false,
+    "no_noticeable_slowdown": true,
+    "no_ocr_error_observed": true,
+    "orientation_ux_defect_issue": 242
+  },
+  "windows": {
+    "crop_render": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 198.617620916,
+            "main_sampled_ms": 52.0,
+            "start_seconds": 198.55902725
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 20672,
+        "inclusive_top": [
+          {
+            "frame": "0x188d00f9f",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "0x188df04b3",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "ReceiptCameraModel.capture()",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "specialized static ReceiptCameraModel.cropPixels(_:to:)",
+            "sampled_ms": 50.0
+          },
+          {
+            "frame": "0x187b330bb",
+            "sampled_ms": 49.0
+          },
+          {
+            "frame": "0x187b336db",
+            "sampled_ms": 49.0
+          },
+          {
+            "frame": "0x1888ae7eb",
+            "sampled_ms": 49.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "_platform_memset",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "0x187b8828d",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "0x187b35de1",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "0x187b88269",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "0x187b88315",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "0x187b88391",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "0x187ac18c1",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x187b3616d",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x187b86801",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x187b868ed",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x187b88021",
+            "sampled_ms": 1.0
+          }
+        ],
+        "main_sample_count": 52,
+        "main_sampled_ms": 52.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+            "sampled_ms": 49.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 2,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 198.617620916,
+      "start_seconds": 198.55902725,
+      "wall_ms": 58.59366599997884
+    },
+    "crop_total": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 198.488754916,
+            "main_sampled_ms": 86.0,
+            "start_seconds": 198.388754916
+          },
+          {
+            "end_seconds": 198.588754916,
+            "main_sampled_ms": 93.0,
+            "start_seconds": 198.488754916
+          },
+          {
+            "end_seconds": 198.617629291,
+            "main_sampled_ms": 29.0,
+            "start_seconds": 198.588754916
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 20672,
+        "inclusive_top": [
+          {
+            "frame": "0x188d00f9f",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "0x188df04b3",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "ReceiptCameraModel.capture()",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "specialized static ReceiptCameraModel.cropPixels(_:to:)",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "0x1888ae7eb",
+            "sampled_ms": 202.0
+          },
+          {
+            "frame": "0x1888ae8f3",
+            "sampled_ms": 202.0
+          },
+          {
+            "frame": "0x188ba2c53",
+            "sampled_ms": 202.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "0x187b88285",
+            "sampled_ms": 23.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 23.0
+          },
+          {
+            "frame": "0x187b88315",
+            "sampled_ms": 13.0
+          },
+          {
+            "frame": "0x187b35de1",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "_platform_memset",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "0x187b8828d",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "__bzero",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "0x187b868ed",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "0x187b86801",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "0x187b86809",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x187b88299",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x187b882e1",
+            "sampled_ms": 4.0
+          }
+        ],
+        "main_sample_count": 208,
+        "main_sampled_ms": 208.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "UIImage.renderUprightPixels()",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+            "sampled_ms": 49.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 5,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 198.617629291,
+      "start_seconds": 198.388754916,
+      "wall_ms": 228.87437499997532
+    },
+    "ocr_total": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 198.72277499999998,
+            "main_sampled_ms": 12.0,
+            "start_seconds": 198.622775
+          },
+          {
+            "end_seconds": 198.82277499999998,
+            "main_sampled_ms": 5.0,
+            "start_seconds": 198.72277499999998
+          },
+          {
+            "end_seconds": 198.922775,
+            "main_sampled_ms": 2.0,
+            "start_seconds": 198.82277499999998
+          },
+          {
+            "end_seconds": 199.022775,
+            "main_sampled_ms": 5.0,
+            "start_seconds": 198.922775
+          },
+          {
+            "end_seconds": 199.122775,
+            "main_sampled_ms": 2.0,
+            "start_seconds": 199.022775
+          },
+          {
+            "end_seconds": 199.22277499999998,
+            "main_sampled_ms": 6.0,
+            "start_seconds": 199.122775
+          },
+          {
+            "end_seconds": 199.275383916,
+            "main_sampled_ms": 1.0,
+            "start_seconds": 199.22277499999998
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 20672,
+        "inclusive_top": [
+          {
+            "frame": "GSEventRunModal",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "UIApplicationMain",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "_CFRunLoopRunSpecificWithOptions",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "__CFRunLoopRun",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "closure #1 in KitRendererCommon(_:)",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "runApp<A>(_:)",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "start",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "static App.main()",
+            "sampled_ms": 33.0
+          },
+          {
+            "frame": "__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__",
+            "sampled_ms": 17.0
+          },
+          {
+            "frame": "__CFRunLoopDoSource0",
+            "sampled_ms": 17.0
+          },
+          {
+            "frame": "__CFRunLoopDoSources0",
+            "sampled_ms": 17.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "__kdebug_trace64",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 2.0
+          },
+          {
+            "frame": "+[NSObject allocWithZone:]",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "-[BLSBacklightSceneSettingsDiffInspector inspectDiff:]",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x18494152d",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x184972d15",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x188e9c9a9",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x18c716255",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x18e797741",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x193345631",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "0x22976c9fd",
+            "sampled_ms": 1.0
+          }
+        ],
+        "main_sample_count": 33,
+        "main_sampled_ms": 33.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "main",
+            "sampled_ms": 33.0
+          }
+        ],
+        "samples_without_stack": 0,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 199.275383916,
+      "start_seconds": 198.622775,
+      "wall_ms": 652.6089160000197
+    },
+    "orientation": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 198.488767041,
+            "main_sampled_ms": 86.0,
+            "start_seconds": 198.388767041
+          },
+          {
+            "end_seconds": 198.559012291,
+            "main_sampled_ms": 70.0,
+            "start_seconds": 198.488767041
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 20672,
+        "inclusive_top": [
+          {
+            "frame": "0x1888ae7eb",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "0x1888ae8f3",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "0x188ba2c53",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "0x188d00f9f",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "0x188df04b3",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "ReceiptCameraModel.capture()",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "UIImage.renderUprightPixels()",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+            "sampled_ms": 153.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "0x187b88285",
+            "sampled_ms": 23.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 17.0
+          },
+          {
+            "frame": "0x187b88315",
+            "sampled_ms": 11.0
+          },
+          {
+            "frame": "0x187b35de1",
+            "sampled_ms": 10.0
+          },
+          {
+            "frame": "__bzero",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "0x187b868ed",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "0x187b86801",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x187b86809",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x187b88299",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x187b882e1",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x187b8834d",
+            "sampled_ms": 4.0
+          },
+          {
+            "frame": "0x247c57b41",
+            "sampled_ms": 4.0
+          }
+        ],
+        "main_sample_count": 156,
+        "main_sampled_ms": 156.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "UIImage.renderUprightPixels()",
+            "sampled_ms": 153.0
+          }
+        ],
+        "samples_without_stack": 3,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 198.559012291,
+      "start_seconds": 198.388767041,
+      "wall_ms": 170.24524999999358
+    },
+    "shutter_to_dismiss": {
+      "cpu": {
+        "buckets": [
+          {
+            "end_seconds": 197.914684125,
+            "main_sampled_ms": 13.0,
+            "start_seconds": 197.814684125
+          },
+          {
+            "end_seconds": 198.014684125,
+            "main_sampled_ms": 8.0,
+            "start_seconds": 197.914684125
+          },
+          {
+            "end_seconds": 198.11468412500003,
+            "main_sampled_ms": 8.0,
+            "start_seconds": 198.014684125
+          },
+          {
+            "end_seconds": 198.21468412500002,
+            "main_sampled_ms": 6.0,
+            "start_seconds": 198.11468412500003
+          },
+          {
+            "end_seconds": 198.314684125,
+            "main_sampled_ms": 9.0,
+            "start_seconds": 198.21468412500002
+          },
+          {
+            "end_seconds": 198.414684125,
+            "main_sampled_ms": 41.0,
+            "start_seconds": 198.314684125
+          },
+          {
+            "end_seconds": 198.514684125,
+            "main_sampled_ms": 90.0,
+            "start_seconds": 198.414684125
+          },
+          {
+            "end_seconds": 198.61468412500003,
+            "main_sampled_ms": 93.0,
+            "start_seconds": 198.514684125
+          },
+          {
+            "end_seconds": 198.617822833,
+            "main_sampled_ms": 3.0,
+            "start_seconds": 198.61468412500003
+          }
+        ],
+        "cpu_evidence_available": true,
+        "exported_sample_count": 20672,
+        "inclusive_top": [
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 210.0
+          },
+          {
+            "frame": "ReceiptCameraModel.capture()",
+            "sampled_ms": 206.0
+          },
+          {
+            "frame": "closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 206.0
+          },
+          {
+            "frame": "closure #1 in closure #1 in ReceiptCameraView.capture()",
+            "sampled_ms": 206.0
+          },
+          {
+            "frame": "completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)",
+            "sampled_ms": 206.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+            "sampled_ms": 206.0
+          },
+          {
+            "frame": "0x188d00f9f",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "0x188df04b3",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "specialized static ReceiptCameraModel.cropPixels(_:to:)",
+            "sampled_ms": 203.0
+          },
+          {
+            "frame": "0x1888ae7eb",
+            "sampled_ms": 202.0
+          },
+          {
+            "frame": "0x1888ae8f3",
+            "sampled_ms": 202.0
+          },
+          {
+            "frame": "0x188ba2c53",
+            "sampled_ms": 202.0
+          }
+        ],
+        "leaf_top": [
+          {
+            "frame": "0x187b88285",
+            "sampled_ms": 23.0
+          },
+          {
+            "frame": "_platform_memmove",
+            "sampled_ms": 23.0
+          },
+          {
+            "frame": "0x187b88315",
+            "sampled_ms": 13.0
+          },
+          {
+            "frame": "0x187b35de1",
+            "sampled_ms": 12.0
+          },
+          {
+            "frame": "_platform_memset",
+            "sampled_ms": 8.0
+          },
+          {
+            "frame": "0x187b8828d",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "__bzero",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "mach_msg2_trap",
+            "sampled_ms": 7.0
+          },
+          {
+            "frame": "0x187b868ed",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "0x187b86801",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "objc_msgSend",
+            "sampled_ms": 5.0
+          },
+          {
+            "frame": "0x187b86809",
+            "sampled_ms": 4.0
+          }
+        ],
+        "main_sample_count": 271,
+        "main_sampled_ms": 271.0,
+        "main_samples_without_weight": 0,
+        "nearest_app_top": [
+          {
+            "frame": "UIImage.renderUprightPixels()",
+            "sampled_ms": 153.0
+          },
+          {
+            "frame": "main",
+            "sampled_ms": 52.0
+          },
+          {
+            "frame": "specialized static PerformanceAuditRecorder.measure<A>(_:metadata:_:)",
+            "sampled_ms": 52.0
+          },
+          {
+            "frame": "specialized static ReceiptImageAudit.export(_:data:)",
+            "sampled_ms": 6.0
+          },
+          {
+            "frame": "<deduplicated_symbol>",
+            "sampled_ms": 1.0
+          },
+          {
+            "frame": "closure #1 in ReceiptCameraModel.capture()",
+            "sampled_ms": 1.0
+          }
+        ],
+        "samples_without_stack": 6,
+        "window_samples_without_thread": 0
+      },
+      "end_seconds": 198.617822833,
+      "start_seconds": 197.814684125,
+      "wall_ms": 803.1387079999774
+    }
+  }
+}

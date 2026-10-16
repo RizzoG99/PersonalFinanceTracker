@@ -1,0 +1,148 @@
+{
+  "audit_id": "PERF-301",
+  "github_issue": 241,
+  "previous_head": "34028786effbc9c118d545fa05eaedff9e5549f3",
+  "head": "e8df73fada945da6238f3ec9baac7f71ae70c24b",
+  "merged_main": "cc86f16",
+  "upstream_fixes": [
+    {
+      "pr": 238,
+      "issue": 232,
+      "scope": "imported category names"
+    },
+    {
+      "pr": 240,
+      "issue": 239,
+      "scope": "localized category names and rename propagation"
+    },
+    {
+      "pr": 243,
+      "issue": 242,
+      "scope": "scanner rotation and landscape framing"
+    }
+  ],
+  "merge_strategy": "local merge, existing branch commits retained",
+  "wip_snapshot_files": 59,
+  "wip_byte_identical_immediately_after_restore": 57,
+  "wip_files_reconciled_with_main": [
+    "CHANGELOG.md",
+    "PersonalFinanceTraker/PersonalFinanceTraker/Features/EditAddTransactionView/Components/ReceiptCameraView.swift"
+  ],
+  "main_checkout_wip_preserved": true,
+  "original_index_empty_and_restored_empty": true,
+  "backup_retained_locally": true,
+  "camera_integration": "Only an angle-matching quad is used/exported; unsupported rotation or stale quad retains upstream full-frame fallback",
+  "old_device_measurements_are_historical": true,
+  "new_device_timing_measured": false,
+  "rendering_optimization_implemented": false,
+  "rotation_physically_retested_here": false,
+  "targeted_validation": {
+    "configuration": "Release-TEST, ENABLE_TESTABILITY=YES",
+    "scheme": "PersonalFinanceTraker-TEST",
+    "passed_test_functions": 235,
+    "passed_executions": 254,
+    "failed_test_functions": 0,
+    "skipped_test_functions": 2,
+    "all_14_requested_suites_present": true,
+    "suites": [
+      {
+        "name": "BootstrapMaintenanceGateTests",
+        "result": "Passed"
+      },
+      {
+        "name": "CategoryDisplayNameTests",
+        "result": "Passed"
+      },
+      {
+        "name": "CategoryNameValidatorTests",
+        "result": "Passed"
+      },
+      {
+        "name": "CategoryRenameTests",
+        "result": "Passed"
+      },
+      {
+        "name": "CompassViewModelTests",
+        "result": "Passed"
+      },
+      {
+        "name": "CycleSummaryServiceTests",
+        "result": "Passed"
+      },
+      {
+        "name": "EditAddTransactionViewModelTests",
+        "result": "Passed"
+      },
+      {
+        "name": "ForegroundRefreshGateTests",
+        "result": "Passed"
+      },
+      {
+        "name": "ImportCategoryNameTests",
+        "result": "Passed"
+      },
+      {
+        "name": "ReceiptCameraGeometryTests",
+        "result": "Passed"
+      },
+      {
+        "name": "ReceiptImageProcessingTests",
+        "result": "Passed"
+      },
+      {
+        "name": "ReceiptParserTests",
+        "result": "Passed"
+      },
+      {
+        "name": "RecurrenceDetectorTests",
+        "result": "Passed"
+      },
+      {
+        "name": "TransactionListViewModelTests",
+        "result": "Passed"
+      }
+    ],
+    "skipped": [
+      {
+        "name": "untouchedTranslatedNameKeepsTheKey()",
+        "type": "Test Case",
+        "details": null
+      },
+      {
+        "name": "cyclePaceShowsTranslatedName()",
+        "type": "Test Case",
+        "details": null
+      }
+    ],
+    "reproduction_command": "rtk proxy env PFT_XCODE_SCHEME=PersonalFinanceTraker-TEST scripts/xcb test -configuration Release-TEST ENABLE_TESTABILITY=YES -only-testing:PersonalFinanceTrakerTests/BootstrapMaintenanceGateTests -only-testing:PersonalFinanceTrakerTests/CategoryDisplayNameTests -only-testing:PersonalFinanceTrakerTests/CategoryNameValidatorTests -only-testing:PersonalFinanceTrakerTests/CategoryRenameTests -only-testing:PersonalFinanceTrakerTests/CompassViewModelTests -only-testing:PersonalFinanceTrakerTests/CycleSummaryServiceTests -only-testing:PersonalFinanceTrakerTests/EditAddTransactionViewModelTests -only-testing:PersonalFinanceTrakerTests/ForegroundRefreshGateTests -only-testing:PersonalFinanceTrakerTests/ImportCategoryNameTests -only-testing:PersonalFinanceTrakerTests/ReceiptCameraGeometryTests -only-testing:PersonalFinanceTrakerTests/ReceiptImageProcessingTests -only-testing:PersonalFinanceTrakerTests/ReceiptParserTests -only-testing:PersonalFinanceTrakerTests/RecurrenceDetectorTests -only-testing:PersonalFinanceTrakerTests/TransactionListViewModelTests -collect-test-diagnostics never -testLanguage en -testRegion US"
+  },
+  "camera_source_sha256": "0bce45929ad2c2b3e50c78d61c661b97d5419c5b68ff1eb59fafd593aa7e90e2",
+  "fixture_replay_validation": {
+    "test_functions": 1,
+    "failed_test_functions": 1,
+    "skipped_test_functions": 0,
+    "replayed_photos": 8,
+    "assertion_failures": 6,
+    "all_total_date_merchant_unchanged_from_pre_sync": true,
+    "total_matches": 7,
+    "date_matches": 8,
+    "merchant_exact_matches": 3,
+    "existing_red_baseline_preserved": true,
+    "live_rotation_test": false,
+    "crop_jpeg_attachments_byte_identical_to_pre_sync": 8
+  },
+  "italian_localization_validation": {
+    "language": "it",
+    "region": "IT",
+    "suite": "CategoryDisplayNameTests",
+    "passed_test_functions": 5,
+    "failed_test_functions": 0,
+    "skipped_test_functions": 0,
+    "covers_two_english_run_skips": true,
+    "reproduction_command": "rtk proxy env PFT_XCODE_SCHEME=PersonalFinanceTraker-TEST scripts/xcb test -configuration Release-TEST ENABLE_TESTABILITY=YES -only-testing:PersonalFinanceTrakerTests/CategoryDisplayNameTests -collect-test-diagnostics never -testLanguage it -testRegion IT"
+  },
+  "final_original_wip_files_unchanged_after_scoped_report_updates": 53,
+  "graphify_updated": true,
+  "index_empty": true,
+  "diff_check_passed": true
+}

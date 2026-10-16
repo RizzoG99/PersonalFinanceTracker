@@ -1,0 +1,218 @@
+{
+  "audit_id": "PERF-301",
+  "github_issue": 241,
+  "source": "user-exported TEST app container, Documents/PERF301Fixtures",
+  "head": "34028786effbc9c118d545fa05eaedff9e5549f3 plus preserved dirty work",
+  "test_configuration": "Release-TEST, ENABLE_TESTABILITY=YES, en_US, Europe/Rome",
+  "replay_device": "iPhone 17 Simulator, iOS 27.0 (24A434)",
+  "raw_device": "iPhone 14 Pro Max, iOS 27.0.1 (24A446), from run-3/run-4 context",
+  "fixture_count": 8,
+  "distinct_receipts": 1,
+  "test_functions": 1,
+  "test_passed": 0,
+  "test_failed": 1,
+  "test_skipped": 0,
+  "assertion_failures": 6,
+  "full_replay_count_attachment": 8,
+  "total_matches": 7,
+  "date_matches": 8,
+  "merchant_exact_matches": 3,
+  "merchant_diacritic_only_mismatches": 4,
+  "results": [
+    {
+      "id": "1631DBB7-474F-493D-BC8C-EFA2454621CB",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "60556f437e271f53182c38fb2a2354644592f6490dc9ff730e66e1eafaa33a12",
+      "total_matches": true,
+      "date_matches": true,
+      "merchant_exact_matches": true,
+      "merchant_matches_after_diacritic_folding": true,
+      "metadata_sha256": "11af0688643fb785fa935073abaa715dac2bfaefde6ca0b60978925ce4ca549a",
+      "quad_present_already_padded": true
+    },
+    {
+      "id": "7C21E5CB-2E3B-422E-A8F9-D625C03D6EA5",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "65b4a5409818e0f25cf2785ae153df5832cf6efbdd798a85ce5398cb185beb6b",
+      "total_matches": true,
+      "date_matches": true,
+      "merchant_exact_matches": true,
+      "merchant_matches_after_diacritic_folding": true,
+      "metadata_sha256": "ecb37e0994cb8179ccbb12355516bf2a5cc87d01becc377b9c591da1a62c978e",
+      "quad_present_already_padded": true
+    },
+    {
+      "id": "846E78C7-B9E7-4A59-99B3-0759B4719F66",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "805c0655e8bb5ca8d6e51b3c0afcd8c037e83647409fff17db6715733855d697",
+      "total_matches": true,
+      "date_matches": true,
+      "merchant_exact_matches": false,
+      "merchant_matches_after_diacritic_folding": true,
+      "metadata_sha256": "e25e6339a2a5f6692b7bf72577250aa7ce23f9c4480bca05c799a160695eaea2",
+      "quad_present_already_padded": true
+    },
+    {
+      "id": "60593A10-CFAF-4C61-A369-A7A02925D21B",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "cdcd1c1b98365160589f383dc22b5535421e8c9ae9e666c02bd0c07a52505afd",
+      "total_matches": true,
+      "date_matches": true,
+      "merchant_exact_matches": false,
+      "merchant_matches_after_diacritic_folding": false,
+      "metadata_sha256": "4008b614619287a68412eb627a50a812068752850c68a45d43d5c85bc73e44ec",
+      "quad_present_already_padded": true
+    },
+    {
+      "id": "DC798A10-607F-4855-9280-33B20A67A0DA",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "7ef4ebbdce3f41dfeccd09eec9842a3aab57f4f59beb2ec5bc956ebe74d1c3fc",
+      "total_matches": true,
+      "date_matches": true,
+      "merchant_exact_matches": false,
+      "merchant_matches_after_diacritic_folding": true,
+      "metadata_sha256": "fc89498dc05e5f1af3926d3b18a7410b6d96285bcb87c0500a99ccbe82c346ba",
+      "quad_present_already_padded": true
+    },
+    {
+      "id": "F67C00E3-6578-4B2D-B466-627561629733",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "df7e3653b02bcee33d5726455d9af52af3e22b148d1163c3c39eaa16b46b3df0",
+      "total_matches": false,
+      "date_matches": true,
+      "merchant_exact_matches": true,
+      "merchant_matches_after_diacritic_folding": true,
+      "metadata_sha256": "9c1ef1b7343ed77fa6131b89e3d8c17417f2772165e75323a90f25bb1fe85c05",
+      "quad_present_already_padded": true
+    },
+    {
+      "id": "8878C320-8F0E-4684-96FE-88C644ECA84C",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "2619a49c8a015a42611999411b1ac3ed6baedeac093199a7515671500baaaf46",
+      "total_matches": true,
+      "date_matches": true,
+      "merchant_exact_matches": false,
+      "merchant_matches_after_diacritic_folding": true,
+      "metadata_sha256": "1113547f1623d7115c69b80eff666c85d0556b3657c16ed13174e34bbebdcd46",
+      "quad_present_already_padded": true
+    },
+    {
+      "id": "6F7FDA29-6A4F-4FD7-97EE-F29399BBB34A",
+      "pixels": [
+        4032,
+        3024
+      ],
+      "orientation": 3,
+      "sha256": "40a04aa12b9a70a69ced3adb7c53214ffda9b33ce9b19fe939eff9aa46bcd982",
+      "total_matches": true,
+      "date_matches": true,
+      "merchant_exact_matches": false,
+      "merchant_matches_after_diacritic_folding": true,
+      "metadata_sha256": "0699056b866361a3ae39f2087f171f9e1c2fb7b02550c5067b286030dba38509",
+      "quad_present_already_padded": true
+    }
+  ],
+  "limitations": [
+    "Human-read photo expectations; raw values and OCR kept ignored locally",
+    "No before/after implementation or physical-device OCR replay parity claimed",
+    "Real corpus has no absent/invalid/mirrored quad cases; synthetic geometry tests cover them",
+    "No speed conclusion from Simulator replay"
+  ],
+  "repeat": {
+    "test_functions": 1,
+    "test_failed": 1,
+    "test_skipped": 0,
+    "assertion_failures": 6,
+    "replayed_fixtures": 8,
+    "total_date_merchant_unchanged_from_first_attempt": true,
+    "crop_attachments": 8,
+    "uncropped_diagnostic_controls": 6,
+    "uncropped_control_total_matches": 2,
+    "uncropped_control_total_absent": 4,
+    "controls_not_an_optimization": true,
+    "controls": [
+      {
+        "id": "6F7FDA29-6A4F-4FD7-97EE-F29399BBB34A",
+        "total_matches": false,
+        "total_absent": true,
+        "merchant_exact_matches": false
+      },
+      {
+        "id": "8878C320-8F0E-4684-96FE-88C644ECA84C",
+        "total_matches": true,
+        "total_absent": false,
+        "merchant_exact_matches": false
+      },
+      {
+        "id": "60593A10-CFAF-4C61-A369-A7A02925D21B",
+        "total_matches": false,
+        "total_absent": true,
+        "merchant_exact_matches": false
+      },
+      {
+        "id": "846E78C7-B9E7-4A59-99B3-0759B4719F66",
+        "total_matches": false,
+        "total_absent": true,
+        "merchant_exact_matches": false
+      },
+      {
+        "id": "DC798A10-607F-4855-9280-33B20A67A0DA",
+        "total_matches": true,
+        "total_absent": false,
+        "merchant_exact_matches": false
+      },
+      {
+        "id": "F67C00E3-6578-4B2D-B466-627561629733",
+        "total_matches": false,
+        "total_absent": true,
+        "merchant_exact_matches": true
+      }
+    ]
+  },
+  "harness_sha256": "899a3655a78066e34d918cc6216f18aa025c24a414b55b91e47ad58b17e950bc",
+  "correctness_followups": [
+    {
+      "issue": 244,
+      "url": "https://github.com/RizzoG99/PersonalFinanceTracker/issues/244",
+      "symptom": "Printed tax selected instead of recognized total",
+      "primary_fixture_id": "F67C00E3-6578-4B2D-B466-627561629733",
+      "scope": "OCR/parser correctness, separate from accepted PERF-301 performance stop"
+    },
+    {
+      "issue": 245,
+      "url": "https://github.com/RizzoG99/PersonalFinanceTracker/issues/245",
+      "symptom": "Table heading selected instead of merchant; four accent-only mismatches distinguished",
+      "primary_fixture_id": "60593A10-CFAF-4C61-A369-A7A02925D21B",
+      "scope": "OCR/parser correctness and explicit diacritic fidelity policy, separate from accepted PERF-301 performance stop"
+    }
+  ],
+  "tracking_updated_at": "2026-10-16"
+}
