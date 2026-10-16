@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Insights keeps the latest transaction results and selected period when refreshes overlap, including after changing the pay cycle or returning to the app.
 - Home's cycle summary refreshes faster with long transaction histories, while keeping the same totals and forecast.
 - Editing several transactions in Activity and undoing those edits avoids repeated full-history widget updates. Bulk edits also keep transactions linked to their trips.
 - Activity now opens large histories in pages of 200 items, with a Show More button. Loading avoids duplicate refreshes, and saved transactions and category changes stay up to date after Siri actions or returning to the app.

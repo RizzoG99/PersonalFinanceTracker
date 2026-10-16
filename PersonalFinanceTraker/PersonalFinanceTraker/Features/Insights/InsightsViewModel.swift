@@ -37,7 +37,7 @@ final class CompassViewModel {
     var ignoreSubscriptions: Bool = UserDefaults.standard.bool(forKey: "healthScore.ignoreSubscriptions") {
         didSet {
             UserDefaults.standard.set(ignoreSubscriptions, forKey: "healthScore.ignoreSubscriptions")
-            Task { await computeHealthScore() }
+            load()
         }
     }
 
@@ -78,59 +78,119 @@ final class CompassViewModel {
 
     // MARK: - Load
 
+    @ObservationIgnored private(set) var loadTask: Task<Void, Never>?
+    @ObservationIgnored private(set) var requestedGeneration: UInt64 = 0
+    @ObservationIgnored private(set) var publishedGeneration: UInt64 = 0
+
     func load() {
-        PerformanceAuditRecorder.event("Insights.load.request")
-        Task {
-            await reloadData()
-        }
+        _ = requestLoad()
     }
 
-    /// Internal rather than private so tests can await the load directly. `load()`
-    /// is fire-and-forget, which left tests with nothing to wait on but a fixed
-    /// sleep — the cause of an intermittent failure in CompassViewModelTests.
+    /// Plan and the iPad shell await the same owner as appearance/revision callers.
+    /// Cancellation of one waiter must not cancel shared refresh work.
     func reloadData() async {
-        let measurement = PerformanceAuditRecorder.begin("Insights.load")
+        await requestLoad().value
+    }
+
+    private func requestLoad() -> Task<Void, Never> {
+        requestedGeneration += 1
+        PerformanceAuditRecorder.event("Insights.load.request", metadata: "generation=\(requestedGeneration)")
+        if let loadTask {
+            PerformanceAuditRecorder.event("Insights.load.coalesced", metadata: "generation=\(requestedGeneration)")
+            return loadTask
+        }
+        let task = Task {
+            while true {
+                let generation = requestedGeneration
+                await fetchAndPublish(generation: generation)
+                // No suspension between this check and relinquishing ownership.
+                // A request during any pass, including a failed one, gets a fresh read.
+                if generation == requestedGeneration { break }
+            }
+            loadTask = nil
+        }
+        loadTask = task
+        return task
+    }
+
+    private func isCurrent(_ generation: UInt64) -> Bool {
+        guard generation == requestedGeneration else {
+            PerformanceAuditRecorder.event("Insights.load.superseded", metadata: "generation=\(generation) requested=\(requestedGeneration)")
+            return false
+        }
+        return true
+    }
+
+    private func fetchAndPublish(generation: UInt64) async {
+        let measurement = PerformanceAuditRecorder.begin("Insights.load", metadata: "generation=\(generation)")
         var outcome: PerformanceAuditRecorder.Outcome = .completed
         defer {
             PerformanceAuditRecorder.end(
                 measurement,
                 outcome: Task.isCancelled ? .cancelled : outcome,
-                metadata: "transactions=\(transactions.count)"
+                metadata: "generation=\(generation) published=\(publishedGeneration) transactions=\(transactions.count)"
             )
         }
+        let loadedTransactions: [TransactionSnapshot]
+        let loadedGoals: [GoalSnapshot]
+        let loadedCategories: [CategorySnapshot]
+        let loadedRules: [RecurrenceRuleSnapshot]
         do {
             async let txs = repo.fetchAll()
             async let fetchedGoals = repo.fetchGoals()
             async let fetchedCategories = repo.fetchCategories()
             // All rules, stopped ones too: the recap needs what was running last cycle.
             async let fetchedRules = repo.fetchAllRecurrenceRules()
-            transactions = try await txs
-            goals = (try? await fetchedGoals) ?? []
-            categories = (try? await fetchedCategories) ?? []
-            allRules = (try? await fetchedRules) ?? []
+            loadedTransactions = try await txs
+            loadedGoals = (try? await fetchedGoals) ?? []
+            loadedCategories = (try? await fetchedCategories) ?? []
+            loadedRules = (try? await fetchedRules) ?? []
         } catch {
             outcome = .failed
             print("CompassViewModel load error: \(error)")
             return
         }
+        guard isCurrent(generation) else { return }
+        // Keep repository fallbacks and score inputs unchanged, but stage them locally.
+        let budgetedCategories = (try? await repo.fetchCategories())?.filter { $0.monthlyBudget != nil } ?? []
+        guard isCurrent(generation) else { return }
+        let payCycleStartDay = AppSettings.storedStartDay
+        let ignoreSubscriptions = self.ignoreSubscriptions
+        let loadedExpenses = PerformanceAuditRecorder.measure("Insights.expenseFilter") {
+            loadedTransactions.filter { $0.amount < 0 && $0.goalId == nil }
+        }
+        let score = computeHealthScore(
+            transactions: loadedTransactions, expenseTransactions: loadedExpenses,
+            budgetedCategories: budgetedCategories, payCycleStartDay: payCycleStartDay,
+            ignoreSubscriptions: ignoreSubscriptions
+        )
+        await saveSnapshotIfNeeded(score: score, ignoreSubscriptions: ignoreSubscriptions, generation: generation)
+        guard isCurrent(generation) else { return }
+        let snapshots = (try? await repo.fetchSnapshots(limit: 6)) ?? []
+        guard isCurrent(generation) else { return }
+
+        // Publish one coherent generation without suspension. Explorer uses the latest
+        // selection, including changes made while repository reads were suspended.
+        transactions = loadedTransactions
+        goals = loadedGoals
+        categories = loadedCategories
+        allRules = loadedRules
+        expenseTransactions = loadedExpenses
         let today = Calendar.current.startOfDay(for: .now)
         goalRules = allRules.filter { $0.goalId != nil && $0.isActive(asOf: today) }
         monthlyRecap = PerformanceAuditRecorder.measure("Insights.monthlyRecap") {
             MonthlyRecap.make(
                 transactions: transactions, rules: allRules,
-                payCycleStartDay: AppSettings.storedStartDay, currencyService: currencyService
+                payCycleStartDay: payCycleStartDay, currencyService: currencyService
             )
         }
-        expenseTransactions = PerformanceAuditRecorder.measure("Insights.expenseFilter") {
-            transactions.filter { $0.amount < 0 && $0.goalId == nil }
-        }
-        // overlap the repo-I/O computation with the pure ones; all run on MainActor, awaits interleave
-        async let health: Void = computeHealthScore()
+        healthScore = score
+        scoreSnapshots = snapshots
         refreshExplorer()
-        await computeHabits()
+        computeHabits()
         calculateAverages()
-        await health
-        PerformanceAuditRecorder.commit(measurement, metadata: "transactions=\(transactions.count)")
+        publishedGeneration = generation
+        PerformanceAuditRecorder.commit(measurement, metadata: "generation=\(generation) transactions=\(transactions.count)")
     }
 
     // MARK: - Goal CRUD
@@ -193,33 +253,33 @@ final class CompassViewModel {
 
     // MARK: - Computations
 
-    private func computeHealthScore() async {
-        let budgetedCategories = (try? await repo.fetchCategories())?.filter { $0.monthlyBudget != nil } ?? []
-
+    private func computeHealthScore(
+        transactions: [TransactionSnapshot], expenseTransactions: [TransactionSnapshot],
+        budgetedCategories: [CategorySnapshot], payCycleStartDay: Int,
+        ignoreSubscriptions: Bool
+    ) -> HealthScore? {
         // ponytail: Require at least some income or expense in the 6-month window.
         // Could later be tightened (e.g., N transactions minimum) if all-zero turns out too lenient.
         let calendar = Calendar.current
         let now = Date.now
-        let financialMonths = PayCycleService.financialMonths(count: 6, before: now, startDay: AppSettings.storedStartDay, calendar: calendar)
+        let financialMonths = PayCycleService.financialMonths(count: 6, before: now, startDay: payCycleStartDay, calendar: calendar)
         let sixMonthsAgo = financialMonths.first?.start ?? calendar.date(byAdding: .month, value: -6, to: now) ?? now
         let hasRecentIncome = transactions.contains { $0.timestamp >= sixMonthsAgo && $0.amount > 0 }
         let hasRecentExpense = expenseTransactions.contains { $0.timestamp >= sixMonthsAgo }
 
         if !hasRecentIncome && !hasRecentExpense {
-            healthScore = nil
+            return nil
         } else {
-            healthScore = PerformanceAuditRecorder.measure("Insights.healthScore") {
+            return PerformanceAuditRecorder.measure("Insights.healthScore") {
                 healthService.compute(
                     transactions: transactions,
                     expenseTransactions: expenseTransactions,
                     budgetedCategories: budgetedCategories,
-                    payCycleStartDay: AppSettings.storedStartDay,
+                    payCycleStartDay: payCycleStartDay,
                     ignoreSubscriptions: ignoreSubscriptions
                 )
             }
         }
-        await saveSnapshotIfNeeded()
-        scoreSnapshots = (try? await repo.fetchSnapshots(limit: 6)) ?? []
     }
 
     private func refreshExplorer() {
@@ -242,7 +302,7 @@ final class CompassViewModel {
             .sorted { $0.timestamp > $1.timestamp }
     }
 
-    private func computeHabits() async {
+    private func computeHabits() {
         habitObservations = PerformanceAuditRecorder.measure("Insights.habits") {
             insightService.habitObservations(expenseTransactions: expenseTransactions)
         }
@@ -260,9 +320,10 @@ final class CompassViewModel {
         averageSavings = sav
     }
 
-    private func saveSnapshotIfNeeded() async {
-        guard let score = healthScore else { return }
+    private func saveSnapshotIfNeeded(score: HealthScore?, ignoreSubscriptions: Bool, generation: UInt64) async {
+        guard let score else { return }
         let existing = (try? await repo.fetchSnapshots(limit: 1)) ?? []
+        guard isCurrent(generation) else { return }
         let today = Calendar.current.startOfDay(for: Date.now)
         guard existing.first.map({ Calendar.current.startOfDay(for: $0.timestamp) }) != today else { return }
 

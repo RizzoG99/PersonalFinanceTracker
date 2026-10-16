@@ -1,5 +1,24 @@
 # Performance Audit Summary
 
+## PERF-111 / #235 follow-up — 2026-10-16
+
+Insights reload ownership is mitigated in the verified ViewModel scope. Before
+the fix, an older response overwrote a newer completed result in three repetitions
+each at 1 and 5,000 transactions. A shared refresh task now coalesces pending
+requests and publishes only the current generation, preserving selected periods,
+late updates and retry after errors. An already-issued daily snapshot save keeps
+the existing history policy. PERF-112 remains accepted in its existing scope.
+
+Final targeted validation: 41 tests / 44 executions passed, zero failures/skips;
+the optimized financial harness passed one test with 70 records. Historical
+averages differ only by two fixture expenses leaving the rolling six-month
+window; all other results/counts match. Physical/UI latency is unmeasured.
+Stop structural work in this scope; #235 is not automatically closed by PR #230.
+Original audit sections retain their historical snapshot.
+
+Evidence: [ticket report](measurements/PERF-111-insights-overlap.md) and
+[redacted validation](measurements/PERF-111-validation.json).
+
 ## Executive summary
 
 This static audit found no measured or reproduced performance bottleneck. It found 21 raw candidates; independent review downgraded two severities and consolidated five overlapping items, leaving 16 distinct root findings. Six are P1 measurement-and-optimization candidates, seven are P2, and three are P3. There are no P0 findings.

@@ -22,6 +22,11 @@ final class MockTransactionRepository: ITransactionRepository {
     var fetchAllDelay: Duration?
     /// A controlled suspension at the actual read seam, without timing-based sleeps.
     var fetchAllHandler: (@MainActor () async throws -> [TransactionSnapshot])?
+    var fetchCategoriesCallCount = 0
+    var fetchCategoriesHandler: (@MainActor () async throws -> [CategorySnapshot])?
+    var fetchSnapshotsCallCount = 0
+    var fetchSnapshotsHandler: (@MainActor (Int) async throws -> [HealthScoreSnapshotData])?
+    var saveSnapshotHandler: (@MainActor (HealthScoreSnapshotData) async throws -> Void)?
     var addCalledCount = 0
     var deleteCalledCount = 0
     var updateCalledCount = 0
@@ -100,6 +105,8 @@ final class MockTransactionRepository: ITransactionRepository {
 
     // MARK: Categories
     func fetchCategories() async throws -> [CategorySnapshot] {
+        fetchCategoriesCallCount += 1
+        if let fetchCategoriesHandler { return try await fetchCategoriesHandler() }
         if shouldThrow { throw MockError.forced }
         return stubbedCategories
     }
@@ -231,11 +238,14 @@ final class MockTransactionRepository: ITransactionRepository {
     // MARK: Health snapshots
     func saveSnapshot(_ data: HealthScoreSnapshotData) async throws {
         saveSnapshotCalledCount += 1
+        if let saveSnapshotHandler { try await saveSnapshotHandler(data) }
         if shouldThrow { throw MockError.forced }
         stubbedSnapshots.insert(data, at: 0)
     }
 
     func fetchSnapshots(limit: Int) async throws -> [HealthScoreSnapshotData] {
+        fetchSnapshotsCallCount += 1
+        if let fetchSnapshotsHandler { return try await fetchSnapshotsHandler(limit) }
         if shouldThrow { throw MockError.forced }
         return Array(stubbedSnapshots.prefix(limit))
     }
