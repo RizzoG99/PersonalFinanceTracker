@@ -24,7 +24,7 @@ struct CategoryEntity: AppEntity {
     let id: String  // category name
 
     var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(id)")
+        DisplayRepresentation(title: "\(id.removingLeadingEmoji.localizedCategoryDisplay)")
     }
 }
 
@@ -82,7 +82,7 @@ struct AddTransactionIntent: AppIntent {
         try await repo.add(input)
         await HabitSnapshotUpdater.refresh(using: repo)
         let formatted = abs(input.amount).formatted(.currency(code: "EUR"))
-        return .result(dialog: "Added \(formatted) to \(input.category).")
+        return .result(dialog: "Added \(formatted) to \(input.category.removingLeadingEmoji.localizedCategoryDisplay).")
     }
 }
 
@@ -124,7 +124,7 @@ struct RepeatTransactionTemplateIntent: AppIntent {
         )
         try await repo.add(input)
         await HabitSnapshotUpdater.refresh(using: repo)
-        return .result(dialog: "Added \(input.category).")
+        return .result(dialog: "Added \(input.category.removingLeadingEmoji.localizedCategoryDisplay).")
     }
 }
 

@@ -106,7 +106,7 @@ struct MonthlyRecapCard: View {
             (String(localized: "You put aside \(percent(to)) of your income (was \(percent(from)))."),
              to > from ? "arrow.up.circle.fill" : "arrow.down.circle.fill", to > from ? .positive : .negative)
         case .mostImproved(let category, let saved):
-            (String(localized: "Most improved: \(category), \(money(saved)) less."), "star.circle.fill", .positive)
+            (String(localized: "Most improved: \(category.removingLeadingEmoji.localizedCategoryDisplay), \(money(saved)) less."), "star.circle.fill", .positive)
         case .recurring(let change) where change > 0:
             (String(localized: "Recurring costs went up by \(money(change)) a month."), "arrow.up.circle.fill", .negative)
         case .recurring(let change):

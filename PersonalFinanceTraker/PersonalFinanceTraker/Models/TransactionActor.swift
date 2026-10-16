@@ -237,7 +237,9 @@ actor TransactionActor: ITransactionRepository {
 
     // MARK: Categories
 
-    static let categoryNameRepairKey = "didRepairImportedCategoryNames"
+    /// V2 (#239): reruns the sweep once for categories renamed before renames carried their
+    /// transactions along.
+    static let categoryNameRepairKey = "didRepairImportedCategoryNamesV2"
 
     /// One-time repair for #232: imports used to store the CSV's category name in `category`
     /// while linking `categoryModel` to the mapped app category, so list, budgets and charts
@@ -247,8 +249,27 @@ actor TransactionActor: ITransactionRepository {
     @discardableResult
     func repairImportedCategoryNames(defaults: UserDefaults = .standard) throws -> Int {
         guard !defaults.bool(forKey: Self.categoryNameRepairKey) else { return 0 }
+        let fixed = try syncCategoryNames(of: modelContext.fetch(FetchDescriptor<CategoryModel>()))
+        defaults.set(true, forKey: Self.categoryNameRepairKey)
+        return fixed
+    }
+
+    /// Renames a category and rewrites the `category` copy on its transactions and rules in the
+    /// same save (#239) — otherwise the list, budgets and charts split it in two, as in #232.
+    /// Runs here, off the main thread: a category can own thousands of transactions.
+    /// - Returns: how many transactions and rules were rewritten.
+    @discardableResult
+    func renameCategory(id: PersistentIdentifier, to name: String) throws -> Int {
+        guard let category = modelContext.model(for: id) as? CategoryModel else { return 0 }
+        category.name = name
+        return try syncCategoryNames(of: [category])
+    }
+
+    /// Walks each category's own transactions through the inverse relationship — unlinked rows
+    /// are never loaded — and saves once.
+    private func syncCategoryNames(of categories: [CategoryModel]) throws -> Int {
         var fixed = 0
-        for category in try modelContext.fetch(FetchDescriptor<CategoryModel>()) {
+        for category in categories {
             for tx in category.transactions ?? [] where tx.category != category.name {
                 tx.category = category.name
                 fixed += 1
@@ -256,14 +277,14 @@ actor TransactionActor: ITransactionRepository {
         }
         // Rules carry their own copy and stamp it on every occurrence they materialize. No
         // inverse to walk from the category side, but there are only ever a handful of rules.
+        let ids = Set(categories.map(\.persistentModelID))
         for rule in try modelContext.fetch(FetchDescriptor<RecurrenceRule>()) {
-            if let name = rule.categoryModel?.name, rule.category != name {
-                rule.category = name
+            if let model = rule.categoryModel, ids.contains(model.persistentModelID), rule.category != model.name {
+                rule.category = model.name
                 fixed += 1
             }
         }
-        if fixed > 0 { try modelContext.save() }
-        defaults.set(true, forKey: Self.categoryNameRepairKey)
+        if modelContext.hasChanges { try modelContext.save() }
         return fixed
     }
 

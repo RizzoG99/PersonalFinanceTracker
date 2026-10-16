@@ -263,7 +263,7 @@ struct CycleCategoriesCard: View {
                         ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
                         : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
                     layout {
-                        Text(row.category)
+                        Text(row.category.removingLeadingEmoji.localizedCategoryDisplay)
                             .font(.subheadline)
                             .foregroundStyle(.textPrimary)
                         Spacer(minLength: 0)
