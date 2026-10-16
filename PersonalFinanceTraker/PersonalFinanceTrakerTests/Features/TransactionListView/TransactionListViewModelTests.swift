@@ -121,6 +121,25 @@ struct TransactionListViewModelTests {
         #expect(!vm.activityPage.hasMoreRows)
     }
 
+    @Test @MainActor func activityPaginationSurvivesReloadAndSelectionMode() async {
+        let mockRepo = MockTransactionRepository()
+        mockRepo.stubbedTransactions = activityFixtures(count: 450)
+        let vm = await loadedVM(mockRepo)
+        await vm.groupingTask?.value
+        vm.loadNextActivityPage()
+
+        vm.isSelecting = true
+        await vm.groupingTask?.value
+        #expect(vm.activityRowLimit == 400)
+
+        vm.isSelecting = false
+        vm.reload()
+        await vm.loadTask?.value
+        await vm.groupingTask?.value
+        #expect(vm.activityRowLimit == 400)
+        #expect(vm.activityPage.groups.flatMap(\.1).count == 400)
+    }
+
     @Test @MainActor func activityPaginationResetsWhenTheSearchChanges() async {
         let mockRepo = MockTransactionRepository()
         mockRepo.stubbedTransactions = activityFixtures(count: 450)

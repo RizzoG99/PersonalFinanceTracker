@@ -119,7 +119,8 @@ struct IPadRootView: View {
             models.compass.onDataChanged = { models.dataChanged.bump() }
             models.transactions.load()
             await models.transactions.loadTask?.value
-            if (try? await models.repo.repairImportedCategoryNames()) ?? 0 > 0 {
+            let repaired = (try? await models.repo.repairImportedCategoryNames()) ?? 0 > 0
+            if repaired {
                 models.transactions.reload()
                 await models.transactions.loadTask?.value
                 // Same as MainTabView: make the newest backup (the one restore uses) the repaired data.
@@ -129,7 +130,7 @@ struct IPadRootView: View {
             let didMaterialize = (try? await models.materializationService.materialize(using: models.repo)) ?? false
             await HabitSnapshotUpdater.refresh(using: models.repo)
             await models.repo.refreshSafeToSpendWidgetSnapshot()
-            if didMaterialize { models.dataChanged.bump() }
+            if didMaterialize || repaired { models.dataChanged.bump() }
             consumeFeatureDiscoveryDestination()
             consumePendingWidgetDestination()
             PerformanceAuditRecorder.end(measurement)
@@ -137,16 +138,16 @@ struct IPadRootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { foregroundRefreshGate.recordBackground() }
-            guard phase == .active, foregroundRefreshGate.consumeRefreshOnActivation() else { return }
+            guard phase == .active,
+                  foregroundRefreshGate.consumeRefreshOnActivation(
+                      revision: TransactionSnapshotRevision.shared.revision(for: models.repo.modelContainer)
+                  ) else { return }
             Task {
                 let measurement = PerformanceAuditRecorder.begin("Lifecycle.foreground.refresh", metadata: "shell=iPad")
                 await models.prepareForForegroundReads()
-                models.dashboard.reload()
-                models.transactions.reload()
-                await models.compass.reloadData()
+                // The fan-out reloads every pane and refreshes the habit/widget snapshots.
+                models.dataChanged.bump()
                 let didMaterialize = (try? await models.materializationService.materialize(using: models.repo)) ?? false
-                await HabitSnapshotUpdater.refresh(using: models.repo)
-                await models.repo.refreshSafeToSpendWidgetSnapshot()
                 if didMaterialize { models.dataChanged.bump() }
                 PerformanceAuditRecorder.end(measurement)
             }

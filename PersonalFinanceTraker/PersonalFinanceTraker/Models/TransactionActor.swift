@@ -44,37 +44,37 @@ actor TransactionActor: ITransactionRepository {
             sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
         )
         do {
-            while true {
-                let readRevision = revisions.revision(for: modelContainer)
-                // A long-lived write context may have registered values from before a save
-                // in another context. Each materialization uses a fresh, actor-confined read
-                // context; only immutable Sendable values survive it.
-                let readContext = ModelContext(modelContainer)
-                let fetchMeasurement = PerformanceAuditRecorder.begin("TransactionActor.store.fetch", metadata: "revision=\(readRevision)")
-                let models: [TransactionModel]
-                do {
-                    models = try readContext.fetch(desc)
-                    PerformanceAuditRecorder.end(fetchMeasurement, metadata: "items=\(models.count)")
-                } catch {
-                    PerformanceAuditRecorder.end(fetchMeasurement, outcome: .failed)
-                    throw error
-                }
-                let mapping = PerformanceAuditRecorder.begin("TransactionActor.snapshots.map", metadata: "items=\(models.count) revision=\(readRevision)")
-                let transactions = models.map(TransactionSnapshot.init)
-                PerformanceAuditRecorder.end(mapping)
-                guard readRevision == revisions.revision(for: modelContainer) else {
-                    PerformanceAuditRecorder.event("TransactionActor.snapshots.superseded")
-                    continue
-                }
+            let readRevision = revisions.revision(for: modelContainer)
+            // A long-lived write context may have registered values from before a save
+            // in another context. Each materialization uses a fresh, actor-confined read
+            // context; only immutable Sendable values survive it.
+            let readContext = ModelContext(modelContainer)
+            let fetchMeasurement = PerformanceAuditRecorder.begin("TransactionActor.store.fetch", metadata: "revision=\(readRevision)")
+            let models: [TransactionModel]
+            do {
+                models = try readContext.fetch(desc)
+                PerformanceAuditRecorder.end(fetchMeasurement, metadata: "items=\(models.count)")
+            } catch {
+                PerformanceAuditRecorder.end(fetchMeasurement, outcome: .failed)
+                throw error
+            }
+            let mapping = PerformanceAuditRecorder.begin("TransactionActor.snapshots.map", metadata: "items=\(models.count) revision=\(readRevision)")
+            let transactions = models.map(TransactionSnapshot.init)
+            PerformanceAuditRecorder.end(mapping)
+            // A save landed mid-read: hand back this read but don't cache it; the next call
+            // re-reads. Retrying here could spin for as long as another context keeps saving.
+            if readRevision == revisions.revision(for: modelContainer) {
                 cachedTransactionSnapshots = transactions
                 cachedSnapshotRevision = readRevision
                 snapshotMaterializationGeneration += 1
-                PerformanceAuditRecorder.end(
-                    measurement,
-                    metadata: "items=\(transactions.count) source=store revision=\(readRevision) generation=\(snapshotMaterializationGeneration)"
-                )
-                return transactions
+            } else {
+                PerformanceAuditRecorder.event("TransactionActor.snapshots.superseded")
             }
+            PerformanceAuditRecorder.end(
+                measurement,
+                metadata: "items=\(transactions.count) source=store revision=\(readRevision) generation=\(snapshotMaterializationGeneration)"
+            )
+            return transactions
         } catch {
             PerformanceAuditRecorder.end(measurement, outcome: .failed)
             throw error
@@ -157,13 +157,13 @@ actor TransactionActor: ITransactionRepository {
     }
 
     /// The save seam lets tests fail the real persistence path without replacing the actor.
-    /// A private context owns this operation's pending writes, so rollback cannot discard
-    /// unrelated changes in the actor's long-lived context. No suspension occurs until flush.
+    /// Uses the actor's long-lived context, so its other mutations never act on stale copies of
+    /// these rows. Rollback stays scoped to this batch: every actor method saves before it
+    /// returns, and nothing here suspends before the flush.
     func updateBatch(_ updates: [TransactionUpdate],
                      saving save: @Sendable (ModelContext) throws -> Void) async {
         guard !updates.isEmpty else { return }
-        let context = ModelContext(modelContainer)
-        context.autosaveEnabled = false
+        let context = modelContext
         var saved = false
         do {
             for update in updates { try apply(update, in: context) }

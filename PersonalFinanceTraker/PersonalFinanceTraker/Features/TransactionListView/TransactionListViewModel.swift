@@ -31,9 +31,10 @@ final class TransactionListViewModel {
 
     var transactions: [TransactionSnapshot] = []
     var hasNoTransactions: Bool { transactions.isEmpty }
+    /// Pagination resets on query changes (search, filters, category), not here: a reload
+    /// after an edit or delete must keep the user's place in a deep page.
     var filteredItems: [TransactionSnapshot] = [] {
         didSet {
-            resetActivityPagination()
             recomputeDerivedFilterState()
             updateGroupedItems()
             intersectSelectionWithVisible()
@@ -44,7 +45,6 @@ final class TransactionListViewModel {
     var travels: [TravelSnapshot] = [] {
         didSet {
             travelsByID = Dictionary(travels.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-            resetActivityPagination()
             updateGroupedItems()
         }
     }
@@ -129,6 +129,7 @@ final class TransactionListViewModel {
 
     var searchText: String = "" {
         didSet {
+            resetActivityPagination()
             searchDebounceTask?.cancel()
             searchDebounceTask = Task {
                 do {
@@ -142,7 +143,10 @@ final class TransactionListViewModel {
         }
     }
     var filters = SearchFilters() {
-        didSet { Task { await doFilterItemBySearchText() } }
+        didSet {
+            resetActivityPagination()
+            Task { await doFilterItemBySearchText() }
+        }
     }
     var selectedTimePeriod: TimePeriod = .month
     var transactionToEdit: TransactionSnapshot? = nil
@@ -169,8 +173,8 @@ final class TransactionListViewModel {
     // Entering selection mode expands travels, so their members can be picked individually.
     var isSelecting = false {
         didSet {
+            // Pagination kept: the long-pressed row may sit beyond the first page.
             if oldValue != isSelecting {
-                resetActivityPagination()
                 updateGroupedItems()
             }
         }

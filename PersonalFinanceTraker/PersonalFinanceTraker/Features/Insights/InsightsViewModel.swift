@@ -151,9 +151,7 @@ final class CompassViewModel {
             return
         }
         guard isCurrent(generation) else { return }
-        // Keep repository fallbacks and score inputs unchanged, but stage them locally.
-        let budgetedCategories = (try? await repo.fetchCategories())?.filter { $0.monthlyBudget != nil } ?? []
-        guard isCurrent(generation) else { return }
+        let budgetedCategories = loadedCategories.filter { $0.monthlyBudget != nil }
         let payCycleStartDay = AppSettings.storedStartDay
         let ignoreSubscriptions = self.ignoreSubscriptions
         let loadedExpenses = PerformanceAuditRecorder.measure("Insights.expenseFilter") {

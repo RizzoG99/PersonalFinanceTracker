@@ -62,11 +62,9 @@ enum DailyCheckInService {
               let day = components.day else {
             preconditionFailure("Calendar must provide year, month, and day components")
         }
-        return "\(year)-\(twoDigits(month))-\(twoDigits(day))"
-    }
-
-    private static func twoDigits(_ value: Int) -> String {
-        value < 10 ? "0\(value)" : "\(value)"
+        // Same shape as the old "yyyy-MM-dd" formatter (year padded to 4, e.g. Japanese era
+        // year 8 → "0008"), so keys already stored in UserDefaults keep matching.
+        return String(format: "%04d-%02d-%02d", year, month, day)
     }
 }
 

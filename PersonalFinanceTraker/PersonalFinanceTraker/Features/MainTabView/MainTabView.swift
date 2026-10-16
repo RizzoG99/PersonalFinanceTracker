@@ -316,15 +316,18 @@ struct MainTabView: View {
                 PerformanceAuditRecorder.dump(reason: "scene.background")
                 Task { await viewModel.commitPendingDeletion() }
             }
-            if phase == .active, foregroundRefreshGate.consumeRefreshOnActivation() {
+            if phase == .active,
+               foregroundRefreshGate.consumeRefreshOnActivation(
+                   revision: TransactionSnapshotRevision.shared.revision(for: repo.modelContainer)
+               ) {
                 // Data may have changed outside the UI (App Intent quick-add). The first
                 // active phase is deliberately omitted: the bootstrap task already owns it.
                 Task {
                     let measurement = PerformanceAuditRecorder.begin("Lifecycle.foreground.refresh")
                     await shellModels.prepareForForegroundReads()
-                    dashboardViewModel.reload()
-                    viewModel.reload()
-                    compassViewModel.load()
+                    // The fan-out reloads Home/Activity/Insights and also reaches revision-only
+                    // observers (Plan, Recurring, fixed-expense matching).
+                    dataChanged.bump()
                     let didMaterialize = (try? await materializationService.materialize(using: repo)) ?? false
                     await HabitSnapshotUpdater.refresh(using: repo)
                     await repo.refreshSafeToSpendWidgetSnapshot()
@@ -355,7 +358,8 @@ struct MainTabView: View {
             // Let the user-facing Activity preload reach its first stable state before the
             // launch-only widget refreshes issue competing reads against the repository.
             await viewModel.loadTask?.value
-            if (try? await repo.repairImportedCategoryNames()) ?? 0 > 0 {
+            let repaired = (try? await repo.repairImportedCategoryNames()) ?? 0 > 0
+            if repaired {
                 viewModel.reload()
                 await viewModel.loadTask?.value
                 // Backups store only category names and restore relinks by name, so a pre-repair
@@ -367,7 +371,7 @@ struct MainTabView: View {
             let didMaterialize = (try? await materializationService.materialize(using: repo)) ?? false
             await HabitSnapshotUpdater.refresh(using: repo)
             await repo.refreshSafeToSpendWidgetSnapshot()
-            if didMaterialize { dataChanged.bump() }
+            if didMaterialize || repaired { dataChanged.bump() }
             consumePendingAdd()
             consumePendingScan()
             consumePendingHabitTemplate()

@@ -87,8 +87,8 @@ struct EditCategorySheet: View {
                         category.systemImage = selectedSymbol
                         category.colorToken = selectedToken
                         guard (try? modelContext.save()) != nil else { return }
-                        onPersistedCategoryChange()
-                        if let newName { syncRenamedCategory(newName) }
+                        // A rename refreshes once, after its transactions carry the new name.
+                        if let newName { syncRenamedCategory(newName) } else { onPersistedCategoryChange() }
                         dismiss()
                     }
                     .disabled(!canSave)

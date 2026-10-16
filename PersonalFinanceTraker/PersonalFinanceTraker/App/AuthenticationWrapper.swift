@@ -24,6 +24,7 @@ struct AuthenticationWrapper: View {
     /// second `.sheet` presentation on top of it ("Currently, only presenting a single sheet is
     /// supported"). Feature discovery is a once-per-launch check anyway, not a per-unlock one.
     @State private var didPrepareFeatureDiscovery = false
+    @State private var foregroundBackupTask: Task<Void, Never>?
     /// Owned here for the same reason as `appSettings`.
     @State private var shellModels: AppShellModels
     /// PIN lock screen and privacy cover render in their own window above the shell — see
@@ -337,8 +338,12 @@ struct AuthenticationWrapper: View {
                 let settings = appSettings
                 let service = backupService
                 let bootstrapMaintenanceGate = shellModels.bootstrapMaintenanceGate
-                Task {
+                // Activations before the gate opens (e.g. during PIN setup) would otherwise
+                // queue one backup each and run them all at once; only the latest proceeds.
+                foregroundBackupTask?.cancel()
+                foregroundBackupTask = Task {
                     await bootstrapMaintenanceGate.waitUntilInteractiveBootstrapCompletes()
+                    guard !Task.isCancelled else { return }
                     await shellModels.prepareForForegroundReads()
                     await BackupScheduler.runIfNeeded(repo: repo, settings: settings, backupService: service)
                 }
