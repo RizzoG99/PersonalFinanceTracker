@@ -24,6 +24,7 @@ struct AuthenticationWrapper: View {
     /// second `.sheet` presentation on top of it ("Currently, only presenting a single sheet is
     /// supported"). Feature discovery is a once-per-launch check anyway, not a per-unlock one.
     @State private var didPrepareFeatureDiscovery = false
+    @State private var foregroundBackupTask: Task<Void, Never>?
     /// Owned here for the same reason as `appSettings`.
     @State private var shellModels: AppShellModels
     /// PIN lock screen and privacy cover render in their own window above the shell — see
@@ -223,6 +224,13 @@ struct AuthenticationWrapper: View {
         }
         .onChange(of: overlay) { _, _ in syncLockOverlay() }
         .onAppear {
+            #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("-performanceAudit"),
+               arguments.contains("-performanceAuditSkipLock") {
+                authService.unlock()
+            }
+            #endif
             syncLockOverlay()
             // ponytail: unit tests run inside this app as their host process, so this
             // view's real onAppear fires alongside the test bundle. Without this guard,
@@ -287,6 +295,7 @@ struct AuthenticationWrapper: View {
             // gated on PIN: the cover shows without one too.
             if newPhase != .inactive { ReminderService.shared.endPermissionPrompt() }
             if newPhase == .background {
+                shellModels.recordBackgroundForSnapshotRefresh()
                 // The keyboard is a system-owned window that draws over ours whatever level we
                 // take, so an open keyboard sits on top of the cover, snapshot included, and
                 // dismissing it is the only thing that removes it.
@@ -325,10 +334,17 @@ struct AuthenticationWrapper: View {
                 }
             }
             if newPhase == .active {
-                let repo = TransactionActor.make(modelContainer)
+                let repo = shellModels.repo
                 let settings = appSettings
                 let service = backupService
-                Task {
+                let bootstrapMaintenanceGate = shellModels.bootstrapMaintenanceGate
+                // Activations before the gate opens (e.g. during PIN setup) would otherwise
+                // queue one backup each and run them all at once; only the latest proceeds.
+                foregroundBackupTask?.cancel()
+                foregroundBackupTask = Task {
+                    await bootstrapMaintenanceGate.waitUntilInteractiveBootstrapCompletes()
+                    guard !Task.isCancelled else { return }
+                    await shellModels.prepareForForegroundReads()
                     await BackupScheduler.runIfNeeded(repo: repo, settings: settings, backupService: service)
                 }
             }

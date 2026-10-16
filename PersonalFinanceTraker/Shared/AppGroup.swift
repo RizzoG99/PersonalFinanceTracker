@@ -6,7 +6,7 @@
 import Foundation
 
 enum AppGroup {
-    static let identifier = "group.rizzoG99.PersonalFinanceTraker"
+    static let identifier = AppIdentity.appGroupIdentifier
 }
 
 enum SafeToSpendWidgetKind {

@@ -70,4 +70,24 @@ struct DailyCheckInServiceTests {
         let key = DailyCheckInService.dateKey(for: now, calendar: calendar)
         #expect(key == "2026-08-15")
     }
+
+    @Test func dateKeyUsesTheProvidedCalendarTimeZone() {
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let instant = utcCalendar.date(from: DateComponents(year: 2026, month: 8, day: 14, hour: 13, minute: 30))!
+
+        var kiritimatiCalendar = Calendar(identifier: .gregorian)
+        kiritimatiCalendar.timeZone = TimeZone(identifier: "Pacific/Kiritimati")!
+
+        #expect(DailyCheckInService.dateKey(for: instant, calendar: kiritimatiCalendar) == "2026-08-15")
+    }
+
+    /// Keys stored by the old "yyyy" formatter pad era years; the new path must match them.
+    @Test func dateKeyPadsShortEraYears() {
+        var japanese = Calendar(identifier: .japanese)
+        japanese.timeZone = TimeZone(identifier: "UTC")!
+        let instant = Date(timeIntervalSince1970: 1_786_795_200)  // 2026-08-15 12:00 UTC, Reiwa 8
+
+        #expect(DailyCheckInService.dateKey(for: instant, calendar: japanese) == "0008-08-15")
+    }
 }

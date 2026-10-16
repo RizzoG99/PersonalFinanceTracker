@@ -58,10 +58,15 @@ struct CompassView: View {
             .appToolbar(showingAddItemView: $showingAddItemView, onScanned: onScanned)
             .appBackground()
         }
-        .payCycleAware { viewModel.load() }
-        .onAppear { viewModel.load() }
+        .payCycleAware {
+            PerformanceAuditRecorder.event("Insights.load.trigger", metadata: "source=payCycleAware")
+            viewModel.load()
+        }
         .onChange(of: showingAddItemView) { _, isShowing in
-            if !isShowing { viewModel.load() }
+            if !isShowing {
+                PerformanceAuditRecorder.event("Insights.load.trigger", metadata: "source=addSheetDismiss")
+                viewModel.load()
+            }
         }
     }
 }

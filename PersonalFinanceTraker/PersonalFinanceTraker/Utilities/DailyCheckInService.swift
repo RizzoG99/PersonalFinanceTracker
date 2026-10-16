@@ -56,12 +56,15 @@ enum DailyCheckInService {
     }
 
     static func dateKey(for date: Date, calendar: Calendar = .current) -> String {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = calendar.timeZone
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: date)
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        guard let year = components.year,
+              let month = components.month,
+              let day = components.day else {
+            preconditionFailure("Calendar must provide year, month, and day components")
+        }
+        // Same shape as the old "yyyy-MM-dd" formatter (year padded to 4, e.g. Japanese era
+        // year 8 → "0008"), so keys already stored in UserDefaults keep matching.
+        return String(format: "%04d-%02d-%02d", year, month, day)
     }
 }
 

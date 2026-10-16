@@ -5,7 +5,7 @@ import Foundation
 /// Launch/foreground-triggered only (see MainTabView) — no background execution,
 /// matching how the daily log reminder already works.
 actor RecurrenceMaterializationService {
-    private var inFlight: Task<Void, Error>?
+    private var inFlight: Task<Bool, Error>?
 
     /// Safe to call from multiple launch/foreground hooks in close succession: if a pass is
     /// already running, this call awaits it instead of starting a second *overlapping* pass
@@ -13,7 +13,9 @@ actor RecurrenceMaterializationService {
     /// only about overlap — it does NOT collapse into a once-per-session no-op. Two calls that
     /// don't overlap (e.g. launch, then a foreground resume minutes later) each run a full,
     /// necessary pass so catch-up keeps working; don't "optimize" this into a run-once guard.
-    func materialize(using repo: any ITransactionRepository, today: Date = .now, calendar: Calendar = .current) async throws {
+    /// Returns whether this pass wrote recurrence-derived data. Callers use that result to
+    /// refresh feature snapshots only when their cached data can actually be stale.
+    func materialize(using repo: any ITransactionRepository, today: Date = .now, calendar: Calendar = .current) async throws -> Bool {
         if let inFlight {
             return try await inFlight.value
         }
@@ -22,10 +24,11 @@ actor RecurrenceMaterializationService {
         }
         inFlight = task
         defer { inFlight = nil }
-        try await task.value
+        return try await task.value
     }
 
-    private static func runMaterialization(using repo: any ITransactionRepository, today: Date, calendar: Calendar) async throws {
+    private static func runMaterialization(using repo: any ITransactionRepository, today: Date, calendar: Calendar) async throws -> Bool {
+        var didMaterialize = false
         let rules = try await repo.fetchActiveRecurrenceRules()
         // Forecast-only fixed expenses (#188) never insert: their cursor follows real payments.
         let forecastOnly = rules.filter { !$0.autoRecord }
@@ -34,6 +37,7 @@ actor RecurrenceMaterializationService {
             for rule in forecastOnly {
                 guard let paid = RecurrenceDetector.paidThrough(rule: rule, transactions: transactions, today: today, calendar: calendar) else { continue }
                 try await repo.advanceRecurrenceRule(id: rule.id, cursor: paid.cursor, amount: paid.amount)
+                didMaterialize = true
             }
         }
         for rule in rules where rule.autoRecord {
@@ -60,6 +64,8 @@ actor RecurrenceMaterializationService {
                 )
             }
             try await repo.materializeOccurrences(ruleId: rule.id, inputs: inputs, newCursor: newCursor)
+            didMaterialize = true
         }
+        return didMaterialize
     }
 }

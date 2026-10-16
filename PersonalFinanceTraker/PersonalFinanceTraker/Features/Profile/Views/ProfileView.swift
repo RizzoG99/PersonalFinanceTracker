@@ -284,7 +284,13 @@ struct ProfileView: View {
                 .appFormBackground()
                 .navigationDestination(item: $route) { route in
                     switch route {
-                    case .categories: CategorySettingsView()
+                    case .categories:
+                        CategorySettingsView(onPersistedCategoryChange: {
+                            Task {
+                                await transactionViewModel.repo.invalidateTransactionSnapshotCache()
+                                dataChanged.bump()
+                            }
+                        })
                     case .scanCategories: ReceiptCategoryMappingView()
                     case .changePIN:
                         PINSetupView(
@@ -436,10 +442,13 @@ struct ProfileView: View {
                 modelContext.insert(category)
             }
             try modelContext.save()
-            // DashboardViewModel/TransactionListViewModel cache their own in-memory
-            // arrays; bump the shared signal so MainTabView reloads them (same
-            // pattern EditAddTransactionView uses after a save/delete).
-            dataChanged.bump()
+            // This is one of the few legacy paths that writes directly through the main
+            // context. Clear the repository's immutable snapshot cache before asking the
+            // view models to reload, otherwise a just-wiped store could briefly show old rows.
+            Task {
+                await transactionViewModel.repo.invalidateTransactionSnapshotCache()
+                dataChanged.bump()
+            }
             showingDeleteSuccess = true
         } catch {
             deleteErrorMessage = error.localizedDescription

@@ -25,6 +25,7 @@ struct PersonalFinanceTrakerApp: App {
         seedSampleDataIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
+        PerformanceAuditDataSeeder.seedIfRequested(in: AppContainer.shared)
         seedMonthlyRecapIfRequested()
         seedGoalProjectionsIfRequested()
     }
@@ -74,7 +75,7 @@ struct PersonalFinanceTrakerApp: App {
                     containerErrorMessage = AppContainer.containerErrorMessage
                 }
                 .onOpenURL { url in
-                    guard url.scheme == "personalfinancetraker" else { return }
+                    guard url.scheme == AppIdentity.urlScheme else { return }
                     switch url.host {
                     case "add-transaction":
                         PendingTransactionIntent.shared.shouldPresentAdd = true

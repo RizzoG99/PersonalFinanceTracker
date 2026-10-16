@@ -54,7 +54,11 @@ final class DashboardViewModel {
     @ObservationIgnored var noSpendDateKeys: () -> Set<String> = { DailyCheckInStore.noSpendDateKeys() }
 
     func load() {
-        guard !isLoaded else { return }
+        PerformanceAuditRecorder.event("Dashboard.load.request")
+        guard !isLoaded else {
+            PerformanceAuditRecorder.event("Dashboard.load.skipped")
+            return
+        }
         isLoaded = true  // ponytail: mark loaded before fetch; call reload() to retry after failure
         loadTask = Task {
             await fetchAndCompute()
@@ -62,11 +66,21 @@ final class DashboardViewModel {
     }
 
     func reload() {
+        PerformanceAuditRecorder.event("Dashboard.reload.request")
         isLoaded = false
         load()
     }
 
     private func fetchAndCompute() async {
+        let measurement = PerformanceAuditRecorder.begin("Dashboard.load")
+        var outcome: PerformanceAuditRecorder.Outcome = .completed
+        defer {
+            PerformanceAuditRecorder.end(
+                measurement,
+                outcome: Task.isCancelled ? .cancelled : outcome,
+                metadata: "transactions=\(transactions.count)"
+            )
+        }
         do {
             async let txs = repo.fetchAll()
             async let cats = repo.fetchCategories()
@@ -79,7 +93,9 @@ final class DashboardViewModel {
             // Same source as the widget's snapshot, so Home and widget never disagree.
             activeRules = (try? await active) ?? []
             await calculateMetrics()
+            PerformanceAuditRecorder.commit(measurement, metadata: "transactions=\(transactions.count)")
         } catch {
+            outcome = .failed
             loadError = error.localizedDescription
         }
     }
@@ -90,59 +106,81 @@ final class DashboardViewModel {
     }
 
     private func calculateMetrics() async {
+        let measurement = PerformanceAuditRecorder.begin("Dashboard.metrics")
+        defer { PerformanceAuditRecorder.end(measurement) }
         let payCycleStartDay = payCycleStartDay()
-        // ponytail: metrics computed off the MainActor from the already-fetched snapshots;
-        // move aggregation into TransactionActor if the dataset ever makes the fetch itself the bottleneck
+        // Only recent selection is detached; the service scopes below measure
+        // the remaining synchronous MainActor work separately from repository I/O.
         let recent = await Task.detached(priority: .userInitiated) { [transactions] in
-            Self.mostRecent(transactions)
+            PerformanceAuditRecorder.measure("Dashboard.recent") { Self.mostRecent(transactions) }
         }.value
 
         recentTransactions = recent
-        safeToSpend = SafeToSpendSnapshotBuilder.compute(
-            transactions: transactions, activeRules: activeRules, payCycleStartDay: payCycleStartDay,
-            bufferPercent: bufferPercent(), currencyService: currencyService, now: currentDate()
-        )
-        cycleSummary = CycleSummaryService.compute(
-            transactions: transactions, payCycleStartDay: payCycleStartDay,
-            currencyService: currencyService, now: currentDate()
-        )
+        safeToSpend = PerformanceAuditRecorder.measure("Dashboard.safeToSpend") {
+            SafeToSpendSnapshotBuilder.compute(
+                transactions: transactions, activeRules: activeRules, payCycleStartDay: payCycleStartDay,
+                bufferPercent: bufferPercent(), currencyService: currencyService, now: currentDate()
+            )
+        }
+        cycleSummary = PerformanceAuditRecorder.measure("Dashboard.cycleSummary") {
+            CycleSummaryService.compute(
+                transactions: transactions, payCycleStartDay: payCycleStartDay,
+                currencyService: currencyService, now: currentDate()
+            )
+        }
         // Rescheduled with every Home load (launch, data or pay-cycle change), like the reminder.
-        ReminderService.shared.scheduleMonthlyRecap(cycleHasActivity: cycleSummary != nil)
-        quickTransactionTemplates = HabitLoggingService.quickTemplates(from: transactions)
+        PerformanceAuditRecorder.measure("Dashboard.recapReminder") {
+            ReminderService.shared.scheduleMonthlyRecap(cycleHasActivity: cycleSummary != nil)
+        }
+        quickTransactionTemplates = PerformanceAuditRecorder.measure("Dashboard.quickTemplates") {
+            HabitLoggingService.quickTemplates(from: transactions)
+        }
         refreshDailyCheckInState()
-        anomalyCallout = Self.computeAnomalyCallout(
-            transactions,
-            payCycleStartDay: payCycleStartDay,
-            dismissedKey: UserDefaults.standard.string(forKey: Self.dismissedAnomalyDefaultsKey)
-        )
-        budgetProgress = BudgetProgressService.computeProgress(
-            categories: categories, transactions: transactions, payCycleStartDay: payCycleStartDay
-        )
+        anomalyCallout = PerformanceAuditRecorder.measure("Dashboard.anomaly") {
+            Self.computeAnomalyCallout(
+                transactions,
+                payCycleStartDay: payCycleStartDay,
+                dismissedKey: UserDefaults.standard.string(forKey: Self.dismissedAnomalyDefaultsKey)
+            )
+        }
+        budgetProgress = PerformanceAuditRecorder.measure("Dashboard.budgets") {
+            BudgetProgressService.computeProgress(
+                categories: categories, transactions: transactions, payCycleStartDay: payCycleStartDay
+            )
+        }
         nearLimitBudgets = BudgetProgressService.nearLimit(budgetProgress)
-        showsReminderPrompt = Self.computeShowsReminderPrompt(
-            transactions,
-            remindersEnabled: UserDefaults.standard.bool(forKey: "reminderEnabled"),
-            promptDismissed: UserDefaults.standard.bool(forKey: Self.dismissedReminderPromptDefaultsKey)
-        )
+        showsReminderPrompt = PerformanceAuditRecorder.measure("Dashboard.reminderPrompt") {
+            Self.computeShowsReminderPrompt(
+                transactions,
+                remindersEnabled: UserDefaults.standard.bool(forKey: "reminderEnabled"),
+                promptDismissed: UserDefaults.standard.bool(forKey: Self.dismissedReminderPromptDefaultsKey)
+            )
+        }
     }
 
     private func refreshDailyCheckInState() {
         let now = currentDate()
-        dailyLoggingStatus = HabitLoggingService.computeStatus(transactions: transactions, now: now)
+        dailyLoggingStatus = PerformanceAuditRecorder.measure("Dashboard.dailyLogging") {
+            HabitLoggingService.computeStatus(transactions: transactions, now: now)
+        }
         if dailyLoggingStatus.hasLoggedToday {
             DailyCheckInStore.undoNoSpend(for: now)
         }
-        dailyCheckInStatus = DailyCheckInService.computeStatus(
-            transactions: transactions,
-            noSpendDateKeys: noSpendDateKeys(),
-            now: now
-        )
-        HabitWidgetSnapshotStore.save(HabitWidgetSnapshotStore.makeSnapshot(
-            status: dailyLoggingStatus,
-            checkInStatus: dailyCheckInStatus,
-            templates: quickTransactionTemplates,
-            now: now
-        ))
+        dailyCheckInStatus = PerformanceAuditRecorder.measure("Dashboard.dailyCheckIn") {
+            DailyCheckInService.computeStatus(
+                transactions: transactions,
+                noSpendDateKeys: noSpendDateKeys(),
+                now: now
+            )
+        }
+        PerformanceAuditRecorder.measure("Dashboard.habitWidget") {
+            HabitWidgetSnapshotStore.save(HabitWidgetSnapshotStore.makeSnapshot(
+                status: dailyLoggingStatus,
+                checkInStatus: dailyCheckInStatus,
+                templates: quickTransactionTemplates,
+                now: now
+            ))
+        }
     }
 
     /// O(n) top-5, no full sort.

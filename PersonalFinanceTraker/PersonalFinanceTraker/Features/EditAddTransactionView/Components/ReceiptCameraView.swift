@@ -181,19 +181,24 @@ struct ReceiptCameraView: View {
         // The shutter button is disabled while capturing; a hardware button is not, so a second
         // press would otherwise land on the model's own guard and report a bogus failure.
         guard !model.isCapturing, model.isAuthorized else { return }
+        let request = PerformanceAuditRecorder.isEnabled ? UUID().uuidString : "disabled"
+        PerformanceAuditRecorder.event("Receipt.shutter.request", metadata: "request=\(request)")
         Task {
-            guard let image = await model.capture() else {
-                finish(with: .failure(ReceiptCameraError.captureFailed))
-                return
+            await ReceiptImageAudit.$request.withValue(request) {
+                guard let image = await model.capture() else {
+                    finish(with: .failure(ReceiptCameraError.captureFailed))
+                    return
+                }
+                finish(with: [image])
             }
-            finish(with: [image])
         }
     }
 
     private func finish(with images: [UIImage]) { finish(with: .success(images)) }
 
     private func finish(with result: Result<[UIImage], Error>) {
-        model.stop()
+        ReceiptImageAudit.measure("Receipt.camera.stopRequest") { model.stop() }
+        PerformanceAuditRecorder.event("Receipt.camera.finish", metadata: ReceiptImageAudit.context)
         onFinish(result)
     }
 }
@@ -371,25 +376,43 @@ final class ReceiptCameraModel {
 
         let settings = AVCapturePhotoSettings()
         settings.flashMode = .off // The torch already covers low light, and continuously.
+        let wait = PerformanceAuditRecorder.begin("Receipt.camera.wait", metadata: ReceiptImageAudit.context)
         let photo = await withCheckedContinuation { continuation in
-            let delegate = PhotoCaptureDelegate { continuation.resume(returning: $0) }
+            let delegate = PhotoCaptureDelegate(request: ReceiptImageAudit.request, wait: wait) {
+                continuation.resume(returning: $0)
+            }
             // AVFoundation holds its delegate weakly, so the only strong reference is this one;
             // without it the callback never arrives and the continuation leaks.
             captureDelegate = delegate
             output.capturePhoto(with: settings, delegate: delegate)
         }
+        PerformanceAuditRecorder.event("Receipt.camera.resumed", metadata: ReceiptImageAudit.context)
         guard let photo else {
             ReceiptScanDebug.log("capture: photo output returned nil")
             return nil
         }
         ReceiptScanDebug.log("capture: shutter -> \(ReceiptScanDebug.describe(photo))")
-        // A quad from another rotation (the phone turned mid-capture) or a photo that could not be
-        // rotated describes a different region of this image; the full frame is the safe answer.
-        guard isRotated, let quad = normalizedQuad, quad.angle == angle else {
+        // Preserve the rotation fix: only crop with corners in the captured photo's space.
+        // Export the same effective quad so future replays reproduce the real fallback too.
+        let cropQuad: [CGPoint]?
+        if isRotated, let quad = normalizedQuad, quad.angle == angle {
+            cropQuad = quad.corners
+        } else {
+            cropQuad = nil
             ReceiptScanDebug.log("capture: no outline at \(angle)°, using full frame")
+        }
+        ReceiptImageAudit.exportQuad(cropQuad, image: photo)
+        return Self.processedPhoto(photo, normalizedQuad: cropQuad)
+    }
+
+    /// Shared by capture and the deterministic baseline; no new scheduling boundary.
+    static func processedPhoto(_ photo: UIImage, normalizedQuad: [CGPoint]?) -> UIImage {
+        guard let quad = normalizedQuad else {
+            PerformanceAuditRecorder.event("Receipt.crop.skipped", metadata: ReceiptImageAudit.context)
+            ReceiptScanDebug.log("capture: no outline, using full frame")
             return photo
         }
-        let result = Self.cropped(photo, to: quad.corners)
+        let result = Self.cropped(photo, to: quad)
         ReceiptScanDebug.log("capture: cropped -> \(ReceiptScanDebug.describe(result))")
         return result
     }
@@ -415,7 +438,14 @@ final class ReceiptCameraModel {
     ///  - **Keep the whole receipt.** Real receipts curl, so the printed area bows outside the flat
     ///    quad the segmentation returns. That padding is applied where the outline is built, not
     ///    here, so the shape drawn on screen is the shape kept.
-    private static func cropped(_ image: UIImage, to quad: [CGPoint]) -> UIImage {
+    static func cropped(_ image: UIImage, to quad: [CGPoint]) -> UIImage {
+        ReceiptImageAudit.image("Receipt.crop.input", image)
+        let result = ReceiptImageAudit.measure("Receipt.crop.total") { cropPixels(image, to: quad) }
+        ReceiptImageAudit.image("Receipt.crop.output", result)
+        return result
+    }
+
+    private static func cropPixels(_ image: UIImage, to quad: [CGPoint]) -> UIImage {
         // Orientation must be baked into the pixels first: Core Graphics knows nothing about
         // `imageOrientation`, so on a portrait photo it would mask a sideways region.
         guard let upright = image.uprightPixels() else { return image }
@@ -437,25 +467,27 @@ final class ReceiptCameraModel {
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = 1 // Never the device scale — see `uprightPixels`.
         format.opaque = true
-        return UIGraphicsImageRenderer(size: box.size, format: format).image { context in
-            // White, not black: OCR expects dark ink on light paper, and a black surround next to
-            // white paper is a hard edge the recognizer can mistake for content.
-            UIColor.white.setFill()
-            context.fill(CGRect(origin: .zero, size: box.size))
-            UIImage(cgImage: upright).draw(at: CGPoint(x: -box.minX, y: -box.minY))
+        return ReceiptImageAudit.measure("Receipt.crop.render") {
+            UIGraphicsImageRenderer(size: box.size, format: format).image { context in
+                // White, not black: OCR expects dark ink on light paper, and a black surround next to
+                // white paper is a hard edge the recognizer can mistake for content.
+                UIColor.white.setFill()
+                context.fill(CGRect(origin: .zero, size: box.size))
+                UIImage(cgImage: upright).draw(at: CGPoint(x: -box.minX, y: -box.minY))
 
-            // Even-odd fill of "the whole box, minus the quad" paints only the area outside it.
-            let mask = UIBezierPath(rect: CGRect(origin: .zero, size: box.size))
-            let shape = UIBezierPath()
-            shape.move(to: expanded[0].offsetBy(-box.origin.x, -box.origin.y))
-            for corner in expanded.dropFirst() {
-                shape.addLine(to: corner.offsetBy(-box.origin.x, -box.origin.y))
+                // Even-odd fill of "the whole box, minus the quad" paints only the area outside it.
+                let mask = UIBezierPath(rect: CGRect(origin: .zero, size: box.size))
+                let shape = UIBezierPath()
+                shape.move(to: expanded[0].offsetBy(-box.origin.x, -box.origin.y))
+                for corner in expanded.dropFirst() {
+                    shape.addLine(to: corner.offsetBy(-box.origin.x, -box.origin.y))
+                }
+                shape.close()
+                mask.append(shape)
+                mask.usesEvenOddFillRule = true
+                UIColor.white.setFill()
+                mask.fill()
             }
-            shape.close()
-            mask.append(shape)
-            mask.usesEvenOddFillRule = true
-            UIColor.white.setFill()
-            mask.fill()
         }
     }
 
@@ -469,7 +501,7 @@ final class ReceiptCameraModel {
     ///
     /// Applied once, here, so the outline the user sees and the region the shutter keeps are the
     /// same shape by construction rather than by two constants agreeing.
-    private static func padded(_ quad: [CGPoint]) -> [CGPoint] {
+    static func padded(_ quad: [CGPoint]) -> [CGPoint] {
         let centre = CGPoint(
             x: quad.map(\.x).reduce(0, +) / CGFloat(quad.count),
             y: quad.map(\.y).reduce(0, +) / CGFloat(quad.count)
@@ -791,6 +823,10 @@ private extension UIImage {
     /// is the *device* scale, and a camera image already reports its size in pixels, which is how a
     /// 4032x3024 frame once became a 440MB bitmap and got the app killed.
     func uprightPixels() -> CGImage? {
+        ReceiptImageAudit.measure("Receipt.orientation") { renderUprightPixels() }
+    }
+
+    private func renderUprightPixels() -> CGImage? {
         guard imageOrientation != .up else { return cgImage }
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = 1
@@ -803,9 +839,13 @@ private extension UIImage {
 
 private final class PhotoCaptureDelegate: NSObject, AVCapturePhotoCaptureDelegate, Sendable {
     private let completion: @Sendable (UIImage?) -> Void
+    private let request: String
+    private let wait: PerformanceAuditRecorder.Interval?
 
-    init(completion: @escaping @Sendable (UIImage?) -> Void) {
+    init(request: String, wait: PerformanceAuditRecorder.Interval?, completion: @escaping @Sendable (UIImage?) -> Void) {
         self.completion = completion
+        self.request = request
+        self.wait = wait
     }
 
     func photoOutput(
@@ -813,11 +853,21 @@ private final class PhotoCaptureDelegate: NSObject, AVCapturePhotoCaptureDelegat
         didFinishProcessingPhoto photo: AVCapturePhoto,
         error: Error?
     ) {
-        guard error == nil, let data = photo.fileDataRepresentation() else {
-            completion(nil)
-            return
+        ReceiptImageAudit.$request.withValue(request) {
+            PerformanceAuditRecorder.end(wait, outcome: error == nil ? .completed : .failed,
+                                         metadata: ReceiptImageAudit.context)
+            PerformanceAuditRecorder.event("Receipt.camera.callback", metadata: ReceiptImageAudit.context)
+            guard error == nil, let data = ReceiptImageAudit.measure("Receipt.photo.data", {
+                photo.fileDataRepresentation()
+            }) else {
+                completion(nil)
+                return
+            }
+            let image = ReceiptImageAudit.measure("Receipt.photo.construct") { UIImage(data: data) }
+            if let image { ReceiptImageAudit.image("Receipt.photo.constructd", image) }
+            ReceiptImageAudit.exportOriginal(data)
+            completion(image)
         }
-        completion(UIImage(data: data))
     }
 }
 

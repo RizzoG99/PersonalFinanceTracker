@@ -9,7 +9,7 @@
     "snapshotNote": "The original audit reflects commit b91ee335 plus pre-existing uncommitted user changes. A focused delta review covers the performance-sensitive changes through dcbb22d; audit artifacts do not modify production code."
   },
   "createdAt": "2026-10-08T20:20:43Z",
-  "updatedAt": "2026-10-09T13:06:13Z",
+  "updatedAt": "2026-10-16T18:46:56+00:00",
   "workstreams": [
     {
       "id": "WS-UI",
@@ -21,7 +21,9 @@
         ".performance-audit/findings/state-management.md"
       ],
       "findingsCount": 6,
-      "dependencies": ["RECON"],
+      "dependencies": [
+        "RECON"
+      ],
       "completionTimestamp": "2026-10-08T20:26:55Z"
     },
     {
@@ -34,7 +36,9 @@
         ".performance-audit/findings/algorithms.md"
       ],
       "findingsCount": 6,
-      "dependencies": ["RECON"],
+      "dependencies": [
+        "RECON"
+      ],
       "completionTimestamp": "2026-10-08T20:26:55Z"
     },
     {
@@ -48,7 +52,9 @@
         ".performance-audit/findings/platform-specific.md"
       ],
       "findingsCount": 6,
-      "dependencies": ["RECON"],
+      "dependencies": [
+        "RECON"
+      ],
       "completionTimestamp": "2026-10-08T20:26:55Z"
     },
     {
@@ -60,7 +66,11 @@
         ".performance-audit/findings/startup.md"
       ],
       "findingsCount": 3,
-      "dependencies": ["RECON", "WS-DATA", "WS-RUNTIME"],
+      "dependencies": [
+        "RECON",
+        "WS-DATA",
+        "WS-RUNTIME"
+      ],
       "completionTimestamp": "2026-10-08T20:34:05Z"
     },
     {
@@ -79,7 +89,12 @@
       ],
       "findingsCount": 0,
       "reviewedFindingsCount": 11,
-      "dependencies": ["WS-UI", "WS-DATA", "WS-RUNTIME", "WS-STARTUP"],
+      "dependencies": [
+        "WS-UI",
+        "WS-DATA",
+        "WS-RUNTIME",
+        "WS-STARTUP"
+      ],
       "completionTimestamp": "2026-10-08T20:34:05Z"
     },
     {
@@ -92,7 +107,12 @@
       ],
       "findingsCount": 0,
       "reviewedFindingsCount": 7,
-      "dependencies": ["WS-UI", "WS-DATA", "WS-STARTUP", "WS-VALIDATE"],
+      "dependencies": [
+        "WS-UI",
+        "WS-DATA",
+        "WS-STARTUP",
+        "WS-VALIDATE"
+      ],
       "completionTimestamp": "2026-10-09T13:06:13Z"
     }
   ],
@@ -121,7 +141,7 @@
     "validationPlanPath": ".performance-audit/validation-plan.md"
   },
   "currentDisposition": {
-    "reviewedThroughCommit": "dcbb22ded9a08fb4272c352635ce5796d7d5e825",
+    "reviewedThroughCommit": "ce5cacb27f31bb77a2b095d99a4cc1254c422a14",
     "activeRootFindingsCount": 15,
     "priorityCounts": {
       "P0": 0,
@@ -130,13 +150,349 @@
       "P3": 2
     },
     "confidenceCounts": {
-      "Confirmed": 0,
-      "Strong Evidence": 12,
+      "Confirmed": 2,
+      "Strong Evidence": 10,
       "Potential": 3
     },
-    "resolvedRootFindingIds": ["PERF-203"],
-    "retiredSupportingFindingIds": ["PERF-204"],
-    "deltaReviewPath": ".performance-audit/validation/pr217-delta-review.md"
+    "resolvedRootFindingIds": [
+      "PERF-203"
+    ],
+    "retiredSupportingFindingIds": [
+      "PERF-204"
+    ],
+    "deltaReviewPath": ".performance-audit/validation/pr217-delta-review.md",
+    "reviewedWithDirtyWorktree": true,
+    "reviewScope": "Publication reconciliation through PR #230 review corrections at 8dbb9e4, plus the isolated TEST configuration and Activity search harness. Historical measurement records retain their recorded sources and clocks. Shared schemes disable diagnostic arguments by default. No new production performance optimization or project-wide re-audit; accepted PERF-201/PERF-112/PERF-111/PERF-301 stops and PERF-303 deferral remain unchanged.",
+    "countDefinition": "15 retained non-retired roots includes mitigated, partial/deferred and unmeasured items; not 15 confirmed unresolved bugs. Priority/confidence counts retain original evidence classifications.",
+    "retainedStatusCounts": {
+      "mitigatedInScope": 4,
+      "partialIncludingDeferred": 2,
+      "awaitingMeasurementOrLowPriorityGate": 8,
+      "measuredStoppedInScope": 1
+    },
+    "nextFindingId": null,
+    "summaryPath": ".performance-audit/summary.md",
+    "roadmapPath": ".performance-audit/optimization-roadmap.md",
+    "findingDispositions": {
+      "PERF-100": {
+        "status": "AWAITING_BASELINE",
+        "note": "Retained original candidate; current reachability/representative scale not re-audited in this focused status update. No new performance confirmation."
+      },
+      "PERF-101": {
+        "status": "MITIGATED_IN_SCOPE",
+        "note": "One activityPage value per Activity parent body replaces the original duplicate grouped-category evaluation. Per-render scoping remains; no measured case for more caching.",
+        "evidencePaths": [
+          ".performance-audit/measurements/Home-Activity-read-model-followup.md",
+          ".performance-audit/measurements/Activity-search-5k-device-r1.md"
+        ]
+      },
+      "PERF-102": {
+        "status": "LOW_PRIORITY_GATE",
+        "note": "Keep simpler implementation unless targeted measurement changes the priority; not re-audited in this focused update."
+      },
+      "PERF-110": {
+        "status": "MITIGATED_IN_SCOPE",
+        "note": "Revision-aware shared snapshots, lifecycle/bootstrap gates and coalesced refresh work implemented and tested. Retain broader device/iPad/external-write validation; residual first-switch refactoring deferred.",
+        "evidencePaths": [
+          ".performance-audit/measurements/Home-Activity-read-model-followup.md",
+          ".performance-audit/measurements/Activity-search-5k-device-r1.md"
+        ]
+      },
+      "PERF-111": {
+        "status": "MITIGATED_IN_SCOPE",
+        "note": "PERF-111/#235 at 3402878: shared ViewModel refresh ownership and generation-guarded publication verified by 41 tests/44 executions and financial result validation. Stop structural work in this scope; physical/UI latency and independent CRUD tasks remain unmeasured. PERF-112 remains accepted.",
+        "evidencePaths": [
+          ".performance-audit/measurements/Home-Activity-read-model-followup.md",
+          ".performance-audit/measurements/PERF-111-baseline.md",
+          ".performance-audit/measurements/PERF-111-insights-overlap.md",
+          ".performance-audit/measurements/PERF-111-validation.json"
+        ]
+      },
+      "PERF-112": {
+        "status": "PARTIAL",
+        "note": "DateFormatter corrected. 5k Home/Insights service wall/thread-CPU baseline and one bounded Home conversion window follow-up completed in Release-TEST Simulator. Cycle-summary CPU 12.43 to 2.11ms; covered Home main CPU 41.41 to 30.11ms; all 70 result/count pairs match. Stop structural changes pending device/richer-ledger evidence; Insights overlap is separately mitigated by PERF-111/#235 at 3402878.",
+        "evidencePaths": [
+          ".performance-audit/measurements/PERF-112-daily-check-in-profile.md",
+          ".performance-audit/measurements/PERF-112-analytics.md",
+          ".performance-audit/measurements/PERF-112-analytics-release-before.json",
+          ".performance-audit/measurements/PERF-112-analytics-release-after.json"
+        ]
+      },
+      "PERF-201": {
+        "status": "MITIGATED_IN_BULK_EDIT_UNDO_SCOPE",
+        "next": false,
+        "note": "One batch save and final materialization/widget request for bulk edit/Undo; rollback then independent row retries on save failure. All 18 comparable 5k follow-up samples pass one-flush budgets, final 100-row medians 215ms edit/204ms Undo in Debug Simulator. Metadata/selection/Undo, injected failures, warmed readers and final monetary-widget values tested. Restore/recurrence, broad failure/concurrent-writer conditions and physical latency remain unmeasured.",
+        "evidencePaths": [
+          ".performance-audit/findings/network-storage.md",
+          ".performance-audit/measurements/PERF-201-baseline.md",
+          ".performance-audit/measurements/PERF-201-batch-followup.md"
+        ]
+      },
+      "PERF-202": {
+        "status": "AWAITING_BASELINE",
+        "note": "Retained original candidate; current reachability/representative scale not re-audited in this focused status update. No new performance confirmation."
+      },
+      "PERF-203": {
+        "status": "RESOLVED",
+        "note": "Forecast cache implementation removed by PR #217.",
+        "evidencePaths": [
+          ".performance-audit/validation/pr217-delta-review.md"
+        ]
+      },
+      "PERF-205": {
+        "status": "AWAITING_BASELINE",
+        "note": "Retained original candidate; current reachability/representative scale not re-audited in this focused status update. No new performance confirmation."
+      },
+      "PERF-300": {
+        "status": "AWAITING_BASELINE",
+        "note": "Retained original candidate; current reachability/representative scale not re-audited in this focused status update. No new performance confirmation."
+      },
+      "PERF-301": {
+        "status": "BASELINE_MEASURED_STOP_IN_SCOPE",
+        "note": "User-accepted stop on 2026-10-16 under the verified conditions; no further optimization scheduled. PERF-301/#241 at e8df73f plus preserved WIP: one authorized preventive single-pass experiment implemented/measured, then rejected and reverted. Rotated valid-crop synthetic CPU -22 to -48%; real crop/OCR-input pixel parity 7/8, changed OCR line list on one image. Key parsed fields unchanged, existing accuracy baseline still red (total 7/8, date 8/8, exact merchant 3/8). Exact pre-experiment camera restored; final 122 functions/148 executions pass, zero skips, including restored 8/8 crop/OCR pixel parity. No production optimization retained. Device runs 3/4 and coarse VM maxima remain historical pre-rotation-fix evidence, not post-change performance or true peak/footprint. Rotation #243/#242 integrated via main sync; other accepted stops and PERF-303 deferral preserved. Stop this rendering attempt; a further approach requires a separate bounded decision.",
+        "evidencePaths": [
+          ".performance-audit/findings/platform-specific.md",
+          ".performance-audit/measurements/PERF-301-receipt-processing.md",
+          ".performance-audit/measurements/PERF-301-simulator-summary.json",
+          ".performance-audit/measurements/PERF-301-device-r3.json",
+          ".performance-audit/measurements/PERF-301-device-r4.json",
+          ".performance-audit/measurements/PERF-301-device-fixtures.json",
+          ".performance-audit/measurements/PERF-301-main-sync.json",
+          ".performance-audit/measurements/PERF-301-single-pass-experiment.md",
+          ".performance-audit/measurements/PERF-301-single-pass-experiment.json"
+        ],
+        "acceptance": {
+          "date": "2026-10-16",
+          "accepted_by": "user",
+          "source": "Explicit conversation acceptance, followed by request to record it in issue #241 and the audit",
+          "disposition": "BASELINE_MEASURED_STOP_IN_SCOPE",
+          "retain_current_production_pipeline": true,
+          "production_optimization_retained": false,
+          "verified_conditions": [
+            "Historical user-operated PFT TEST captures on iPhone 14 Pro Max / iOS 27.0.1: full, distant, partial, rotated and dim; no reported noticeable slowdown or OCR errors. Pre-rotation-fix runs 3/4 measure about 222-252 ms synchronous main-thread crop wall time.",
+            "Updated e8df73f plus preserved WIP; Release-TEST, ENABLE_TESTABILITY, en_US / Europe/Rome; iPhone 17 Simulator / iOS 27.0: final 122 regression functions / 148 executions passed, zero failures/skips.",
+            "Restored crop and prepared OCR input pixels match on 8/8 photos of one receipt. Separate actual OCR replay preserves full recognized lines and parsed fields versus baseline on 8/8."
+          ],
+          "rejection_reason": "Single-pass candidate reduces synthetic rotated valid-crop CPU by 22-48%, but changes real crop/OCR-input pixels and recognized lines on 1/8 photos. Key parsed fields remain unchanged; preservation gate failed, exact pre-experiment camera source restored.",
+          "known_correctness_limit": "Strict OCR accuracy replay remains red with six existing assertions: total correct 7/8, date 8/8, exact merchant 3/8; separate from performance acceptance.",
+          "unverified": [
+            "Less powerful/other supported iPhones",
+            "Updated physical-device before/after and live-camera rotation behavior",
+            "Exact transient memory peak and physical footprint",
+            "Energy and frame latency"
+          ],
+          "reopen_when": "New evidence of a repeatable visible stall, sustained growth or memory pressure/termination, or an explicitly authorized separately bounded experiment on less powerful hardware.",
+          "raw_artifacts": "Photos, expectations, OCR text and raw traces remain local and ignored.",
+          "issue_closure_requested": false,
+          "github_comment_url": "https://github.com/RizzoG99/PersonalFinanceTracker/issues/241#issuecomment-6218902824"
+        },
+        "correctnessFollowUps": [
+          {
+            "issue": 244,
+            "url": "https://github.com/RizzoG99/PersonalFinanceTracker/issues/244",
+            "symptom": "Printed tax selected instead of recognized total",
+            "primary_fixture_id": "F67C00E3-6578-4B2D-B466-627561629733",
+            "scope": "OCR/parser correctness, separate from accepted PERF-301 performance stop"
+          },
+          {
+            "issue": 245,
+            "url": "https://github.com/RizzoG99/PersonalFinanceTracker/issues/245",
+            "symptom": "Table heading selected instead of merchant; four accent-only mismatches distinguished",
+            "primary_fixture_id": "60593A10-CFAF-4C61-A369-A7A02925D21B",
+            "scope": "OCR/parser correctness and explicit diacritic fidelity policy, separate from accepted PERF-301 performance stop"
+          }
+        ]
+      },
+      "PERF-302": {
+        "status": "AWAITING_BASELINE",
+        "note": "Retained original candidate; current reachability/representative scale not re-audited in this focused status update. No new performance confirmation."
+      },
+      "PERF-303": {
+        "status": "PARTIAL_DEFERRED",
+        "note": "Canceled debounce sleep exits; clearSearch still schedules multiple derivations, detached workers outlive owners and filter publication lacks a latest-generation check. User reports substantial improvement and mild typing lag without freeze. Further performance work deferred; correctness races not proven fixed.",
+        "evidencePaths": [
+          ".performance-audit/measurements/Activity-search-5k-baseline.md",
+          ".performance-audit/measurements/Activity-search-5k-device-r1.md"
+        ]
+      },
+      "PERF-305": {
+        "status": "AWAITING_BASELINE",
+        "note": "Retained original candidate; current reachability/representative scale not re-audited in this focused status update. No new performance confirmation."
+      },
+      "PERF-400": {
+        "status": "LOW_PRIORITY_GATE",
+        "note": "Keep simpler implementation unless targeted measurement changes the priority; not re-audited in this focused update."
+      }
+    }
+  },
+  "measurementCampaign": {
+    "status": "IN_PROGRESS",
+    "baseCommit": "0c07a98253cc2e0872bdf70f10cf1c120fbc61f1",
+    "branch": "chore/performance-baselines",
+    "scope": [
+      "PERF-110",
+      "PERF-111",
+      "PERF-112",
+      "PERF-303",
+      "PERF-201"
+    ],
+    "dataset": "5k deterministic transactions",
+    "reportPaths": [
+      ".performance-audit/measurements/environment.md",
+      ".performance-audit/measurements/PERF-110-baseline.md",
+      ".performance-audit/measurements/PERF-111-baseline.md",
+      ".performance-audit/measurements/PERF-112-daily-check-in-profile.md",
+      ".performance-audit/measurements/Home-Activity-read-model-followup.md",
+      ".performance-audit/measurements/Activity-search-5k-baseline.md",
+      ".performance-audit/measurements/Activity-search-5k-device-r1.md",
+      ".performance-audit/measurements/PERF-201-baseline.md",
+      ".performance-audit/measurements/PERF-201-batch-followup.md"
+    ],
+    "limitations": [
+      "Simulator/Debug observations establish structural work and stage timings, not physical-device responsiveness.",
+      "Physical iPhone 14 Pro Max search run 1 is analyzed; exact recorded Git revision/build configuration and key-to-presented-frame latency are not independently established.",
+      "Single device run is not a repeated distribution or comparable before/after; sampled CPU weights are not freeze durations.",
+      "Bulk edit/Undo batch validated with Debug Simulator count/wall comparisons and real disk persistence, excluding AppShell fan-out and UI frames. Injected save failures validate retry/rollback but not physical full-disk/corrupt-store conditions. Physical bulk responsiveness, concurrent writers, restore/recurrence, memory, energy, camera/OCR and iPad performance remain unmeasured."
+    ],
+    "confirmedFindingIds": [
+      "PERF-110",
+      "PERF-111",
+      "PERF-201"
+    ],
+    "confirmedHotPaths": [
+      {
+        "findingId": "PERF-112",
+        "symbol": "DailyCheckInService.dateKey",
+        "scope": "Measured simulator hot path; remaining analytics still require validation",
+        "disposition": "CORRECTED; broader PERF-112 remains partial"
+      }
+    ],
+    "followUpDecision": "Stop further bulk edit/Undo structural optimization after passing count/data budgets and comparable simulator improvement. Assess PFT TEST use on device before further work; restore/recurrence remain separate unmeasured scenarios. Search optimization remains deferred. Broader PERF-112 analytics is the next measurement candidate, not started here.",
+    "completedScenarios": [
+      "cold-launch-5k-run-01",
+      "open-insights-5k-r2",
+      "open-insights-5k-r3",
+      "noop-foreground-5k-r1",
+      "noop-foreground-5k-r2",
+      "noop-foreground-5k-r3",
+      "noop-foreground-5k-r4",
+      "noop-foreground-5k-r5",
+      "intent-foreground-5k-r1",
+      "intent-foreground-5k-r2",
+      "intent-foreground-5k-r3",
+      "intent-foreground-5k-r4",
+      "intent-foreground-5k-r5",
+      "add-transaction-5k-r1",
+      "add-transaction-5k-r2",
+      "add-transaction-5k-r3",
+      "add-transaction-5k-r4",
+      "add-transaction-5k-r5",
+      "activity-search-5k-viewmodel-baseline",
+      "Activity-search-5k-PFT-TEST-iPhone-r1/run-1",
+      "bulk-note-edit-undo-5k-1-10-100-three-rounds",
+      "bulk-edit-undo-batch-behavior-widget-checks",
+      "bulk-note-edit-undo-5k-batch-final-source-three-rounds",
+      "bulk-edit-single-flush-red-to-green"
+    ],
+    "currentPhase": "PERF201_BULK_EDIT_UNDO_IMPLEMENTED_VALIDATED",
+    "supersededRequests": [
+      {
+        "request": "Missing search run 3 in PERF-110-device-manual-save-r5.trace",
+        "disposition": "Superseded by separate saved Activity-search-5k-PFT-TEST-iPhone-r1.trace, explicitly analyzed run 1; original trace was not treated as containing run 3.",
+        "evidencePath": ".performance-audit/measurements/Activity-search-5k-device-r1.md"
+      }
+    ],
+    "nextScenario": {
+      "findingId": "PERF-201",
+      "status": "BULK_EDIT_UNDO_IMPLEMENTED_VALIDATED_SIMULATOR",
+      "scenario": "Bulk edit 1/10/100 selected transactions and undo in isolated PFT TEST 5k fixture",
+      "rowCounts": [
+        1,
+        10,
+        100
+      ],
+      "includeUndo": true,
+      "plannedReportPath": ".performance-audit/measurements/PERF-201-baseline.md",
+      "baselineAvailable": true,
+      "metrics": [
+        "local VM settled wall duration",
+        "repository saves",
+        "full-store fetch/materialization",
+        "Safe-to-Spend snapshot writes",
+        "WidgetKit reload requests"
+      ],
+      "constraint": "Completed in bulk edit/Undo scope; no further structural work scheduled. Restore/recurrence and physical latency remain separate gates.",
+      "reportPath": ".performance-audit/measurements/PERF-201-baseline.md",
+      "remainingMetrics": [
+        "main-thread sampled work",
+        "physical operation-to-presented-state latency",
+        "physical full-disk/corrupt-store failure behavior",
+        "concurrent writers"
+      ],
+      "followUpReportPath": ".performance-audit/measurements/PERF-201-batch-followup.md"
+    },
+    "deviceSearchMeasurement": {
+      "reportPath": ".performance-audit/measurements/Activity-search-5k-device-r1.md",
+      "artifact": ".performance-audit/measurements/traces/Activity-search-5k-PFT-TEST-iPhone-r1.trace",
+      "run": 1,
+      "device": "iPhone 14 Pro Max",
+      "platform": "iOS",
+      "os": "27.0.1 (24A446)",
+      "date": "2026-10-15T23:28:56.950+02:00",
+      "durationSeconds": 65.820671,
+      "thermalState": "Nominal",
+      "binaryUUID": "B6C1AD37-8471-3691-9142-86E253C9407D",
+      "recordedCommit": null,
+      "buildConfigurationVerified": false,
+      "filterCount": 7,
+      "filterDurationRangeMs": [
+        24.000084,
+        60.683875
+      ],
+      "postBootstrapGroupPublicationMaxMs": 0.533584,
+      "userObservation": "Slight typing lag, no perceived freeze; substantial overall improvement reported afterward",
+      "noAppOwnedRootCauseEstablished": true
+    },
+    "bulkEditBaseline": {
+      "reportPath": ".performance-audit/measurements/PERF-201-baseline.md",
+      "dataPath": ".performance-audit/measurements/PERF-201-baseline.json",
+      "scope": "bulk note edit and Undo only",
+      "sampleCount": 18,
+      "rowCounts": [
+        1,
+        10,
+        100
+      ],
+      "logicalPhases": [
+        "edit",
+        "undo"
+      ],
+      "baselineCorrectness": "PASSED",
+      "minimalStructuralOracle": "EXPECTED_RED: 1 row passes; 2 rows rebuild history twice against budget 1",
+      "productionOptimizationImplemented": false,
+      "physicalResponsivenessMeasured": false
+    },
+    "bulkEditFollowUp": {
+      "reportPath": ".performance-audit/measurements/PERF-201-batch-followup.md",
+      "dataPath": ".performance-audit/measurements/PERF-201-batch-followup.json",
+      "scope": "Activity bulk note/amount/category edit and Undo",
+      "productionOptimizationImplemented": true,
+      "measuredSamples": 18,
+      "successfulSavesPerMeasuredPhase": 1,
+      "fullMaterializationsPerMeasuredPhase": 1,
+      "widgetRequestsPerMeasuredPhase": 1,
+      "finalTargetedTestsPassed": 93,
+      "finalTargetedTestsFailed": 0,
+      "finalTargetedTestsOptInSkipped": 2,
+      "dedicatedBehaviorWidgetTestsPassed": 7,
+      "physicalResponsivenessMeasured": false,
+      "remainingScopes": [
+        "restore",
+        "recurrence",
+        "broader failure and concurrent-writer scenarios",
+        "physical latency"
+      ]
+    }
   },
   "reconnaissance": {
     "id": "RECON",
@@ -146,5 +502,113 @@
       ".performance-audit/audit-plan.md"
     ],
     "completionTimestamp": "2026-10-08T20:20:43Z"
+  },
+  "historicalDispositions": [
+    {
+      "label": "Post-PR217 and initial measurement campaign, before scoped-fix status reconciliation",
+      "disposition": {
+        "reviewedThroughCommit": "dcbb22ded9a08fb4272c352635ce5796d7d5e825",
+        "activeRootFindingsCount": 15,
+        "priorityCounts": {
+          "P0": 0,
+          "P1": 6,
+          "P2": 7,
+          "P3": 2
+        },
+        "confidenceCounts": {
+          "Confirmed": 2,
+          "Strong Evidence": 10,
+          "Potential": 3
+        },
+        "resolvedRootFindingIds": [
+          "PERF-203"
+        ],
+        "retiredSupportingFindingIds": [
+          "PERF-204"
+        ],
+        "deltaReviewPath": ".performance-audit/validation/pr217-delta-review.md"
+      }
+    }
+  ],
+  "publicationCheckpoint": {
+    "date": "2026-10-16",
+    "implementationBaseCommit": "8dbb9e4672f3ff78f89382ef234f89d73f158e43",
+    "testVariantSetupPath": "docs/development/test-app.md",
+    "historicalIntegrationReportPath": ".performance-audit/measurements/PR-230-final-integration.md",
+    "historicalIntegrationReportCommit": "86bec054722776121546f38f480b84cb5ec0210b",
+    "historicalMeasurementsPreserved": true,
+    "newPerformanceOptimization": false,
+    "defaultEnabledDiagnosticArguments": {
+      "PersonalFinanceTraker": 0,
+      "PersonalFinanceTraker-TEST": 0
+    },
+    "standardUnitResult": {
+      "passedTests": 827,
+      "failedTests": 0,
+      "skippedTests": 15,
+      "passingExecutions": 897,
+      "totalTestFunctions": 842
+    },
+    "environment": {
+      "platform": "iOS Simulator",
+      "architecture": "arm64",
+      "model": "iPhone 17",
+      "osVersion": "27.0",
+      "osBuild": "24A434",
+      "simulatorName": "pft-pr230-test-variant-verification"
+    },
+    "manualGates": [
+      "Integrated physical-device camera rotation",
+      "iCloud backup access and widget deep links on hardware",
+      "iPad/wide/landscape",
+      "Accessibility Dynamic Type and VoiceOver",
+      "Current typing-to-frame latency and older devices"
+    ],
+    "excludedArtifacts": [
+      "Raw traces/photos/personal stores",
+      "Local Xcode Cloud target manifest"
+    ],
+    "scope": "Publish existing TEST tooling, baseline harness and curated historical reports; fresh behavioral checks are not a comparable device timing benchmark.",
+    "testFocusedResult": {
+      "passedTests": 23,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "suites": [
+        "AppIdentityTests",
+        "PendingTransactionIntentTests",
+        "SafeToSpendSnapshotTests",
+        "SearchTests"
+      ]
+    },
+    "testVariantCommit": "ce5cacb27f31bb77a2b095d99a4cc1254c422a14",
+    "activityBaselineVerification": {
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "records": 24,
+      "configuration": "Debug-TEST",
+      "inputCount": 5000,
+      "sourceSHA256": "f86e8c564e18396468ba58a3231f1b8a294e5389fe89080786dcbbc08c378e5b",
+      "performanceComparisonClaimed": false
+    },
+    "releaseTestBuild": {
+      "result": "Passed",
+      "actualSwiftOptimizationFlag": "-O",
+      "testBundleCount": 3,
+      "entitlementsScope": "Generated Simulator entitlements, not hardware signing or iCloud access"
+    },
+    "coexistenceSmoke": {
+      "seededTransactionCount": 5000,
+      "retainedAfterRelaunchWithoutSeed": 5000,
+      "normalStoreFilesByteIdentical": 4,
+      "testSandboxAndAppGroupDistinct": true,
+      "normalAppInstalledOrLaunchedBySmoke": false,
+      "physicalDeviceUsed": false
+    },
+    "profilingAnalyzerTests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "historicalIntegrationReportScope": "Historical at 86bec05 before review and TEST publication; its Italian/UI/standard Release and standalone recognizer checks were not repeated by this publication checkpoint."
   }
 }

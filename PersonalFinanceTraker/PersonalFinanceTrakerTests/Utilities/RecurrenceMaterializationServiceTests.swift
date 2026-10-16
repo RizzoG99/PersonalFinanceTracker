@@ -14,8 +14,9 @@ struct RecurrenceMaterializationServiceTests {
         ]
         let service = RecurrenceMaterializationService()
 
-        try await service.materialize(using: mock, today: date(2026, 3, 1))
+        let didMaterialize = try await service.materialize(using: mock, today: date(2026, 3, 1))
 
+        #expect(didMaterialize)
         #expect(mock.materializeOccurrencesCalls.count == 1)
         let call = mock.materializeOccurrencesCalls[0]
         #expect(call.inputs.map(\.timestamp) == [date(2026, 1, 1), date(2026, 2, 1), date(2026, 3, 1)])
@@ -30,8 +31,9 @@ struct RecurrenceMaterializationServiceTests {
         ]
         let service = RecurrenceMaterializationService()
 
-        try await service.materialize(using: mock, today: date(2026, 3, 1))
+        let didMaterialize = try await service.materialize(using: mock, today: date(2026, 3, 1))
 
+        #expect(!didMaterialize)
         #expect(mock.materializeOccurrencesCalls.isEmpty)
     }
 
@@ -43,10 +45,12 @@ struct RecurrenceMaterializationServiceTests {
         ]
         let service = RecurrenceMaterializationService()
 
-        async let first: Void = service.materialize(using: mock, today: date(2026, 3, 1))
-        async let second: Void = service.materialize(using: mock, today: date(2026, 3, 1))
-        _ = try await (first, second)
+        async let first = service.materialize(using: mock, today: date(2026, 3, 1))
+        async let second = service.materialize(using: mock, today: date(2026, 3, 1))
+        let results = try await (first, second)
 
+        #expect(mock.fetchActiveRecurrenceRulesCallCount == 1)
+        #expect(results.0 && results.1)
         #expect(mock.fetchActiveRecurrenceRulesCallCount == 1)
     }
 }

@@ -232,6 +232,7 @@ struct EditAddTransactionView: View {
         // sheet's rounded corners and grabber would fight that.
         .fullScreenCover(isPresented: $showingDocumentScanner) {
             ReceiptCameraView { result in
+                PerformanceAuditRecorder.event("Receipt.dismiss.request", metadata: ReceiptImageAudit.context)
                 showingDocumentScanner = false
                 switch result {
                 case .success(let images):

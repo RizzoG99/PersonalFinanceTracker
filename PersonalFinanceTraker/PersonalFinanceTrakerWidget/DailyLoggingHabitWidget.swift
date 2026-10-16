@@ -59,7 +59,7 @@ private enum HabitWidgetCheckInState: String {
 }
 
 private enum HabitWidgetSnapshotStore {
-    static let appGroupIdentifier = "group.rizzoG99.PersonalFinanceTraker"
+    static let appGroupIdentifier = AppGroup.identifier
     private static let key = "dailyLoggingHabitSnapshot"
 
     static func load() -> HabitWidgetSnapshot {
@@ -102,11 +102,11 @@ private struct HabitEntry: TimelineEntry {
 }
 
 private enum HabitWidgetDeepLink {
-    static let addTransaction = URL(string: "personalfinancetraker://add-transaction")!
+    static let addTransaction = URL(string: "\(AppIdentity.urlScheme)://add-transaction")!
 
     static func reviewTransaction(for template: HabitWidgetQuickTemplate) -> URL {
         var components = URLComponents()
-        components.scheme = "personalfinancetraker"
+        components.scheme = AppIdentity.urlScheme
         components.host = "review-transaction"
         components.queryItems = [
             URLQueryItem(name: "amount", value: String(template.amount)),

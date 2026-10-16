@@ -4,6 +4,8 @@
 
 This review challenged PERF-110, PERF-111, and PERF-112 against current call chains, trigger multiplicity, task guards, existing off-main/cache mitigations, and the repository's realistic multi-year-ledger scenario. It is static validation only: no signposts, device traces, large-store timings, or frame-hitch measurements exist. Accordingly, all retained findings remain `Strong Evidence`, not `Confirmed`.
 
+Measurement addendum (2026-10-09): this paragraph and the table below preserve the historical static verdict. Five later 5k Debug/simulator no-op foreground runs confirmed PERF-110's structural fan-out, and two Insights traces confirmed PERF-111's duplicate appearance ownership and reachable overlap; see `../measurements/PERF-110-baseline.md` and `../measurements/PERF-111-baseline.md`. PERF-112 retains the static confidence assigned here.
+
 > **Delta note:** This review records the original `b91ee33` snapshot. PR #217 removed the forecast cache and traversal implementation described under PERF-112/PERF-204. The current disposition through `dcbb22d` is documented in `pr217-delta-review.md`; PERF-112 remains active on independent Dashboard and Insights evidence, while PERF-204 is retired.
 
 ## Verdicts

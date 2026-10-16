@@ -6519,6 +6519,47 @@
         }
       }
     },
+    "Loads the next %lld Activity items." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Loads the next %lld Activity item."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Loads the next %lld Activity items."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Carica %lld altro elemento di Attività."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Carica i prossimi %lld elementi di Attività."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Log" : {
 
     },
@@ -10593,6 +10634,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra"
+          }
+        }
+      }
+    },
+    "Show %lld more" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show %lld more"
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mostra ancora %lld elemento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mostra ancora %lld elementi"
+                }
+              }
+            }
           }
         }
       }

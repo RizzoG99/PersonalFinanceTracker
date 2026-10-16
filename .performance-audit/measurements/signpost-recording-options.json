@@ -1,0 +1,11 @@
+{
+  "os_log": {
+    "recordAllProcessesInSingleProcessMode": false
+  },
+  "os_signpost": {
+    "dynamicTracingEnabledSubsystems": [
+      "rizzoG99.PersonalFinanceTraker"
+    ],
+    "recordAllProcessesInSingleProcessMode": false
+  }
+}

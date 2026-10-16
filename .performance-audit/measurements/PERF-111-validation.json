@@ -1,0 +1,42 @@
+{
+  "kind": "viewmodel_overlap_correctness",
+  "head": "bedbeb359dddee230f73ea88443165729c834202",
+  "worktree": ".worktrees/performance-baselines",
+  "viewmodel_sha256": "930a7fb08a1bb343956eb699ccd1ea4c4d23392fa9f97890868c89b4cffb86bc",
+  "red_repetitions": [
+    "PERF111 diagnostic inputs=1 reads=2 starts=2 commits=2 max_active=2 expected_total=37 actual_total=12",
+    "PERF111 diagnostic inputs=1 reads=2 starts=2 commits=2 max_active=2 expected_total=37 actual_total=12",
+    "PERF111 diagnostic inputs=1 reads=2 starts=2 commits=2 max_active=2 expected_total=37 actual_total=12",
+    "PERF111 diagnostic inputs=5000 reads=2 starts=2 commits=2 max_active=2 expected_total=185000 actual_total=60000",
+    "PERF111 diagnostic inputs=5000 reads=2 starts=2 commits=2 max_active=2 expected_total=185000 actual_total=60000",
+    "PERF111 diagnostic inputs=5000 reads=2 starts=2 commits=2 max_active=2 expected_total=185000 actual_total=60000"
+  ],
+  "corrected_burst": [
+    "PERF111 followup inputs=1 requests=4 published=4 reads=2 starts=2 commits=1 max_active=1",
+    "PERF111 followup inputs=5000 requests=4 published=4 reads=2 starts=2 commits=1 max_active=1"
+  ],
+  "targeted_tests": {
+    "test_count": 41,
+    "parameter_executions": 44,
+    "failed": 0,
+    "skipped": 0
+  },
+  "release_harness": {
+    "test_count": 1,
+    "failed": 0,
+    "skipped": 0,
+    "record_count": 70
+  },
+  "historical_comparison": {
+    "exact_parity": false,
+    "non_average_results_and_counts_and_service_thread_coverage_match": 70,
+    "average_records_checked_against_fixture_and_each_record_clock": 56,
+    "excluded_expense_indices": [
+      2002,
+      3827
+    ],
+    "excluded_expense_total_cents": 26351,
+    "explanation": "Unchanged rolling six-month cutoff: local 01:21 versus 11:43 on 2026-10-16. Both old and new averages independently match the deterministic fixture at their recorded clocks."
+  },
+  "performance_claim": null
+}

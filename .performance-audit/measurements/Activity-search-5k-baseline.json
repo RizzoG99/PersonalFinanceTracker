@@ -1,0 +1,670 @@
+{
+  "commit": "d1b7f5b48a0bf2ee882639cfbc3171fe7d826eb0",
+  "branch": "chore/performance-baselines",
+  "configuration": "Debug",
+  "platform": "iOS Simulator",
+  "device": "pft-performance-baselines / iPhone 17",
+  "os": "27.0 (24A434)",
+  "scope": "ViewModel wall intervals; no keyboard, UI layout, frame or CPU sample measurements",
+  "intended_debounce_ms": 250,
+  "warm_repetitions": 5,
+  "initial_sequences": 1,
+  "test_summary": {
+    "totalTestCount": 1,
+    "passedTests": 1,
+    "failedTests": 0,
+    "skippedTests": 0
+  },
+  "summaries": {
+    "broad": {
+      "warm": {
+        "query_to_filter_return_ms": {
+          "median": 300.4455,
+          "min": 299.523625,
+          "max": 311.735583
+        },
+        "query_to_group_return_ms": {
+          "median": 316.626875,
+          "min": 315.098625,
+          "max": 330.181333
+        },
+        "Activity.filter.elapsed_ms": {
+          "median": 23.103875,
+          "min": 22.708167,
+          "max": 38.220208
+        },
+        "Activity.derivedFilters.elapsed_ms": {
+          "median": 3.325333,
+          "min": 3.238917,
+          "max": 4.237708
+        },
+        "Activity.group.elapsed_ms": {
+          "median": 11.140417,
+          "min": 10.981166,
+          "max": 14.448916
+        },
+        "Activity.group.publish.elapsed_ms": {
+          "median": 0.599166,
+          "min": 0.380917,
+          "max": 0.807458
+        },
+        "Activity.page.prepare.elapsed_ms": {
+          "median": 0.082709,
+          "min": 0.062333,
+          "max": 0.097708
+        }
+      },
+      "first": {
+        "query_to_filter_return_ms": 302.174917,
+        "query_to_group_return_ms": 320.461167,
+        "Activity.filter.elapsed_ms": 32.462041,
+        "Activity.derivedFilters.elapsed_ms": 3.510542,
+        "Activity.group.elapsed_ms": 13.430208,
+        "Activity.group.publish.elapsed_ms": 0.902875,
+        "Activity.page.prepare.elapsed_ms": 0.137625
+      }
+    },
+    "extend": {
+      "warm": {
+        "query_to_filter_return_ms": {
+          "median": 313.258208,
+          "min": 311.890583,
+          "max": 320.257583
+        },
+        "query_to_group_return_ms": {
+          "median": 320.305542,
+          "min": 319.345917,
+          "max": 328.550375
+        },
+        "Activity.filter.elapsed_ms": {
+          "median": 39.360208,
+          "min": 38.460583,
+          "max": 50.252625
+        },
+        "Activity.derivedFilters.elapsed_ms": {
+          "median": 0.041167,
+          "min": 0.0315,
+          "max": 0.0455
+        },
+        "Activity.group.elapsed_ms": {
+          "median": 0.062917,
+          "min": 0.052209,
+          "max": 0.065584
+        },
+        "Activity.group.publish.elapsed_ms": {
+          "median": 0.396291,
+          "min": 0.238875,
+          "max": 0.481084
+        },
+        "Activity.page.prepare.elapsed_ms": {
+          "median": 0.0085,
+          "min": 0.0075,
+          "max": 0.008958
+        }
+      },
+      "first": {
+        "query_to_filter_return_ms": 313.382292,
+        "query_to_group_return_ms": 321.775375,
+        "Activity.filter.elapsed_ms": 38.990083,
+        "Activity.derivedFilters.elapsed_ms": 0.044875,
+        "Activity.group.elapsed_ms": 0.062959,
+        "Activity.group.publish.elapsed_ms": 0.489375,
+        "Activity.page.prepare.elapsed_ms": 0.011834
+      }
+    },
+    "miss": {
+      "warm": {
+        "query_to_filter_return_ms": {
+          "median": 308.970459,
+          "min": 300.38225,
+          "max": 311.405583
+        },
+        "query_to_group_return_ms": {
+          "median": 315.907959,
+          "min": 306.872125,
+          "max": 318.172166
+        },
+        "Activity.filter.elapsed_ms": {
+          "median": 38.651625,
+          "min": 37.890167,
+          "max": 44.471458
+        },
+        "Activity.derivedFilters.elapsed_ms": {
+          "median": 0.023292,
+          "min": 0.021792,
+          "max": 0.029167
+        },
+        "Activity.group.elapsed_ms": {
+          "median": 0.010708,
+          "min": 0.009708,
+          "max": 0.015125
+        },
+        "Activity.group.publish.elapsed_ms": {
+          "median": 0.006833,
+          "min": 0.00325,
+          "max": 0.007459
+        },
+        "Activity.page.prepare.elapsed_ms": {
+          "median": 0.0045,
+          "min": 0.002875,
+          "max": 0.007083
+        }
+      },
+      "first": {
+        "query_to_filter_return_ms": 324.220916,
+        "query_to_group_return_ms": 331.986875,
+        "Activity.filter.elapsed_ms": 53.111042,
+        "Activity.derivedFilters.elapsed_ms": 0.026417,
+        "Activity.group.elapsed_ms": 0.014,
+        "Activity.group.publish.elapsed_ms": 0.005375,
+        "Activity.page.prepare.elapsed_ms": 0.0035
+      }
+    },
+    "clear": {
+      "warm": {
+        "query_to_filter_return_ms": {
+          "median": 280.316292,
+          "min": 277.8525,
+          "max": 284.339667
+        },
+        "query_to_group_return_ms": {
+          "median": 305.288625,
+          "min": 301.94075,
+          "max": 313.627166
+        },
+        "Activity.filter.elapsed_ms": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "Activity.derivedFilters.elapsed_ms": {
+          "median": 7.0055,
+          "min": 6.442833,
+          "max": 10.2155
+        },
+        "Activity.group.elapsed_ms": {
+          "median": 20.744458,
+          "min": 18.955292,
+          "max": 25.599083
+        },
+        "Activity.group.publish.elapsed_ms": {
+          "median": 0.00425,
+          "min": 0.003458,
+          "max": 0.005042
+        },
+        "Activity.page.prepare.elapsed_ms": {
+          "median": 0.083667,
+          "min": 0.066416,
+          "max": 0.106958
+        }
+      },
+      "first": {
+        "query_to_filter_return_ms": 277.108,
+        "query_to_group_return_ms": 310.578,
+        "Activity.filter.elapsed_ms": 0,
+        "Activity.derivedFilters.elapsed_ms": 9.306042,
+        "Activity.group.elapsed_ms": 28.0655,
+        "Activity.group.publish.elapsed_ms": 0.005167,
+        "Activity.page.prepare.elapsed_ms": 0.132583
+      }
+    }
+  },
+  "samples": [
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 3.510542,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 32.462041,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 13.430208,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.902875,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.137625,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "broad",
+      "query_to_filter_return_ms": 302.174917,
+      "query_to_group_return_ms": 320.461167,
+      "result_count": 2500,
+      "round": 0
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.044875,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 38.990083,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.062959,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.489375,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.011834,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "extend",
+      "query_to_filter_return_ms": 313.382292,
+      "query_to_group_return_ms": 321.775375,
+      "result_count": 1,
+      "round": 0
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.026417,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 53.111042,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.014,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.005375,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.0035,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "miss",
+      "query_to_filter_return_ms": 324.220916,
+      "query_to_group_return_ms": 331.986875,
+      "result_count": 0,
+      "round": 0
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 9.306042,
+      "Activity.filter.count": 0,
+      "Activity.filter.elapsed_ms": 0,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 28.0655,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.005167,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.132583,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "clear",
+      "query_to_filter_return_ms": 277.108,
+      "query_to_group_return_ms": 310.578,
+      "result_count": 5000,
+      "round": 0
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 3.277,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 23.103875,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 14.448916,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.807458,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.097708,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "broad",
+      "query_to_filter_return_ms": 300.4455,
+      "query_to_group_return_ms": 320.119459,
+      "result_count": 2500,
+      "round": 1
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.0315,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 50.252625,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.063875,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.2625,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.0085,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "extend",
+      "query_to_filter_return_ms": 318.698333,
+      "query_to_group_return_ms": 326.044958,
+      "result_count": 1,
+      "round": 1
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.023292,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 39.729959,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.010708,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.006834,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.006333,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "miss",
+      "query_to_filter_return_ms": 304.644708,
+      "query_to_group_return_ms": 311.773041,
+      "result_count": 0,
+      "round": 1
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 9.39075,
+      "Activity.filter.count": 0,
+      "Activity.filter.elapsed_ms": 0,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 25.599083,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.00425,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.106958,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "clear",
+      "query_to_filter_return_ms": 282.757583,
+      "query_to_group_return_ms": 313.627166,
+      "result_count": 5000,
+      "round": 1
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 3.388792,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 26.775791,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 11.140417,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.450791,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.068708,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "broad",
+      "query_to_filter_return_ms": 300.854334,
+      "query_to_group_return_ms": 316.626875,
+      "result_count": 2500,
+      "round": 2
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.0355,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 38.917291,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.065584,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.238875,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.007666,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "extend",
+      "query_to_filter_return_ms": 313.258208,
+      "query_to_group_return_ms": 320.305542,
+      "result_count": 1,
+      "round": 2
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.023792,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 44.471458,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.012041,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.006833,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.00425,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "miss",
+      "query_to_filter_return_ms": 308.970459,
+      "query_to_group_return_ms": 315.907959,
+      "result_count": 0,
+      "round": 2
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 10.2155,
+      "Activity.filter.count": 0,
+      "Activity.filter.elapsed_ms": 0,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 22.5355,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.005042,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.091709,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "clear",
+      "query_to_filter_return_ms": 284.339667,
+      "query_to_group_return_ms": 311.352542,
+      "result_count": 5000,
+      "round": 2
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 4.237708,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 38.220208,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 13.040709,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.8045,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.082709,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "broad",
+      "query_to_filter_return_ms": 311.735583,
+      "query_to_group_return_ms": 330.181333,
+      "result_count": 2500,
+      "round": 3
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.042958,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 46.338,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.062917,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.481084,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.008958,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "extend",
+      "query_to_filter_return_ms": 320.257583,
+      "query_to_group_return_ms": 328.550375,
+      "result_count": 1,
+      "round": 3
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.022209,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 38.651625,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.009708,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.00325,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.002875,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "miss",
+      "query_to_filter_return_ms": 300.38225,
+      "query_to_group_return_ms": 306.872125,
+      "result_count": 0,
+      "round": 3
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 6.949125,
+      "Activity.filter.count": 0,
+      "Activity.filter.elapsed_ms": 0,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 19.646292,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.004708,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.0715,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "clear",
+      "query_to_filter_return_ms": 277.8525,
+      "query_to_group_return_ms": 301.94075,
+      "result_count": 5000,
+      "round": 3
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 3.325333,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 22.708167,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 10.994792,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.599166,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.090458,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "broad",
+      "query_to_filter_return_ms": 299.801125,
+      "query_to_group_return_ms": 315.843042,
+      "result_count": 2500,
+      "round": 4
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.0455,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 39.360208,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.052209,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.396291,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.008916,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "extend",
+      "query_to_filter_return_ms": 311.890583,
+      "query_to_group_return_ms": 319.345917,
+      "result_count": 1,
+      "round": 4
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.029167,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 37.890167,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.015125,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.007459,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.0045,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "miss",
+      "query_to_filter_return_ms": 311.405583,
+      "query_to_group_return_ms": 318.172166,
+      "result_count": 0,
+      "round": 4
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 7.0055,
+      "Activity.filter.count": 0,
+      "Activity.filter.elapsed_ms": 0,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 20.744458,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.003959,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.083667,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "clear",
+      "query_to_filter_return_ms": 280.316292,
+      "query_to_group_return_ms": 305.288625,
+      "result_count": 5000,
+      "round": 4
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 3.238917,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 22.918417,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 10.981166,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.380917,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.062333,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "broad",
+      "query_to_filter_return_ms": 299.523625,
+      "query_to_group_return_ms": 315.098625,
+      "result_count": 2500,
+      "round": 5
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.041167,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 38.460583,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.062,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.434334,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.0075,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "extend",
+      "query_to_filter_return_ms": 312.984792,
+      "query_to_group_return_ms": 319.983667,
+      "result_count": 1,
+      "round": 5
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 0.021792,
+      "Activity.filter.count": 1,
+      "Activity.filter.elapsed_ms": 38.071417,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 0.009916,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.005875,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.007083,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "miss",
+      "query_to_filter_return_ms": 309.488958,
+      "query_to_group_return_ms": 316.55275,
+      "result_count": 0,
+      "round": 5
+    },
+    {
+      "Activity.derivedFilters.count": 1,
+      "Activity.derivedFilters.elapsed_ms": 6.442833,
+      "Activity.filter.count": 0,
+      "Activity.filter.elapsed_ms": 0,
+      "Activity.group.count": 1,
+      "Activity.group.elapsed_ms": 18.955292,
+      "Activity.group.publish.count": 1,
+      "Activity.group.publish.elapsed_ms": 0.003458,
+      "Activity.page.prepare.count": 1,
+      "Activity.page.prepare.elapsed_ms": 0.066416,
+      "input_count": 5000,
+      "intended_debounce_ms": 250,
+      "query": "clear",
+      "query_to_filter_return_ms": 280.100625,
+      "query_to_group_return_ms": 302.80525,
+      "result_count": 5000,
+      "round": 5
+    }
+  ]
+}

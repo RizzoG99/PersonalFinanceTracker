@@ -35,7 +35,7 @@ struct SafeToSpendWidgetView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .containerBackground(.background, for: .widget)
-        .widgetURL(URL(string: "personalfinancetraker://home"))
+        .widgetURL(URL(string: "\(AppIdentity.urlScheme)://home"))
     }
 
     private func figures(_ amount: Decimal) -> some View {

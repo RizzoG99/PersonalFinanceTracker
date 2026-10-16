@@ -2,14 +2,14 @@
 
 ## Scope and method
 
-Static screening covered observation, refresh fan-out, task lifecycle, and main-actor analytical work across `MainTabView`, the iPad shell, `DataChangedSignal`, `TransactionListViewModel`, `DashboardViewModel`, and `CompassViewModel`. Reachability was traced from concrete appearance, foreground, and mutation hooks. Existing load guards, cancellation, detached work, and cache behavior were considered. No runtime instrumentation was available, so all accepted findings are `Strong Evidence`, not `Confirmed`.
+Static screening covered observation, refresh fan-out, task lifecycle, and main-actor analytical work across `MainTabView`, the iPad shell, `DataChangedSignal`, `TransactionListViewModel`, `DashboardViewModel`, and `CompassViewModel`. Reachability was traced from concrete appearance, foreground, and mutation hooks. Existing load guards, cancellation, detached work, and cache behavior were considered. The original screening had no runtime instrumentation. The 2026-10-09 measurement addendum confirms PERF-110's no-op foreground fan-out and PERF-111's duplicate/overlapping-loader mechanism; PERF-112 retains its original confidence.
 
 ## Findings summary
 
 | ID | Severity | Confidence | Area |
 | --- | --- | --- | --- |
-| PERF-110 | High | Strong Evidence | Global refresh fan-out |
-| PERF-111 | High | Strong Evidence | Duplicate/overlapping reload tasks |
+| PERF-110 | High | Confirmed | Global refresh fan-out |
+| PERF-111 | High | Confirmed | Duplicate/overlapping reload tasks |
 | PERF-112 | High | Strong Evidence | Main-actor analytics |
 
 ## PERF-110: Every global data signal eagerly refreshes all feature models and hidden tabs
@@ -18,7 +18,7 @@ Severity:
 High
 
 Confidence:
-Strong Evidence
+Confirmed
 
 Category:
 State Management | Storage | CPU
@@ -53,6 +53,7 @@ Evidence:
 - `MainTabView.swift:335-342` preloads Activity, performs snapshot work, and bumps again during initial task execution.
 - `IPadRootView.swift:98-105` contains the same all-feature fan-out and snapshot refreshes.
 - Dashboard and Transaction list guards do not mitigate this path because the shell calls `reload()`, which clears `isLoaded`.
+- Five equivalent `noop-foreground-5k-r1` … `r5` Debug/simulator runs reproduced the iPhone foreground path. Every measured active segment completed 12 full `fetchAll` calls, two committed loads each for Dashboard, Activity, and Insights, two Habit and two Safe-to-Spend refreshes, one unconditional revision bump/fan-out, and six WidgetKit requests. Maximum concurrent `fetchAll` was two; no interval was cancelled or failed. This confirms structural multiplicity and overlap, not physical-device latency, memory, responsiveness, or energy impact. See `.performance-audit/measurements/PERF-110-baseline.md`.
 
 Recommended Optimization:
 Introduce a refresh coordinator or typed change scope that coalesces revisions and invalidates only affected aggregates. Keep one authoritative post-mutation refresh, avoid a second foreground bump when nothing changed, and defer off-screen feature recomputation until selection/appearance unless a background consumer genuinely requires it. Instrument repository calls before choosing between fine-grained scopes and shared snapshot fan-out.
@@ -72,7 +73,7 @@ Severity:
 High
 
 Confidence:
-Strong Evidence
+Confirmed
 
 Category:
 State Management | Concurrency
@@ -116,6 +117,7 @@ Evidence:
 - A full Insights reload fetches transactions, goals, and categories and then recomputes all aggregates (`InsightsViewModel.swift:89-110`).
 - `TransactionListViewModel.reload()` resets the guard and calls `load()` without handling `loadTask` (`TransactionListViewModel.swift:202-224`).
 - Representative mutation paths call both the global callback and local reload (`TransactionListViewModel.swift:315-327, 825-847`; `InsightsViewModel.swift:154-168`).
+- Runtime measurement on the 5k Debug/simulator fixture reproduced the same single-entry sequence twice. In both `open-insights-5k-r2` and `r3`, `payCycleAware` and the explicit `onAppear` emitted separate triggers at the same timestamp. Each run reached five concurrent Insights loads after lifecycle fan-out; all five committed and none was cancelled. This confirms duplicate ownership and overlap, not physical-device responsiveness or energy impact. See `.performance-audit/measurements/PERF-111-baseline.md`.
 
 Recommended Optimization:
 Choose one refresh owner per event. Remove the duplicate Insights appearance trigger, make reload APIs coalescing/cancellable, and use a generation token before publishing results. Mutation methods should either refresh locally or emit a scoped invalidation, not both. Preserve a force-refresh operation for explicit retry and external-change cases.
