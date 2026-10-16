@@ -24,4 +24,13 @@ enum CategoryNameValidator {
         let normalized = name.trimmingCharacters(in: .whitespaces).lowercased()
         return names.contains { $0.trimmingCharacters(in: .whitespaces).lowercased() == normalized }
     }
+
+    /// The name to store after editing, or nil when the user didn't change it. Compared with
+    /// what the edit field showed (the translated name), not the stored key: saving an untouched
+    /// built-in must keep "Groceries", or it would be stored as "Spesa" and stop following the
+    /// app language (#239).
+    static func renamedName(stored: String, edited: String) -> String? {
+        let trimmed = edited.trimmingCharacters(in: .whitespaces)
+        return trimmed == stored.localizedCategoryDisplay ? nil : trimmed
+    }
 }

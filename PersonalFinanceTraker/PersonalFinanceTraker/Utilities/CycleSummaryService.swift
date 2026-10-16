@@ -11,7 +11,11 @@ struct CycleSummary: Equatable, Sendable {
     enum Pace: Equatable, Sendable { case building, onTrack, faster }
     /// Spent so far in one category, and the change against the usual at the same point
     /// (meaningless while `.building` — there's no usual yet).
-    struct CategoryPace: Equatable, Sendable { let category: String; let spent: Decimal; let delta: Decimal }
+    struct CategoryPace: Equatable, Sendable {
+        let category: String; let spent: Decimal; let delta: Decimal
+        /// `category` is the stored key ("Groceries"); this is what the user reads ("Spesa").
+        var displayName: String { category.removingLeadingEmoji.localizedCategoryDisplay }
+    }
 
     let income: Decimal
     /// Goal transfers excluded — money put towards a goal counts as saved, not spent.

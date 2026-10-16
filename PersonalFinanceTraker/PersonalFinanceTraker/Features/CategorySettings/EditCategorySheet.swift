@@ -4,6 +4,9 @@ import SwiftData
 struct EditCategorySheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    /// Optional: not every host injects it, and the rename still lands without the bump.
+    @Environment(DataChangedSignal.self) private var dataChanged: DataChangedSignal?
+    @Environment(AppSettings.self) private var appSettings: AppSettings?
 
     @Bindable var category: CategoryModel
     let existingCategories: [CategoryModel]
@@ -20,7 +23,7 @@ struct EditCategorySheet: View {
         }
         let sameTypeNames = existingCategories
             .filter { $0.id != category.id && $0.transactionType == category.transactionType }
-            .map { $0.name }
+            .flatMap { [$0.name, $0.name.localizedCategoryDisplay] }
         if CategoryNameValidator.isDuplicate(trimmed, among: sameTypeNames) {
             return "A category with this name already exists"
         }
@@ -74,21 +77,38 @@ struct EditCategorySheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        category.name = editedName.trimmingCharacters(in: .whitespaces)
+                        let newName = CategoryNameValidator.renamedName(stored: category.name, edited: editedName)
+                        // Name written here too, so this list and a reopened sheet show it at once;
+                        // the actor then finds it stored and only rewrites the copies.
+                        if let newName { category.name = newName }
                         category.systemImage = selectedSymbol
                         category.colorToken = selectedToken
                         try? modelContext.save()
+                        if let newName { syncRenamedCategory(newName) }
                         dismiss()
                     }
                     .disabled(!canSave)
                 }
             }
             .onAppear {
-                editedName = category.name
+                editedName = category.name.localizedCategoryDisplay
                 selectedToken = category.colorToken
                 selectedSymbol = category.systemImage
             }
         }
         .presentationBackground { AppBackground() }
+    }
+
+    /// Rewrites the name copy on this category's transactions and rules, then backs up (#239). Detached: an
+    /// actor created from the main actor can end up on the main queue, and a category can own
+    /// thousands of rows.
+    private func syncRenamedCategory(_ newName: String) {
+        let container = modelContext.container
+        let id = category.persistentModelID
+        let signal = dataChanged
+        let settings = appSettings
+        Task.detached {
+            await TransactionActor.renameAndBackUp(container: container, id: id, to: newName, signal: signal, settings: settings)
+        }
     }
 }
