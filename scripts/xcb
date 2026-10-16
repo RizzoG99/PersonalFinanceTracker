@@ -15,7 +15,7 @@ set +a
 [ -n "$_ASC_ISSUER_ID" ] && ASC_ISSUER_ID="$_ASC_ISSUER_ID"
 
 PROJECT=PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj
-SCHEME=PersonalFinanceTraker
+SCHEME="${PFT_XCODE_SCHEME:-PersonalFinanceTraker}"
 DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPhone-17
 RESULT=.build/Test.xcresult
 

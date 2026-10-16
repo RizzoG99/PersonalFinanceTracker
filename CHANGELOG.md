@@ -11,6 +11,7 @@ number that shipped it.
 - Insights keeps the latest transaction results and selected period when refreshes overlap, including after changing the pay cycle or returning to the app.
 - Home's cycle summary refreshes faster with long transaction histories, while keeping the same totals and forecast.
 - Editing several transactions in Activity and undoing those edits avoids repeated full-history widget updates. Bulk edits also keep transactions linked to their trips.
+- Developers can install a separate PFT TEST app alongside their personal copy, with isolated data, widgets and backups, and load a disposable performance-test ledger.
 - Activity now opens large histories in pages of 200 items, with a Show More button. Loading avoids duplicate refreshes, and saved transactions and category changes stay up to date after Siri actions or returning to the app.
 - **Receipt camera in landscape**: turning the phone while scanning a receipt no longer leaves the camera image sideways. The image and the receipt outline follow the rotation, and a receipt scanned in landscape is read just as it is in portrait. In landscape the shutter button moves to the side of the screen, as in the Camera app.
 - **Category names in your language**: "This cycle" ("Where it's going"), the Home card's "Mostly X and Y", the monthly recap's "Most improved" and Siri's confirmation now show built-in categories in the app's language (e.g. "Spesa", not "Groceries"). Editing a category shows its translated name too; saving without changing the name keeps it following the app language.

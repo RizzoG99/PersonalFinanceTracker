@@ -53,7 +53,7 @@ private struct ScanReceiptWidgetView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .widgetURL(URL(string: "personalfinancetraker://scan-receipt"))
+        .widgetURL(URL(string: "\(AppIdentity.urlScheme)://scan-receipt"))
         .accessibilityLabel(Text("Scan receipt"))
         .containerBackground(.background, for: .widget)
     }

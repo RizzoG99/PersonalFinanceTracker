@@ -6,13 +6,13 @@
 import Foundation
 import SwiftData
 
-/// Creates an isolated, repeatable ledger for simulator-only performance screening.
-/// The destructive entry point is compiled only in Debug simulator builds and requires an explicit
-/// `-seedPerformanceAuditData <count>` launch argument.
+/// Creates a repeatable ledger in a Debug simulator or the isolated TEST app.
+/// Physical-device/optimized seeding is available only in PFT_TEST_BUILD configurations.
+/// Requires an explicit `-seedPerformanceAuditData <count>` launch argument.
 enum PerformanceAuditDataSeeder {
     @MainActor
     static func seedIfRequested(in container: ModelContainer) {
-        #if DEBUG && targetEnvironment(simulator)
+        #if PFT_TEST_BUILD || (DEBUG && targetEnvironment(simulator))
         let arguments = ProcessInfo.processInfo.arguments
         guard let countIndex = arguments.firstIndex(of: "-seedPerformanceAuditData"),
               arguments.indices.contains(countIndex + 1),
@@ -91,7 +91,7 @@ enum PerformanceAuditDataSeeder {
         #endif
     }
 
-    #if DEBUG && targetEnvironment(simulator)
+    #if PFT_TEST_BUILD || (DEBUG && targetEnvironment(simulator))
     private static func anchorDate(arguments: [String]) -> Date {
         guard let index = arguments.firstIndex(of: "-performanceAuditAnchorEpoch"),
               arguments.indices.contains(index + 1),

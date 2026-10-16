@@ -47,4 +47,6 @@ Regenerate the whole set with `scripts/screenshots` (add `--ipad` for the iPad p
 
 Open `PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj` in Xcode. Build and run on a simulator or device running iOS 26+.
 
+To install a separate testing copy alongside your personal app, select the **PersonalFinanceTraker-TEST** scheme. See [TEST app setup and performance fixture](docs/development/test-app.md).
+
 > **Note:** The project directory is spelled `PersonalFinanceTraker` (one 'c') — this is a known typo carried throughout the Xcode project.

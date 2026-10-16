@@ -48,7 +48,7 @@ struct HabitWidgetSnapshot: Equatable, Sendable, Codable {
 }
 
 enum HabitWidgetSnapshotStore {
-    static let appGroupIdentifier = "group.rizzoG99.PersonalFinanceTraker"
+    static let appGroupIdentifier = AppGroup.identifier
     private static let key = "dailyLoggingHabitSnapshot"
 
     static func makeSnapshot(
