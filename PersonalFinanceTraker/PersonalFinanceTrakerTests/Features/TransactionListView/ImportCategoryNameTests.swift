@@ -140,18 +140,20 @@ struct ImportCategoryNameTests {
         try context.save()
 
         let defaults = freshDefaults()
-        let start = ContinuousClock.now
-        let fixed = try await actor.repairImportedCategoryNames(defaults: defaults)
-        let elapsed = ContinuousClock.now - start
+        let saves = CategoryRepairSaveCounter(container: container)
+        let result = try await actor.repairCategoryNamesMeasuringCPU(defaults: defaults)
 
-        #expect(fixed == 5000)
-        // Generous ceiling: catches an accidental per-row save or O(n²) walk, not CI jitter.
-        #expect(elapsed < .seconds(5))
+        #expect(result.fixed == 5000)
+        // Protect the single-save contract directly. A wall-clock budget across the actor
+        // call includes unrelated scheduling/storage contention in the full suite.
+        #expect(saves.count == 1)
+        #expect(result.cpuTime < .seconds(5))
         let all = try await actor.fetchAll()
         #expect(all.filter { $0.category == "Sanità" }.count == 5000)
         #expect(all.first { $0.note == "Unlinked" }?.category == "Gym & Fitness")
 
         #expect(try await actor.repairImportedCategoryNames(defaults: defaults) == 0)
+        #expect(saves.count == 1) // A completed repair must not save again.
     }
 
     /// A rule stamps its own `category` on every occurrence it materializes, so a stale rule
@@ -183,4 +185,42 @@ struct ImportCategoryNameTests {
         // A fresh flag (e.g. a crash before it was written) must find nothing left to do.
         #expect(try await actor.repairImportedCategoryNames(defaults: freshDefaults()) == 0)
     }
+}
+
+/// Keep the CPU interval inside the actor's synchronous work; no await crosses it.
+private extension TransactionActor {
+    func repairCategoryNamesMeasuringCPU(defaults: UserDefaults) throws -> (fixed: Int, cpuTime: Duration) {
+        let start = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)
+        let fixed = try repairImportedCategoryNames(defaults: defaults)
+        let elapsed = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID) - start
+        return (fixed, .nanoseconds(Int64(elapsed)))
+    }
+}
+
+/// didSave is synchronous on the writer's thread; every count access uses the lock.
+private final class CategoryRepairSaveCounter: @unchecked Sendable {
+    private let container: ModelContainer
+    private let lock = NSLock()
+    private var value = 0
+    private var observer: NSObjectProtocol?
+
+    init(container: ModelContainer) {
+        self.container = container
+        observer = NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: nil) {
+            [weak self] notification in
+            guard let self, let context = notification.object as? ModelContext,
+                  context.container === self.container else { return }
+            self.lock.lock()
+            self.value += 1
+            self.lock.unlock()
+        }
+    }
+
+    var count: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return value
+    }
+
+    deinit { if let observer { NotificationCenter.default.removeObserver(observer) } }
 }
