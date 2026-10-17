@@ -1,7 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import SwiftData
-import CoreTransferable
 
 enum ProfileRoute: Hashable {
     case categories, scanCategories, changePIN, siriWidgetsGuide
@@ -32,11 +31,15 @@ struct ProfileView: View {
     @State private var restoreErrorMessage: String?
     @State private var isRestoring = false
     @State private var showingRestoreSuccess = false
+    @State private var shareRequest: TransactionsShareRequest?
+    @State private var isPreparingExport = false
+    @State private var exportErrorMessage: String?
     @State private var route: ProfileRoute?
     @State private var showingRestoreConfirmation = false
     private let pinService = PINService()
     private let authService = BiometricAuthService()
     private let backupService = BackupService()
+    private let exportFileWriter = TransactionsExportFileWriter()
 
     /// `newestBackup()` (not `appSettings.lastBackupDate`, which is a device-local
     /// UserDefaults value) is the source of truth for whether a backup exists — it reads the
@@ -74,6 +77,21 @@ struct ProfileView: View {
             backupErrorMessage = "iCloud Drive is not available. Enable it in Settings to back up your data."
         } catch {
             backupErrorMessage = "Backup failed: \(error.localizedDescription)"
+        }
+    }
+
+    private func prepareExport(_ format: TransactionsExportFormat) async {
+        guard !isPreparingExport else { return }
+        isPreparingExport = true
+        exportErrorMessage = nil
+        defer { isPreparingExport = false }
+
+        do {
+            let transactions = try await transactionViewModel.repo.fetchAll()
+            let url = try await exportFileWriter.write(transactions: transactions, format: format)
+            shareRequest = TransactionsShareRequest(fileURL: url)
+        } catch {
+            exportErrorMessage = error.localizedDescription
         }
     }
 
@@ -182,23 +200,27 @@ struct ProfileView: View {
             importButtonLabel
         }
         .disabled(transactionViewModel.isLoadingImportFile)
+        .accessibilityLabel(transactionViewModel.isLoadingImportFile ? "Reading file…" : "Import Transactions")
+        .accessibilityValue("CSV or Excel")
 
         Menu {
-            ShareLink(
-                item: TransactionsExport(format: .csv, repo: transactionViewModel.repo),
-                preview: SharePreview("Transactions CSV")
-            ) {
-                Label("CSV", systemImage: "tablecells")
+            Button("CSV", systemImage: "tablecells") {
+                Task { await prepareExport(.csv) }
             }
 
-            ShareLink(
-                item: TransactionsExport(format: .xlsx, repo: transactionViewModel.repo),
-                preview: SharePreview("Transactions Excel")
-            ) {
-                Label("Excel", systemImage: "tablecells.badge.ellipsis")
+            Button("Excel", systemImage: "tablecells.badge.ellipsis") {
+                Task { await prepareExport(.xlsx) }
             }
         } label: {
-            Label("Export Data", systemImage: "square.and.arrow.up")
+            exportButtonLabel
+        }
+        .disabled(isPreparingExport)
+        .accessibilityLabel(isPreparingExport ? "Preparing export…" : "Export Transactions")
+        .accessibilityValue("CSV or Excel")
+        .background {
+            TransactionsSharePresenter(request: $shareRequest)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
         }
 
         VStack(alignment: .leading, spacing: 6) {
@@ -237,13 +259,64 @@ struct ProfileView: View {
     @ViewBuilder
     private var importButtonLabel: some View {
         if transactionViewModel.isLoadingImportFile {
-            HStack {
-                ProgressView()
-                    .controlSize(.small)
-                Text("Reading file…")
-            }
+            dataTransferProgressLabel("Reading file…")
         } else {
-            Label("Import CSV or Excel", systemImage: "square.and.arrow.down")
+            dataTransferLabel("Import Transactions", systemImage: "square.and.arrow.down")
+        }
+    }
+
+    @ViewBuilder
+    private var exportButtonLabel: some View {
+        if isPreparingExport {
+            dataTransferProgressLabel("Preparing export…")
+        } else {
+            dataTransferLabel("Export Transactions", systemImage: "square.and.arrow.up")
+        }
+    }
+
+    private func dataTransferLabel(_ title: LocalizedStringKey, systemImage: String) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                Label(title, systemImage: systemImage)
+                Spacer()
+                Text("CSV or Excel")
+                    .foregroundStyle(.textDim)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Label(title, systemImage: systemImage)
+                Text("CSV or Excel")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
+        }
+    }
+
+    private func dataTransferProgressLabel(_ title: LocalizedStringKey) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                Label {
+                    Text(title)
+                } icon: {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+                Spacer()
+                Text("CSV or Excel")
+                    .foregroundStyle(.textDim)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Label {
+                    Text(title)
+                } icon: {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+                Text("CSV or Excel")
+                    .font(.caption)
+                    .foregroundStyle(.textDim)
+            }
         }
     }
 
@@ -430,6 +503,17 @@ struct ProfileView: View {
             } message: {
                 Text(restoreErrorMessage ?? "")
             }
+            .alert(
+                "Export Failed",
+                isPresented: Binding(
+                    get: { exportErrorMessage != nil },
+                    set: { if !$0 { exportErrorMessage = nil } }
+                )
+            ) {
+                Button("OK") { exportErrorMessage = nil }
+            } message: {
+                Text(exportErrorMessage ?? "")
+            }
         }
     }
 
@@ -453,38 +537,6 @@ struct ProfileView: View {
         } catch {
             deleteErrorMessage = error.localizedDescription
         }
-    }
-}
-
-/// Lazily exports all transactions when the user picks a destination in the
-/// share sheet — nothing is fetched or written until then.
-struct TransactionsExport: Transferable {
-    enum Format: String {
-        case csv, xlsx
-    }
-
-    let format: Format
-    let repo: any ITransactionRepository
-
-    static var transferRepresentation: some TransferRepresentation {
-        FileRepresentation(exportedContentType: .commaSeparatedText) { export in
-            try await export.writeTempFile { Data(CSVExportService.generateCSV(from: $0).utf8) }
-        }
-        .exportingCondition { $0.format == .csv }
-
-        FileRepresentation(exportedContentType: UTType(filenameExtension: "xlsx")!) { export in
-            try await export.writeTempFile { try XLSXExportService.generateXLSX(from: $0) }
-        }
-        .exportingCondition { $0.format == .xlsx }
-    }
-
-    private func writeTempFile(_ make: ([TransactionSnapshot]) throws -> Data) async throws -> SentTransferredFile {
-        let transactions = try await repo.fetchAll()
-        let stamp = Date.now.formatted(.iso8601.year().month().day().dateSeparator(.dash))
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("Transactions-\(stamp).\(format.rawValue)")
-        try make(transactions).write(to: url, options: .atomic)
-        return SentTransferredFile(url)
     }
 }
 

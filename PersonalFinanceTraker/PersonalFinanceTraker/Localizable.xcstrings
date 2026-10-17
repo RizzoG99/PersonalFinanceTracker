@@ -3832,6 +3832,22 @@
         }
       }
     },
+    "CSV or Excel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV or Excel"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV o Excel"
+          }
+        }
+      }
+    },
     "Currency" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5145,6 +5161,38 @@
         }
       }
     },
+    "Export Failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Failed"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esportazione non riuscita"
+          }
+        }
+      }
+    },
+    "Export Transactions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Transactions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta movimenti"
+          }
+        }
+      }
+    },
     "Failed to save %lld of %lld. Check available storage and try again." : {
       "localizations" : {
         "en" : {
@@ -6122,6 +6170,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anteprima importazione"
+          }
+        }
+      }
+    },
+    "Import Transactions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Transactions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importa movimenti"
           }
         }
       }
@@ -8924,6 +8988,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Possibile duplicato"
+          }
+        }
+      }
+    },
+    "Preparing export…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing export…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparazione esportazione…"
           }
         }
       }
@@ -11880,6 +11960,7 @@
       }
     },
     "Transactions CSV" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11896,6 +11977,7 @@
       }
     },
     "Transactions Excel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
