@@ -32,6 +32,7 @@ private final class InsightsReadGate<Value> {
     }
 }
 
+extension PerformanceRecorderSerialTests {
 @MainActor
 @Suite(.serialized)
 struct CompassViewModelTests {
@@ -335,4 +336,5 @@ struct CompassViewModelTests {
         let vm = await makeVM(transactions: [expense])
         #expect(vm.healthScore != nil)
     }
+}
 }

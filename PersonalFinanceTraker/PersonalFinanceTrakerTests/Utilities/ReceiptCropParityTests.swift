@@ -105,13 +105,13 @@ struct ReceiptCropFixtureParityTests {
         func file(_ name: String) throws -> URL {
             try #require(urls.first { $0.lastPathComponent == name }, "Missing private fixture: \(name)")
         }
-        let expected = try JSONDecoder().decode([ReceiptImageDeviceFixtureTests.Expected].self,
+        let expected = try JSONDecoder().decode([PerformanceRecorderSerialTests.ReceiptImageDeviceFixtureTests.Expected].self,
             from: Data(contentsOf: file("perf301-expectations.json")))
         try #require(!expected.isEmpty)
         var records: [[String: Any]] = []
         for item in expected {
             try autoreleasepool {
-                let capture = try JSONDecoder().decode(ReceiptImageDeviceFixtureTests.Capture.self,
+                let capture = try JSONDecoder().decode(PerformanceRecorderSerialTests.ReceiptImageDeviceFixtureTests.Capture.self,
                     from: Data(contentsOf: file("\(item.id).json")))
                 let image = try #require(UIImage(data: Data(contentsOf: file(capture.original))))
                 let quad = capture.quad?.map { CGPoint(x: $0[0], y: $0[1]) }

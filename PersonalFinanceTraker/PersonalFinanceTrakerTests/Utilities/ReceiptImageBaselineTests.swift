@@ -5,6 +5,7 @@ import Testing
 import UIKit
 @testable import PersonalFinanceTraker
 
+extension PerformanceRecorderSerialTests {
 /// Run alone: recorder state is process-wide. This harness measures transforms on the
 /// main actor, NOT the executing thread of the async recognizer, camera wait or a frame.
 @Suite(.serialized)
@@ -106,4 +107,5 @@ struct ReceiptImageBaselineTests {
             }
         }
     }
+}
 }

@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import PersonalFinanceTraker
 
+extension PerformanceRecorderSerialTests {
 /// Explicitly selected diagnostic baseline, not a device responsiveness or frame benchmark.
 /// Run this suite alone: the opt-in recorder's counters are process-wide. No latency budget
 /// is asserted until a target-device budget and baseline variance have been established.
@@ -85,4 +86,5 @@ struct ActivitySearchBaselineTests {
         Double(duration.components.seconds) * 1_000
             + Double(duration.components.attoseconds) / 1_000_000_000_000_000
     }
+}
 }

@@ -3,6 +3,7 @@ import SwiftData
 import Testing
 @testable import PersonalFinanceTraker
 
+extension PerformanceRecorderSerialTests {
 /// Run alone: the recorder and app settings are process-wide. This isolates actual
 /// ViewModel analytics from SwiftData I/O and SwiftUI layout; it is not tap-to-frame latency.
 @Suite(.serialized)
@@ -159,4 +160,5 @@ struct AnalyticsBaselineTests {
         ]
         return String(decoding: try JSONSerialization.data(withJSONObject: result, options: [.sortedKeys]), as: UTF8.self)
     }
+}
 }
