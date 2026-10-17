@@ -11,10 +11,11 @@ import Foundation
 ///
 /// Polling inverts both properties: it returns as soon as the condition holds,
 /// and only spends the whole timeout when something is genuinely wrong. Set the
-/// timeout generously — it is a failure deadline, not an expected wait.
+/// timeout generously — it is a failure deadline, not an expected wait. 5s was
+/// not enough on Xcode Cloud (build 120: PIN setup never reached .confirmPin).
 @MainActor
 func waitUntil(
-    timeout: Duration = .seconds(5),
+    timeout: Duration = .seconds(30),
     _ condition: () -> Bool
 ) async -> Bool {
     let deadline = ContinuousClock.now + timeout
@@ -28,7 +29,7 @@ func waitUntil(
 /// Waits for a value to become non-nil, returning it.
 @MainActor
 func waitForValue<T>(
-    timeout: Duration = .seconds(5),
+    timeout: Duration = .seconds(30),
     _ produce: () -> T?
 ) async -> T? {
     _ = await waitUntil(timeout: timeout) { produce() != nil }

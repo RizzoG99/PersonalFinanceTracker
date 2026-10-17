@@ -3,6 +3,7 @@ import Testing
 import UIKit
 @testable import PersonalFinanceTraker
 
+extension PerformanceRecorderSerialTests {
 /// Run alone: captures the actual async recognizer execution, unlike the synchronous
 /// transform harness. Synthetic text only; private-receipt accuracy is a separate gate.
 @Suite(.serialized)
@@ -134,4 +135,5 @@ struct ReceiptImageDeviceFixtureTests {
         Attachment.record(Data("{\"replayed_fixtures\":\(expectations.count)}".utf8),
                           named: "perf301-device-replay-count.json")
     }
+}
 }

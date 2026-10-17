@@ -2,6 +2,15 @@ import Testing
 import Foundation
 @testable import PersonalFinanceTraker
 
+// ponytail: PerformanceAuditRecorder is process-wide, and every suite that resets or
+// reads it is nested here so .serialized cascades across all of them (same trick as
+// PINKeychainSerialTests). Xcode Cloud runs suites in parallel; before this, one
+// suite's resetForTesting wiped or polluted another's counters mid-test.
+// Upgrade path: inject a recorder instance instead of the global.
+@Suite(.serialized)
+struct PerformanceRecorderSerialTests {}
+
+extension PerformanceRecorderSerialTests {
 @Suite(.serialized)
 struct PerformanceAuditRecorderTests {
     @Test @MainActor func synchronousMeasurementPreservesResultsAndMeasuresExecutingThread() {
@@ -61,4 +70,5 @@ struct PerformanceAuditRecorderTests {
         #expect(snapshot.maximumConcurrentIntervals["Recorder.load"] == 2)
         #expect((snapshot.totalDurationNanoseconds["Recorder.load"] ?? 0) > 0)
     }
+}
 }

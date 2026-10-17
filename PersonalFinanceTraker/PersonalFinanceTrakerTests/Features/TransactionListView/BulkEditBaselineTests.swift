@@ -3,6 +3,7 @@ import SwiftData
 import Testing
 @testable import PersonalFinanceTraker
 
+extension PerformanceRecorderSerialTests {
 /// Opt-in, disk-backed PERF-201 baseline. Run alone in the isolated TEST scheme:
 /// TEST_RUNNER_PFT_BULK_BASELINE=1 PFT_XCODE_SCHEME=PersonalFinanceTraker-TEST scripts/xcb test
 /// -only-testing:PersonalFinanceTrakerTests/BulkEditBaselineTests
@@ -213,6 +214,7 @@ struct BulkEditBaselineTests {
         Double(duration.components.seconds) * 1_000
             + Double(duration.components.attoseconds) / 1_000_000_000_000_000
     }
+}
 }
 
 /// Save notifications are observed synchronously and counted only for this fixture's container.
