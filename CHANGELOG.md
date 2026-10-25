@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Categories (and goals, for colors) have more icons and colors to choose from: 68 icons grouped by theme, including motorcycle, scooter, parking, insurance, taxes, childcare and deliveries, plus blue, orange, red and brown. The selected one is now outlined, the chosen icon and color are previewed next to the name, and VoiceOver reads icons and colors by name in English and Italian. Existing categories keep their icon and color.
 - Exporting transactions from Settings now opens the share sheet for both CSV and Excel instead of silently doing nothing.
 - Insights keeps the latest transaction results and selected period when refreshes overlap, including after changing the pay cycle or returning to the app.
 - Home's cycle summary refreshes faster with long transaction histories, while keeping the same totals and forecast.

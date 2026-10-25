@@ -15,6 +15,8 @@ struct ImportCategorySetupSheet: View {
     let onSave: (ImportCategoryDraft) -> Void
 
     @State private var draft: ImportCategoryDraft
+    /// The draft's icon when the sheet opened, so a symbol outside the catalog stays selectable.
+    private let initialSymbol: String
 
     init(
         draft: ImportCategoryDraft,
@@ -33,6 +35,7 @@ struct ImportCategorySetupSheet: View {
             initialDraft.type = lockedType
         }
         _draft = State(initialValue: initialDraft)
+        initialSymbol = initialDraft.systemImage
     }
 
     private var trimmedName: String {
@@ -71,8 +74,14 @@ struct ImportCategorySetupSheet: View {
                 .appFormSectionBackground()
 
                 Section("Name") {
-                    TextField("Category name", text: $draft.name)
-                        .autocorrectionDisabled()
+                    HStack(spacing: 12) {
+                        Image(systemName: draft.systemImage)
+                            .foregroundStyle(Color(categoryToken: draft.colorToken))
+                            .frame(width: 24)
+                            .accessibilityHidden(true)
+                        TextField("Category name", text: $draft.name)
+                            .autocorrectionDisabled()
+                    }
                     if let nameError {
                         Text(nameError)
                             .font(.caption)
@@ -104,11 +113,12 @@ struct ImportCategorySetupSheet: View {
                 .appFormSectionBackground()
 
                 Section("Icon") {
-                    IconGridPicker(selectedSymbol: $draft.systemImage, colorToken: draft.colorToken)
+                    IconGridPicker(selectedSymbol: $draft.systemImage, colorToken: draft.colorToken, pinnedSymbol: initialSymbol)
                 }
                 .appFormSectionBackground()
             }
             .appFormBackground()
+            .readableWidth()
             .background { AppBackground() }
             .navigationTitle("New Category")
             .navigationBarTitleDisplayMode(.inline)

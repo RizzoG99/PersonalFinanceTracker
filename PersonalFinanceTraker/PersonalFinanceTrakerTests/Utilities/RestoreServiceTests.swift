@@ -51,6 +51,29 @@ struct RestoreServiceTests {
         #expect(repo.addCalledCount == 1)
     }
 
+    // #177: the backup carries only category names and restore relinks to the categories already
+    // in the store. It must never write categories, or a user's icon/color choices (including the
+    // newer catalog entries) would be rewritten by a restore.
+    @Test func restoreNeverWritesCategories() async throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let service = makeService(storage: TestBackupStorage(url: dir), maxBackupsKept: 3)
+
+        _ = try service.writeBackup(
+            transactions: [.test(timestamp: date(2026, 1, 5), amount: -80, note: "Tires", category: "Moto")],
+            recurrenceRules: [],
+            now: date(2026, 1, 6)
+        )
+
+        let repo = MockTransactionRepository()
+        repo.stubbedCategories = [.test(name: "Moto", systemImage: "motorcycle.fill", colorToken: "categoryBrown")]
+
+        try await RestoreService.restoreLatest(repo: repo, backupService: service)
+
+        #expect(repo.addCategoryCalls.isEmpty)
+        #expect(repo.addCalledCount == 1)
+    }
+
     @Test func restoreLatestRethrowsWhenRepositoryFails() async throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
