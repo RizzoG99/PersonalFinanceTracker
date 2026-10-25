@@ -160,6 +160,31 @@ struct ProfileView: View {
         .appFormSectionBackground()
     }
 
+    // Kept out of the `navigationDestination` closure: inline, the compiler timed out
+    // type-checking it on slower machines (CI runner).
+    @ViewBuilder
+    private func destination(for route: ProfileRoute) -> some View {
+        switch route {
+        case .categories:
+            CategorySettingsView(onPersistedCategoryChange: {
+                Task {
+                    await transactionViewModel.repo.invalidateTransactionSnapshotCache()
+                    dataChanged.bump()
+                }
+            })
+        case .scanCategories: ReceiptCategoryMappingView()
+        case .changePIN:
+            PINSetupView(
+                viewModel: PINSetupViewModel(pinService: pinService, authService: authService, isChangeMode: true)
+            )
+        case .siriWidgetsGuide:
+            SiriWidgetsGuideView(
+                media: featureDiscovery.manifest.siriWidgetsGuideMedia,
+                mediaBaseURL: featureDiscovery.mediaBaseURL
+            )
+        }
+    }
+
     private var discoverSection: some View {
         Section {
             Button {
@@ -355,27 +380,7 @@ struct ProfileView: View {
                     discoverSection
                 }
                 .appFormBackground()
-                .navigationDestination(item: $route) { route in
-                    switch route {
-                    case .categories:
-                        CategorySettingsView(onPersistedCategoryChange: {
-                            Task {
-                                await transactionViewModel.repo.invalidateTransactionSnapshotCache()
-                                dataChanged.bump()
-                            }
-                        })
-                    case .scanCategories: ReceiptCategoryMappingView()
-                    case .changePIN:
-                        PINSetupView(
-                            viewModel: PINSetupViewModel(pinService: pinService, authService: authService, isChangeMode: true)
-                        )
-                    case .siriWidgetsGuide:
-                        SiriWidgetsGuideView(
-                            media: featureDiscovery.manifest.siriWidgetsGuideMedia,
-                            mediaBaseURL: featureDiscovery.mediaBaseURL
-                        )
-                    }
-                }
+                .navigationDestination(item: $route) { destination(for: $0) }
             }
             .readableWidth()
             .padding(.top, 24)
