@@ -26,6 +26,7 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
   - `$retro`: user-invoked retrospective that proposes evidence-backed environment improvements.
   - `$writing-for-agents`: creation and maintenance of skills and agent-facing steering docs.
   - `$pft-pr-lifecycle`: user-invoked delivery from issue/worktree through verified PR and authorized cleanup.
+  - `$testflight-feedback`: user-invoked triage of unresolved TestFlight feedback into GitHub issues, merged comments, or an already-fixed report.
 - Prefer `rg` and graphify queries before broad source browsing.
 - Preserve unrelated user changes in the working tree.
 - Keep implementation scoped to the relevant feature folder, model, utility, and test files.
