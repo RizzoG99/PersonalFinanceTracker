@@ -12,6 +12,8 @@ struct AddCategorySheet: View {
     @State private var selectedToken = "categoryIndigo"
     @State private var selectedSymbol = "creditcard.fill"
     @State private var selectedType: TransactionType
+    /// Once the user taps a color, icon taps stop suggesting one.
+    @State private var userPickedColor = false
 
     init(
         existingCategories: [CategoryModel],
@@ -73,12 +75,16 @@ struct AddCategorySheet: View {
                 .appFormSectionBackground()
 
                 Section("Color") {
-                    ColorTokenPicker(selectedToken: $selectedToken)
+                    ColorTokenPicker(selectedToken: $selectedToken) { userPickedColor = true }
                 }
                 .appFormSectionBackground()
 
                 Section("Icon") {
-                    IconGridPicker(selectedSymbol: $selectedSymbol, colorToken: selectedToken)
+                    IconGridPicker(selectedSymbol: $selectedSymbol, colorToken: selectedToken) { symbol in
+                        if !userPickedColor, let token = CategoryConstants.suggestedColorToken(forSymbol: symbol) {
+                            selectedToken = token
+                        }
+                    }
                 }
                 .appFormSectionBackground()
             }

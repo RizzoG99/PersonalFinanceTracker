@@ -302,7 +302,10 @@ final class CompassViewModel {
 
     private func computeHabits() {
         habitObservations = PerformanceAuditRecorder.measure("Insights.habits") {
-            insightService.habitObservations(expenseTransactions: expenseTransactions)
+            insightService.habitObservations(
+                expenseTransactions: expenseTransactions,
+                categoryStyles: CategoryStyleLookup(categories)
+            )
         }
     }
 

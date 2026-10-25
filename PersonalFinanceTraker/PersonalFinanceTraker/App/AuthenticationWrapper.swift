@@ -165,6 +165,7 @@ struct AuthenticationWrapper: View {
                     }
                 }
                 .environment(featureDiscovery)
+                .categoryStyles()
                 .transition(.opacity)
             }
 

@@ -7,6 +7,8 @@ struct IconGridPicker: View {
     /// section while it's outside the catalog (seeded defaults store unfilled variants such
     /// as `cart`), so it stays selectable after the user has tapped something else.
     var pinnedSymbol: String?
+    /// Called after a tap sets `selectedSymbol`; Add / CSV import use it to suggest a color.
+    var onSelect: ((String) -> Void)?
 
     @ScaledMetric(relativeTo: .body) private var cellSize: CGFloat = 44
     @ScaledMetric(relativeTo: .body) private var glyphSize: CGFloat = 18
@@ -48,6 +50,7 @@ struct IconGridPicker: View {
         let isSelected = selectedSymbol == symbol
         return Button {
             selectedSymbol = symbol
+            onSelect?(symbol)
         } label: {
             Image(systemName: symbol)
                 // Semibold, as in TravelFormSheet: thin glyphs (percent, laptop) read closer to the

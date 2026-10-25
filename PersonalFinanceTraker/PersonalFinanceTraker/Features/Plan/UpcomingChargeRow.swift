@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// One financial-calendar row: Plan's timeline (grouped under a day header) and Home's preview.
 struct UpcomingChargeRow: View {
@@ -15,7 +16,7 @@ struct UpcomingChargeRow: View {
 
     var body: some View {
         ChargeRowLayout(
-            category: charge.rule.category, title: Text(title),
+            category: charge.rule.category, categoryId: charge.rule.categoryId, title: Text(title),
             amount: charge.rule.amount, currencyCode: charge.rule.currencyCode
         ) {
             if showsDay {
@@ -46,6 +47,8 @@ struct UpcomingChargeRow: View {
 /// accessibility sizes the amount moves under the title instead of squeezing it into a sliver.
 struct ChargeRowLayout<Subtitle: View>: View {
     let category: String
+    /// The saved category the charge is linked to; wins over `category`'s name when present.
+    var categoryId: PersistentIdentifier?
     let title: Text
     let amount: Decimal
     let currencyCode: String
@@ -54,10 +57,12 @@ struct ChargeRowLayout<Subtitle: View>: View {
     @ViewBuilder let subtitle: Subtitle
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.categoryStyles) private var categoryStyles
 
     var body: some View {
         let stacked = dynamicTypeSize.isAccessibilitySize
-        let info = CategoryInfo.info(for: category)
+        // Expenses are negative; the sign picks which "Other" (or same-named) category it is.
+        let info = categoryStyles.info(for: category, type: amount < 0 ? .expense : .income, id: categoryId)
         HStack(alignment: stacked ? .top : .center, spacing: 12) {
             // Same tile as Recent Transactions' rows.
             GlassCard(tint: info.color.opacity(0.12), borderRadius: 12) {
