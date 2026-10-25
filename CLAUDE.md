@@ -29,7 +29,7 @@ only source for that, so a skipped bullet means testers get no notes.
 
 - CI (`.github/workflows`): `ci.yml` runs `scripts/xcb test` on PRs and fails unless tests actually ran; `changelog.yml` requires a `CHANGELOG.md` change on `feature/*`/`fix/*` PRs (`no-changelog` in the PR body opts out); `deps.yml` opens an issue when ZIPFoundation or CoreXLSX has a newer release.
 - `.swiftformat` is whitespace-only on purpose (default rules would rewrite most files); keep it that way.
-- Claude Code only (`.claude/hooks`, wired in `.claude/settings.json`): `git-guard.sh` blocks commits on `main` in the primary checkout, bad branch names, `gh pr create` without a changelog change (`PFT_SKIP_CHANGELOG=1` to skip), and AI attribution in commits/PRs/comments; a Stop hook runs `graphify update .`; a PostToolUse hook runs `swiftformat` on edited Swift files.
+- Shared scripts in `.claude/hooks`: `git-guard.sh` blocks commits on `main` in the primary checkout, bad branch names, `gh pr create` without a changelog change (`PFT_SKIP_CHANGELOG=1` to skip), and AI attribution in commits/PRs/comments; `graphify-update.sh` refreshes the graph on Stop. Claude Code wires these in `.claude/settings.json`; Codex enables them through `.codex/config.toml` and `.codex/hooks.json`, with user approval through `/hooks`. Claude Code also runs `swiftformat` on edited Swift files through a PostToolUse hook.
 
 ## Branch Naming
 

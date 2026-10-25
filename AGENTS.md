@@ -47,7 +47,7 @@ only source for that, so a skipped bullet means testers get no notes.
 
 - CI (`.github/workflows`): `ci.yml` runs `scripts/xcb test` on PRs and fails unless tests actually ran; `changelog.yml` requires a `CHANGELOG.md` change on `feature/*`/`fix/*` PRs (`no-changelog` in the PR body opts out); `deps.yml` opens an issue when ZIPFoundation or CoreXLSX has a newer release.
 - `.swiftformat` is whitespace-only on purpose (default rules would rewrite most files); keep it that way.
-- Codex has no repo hooks yet, so the rules enforced by Claude Code hooks apply by hand: no commits on `main` in the primary checkout, valid branch names, a changelog bullet before `gh pr create`, no AI attribution in commits/PRs/comments, `graphify update .` after code changes.
+- Codex enables repository hooks in `.codex/config.toml`; `.codex/hooks.json` reuses `.claude/hooks/git-guard.sh` before Bash commands and `.claude/hooks/graphify-update.sh` on Stop. Review and trust them through `/hooks` after adding, moving, or changing their definitions. Swift formatting remains a Claude Code hook.
 
 ## Branch Naming
 
