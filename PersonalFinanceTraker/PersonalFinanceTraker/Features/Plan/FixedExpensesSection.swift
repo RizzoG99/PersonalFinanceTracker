@@ -382,7 +382,7 @@ private struct FixedExpenseSuggestionCard: View {
                 // "seen N times", not "N payments": a count of payments read as N still due.
                 // "≈" when the amounts varied: the median is a forecast, not the bill.
                 ChargeRowLayout(
-                    category: suggestion.category, title: Text(suggestion.title),
+                    category: suggestion.category, categoryId: suggestion.categoryPersistentId, title: Text(suggestion.title),
                     amount: suggestion.amount, currencyCode: suggestion.currencyCode,
                     approximate: !suggestion.amountsIdentical
                 ) {
@@ -451,7 +451,7 @@ private struct MissedPaymentCard: View {
         let rule = payment.rule
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
-                ChargeRowLayout(category: rule.category, title: Text(question), amount: rule.amount, currencyCode: rule.currencyCode) {
+                ChargeRowLayout(category: rule.category, categoryId: rule.categoryId, title: Text(question), amount: rule.amount, currencyCode: rule.currencyCode) {
                     Text(notFound)
                         .font(.caption)
                         .foregroundStyle(.textDim)

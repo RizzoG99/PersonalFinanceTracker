@@ -34,6 +34,15 @@ struct CategoryStyleLookupTests {
         #expect(info.color == CategoryInfo.info(for: "Groceries").color)
     }
 
+    @Test func categoryLinkBeatsTheNameItIsGiven() {
+        // A rule's own link wins even when the name passed in matches another category.
+        let education = snapshot("Education", "graduationcap.fill", "categoryBlue", .expense)
+        let clothing = snapshot("Clothing", "tshirt.fill", "categoryPink", .expense)
+        let lookup = CategoryStyleLookup([education, clothing])
+        let info = lookup.info(for: "Clothing", type: .expense, id: education.persistentId)
+        #expect(info.symbol == "graduationcap.fill")
+    }
+
     @Test func nameFromTheOtherTypeDoesNotMatch() {
         let lookup = CategoryStyleLookup([snapshot("Gift", "gift.fill", "categoryPink", .income)])
         #expect(lookup.info(for: "Gift", type: .expense).color == CategoryInfo.info(for: "Gift").color)

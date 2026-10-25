@@ -19,6 +19,7 @@ struct RecurrenceSuggestionsView: View {
     let mode: Mode
     @State private var isProcessing = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.categoryStyles) private var categoryStyles
     @ScaledMetric(relativeTo: .subheadline) private var iconSize: CGFloat = 16
 
     private var categoryByPersistentId: [PersistentIdentifier: CategorySnapshot] {
@@ -142,9 +143,12 @@ struct RecurrenceSuggestionsView: View {
     private func suggestionRow(_ suggestion: RecurrenceSuggestion) -> some View {
         let isSelected = viewModel.selectedSuggestionIds.contains(suggestion.id)
         let mapped = suggestion.categoryPersistentId.flatMap { categoryByPersistentId[$0] }
-        let symbol = mapped?.systemImage ?? CategoryInfo.info(for: suggestion.category).symbol
-        let tint = mapped.map { Color(categoryToken: $0.colorToken) }
-            ?? CategoryInfo.info(for: suggestion.category).color
+        let named = categoryStyles.info(
+            for: suggestion.category, type: suggestion.amount < 0 ? .expense : .income,
+            id: suggestion.categoryPersistentId
+        )
+        let symbol = mapped?.systemImage ?? named.symbol
+        let tint = mapped.map { Color(categoryToken: $0.colorToken) } ?? named.color
 
         return HStack(spacing: 12) {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")

@@ -142,6 +142,7 @@ struct IPadRecurringSection: View {
 /// presentational, so it owns no navigation of its own.
 private struct RecurringRulesContent: View {
     @Environment(TransactionListViewModel.self) private var viewModel
+    @Environment(\.categoryStyles) private var categoryStyles
     let rules: [RecurrenceRuleSnapshot]
     let onSelect: (RecurrenceRuleSnapshot) -> Void
     let onDelete: (RecurrenceRuleSnapshot) -> Void
@@ -245,8 +246,11 @@ private struct RecurringRulesContent: View {
 
     private func ruleRow(_ rule: RecurrenceRuleSnapshot) -> some View {
         let mapped = rule.categoryId.flatMap { categoryByPersistentId[$0] }
-        let symbol = mapped?.systemImage ?? CategoryInfo.info(for: rule.category).symbol
-        let tint = mapped.map { Color(categoryToken: $0.colorToken) } ?? CategoryInfo.info(for: rule.category).color
+        // The list view model only loads categories during an import, so `mapped` is usually
+        // nil here: resolve by the rule's own category link, then by name + type.
+        let named = categoryStyles.info(for: rule.category, type: rule.amount < 0 ? .expense : .income, id: rule.categoryId)
+        let symbol = mapped?.systemImage ?? named.symbol
+        let tint = mapped.map { Color(categoryToken: $0.colorToken) } ?? named.color
 
         return HStack(spacing: 10) {
             GlassCard(tint: tint.opacity(0.12), borderRadius: 10) {

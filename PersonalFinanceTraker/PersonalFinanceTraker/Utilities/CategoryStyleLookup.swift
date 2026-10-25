@@ -12,16 +12,23 @@ import SwiftData
 /// with no saved category falls back to `CategoryInfo`'s keyword guess (#249).
 struct CategoryStyleLookup {
     private let styles: [String: CategoryInfo]
+    private let stylesById: [PersistentIdentifier: CategoryInfo]
 
     init(_ categories: [CategorySnapshot]) {
+        func style(_ category: CategorySnapshot) -> CategoryInfo {
+            CategoryInfo(color: Color(categoryToken: category.colorToken), symbol: category.systemImage)
+        }
         styles = Dictionary(
-            categories.map { (Self.key($0.name, $0.type), CategoryInfo(color: Color(categoryToken: $0.colorToken), symbol: $0.systemImage)) },
+            categories.map { (Self.key($0.name, $0.type), style($0)) },
             uniquingKeysWith: { first, _ in first }
         )
+        stylesById = Dictionary(categories.map { ($0.persistentId, style($0)) }, uniquingKeysWith: { first, _ in first })
     }
 
-    func info(for name: String, type: TransactionType) -> CategoryInfo {
-        styles[Self.key(name, type.rawValue)] ?? CategoryInfo.info(for: name)
+    /// `id`, when the row knows the category it is linked to, beats the name: a rule titled
+    /// "Università" is in Education, whatever its title says.
+    func info(for name: String, type: TransactionType, id: PersistentIdentifier? = nil) -> CategoryInfo {
+        id.flatMap { stylesById[$0] } ?? styles[Self.key(name, type.rawValue)] ?? CategoryInfo.info(for: name)
     }
 
     private static func key(_ name: String, _ type: String) -> String { "\(type)|\(name)" }
