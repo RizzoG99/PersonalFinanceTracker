@@ -18,7 +18,7 @@ struct SampleData {
                 name: cat.label,
                 systemImage: cat.systemImage,
                 type: .income,
-                colorToken: CategoryConstants.colorToken(forName: cat.label),
+                colorToken: cat.colorToken,
                 currencyCode: "EUR"
             ))
         }
@@ -28,7 +28,7 @@ struct SampleData {
                 name: cat.label,
                 systemImage: cat.systemImage,
                 type: .expense,
-                colorToken: CategoryConstants.colorToken(forName: cat.label),
+                colorToken: cat.colorToken,
                 currencyCode: "EUR"
             ))
         }

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ColorTokenPicker: View {
     @Binding var selectedToken: String
+    /// Fires on a tap here only, so a sheet can tell the user's pick from a suggested color.
+    var onPick: (() -> Void)?
 
     // Hit target and swatch grow with Dynamic Type; the grid wraps instead of overflowing.
     @ScaledMetric(relativeTo: .body) private var cellSize: CGFloat = 44
@@ -13,6 +15,7 @@ struct ColorTokenPicker: View {
                 let isSelected = selectedToken == token
                 Button {
                     selectedToken = token
+                    onPick?()
                 } label: {
                     Circle()
                         .fill(Color(categoryToken: token))

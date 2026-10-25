@@ -68,6 +68,23 @@ enum CategoryConstants {
         "categoryPurple", "categoryPink", "categoryGray"
     ]
 
+    // One suggested color per icon group, applied when the user taps an icon in Add / CSV import
+    // (not Edit). Never green: that is the `positive` color and would make an expense read as
+    // income. Travel shares Red with Health; 11 groups, 10 usable colors.
+    private static let groupColorTokens: [String: String] = [
+        "iconGroup.food": "categoryOrange", "iconGroup.transport": "categoryIndigo",
+        "iconGroup.home": "categoryBrown", "iconGroup.shopping": "categoryPink",
+        "iconGroup.health": "categoryRed", "iconGroup.family": "categoryAmber",
+        "iconGroup.lifestyle": "categoryGray", "iconGroup.entertainment": "categoryPurple",
+        "iconGroup.finance": "categoryBlue", "iconGroup.work": "categoryTeal",
+        "iconGroup.travel": "categoryRed"
+    ]
+
+    /// Color suggested for `symbol`, or nil when it is outside the catalog.
+    static func suggestedColorToken(forSymbol symbol: String) -> String? {
+        symbolGroups.first { $0.symbols.contains(symbol) }.flatMap { groupColorTokens[$0.titleKey] }
+    }
+
     /// Spoken name for an icon. Saved categories can hold an older, unfilled variant of a
     /// catalog icon (`cart` for `cart.fill`, `bicycle` for `bicycle.circle.fill`), so try those
     /// before the generic fallback.

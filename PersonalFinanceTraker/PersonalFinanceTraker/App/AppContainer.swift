@@ -87,11 +87,16 @@ enum AppContainer {
     private static func seedDefaultCategoriesIfNeeded(in container: ModelContainer) {
         let context = container.mainContext
         let count = (try? context.fetchCount(FetchDescriptor<CategoryModel>())) ?? 0
-        guard count == 0 else { return }
+        guard count == 0 else {
+            DefaultCategoryRefresh.runIfNeeded(in: context)
+            return
+        }
         for category in SampleData.createSampleCategories() {
             context.insert(category)
         }
         try? context.save()
+        // Freshly seeded from the new table: nothing legacy to refresh, ever.
+        UserDefaults.standard.set(true, forKey: DefaultCategoryRefresh.flagKey)
     }
 
     /// Harden the SwiftData store's file protection so the SQLite database is

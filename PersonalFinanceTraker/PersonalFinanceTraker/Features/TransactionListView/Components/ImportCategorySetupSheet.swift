@@ -15,6 +15,8 @@ struct ImportCategorySetupSheet: View {
     let onSave: (ImportCategoryDraft) -> Void
 
     @State private var draft: ImportCategoryDraft
+    /// Once the user taps a color, icon taps stop suggesting one.
+    @State private var userPickedColor = false
     /// The draft's icon when the sheet opened, so a symbol outside the catalog stays selectable.
     private let initialSymbol: String
 
@@ -108,12 +110,16 @@ struct ImportCategorySetupSheet: View {
                 .appFormSectionBackground()
 
                 Section("Color") {
-                    ColorTokenPicker(selectedToken: $draft.colorToken)
+                    ColorTokenPicker(selectedToken: $draft.colorToken) { userPickedColor = true }
                 }
                 .appFormSectionBackground()
 
                 Section("Icon") {
-                    IconGridPicker(selectedSymbol: $draft.systemImage, colorToken: draft.colorToken, pinnedSymbol: initialSymbol)
+                    IconGridPicker(selectedSymbol: $draft.systemImage, colorToken: draft.colorToken, pinnedSymbol: initialSymbol) { symbol in
+                        if !userPickedColor, let token = CategoryConstants.suggestedColorToken(forSymbol: symbol) {
+                            draft.colorToken = token
+                        }
+                    }
                 }
                 .appFormSectionBackground()
             }
