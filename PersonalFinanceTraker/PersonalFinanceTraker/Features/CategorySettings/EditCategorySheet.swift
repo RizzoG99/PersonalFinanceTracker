@@ -39,8 +39,14 @@ struct EditCategorySheet: View {
         NavigationStack {
             Form {
                 Section("Name") {
-                    TextField("Category name", text: $editedName)
-                        .autocorrectionDisabled()
+                    HStack(spacing: 12) {
+                        Image(systemName: selectedSymbol)
+                            .foregroundStyle(Color(categoryToken: selectedToken))
+                            .frame(width: 24)
+                            .accessibilityHidden(true)
+                        TextField("Category name", text: $editedName)
+                            .autocorrectionDisabled()
+                    }
                     if let error = nameError {
                         Text(error)
                             .font(.caption)
@@ -55,7 +61,7 @@ struct EditCategorySheet: View {
                 .appFormSectionBackground()
 
                 Section("Icon") {
-                    IconGridPicker(selectedSymbol: $selectedSymbol, colorToken: selectedToken)
+                    IconGridPicker(selectedSymbol: $selectedSymbol, colorToken: selectedToken, pinnedSymbol: category.systemImage)
                 }
                 .appFormSectionBackground()
 
@@ -71,6 +77,7 @@ struct EditCategorySheet: View {
                 .appFormSectionBackground()
             }
             .appFormBackground()
+            .readableWidth()
             .background { AppBackground() }
             .navigationTitle("Edit Category")
             .navigationBarTitleDisplayMode(.inline)
@@ -101,6 +108,8 @@ struct EditCategorySheet: View {
             }
         }
         .presentationBackground { AppBackground() }
+        // See AddCategorySheet: the icon grid needs more than the default form-width sheet.
+        .presentationSizing(.page)
     }
 
     /// Rewrites the name copy on this category's transactions and rules, then backs up (#239). Detached: an

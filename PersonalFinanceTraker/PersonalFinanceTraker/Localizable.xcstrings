@@ -3420,6 +3420,23 @@
         }
       }
     },
+    "Current icon" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current icon"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icona attuale"
+          }
+        }
+      }
+    },
     "Color" : {
       "extractionState" : "manual",
       "localizations" : {

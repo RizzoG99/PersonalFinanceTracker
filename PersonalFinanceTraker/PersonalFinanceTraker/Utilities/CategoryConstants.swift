@@ -6,34 +6,89 @@
 import SwiftUI
 
 enum CategoryConstants {
-    static let symbolNames: [String] = [
-        // Food & Dining
-        "cart.fill", "fork.knife", "cup.and.saucer.fill", "takeoutbag.and.cup.and.straw.fill",
-        "birthday.cake.fill", "wineglass.fill",
-        // Transportation
-        "car.fill", "fuelpump.fill", "bus.fill", "tram.fill", "bicycle", "airplane",
-        // Housing & Utilities
-        "house.fill", "bolt.fill", "drop.fill", "flame.fill", "wifi", "phone.fill",
-        // Shopping & Fashion
-        "bag.fill", "tshirt.fill", "sparkles", "tag.fill",
-        // Health & Fitness
-        "cross.case.fill", "heart.fill", "figure.run", "dumbbell.fill", "pills.fill",
-        // Entertainment & Leisure
-        "film.fill", "music.note", "gamecontroller.fill", "books.vertical.fill", "paintbrush.fill",
-        // Finance & Income
-        "banknote.fill", "chart.line.uptrend.xyaxis", "creditcard.fill", "building.columns.fill",
-        // Work & Education
-        "laptopcomputer", "briefcase.fill", "graduationcap.fill", "pencil",
-        // Travel & Nature
-        "suitcase.fill", "pawprint.fill", "leaf.fill", "sun.max.fill",
-        // Other
-        "gift.fill", "star.fill", "person.fill", "ellipsis.circle.fill"
+    /// A themed run of icons in the picker. `titleKey` is a manual `CategoryCatalog.xcstrings` key.
+    struct SymbolGroup: Identifiable {
+        let titleKey: String
+        let symbols: [String]
+
+        var id: String { titleKey }
+        var title: String { CategoryConstants.localized(titleKey) }
+    }
+
+    static let symbolGroups: [SymbolGroup] = [
+        SymbolGroup(titleKey: "iconGroup.food", symbols: [
+            "cart.fill", "fork.knife", "cup.and.saucer.fill", "takeoutbag.and.cup.and.straw.fill",
+            "birthday.cake.fill", "wineglass.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.transport", symbols: [
+            "car.fill", "fuelpump.fill", "bus.fill", "tram.fill", "bicycle.circle.fill", "airplane",
+            "motorcycle.fill", "moped.fill", "parkingsign.circle.fill", "signpost.right.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.home", symbols: [
+            "house.fill", "bolt.fill", "drop.fill", "flame.fill", "wifi.circle.fill", "phone.fill",
+            "hammer.fill", "washer.fill", "building.2.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.shopping", symbols: [
+            "bag.fill", "tshirt.fill", "tag.fill", "shippingbox.fill", "basket.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.health", symbols: [
+            "cross.case.fill", "heart.fill", "figure.run", "dumbbell.fill", "pills.fill",
+            "heart.text.square.fill", "sportscourt.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.family", symbols: [
+            "stroller.fill", "figure.2.and.child.holdinghands", "teddybear.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.lifestyle", symbols: [
+            "person.fill", "scissors.circle.fill", "sparkles", "pawprint.fill", "hands.and.sparkles.fill",
+            "gift.fill", "star.fill", "ellipsis.circle.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.entertainment", symbols: [
+            "film.fill", "music.note", "gamecontroller.fill", "books.vertical.fill", "paintbrush.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.finance", symbols: [
+            "banknote.fill", "chart.line.uptrend.xyaxis.circle.fill", "creditcard.fill", "building.columns.fill",
+            "eurosign.circle.fill", "percent", "doc.text.fill", "umbrella.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.work", symbols: [
+            "laptopcomputer", "briefcase.fill", "graduationcap.fill", "pencil.circle.fill"
+        ]),
+        SymbolGroup(titleKey: "iconGroup.travel", symbols: [
+            "suitcase.fill", "leaf.fill", "sun.max.fill"
+        ])
     ]
 
+    static let symbolNames: [String] = symbolGroups.flatMap(\.symbols)
+    private static let symbolNameSet = Set(symbolNames)
+
+    // Ordered by hue so look-alikes (Orange/Amber/Brown, Blue/Indigo) sit side by side in the
+    // picker and can be compared while choosing.
     static let colorTokenNames: [String] = [
-        "categoryIndigo", "categoryGreen", "categoryAmber", "categoryPink",
-        "categoryPurple", "categoryTeal", "categoryGray"
+        "categoryRed", "categoryOrange", "categoryAmber", "categoryBrown",
+        "categoryGreen", "categoryTeal", "categoryBlue", "categoryIndigo",
+        "categoryPurple", "categoryPink", "categoryGray"
     ]
+
+    /// Spoken name for an icon. Saved categories can hold an older, unfilled variant of a
+    /// catalog icon (`cart` for `cart.fill`, `bicycle` for `bicycle.circle.fill`), so try those
+    /// before the generic fallback.
+    static func symbolLabel(_ symbol: String) -> String {
+        for candidate in [symbol, symbol + ".fill", symbol + ".circle.fill"] where symbolNameSet.contains(candidate) {
+            return localized(candidate)
+        }
+        return String(localized: "Current icon")
+    }
+
+    static func colorLabel(_ token: String) -> String { localized(token) }
+
+    /// Picker names live in their own `CategoryCatalog.xcstrings`, keyed on the symbol id /
+    /// token name. Kept out of `Localizable` on purpose: `localizedCategoryDisplay` translates
+    /// any key found there, so a user category named "wifi" or "percent" would otherwise be
+    /// shown as "Internet". A new language adds one column to each catalog, nothing else.
+    static let catalogTable = "CategoryCatalog"
+
+    fileprivate static func localized(_ key: String) -> String {
+        String(localized: String.LocalizationValue(key), table: catalogTable)
+    }
 
     // Maps a category name to its default color token, mirroring CategoryInfo keyword logic.
     // Used to pre-valorize the color picker for categories where the user hasn't set a color yet.

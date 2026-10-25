@@ -3,29 +3,47 @@ import SwiftUI
 struct ColorTokenPicker: View {
     @Binding var selectedToken: String
 
+    // Hit target and swatch grow with Dynamic Type; the grid wraps instead of overflowing.
+    @ScaledMetric(relativeTo: .body) private var cellSize: CGFloat = 44
+    @ScaledMetric(relativeTo: .body) private var swatchSize: CGFloat = 32
+
     var body: some View {
-        HStack(spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: cellSize), spacing: 4)], alignment: .leading, spacing: 4) {
             ForEach(CategoryConstants.colorTokenNames, id: \.self) { token in
-                let color = Color(token)
+                let isSelected = selectedToken == token
                 Button {
                     selectedToken = token
                 } label: {
-                    ZStack {
-                        Circle()
-                            .fill(color)
-                            .frame(width: 32, height: 32)
-                        if selectedToken == token {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(.white)
+                    Circle()
+                        .fill(Color(categoryToken: token))
+                        .frame(width: swatchSize, height: swatchSize)
+                        // A ring, not a checkmark: white-on-orange is weak in dark mode, and
+                        // textPrimary is legible on the form row in both appearances.
+                        .overlay {
+                            if isSelected {
+                                Circle().strokeBorder(Color.textPrimary, lineWidth: 2).padding(-5)
+                            }
                         }
-                    }
+                        .frame(width: cellSize, height: cellSize)
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(token)
+                .accessibilityLabel(CategoryConstants.colorLabel(token))
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
-            Spacer()
         }
         .padding(.vertical, 4)
     }
+}
+
+#Preview("Color picker") {
+    @Previewable @State var token = "categoryBrown"
+    Form {
+        Section("Color") {
+            ColorTokenPicker(selectedToken: $token)
+        }
+        .appFormSectionBackground()
+    }
+    .appFormBackground()
+    .background { AppBackground() }
 }

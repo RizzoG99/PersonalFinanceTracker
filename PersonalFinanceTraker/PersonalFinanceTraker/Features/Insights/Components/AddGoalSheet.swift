@@ -166,7 +166,6 @@ struct AddGoalSheet: View {
 
                     Section("Color") {
                         ColorTokenPicker(selectedToken: $selectedToken)
-                            .padding(.vertical, 4)
                     }
                     .appFormSectionBackground()
 

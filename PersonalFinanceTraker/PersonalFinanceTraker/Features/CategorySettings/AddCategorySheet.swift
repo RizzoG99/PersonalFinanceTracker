@@ -45,8 +45,16 @@ struct AddCategorySheet: View {
         NavigationStack {
             Form {
                 Section("Name") {
-                    TextField("Category name", text: $name)
-                        .autocorrectionDisabled()
+                    // Live preview: the default icon sits far down the grid, and the color
+                    // only tints the selected icon, so without this neither choice is visible.
+                    HStack(spacing: 12) {
+                        Image(systemName: selectedSymbol)
+                            .foregroundStyle(Color(categoryToken: selectedToken))
+                            .frame(width: 24)
+                            .accessibilityHidden(true)
+                        TextField("Category name", text: $name)
+                            .autocorrectionDisabled()
+                    }
                     if let error = nameError {
                         Text(error)
                             .font(.caption)
@@ -75,6 +83,7 @@ struct AddCategorySheet: View {
                 .appFormSectionBackground()
             }
             .appFormBackground()
+            .readableWidth()
             .background { AppBackground() }
             .navigationTitle("New Category")
             .navigationBarTitleDisplayMode(.inline)
@@ -100,5 +109,8 @@ struct AddCategorySheet: View {
             }
         }
         .presentationBackground { AppBackground() }
+        // The default form-width sheet is ~650pt tall on iPad: one row of icons visible, 2–3
+        // screens of scroll for 68 icons. A page sheet gives the grids room to breathe.
+        .presentationSizing(.page)
     }
 }
