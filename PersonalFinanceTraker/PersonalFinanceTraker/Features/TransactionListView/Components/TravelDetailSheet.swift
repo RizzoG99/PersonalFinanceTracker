@@ -18,6 +18,7 @@ struct TravelDetailSheet: View {
     let onDelete: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.categoryStyles) private var categoryStyles
     @AppStorage("app_base_currency") private var currencyCode = "EUR"
 
     @State private var showingRename = false
@@ -180,7 +181,8 @@ struct TravelDetailSheet: View {
         let share = report.spent > 0
             ? Double(truncating: (entry.amount / report.spent) as NSDecimalNumber)
             : 0
-        let info = CategoryInfo.info(for: entry.category)
+        // The breakdown lists expenses only (TravelReport.categories).
+        let info = categoryStyles.info(for: entry.category, type: .expense)
 
         return VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 8) {

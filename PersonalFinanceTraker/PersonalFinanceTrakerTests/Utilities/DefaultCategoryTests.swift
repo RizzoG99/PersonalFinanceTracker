@@ -50,6 +50,22 @@ struct DefaultCategoryTests {
         }
     }
 
+    @Test func pickingADefaultsIconSuggestsThatDefaultsColor() {
+        // Defaults and suggestions must agree; green is never suggested, so Salary is exempt.
+        for cat in all where cat.colorToken != "categoryGreen" {
+            #expect(CategoryConstants.suggestedColorToken(forSymbol: cat.systemImage) == cat.colorToken,
+                    "\(cat.label): \(cat.systemImage)")
+        }
+    }
+
+    @Test func iconsSharedByDefaultsAgreeOnColor() {
+        // An icon used by two defaults needs one color, or the suggestion would favor one of them.
+        let bySymbol = Dictionary(grouping: all, by: \.systemImage)
+        for (symbol, cats) in bySymbol {
+            #expect(Set(cats.map(\.colorToken)).count == 1, "\(symbol) used with different colors")
+        }
+    }
+
     @Test func everyIconGroupHasASuggestedColor() {
         // Each group's own first icon resolves, so a new group can't silently suggest nothing.
         for group in CategoryConstants.symbolGroups {

@@ -8,7 +8,10 @@ import Foundation
 struct SpendingInsightService {
     let currencyService: CurrencyService
 
-    func habitObservations(expenseTransactions: [TransactionSnapshot]) -> [HabitObservation] {
+    func habitObservations(
+        expenseTransactions: [TransactionSnapshot],
+        categoryStyles: CategoryStyleLookup = CategoryStyleLookup([])
+    ) -> [HabitObservation] {
         let calendar = Calendar.current
         let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: .now) ?? .now
         let recentExpenses = expenseTransactions.filter { $0.timestamp >= thirtyDaysAgo }
@@ -85,7 +88,7 @@ struct SpendingInsightService {
             }
             guard streak >= 3 else { continue }
 
-            let info = CategoryInfo.info(for: catName)
+            let info = categoryStyles.info(for: catName, type: .expense)
             let parts = catName.split(separator: " ", maxSplits: 1)
             let displayName = parts.count > 1 ? String(parts[1]).localizedCategoryDisplay : catName.localizedCategoryDisplay
             // ponytail: "week"/"weeks" plural handled by the catalog's plural variation, not a hand-rolled ternary — see Localizable.xcstrings

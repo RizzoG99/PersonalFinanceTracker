@@ -54,10 +54,12 @@ struct ChargeRowLayout<Subtitle: View>: View {
     @ViewBuilder let subtitle: Subtitle
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.categoryStyles) private var categoryStyles
 
     var body: some View {
         let stacked = dynamicTypeSize.isAccessibilitySize
-        let info = CategoryInfo.info(for: category)
+        // Expenses are negative; the sign picks which "Other" (or same-named) category it is.
+        let info = categoryStyles.info(for: category, type: amount < 0 ? .expense : .income)
         HStack(alignment: stacked ? .top : .center, spacing: 12) {
             // Same tile as Recent Transactions' rows.
             GlassCard(tint: info.color.opacity(0.12), borderRadius: 12) {

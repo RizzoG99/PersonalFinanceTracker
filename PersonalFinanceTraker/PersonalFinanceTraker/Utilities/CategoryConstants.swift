@@ -80,9 +80,16 @@ enum CategoryConstants {
         "iconGroup.travel": "categoryRed"
     ]
 
-    /// Color suggested for `symbol`, or nil when it is outside the catalog.
+    /// Color suggested for `symbol`, or nil when it is outside the catalog. An icon a default
+    /// category uses suggests that default's color, so picking "fork.knife" gives Restaurants'
+    /// red, not its group's orange; any other icon falls back to its group's color. Green is
+    /// skipped (Salary's), see above.
     static func suggestedColorToken(forSymbol symbol: String) -> String? {
-        symbolGroups.first { $0.symbols.contains(symbol) }.flatMap { groupColorTokens[$0.titleKey] }
+        if let token = TransactionCategory.defaultCategories.first(where: { $0.systemImage == symbol })?.colorToken,
+           token != "categoryGreen" {
+            return token
+        }
+        return symbolGroups.first { $0.symbols.contains(symbol) }.flatMap { groupColorTokens[$0.titleKey] }
     }
 
     /// Spoken name for an icon. Saved categories can hold an older, unfilled variant of a
