@@ -1,0 +1,25 @@
+name: Dependency check
+on:
+  schedule: [{ cron: "0 7 * * 1" }]
+  workflow_dispatch:
+permissions: { contents: read, issues: write }
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare pinned vs latest release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          resolved=$(find . -name Package.resolved -not -path './.build/*' | head -1)
+          out=""
+          for pair in weichsel/ZIPFoundation CoreOffice/CoreXLSX; do
+            repo=${pair#*/}
+            pinned=$(jq -r --arg r "$repo" '(.pins // .object.pins)[] | select(.identity==($r|ascii_downcase)) | .state.version' "$resolved")
+            latest=$(gh api "repos/$pair/releases/latest" --jq .tag_name | sed 's/^v//')
+            [ "$pinned" != "$latest" ] && out+="- $repo: pinned $pinned, latest $latest"$'\n'
+          done
+          [ -z "$out" ] && exit 0
+          gh issue list --label dependencies --state open --json number | jq -e 'length>0' >/dev/null && exit 0
+          gh issue create --title "Dependency updates available" --label dependencies --body "$out" || \
+            gh issue create --title "Dependency updates available" --body "$out"

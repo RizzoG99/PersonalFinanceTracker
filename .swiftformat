@@ -1,0 +1,4 @@
+--swiftversion 6.0
+--exclude .build,.worktrees,graphify-out,.claude,.codex,.serena
+# Whitespace-only: the hook formats each edited file, so keep its diffs tiny.
+--rules trailingSpace,consecutiveSpaces,consecutiveBlankLines,blankLinesAtEndOfScope,blankLinesAtStartOfScope,linebreaks

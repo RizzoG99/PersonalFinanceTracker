@@ -1,0 +1,21 @@
+name: Changelog
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+jobs:
+  bullet:
+    if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'fix/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Require a CHANGELOG.md change
+        env:
+          BASE: ${{ github.base_ref }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          git diff --quiet "origin/$BASE...HEAD" -- CHANGELOG.md || exit 0
+          # Opt-out for changes with no visible effect: put "no-changelog" in the PR body.
+          grep -qi 'no-changelog' <<<"$BODY" && exit 0
+          echo "::error::Add a bullet under '## Unreleased' in CHANGELOG.md (or write 'no-changelog' in the PR body)."
+          exit 1
