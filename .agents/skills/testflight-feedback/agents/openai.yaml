@@ -1,0 +1,5 @@
+interface:
+  display_name: "TestFlight Feedback"
+  short_description: "Fetch TestFlight feedback, analyse it against the code, and file or merge GitHub issues."
+policy:
+  allow_implicit_invocation: false
