@@ -22,6 +22,7 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
   - `$graphify`: codebase architecture, relationships, and knowledge graph tasks.
   - `$diagnosing-bugs`: feedback-loop-first diagnosis for uncertain bugs and performance regressions.
   - `$performance-audit`: audit-only, project-wide performance investigations with persistent findings and independent validation.
+  - `$performance-profiling`: bound one specific iOS slowness complaint, instrument it, and analyze saved Instruments runs.
   - `$retro`: user-invoked retrospective that proposes evidence-backed environment improvements.
   - `$writing-for-agents`: creation and maintenance of skills and agent-facing steering docs.
   - `$pft-pr-lifecycle`: user-invoked delivery from issue/worktree through verified PR and authorized cleanup.
@@ -41,6 +42,12 @@ for changes with no visible effect (refactors, tooling, tests).
 `scripts/xcb release-notes` sends that section to TestFlight as "What to
 Test" and archives it under the shipped build number — the changelog is the
 only source for that, so a skipped bullet means testers get no notes.
+
+## Automation
+
+- CI (`.github/workflows`): `ci.yml` runs `scripts/xcb test` on PRs and fails unless tests actually ran; `changelog.yml` requires a `CHANGELOG.md` change on `feature/*`/`fix/*` PRs (`no-changelog` in the PR body opts out); `deps.yml` opens an issue when ZIPFoundation or CoreXLSX has a newer release.
+- `.swiftformat` is whitespace-only on purpose (default rules would rewrite most files); keep it that way.
+- Codex enables repository hooks in `.codex/config.toml`; `.codex/hooks.json` reuses `.claude/hooks/git-guard.sh` before Bash commands and `.claude/hooks/graphify-update.sh` on Stop. Review and trust them through `/hooks` after adding, moving, or changing their definitions. Swift formatting remains a Claude Code hook.
 
 ## Branch Naming
 

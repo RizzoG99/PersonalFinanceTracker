@@ -1,0 +1,30 @@
+name: CI
+on:
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: mkdir -p .build && scripts/xcb test | tee .build/summary.json || true
+      - name: Assert tests ran and passed
+        # xcb test exits 0 on a compile failure, so check the summary, not the exit code.
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          s = json.load(open(".build/summary.json"))
+          total, failed = s.get("totalTestCount", 0), s.get("failedTests", 0)
+          print(f"total={total} failed={failed}")
+          sys.exit(0 if total > 0 and failed == 0 and s.get("result") == "Passed" else 1)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-log
+          path: .build/test.log

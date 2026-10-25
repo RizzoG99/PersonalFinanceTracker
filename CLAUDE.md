@@ -10,7 +10,7 @@ This repository is configured for both Claude Code and Codex.
 - `.claude/skills` and `.codex/skills` contain relative symlinks for native discovery. Edit only `.agents/skills`; when adding a shared skill, add a symlink for each supported agent.
 - Keep shared project facts aligned between this file and `AGENTS.md`; keep tool-specific instructions in the file for that tool.
 
-Shared project skills include `$swiftui-pro`, `$feature-brainstorm`, `$ux-audit`, `$graphify`, `$diagnosing-bugs`, `$performance-audit`, `$retro`, `$writing-for-agents`, and `$pft-pr-lifecycle`. Use `$diagnosing-bugs` for uncertain regressions, `$performance-audit` for audit-only repository-wide performance investigations, `$retro` for an explicitly requested coding-session retrospective, `$writing-for-agents` for agent-facing documentation, and `$pft-pr-lifecycle` for explicitly requested issue-to-PR delivery.
+Shared project skills include `$swiftui-pro`, `$feature-brainstorm`, `$ux-audit`, `$graphify`, `$diagnosing-bugs`, `$performance-audit`, `$performance-profiling`, `$retro`, `$writing-for-agents`, and `$pft-pr-lifecycle`. Use `$diagnosing-bugs` for uncertain regressions, `$performance-audit` for audit-only repository-wide performance investigations, `$performance-profiling` for one specific slowness complaint, `$retro` for an explicitly requested coding-session retrospective, `$writing-for-agents` for agent-facing documentation, and `$pft-pr-lifecycle` for explicitly requested issue-to-PR delivery.
 
 For every new or materially changed user-facing view, use `$swiftui-pro` before implementation. Inspect the two closest existing screens/components and follow its `references/design.md` preflight and quality gate. Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
 
@@ -24,6 +24,12 @@ for changes with no visible effect (refactors, tooling, tests).
 `scripts/xcb release-notes` sends that section to TestFlight as "What to
 Test" and archives it under the shipped build number — the changelog is the
 only source for that, so a skipped bullet means testers get no notes.
+
+## Automation
+
+- CI (`.github/workflows`): `ci.yml` runs `scripts/xcb test` on PRs and fails unless tests actually ran; `changelog.yml` requires a `CHANGELOG.md` change on `feature/*`/`fix/*` PRs (`no-changelog` in the PR body opts out); `deps.yml` opens an issue when ZIPFoundation or CoreXLSX has a newer release.
+- `.swiftformat` is whitespace-only on purpose (default rules would rewrite most files); keep it that way.
+- Shared scripts in `.claude/hooks`: `git-guard.sh` blocks commits on `main` in the primary checkout, bad branch names, `gh pr create` without a changelog change (`PFT_SKIP_CHANGELOG=1` to skip), and AI attribution in commits/PRs/comments; `graphify-update.sh` refreshes the graph on Stop. Claude Code wires these in `.claude/settings.json`; Codex enables them through `.codex/config.toml` and `.codex/hooks.json`, with user approval through `/hooks`. Claude Code also runs `swiftformat` on edited Swift files through a PostToolUse hook.
 
 ## Branch Naming
 

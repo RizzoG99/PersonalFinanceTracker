@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "R=$(git rev-parse --show-toplevel) && [ -x \"$R/.claude/hooks/git-guard.sh\" ] && exec \"$R/.claude/hooks/git-guard.sh\" || true",
+            "timeout": 15,
+            "statusMessage": "Git guard"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "R=$(git rev-parse --show-toplevel) && [ -x \"$R/.claude/hooks/graphify-update.sh\" ] && exec \"$R/.claude/hooks/graphify-update.sh\" || true",
+            "timeout": 130,
+            "statusMessage": "Update Graphify"
+          }
+        ]
+      }
+    ]
+  }
+}
