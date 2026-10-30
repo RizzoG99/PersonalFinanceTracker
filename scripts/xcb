@@ -140,6 +140,118 @@ case "${1:-}" in
     exit $status
     ;;
 
+  scenarios)   # acceptance-scenario UI tests on iPhone + iPad, light/dark/large text
+    shift
+    # One class, or every *ScenarioTests.swift in the UI test target (the regression run).
+    only=()
+    if [ -n "${1:-}" ] && [ "${1#-}" = "$1" ]; then
+      only=(-only-testing:"PersonalFinanceTrakerUITests/$1")
+      shift
+    else
+      for file in PersonalFinanceTraker/PersonalFinanceTrakerUITests/*ScenarioTests.swift; do
+        only+=(-only-testing:"PersonalFinanceTrakerUITests/$(basename "$file" .swift)")
+      done
+    fi
+    out=.build/scenarios
+    rm -rf "$out"
+    mkdir -p "$out/shots"
+    trap delete_clones EXIT
+    iphone=$(resolve_sim)
+    # A second per-worktree device for the wide layout. PFT_SIM_UDID only overrides the iPhone.
+    ipad=$(PFT_SIM_UDID="" SIM_NAME="$SIM_NAME-ipad" \
+      DEVICE_TYPE=com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB resolve_sim)
+
+    echo "xcb: building for testing..." >&2
+    xcodebuild build-for-testing \
+      -project "$PROJECT" -scheme "$SCHEME" \
+      -destination "id=$iphone" -destination "id=$ipad" \
+      -derivedDataPath .build -quiet "$@" >"$out/build.log" 2>&1 \
+      || { tail -40 "$out/build.log"; exit 1; }
+
+    # One pass at a time (this Mac can't host two simulators under test at once).
+    # -collect-test-diagnostics never: on a failure xcodebuild otherwise pulls a
+    # sysdiagnose from the simulator, which hung for its full 600s timeout here.
+    # A pass is <device>:<appearance>:<content size>; the variant label names the screenshots.
+    status=0
+    passes="iphone:light:large iphone:dark:large iphone:light:accessibility-extra-extra-extra-large
+            ipad:light:large ipad:dark:large"
+    for pass in $passes; do
+      IFS=: read -r device appearance size <<<"$pass"
+      udid=$iphone; [ "$device" = ipad ] && udid=$ipad
+      variant=$appearance; [ "$size" != large ] && variant="$appearance-axxxl"
+      name="$device-$variant"
+      echo "xcb: scenarios $name..." >&2
+      xcrun simctl boot "$udid" 2>/dev/null || true
+      xcrun simctl bootstatus "$udid" >/dev/null 2>&1 || true
+      xcrun simctl ui "$udid" appearance "$appearance"
+      xcrun simctl ui "$udid" content_size "$size"
+      # Clean install per pass: settings a scenario changes (theme, dismissed cards)
+      # must not leak into the next one.
+      xcrun simctl uninstall "$udid" rizzoG99.PersonalFinanceTraker 2>/dev/null || true
+      TEST_RUNNER_SCENARIO_VARIANT="$variant" xcodebuild test-without-building \
+        -project "$PROJECT" -scheme "$SCHEME" \
+        -destination "id=$udid" \
+        -derivedDataPath .build \
+        -resultBundlePath "$out/$name.xcresult" \
+        "${only[@]}" \
+        -collect-test-diagnostics never \
+        -parallel-testing-enabled NO \
+        -test-timeouts-enabled YES \
+        -quiet >"$out/$name.log" 2>&1 || status=1
+      xcrun simctl ui "$udid" content_size large
+      [ "$device" = ipad ] && xcrun simctl shutdown "$udid" 2>/dev/null || true
+      if [ -d "$out/$name.xcresult" ]; then
+        xcrun xcresulttool export attachments --path "$out/$name.xcresult" \
+          --output-path "$out/$name-attachments" >/dev/null 2>&1 || true
+      fi
+    done
+
+    # Condensed summary. A pass that ran zero tests, or left no result bundle, is a
+    # failure: xcodebuild can exit 0 without running anything (wrong filter, crash).
+    OUT="$out" EXPECTED=$(echo $passes | wc -w) python3 - <<'PYEOF' || status=1
+import json, os, re, shutil, subprocess, sys
+
+out = os.environ["OUT"]
+passes, ok = [], True
+for name in sorted(n[:-9] for n in os.listdir(out) if n.endswith(".xcresult")):
+    bundle = f"{out}/{name}.xcresult"
+    s = json.loads(subprocess.run(
+        ["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", bundle],
+        capture_output=True, text=True).stdout or "{}")
+    total = s.get("totalTestCount", 0)
+    failed = s.get("failedTests", 0)
+    # passed > 0, not total > 0: a skipped scenario (env not forwarded) still counts in total.
+    ok = ok and s.get("passedTests", 0) > 0 and failed == 0
+    passes.append({
+        "pass": name, "total": total, "passed": s.get("passedTests", 0),
+        "failed": failed, "skipped": s.get("skippedTests", 0),
+        # Capped: a failure can carry a whole UI hierarchy. Full text is in <pass>.log.
+        "failures": [f"{f.get('testName')}: {f.get('failureText')}"[:1500] for f in s.get("testFailures", [])],
+    })
+    # Copy under attachment names, minus xcresulttool's _<n>_<uuid> suffix.
+    # Scenario attachments (S1-iphone-dark.png, S1-contrast-iphone-dark.txt) are
+    # already unique; XCTest's own failure images (Element Screenshot.png) get the
+    # pass as a prefix. Recordings and hierarchies stay in <pass>-attachments/.
+    att = f"{out}/{name}-attachments"
+    manifest = f"{att}/manifest.json"
+    if os.path.exists(manifest):
+        for test in json.load(open(manifest)):
+            for a in test.get("attachments", []):
+                readable = re.sub(r"_\d+_[0-9A-F-]{36}(\.\w+)$", r"\1", a["suggestedHumanReadableName"])
+                if not re.match(r"S\d", readable):
+                    if not readable.endswith(".png"):
+                        continue
+                    readable = f"{name}-{readable}"
+                shutil.copy(f"{att}/{a['exportedFileName']}", f"{out}/shots/{readable}")
+ok = ok and len(passes) == int(os.environ["EXPECTED"])
+shots = sorted(os.listdir(f"{out}/shots"))
+print(json.dumps({"result": "Passed" if ok else "Failed", "passes": passes,
+                  "shotsDir": f"{out}/shots", "shots": shots}, indent=2))
+sys.exit(0 if ok else 1)
+PYEOF
+    exit $status
+    ;;
+
   analyze)
     shift
     echo "xcb: static analysis..." >&2
@@ -333,8 +445,8 @@ if bad:
     delete_clones
     ;;
 
-  delete-sim)   # drop this worktree's dedicated device
-    udids_named 'n == os.environ["SIM_NAME"]' | while read -r udid; do
+  delete-sim)   # drop this worktree's dedicated devices (iPhone, and the scenarios iPad)
+    udids_named 'n in (os.environ["SIM_NAME"], os.environ["SIM_NAME"] + "-ipad")' | while read -r udid; do
       xcrun simctl delete "$udid"
     done
     ;;
@@ -344,8 +456,9 @@ if bad:
     ;;
 
   *)
-    echo "usage: scripts/xcb {build|test|analyze|archive|export|release-notes|assign-testers|release|clean-sims|delete-sim|which-sim} [extra xcodebuild args]" >&2
+    echo "usage: scripts/xcb {build|test|scenarios|analyze|archive|export|release-notes|assign-testers|release|clean-sims|delete-sim|which-sim} [extra xcodebuild args]" >&2
     echo "  scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests" >&2
+    echo "  scripts/xcb scenarios [UITestClass]      # iPhone+iPad, light/dark/large text; no class = all *ScenarioTests" >&2
     echo "  PFT_SIM_UDID=<udid> scripts/xcb test    # target a specific simulator" >&2
     echo "  scripts/xcb release [beta-group]         # test + analyze + archive + export + release-notes, optionally assign-testers" >&2
     echo "  scripts/xcb release-notes                # send CHANGELOG.md's Unreleased section as TestFlight notes" >&2
