@@ -232,6 +232,9 @@ struct AuthenticationWrapper: View {
                 authService.unlock()
             }
             #endif
+            if PersonalFinanceTrakerApp.skipsOnboarding {
+                authService.unlock()
+            }
             syncLockOverlay()
             // ponytail: unit tests run inside this app as their host process, so this
             // view's real onAppear fires alongside the test bundle. Without this guard,
