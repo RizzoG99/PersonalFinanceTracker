@@ -27,6 +27,7 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
   - `$writing-for-agents`: creation and maintenance of skills and agent-facing steering docs.
   - `$pft-pr-lifecycle`: user-invoked delivery from issue/worktree through verified PR and authorized cleanup.
   - `$testflight-feedback`: user-invoked triage of unresolved TestFlight feedback into GitHub issues, merged comments, or an already-fixed report.
+  - `$pft-task-pipeline`: user-invoked end-to-end delivery of one task. It has one owner gate after the brainstorm, then a critic-reviewed plan, red-first scenario tests on iPhone and iPad, a code review, and a PR. Issue bodies follow `.github/ISSUE_TEMPLATE/{bug,feature}.md`.
 - Prefer `rg` and graphify queries before broad source browsing.
 - Preserve unrelated user changes in the working tree.
 - Keep implementation scoped to the relevant feature folder, model, utility, and test files.
