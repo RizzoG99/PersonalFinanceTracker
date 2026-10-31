@@ -50,6 +50,8 @@ final class FeatureDiscoveryCoordinator {
             isShowingTour = true
             return
         }
+        // UI tests: What's New would cover whatever the scenario opens first.
+        if PersonalFinanceTrakerApp.skipsOnboarding { return }
         presentUnseenRelease(for: appVersion)
     }
 

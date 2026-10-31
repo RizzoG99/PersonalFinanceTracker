@@ -22,6 +22,7 @@ struct PersonalFinanceTrakerApp: App {
         seedMemberSinceDateIfNeeded()
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
         configureTips()
+        skipOnboardingIfRequested()
         seedSampleDataIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
@@ -96,6 +97,21 @@ struct PersonalFinanceTrakerApp: App {
     }
 }
 
+extension PersonalFinanceTrakerApp {
+    /// `-skipOnboarding` opens a clean install straight on Home, so scenario UI tests don't
+    /// tap through PIN setup, name entry, the iCloud restore prompt and What's New: the app
+    /// sets a PIN, `AuthenticationWrapper` unlocks, `FeatureDiscoveryCoordinator` stays quiet.
+    /// Simulator Debug builds only — it sets a known PIN and unlocks, so a debug build on a
+    /// real phone must never honour it (same rule as `PerformanceAuditDataSeeder`).
+    static var skipsOnboarding: Bool {
+        #if DEBUG && targetEnvironment(simulator)
+        ProcessInfo.processInfo.arguments.contains("-skipOnboarding")
+        #else
+        false
+        #endif
+    }
+}
+
 // MARK: - Private Extensions
 
 private extension PersonalFinanceTrakerApp {
@@ -130,6 +146,17 @@ private extension PersonalFinanceTrakerApp {
         let key = "member_since_timestamp"
         guard UserDefaults.standard.double(forKey: key) == 0 else { return }
         UserDefaults.standard.set(Date.now.timeIntervalSince1970, forKey: key)
+    }
+
+    /// Must run before `AuthenticationWrapper` reads `pin_setup_complete`; see `skipsOnboarding`.
+    func skipOnboardingIfRequested() {
+        guard Self.skipsOnboarding else { return }
+        try? PINService().setPIN("1234")
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: "pin_setup_complete")
+        defaults.set(false, forKey: "biometric_lock_enabled")
+        defaults.set("Alex", forKey: "user_full_name")
+        defaults.set(true, forKey: "feature_discovery_has_completed_tour")
     }
 
     /// `-seedSampleData` replaces the store with `SampleData`'s fixed set so the

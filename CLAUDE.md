@@ -52,12 +52,19 @@ name, not a branch name, and it has slipped in repeatedly.
 scripts/xcb build
 scripts/xcb test
 scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests
+scripts/xcb scenarios HarnessSmokeScenarioTests   # acceptance-scenario UI tests, iPhone + iPad
 scripts/xcb which-sim    # print this worktree's simulator name + UDID
 scripts/xcb clean-sims   # delete leftover "Clone N of ..." simulators
-scripts/xcb delete-sim   # drop this worktree's dedicated simulator
+scripts/xcb delete-sim   # drop this worktree's dedicated simulators
 ```
 
 `scripts/xcb test` prints only a JSON summary (counts, failed test names, messages); the full log goes to `.build/test.log`. Read that file only when the summary is not enough.
+
+**Verify UI work with scenario tests.** `scripts/xcb scenarios [UITestClass]` runs `ScenarioTestCase` subclasses on iPhone and iPad. With no class it runs every `*ScenarioTests` class, which is the regression run. It prints a JSON summary, and screenshots land in `.build/scenarios/shots/` for review. The mechanics live in `ScenarioTestCase.swift` and the script.
+- Scenario tests are XCTest, because XCUITest requires it. The Swift Testing rule covers unit tests only.
+- They skip themselves under plain `scripts/xcb test` and in CI.
+- A pre-existing accessibility finding gets its own GitHub issue first, then an entry in `knownAccessibilityIssues` that points to it.
+- Check launch-state changes through a scenario test. `simctl launch` renders a blank screen once a PIN is set.
 
 **Run builds and tests in the background** (`run_in_background: true`), then wait with a `Monitor` until-loop. A full test run takes several minutes and will otherwise eat a foreground timeout.
 

@@ -66,12 +66,18 @@ Use the `xcodebuild` CLI by default. The Xcode MCP hangs forever on a crashed te
 scripts/xcb build
 scripts/xcb test
 scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests
+scripts/xcb scenarios HarnessSmokeScenarioTests   # acceptance-scenario UI tests, iPhone + iPad
 scripts/xcb which-sim    # print this worktree's simulator name + UDID
 scripts/xcb clean-sims   # delete leftover "Clone N of ..." simulators
-scripts/xcb delete-sim   # drop this worktree's dedicated simulator
+scripts/xcb delete-sim   # drop this worktree's dedicated simulators
 ```
 
 - `scripts/xcb test` prints only a JSON summary; the full log goes to `.build/test.log`.
+- **Verify UI work with scenario tests.** `scripts/xcb scenarios [UITestClass]` runs `ScenarioTestCase` subclasses on iPhone and iPad. With no class it runs every `*ScenarioTests` class, which is the regression run. It prints a JSON summary, and screenshots land in `.build/scenarios/shots/` for review. The mechanics live in `ScenarioTestCase.swift` and the script.
+  - Scenario tests are XCTest, because XCUITest requires it. The Swift Testing rule covers unit tests only.
+  - They skip themselves under plain `scripts/xcb test` and in CI.
+  - A pre-existing accessibility finding gets its own GitHub issue first, then an entry in `knownAccessibilityIssues` that points to it.
+  - Check launch-state changes through a scenario test. `simctl launch` renders a blank screen once a PIN is set.
 - Run builds and tests in the background and poll for completion; a full run takes several minutes.
 - Everything is per-worktree with no configuration: `-derivedDataPath .build` is relative (`.build/` is gitignored), and the script creates a simulator named `pft-<worktree-dir>` on first use so concurrent agents never share a device. `PFT_SIM_UDID=<udid>` overrides it.
 - Never hardcode a simulator OS version. `simctl`'s runtime identifier is rounded (`iOS-26-4`) while the real version is `26.4.1`, and a bare `name=iPhone 17` destination expands to `OS:latest`, which can resolve to a runtime with no such device. The script targets the device by UDID. Hand-written destinations should come from `xcodebuild -showdestinations`.
