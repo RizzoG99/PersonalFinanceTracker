@@ -69,6 +69,8 @@ scripts/xcb delete-sim   # drop this worktree's dedicated simulators
 
 **Run builds and tests in the background** (`run_in_background: true`), then wait with a `Monitor` until-loop. A full test run takes several minutes and will otherwise eat a foreground timeout.
 
+**One simulator run at a time, machine-wide.** `scripts/xcb test` and `scenarios` take a kernel `flock` on `/tmp/pft-xcb-simulator.lock`. A run started from another worktree waits for it ("waiting for another simulator run…"). Don't kill a waiting run, and never delete the file. The lock is released when the holder's processes exit, however they exit. `test` shuts its simulator down afterwards if the run booted it. Both commands list other booted simulators, which hold memory, but they never shut those down.
+
 Notes:
 - **Everything is per-worktree, no configuration.** `-derivedDataPath .build` is relative, so each worktree gets its own build tree (`.build/` is gitignored), and the script creates its own simulator named `pft-<worktree-dir>` on first use, so concurrent agents never share a device. `PFT_SIM_UDID=<udid>` overrides it.
 - **Never hardcode a simulator OS version.** `simctl`'s runtime *identifier* is rounded (`iOS-26-4`) while its real version is `26.4.1`, and a bare `name=iPhone 17` destination expands to `OS:latest`, which can resolve to a runtime that has no such device. The script targets the device by UDID, which avoids both. If you write a destination by hand, get it from `xcodebuild -showdestinations`, never from `simctl list devices`.
