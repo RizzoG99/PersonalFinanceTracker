@@ -116,6 +116,7 @@ struct DashboardView: View {
                 }
                 .padding(16)
             }
+            .accessibilityIdentifier("homeDashboard")  // scopes UI-test scrolling to Home
             .safeAreaPadding(.bottom, 128)
             .navigationBarTitleDisplayMode(.inline)
             .appToolbar(showingAddItemView: $showingAddItemView, onScanned: onScanned)

@@ -69,6 +69,43 @@ struct FinancialHealthServiceTests {
         }
     }
 
+    // MARK: - #342: the cycle's last day counts
+
+    private let lastDayNow = Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 31, hour: 18))!
+    private let lastDayAfternoon = Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 31, hour: 17))!
+
+    @Test("budget adherence counts an overspend on the cycle's last day")
+    func adherenceCountsLastDay() {
+        let result = makeService().compute(
+            transactions: [],
+            expenseTransactions: [.test(timestamp: lastDayAfternoon, amount: -60, category: "Fun")],
+            budgetedCategories: [.test(name: "Fun", monthlyBudget: 50)],
+            now: lastDayNow
+        )
+        // Budget is the third component (see FinancialHealthService.compute).
+        #expect(result.components[2].score == 0)
+    }
+
+    @Test("spending stability counts the cycle's last day")
+    func stabilityCountsLastDay() {
+        let calendar = Calendar.current
+        let earlier = (5...9).map { month in
+            TransactionSnapshot.test(
+                timestamp: calendar.date(from: DateComponents(year: 2026, month: month, day: 15))!,
+                amount: -100, category: "Groceries"
+            )
+        }
+        let expenses = earlier + [.test(timestamp: lastDayAfternoon, amount: -100, category: "Groceries")]
+        let result = makeService().compute(
+            transactions: expenses,
+            expenseTransactions: expenses,
+            budgetedCategories: [],
+            now: lastDayNow
+        )
+        // Stability is the second component: the same spend every month scores full marks.
+        #expect(result.components[1].score == 25)
+    }
+
     @Test("ignoreSubscriptions produces 3 components summing to ≤100")
     func optOutGivesThreeComponents() {
         let service = makeService()

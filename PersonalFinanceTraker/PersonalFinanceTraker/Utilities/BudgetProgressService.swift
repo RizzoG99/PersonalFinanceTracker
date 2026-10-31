@@ -26,6 +26,7 @@ enum BudgetProgressService {
         categories: [CategorySnapshot],
         transactions: [TransactionSnapshot],
         payCycleStartDay: Int,
+        now: Date = .now,
         calendar: Calendar = .current
     ) -> [BudgetProgress] {
         let budgeted = categories.filter {
@@ -34,7 +35,7 @@ enum BudgetProgressService {
         guard !budgeted.isEmpty else { return [] }
 
         let (cycleStart, cycleEnd) = PayCycleService.currentFinancialMonth(
-            startDay: payCycleStartDay, calendar: calendar
+            startDay: payCycleStartDay, now: now, calendar: calendar
         )
 
         var spentByCategory: [String: Decimal] = [:]

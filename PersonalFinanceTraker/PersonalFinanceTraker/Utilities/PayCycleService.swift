@@ -48,7 +48,7 @@ struct PayCycleService {
 
         for _ in 0..<count {
             let start = financialMonthStart(for: currentDate, startDay: startDay, calendar: calendar)
-            let end = calendar.date(byAdding: .day, value: -1, to: calendar.date(byAdding: .month, value: 1, to: start) ?? start) ?? start
+            let end = cycleEnd(start: start, calendar: calendar)
 
             months.insert((start: start, end: end), at: 0)
 
@@ -62,11 +62,22 @@ struct PayCycleService {
     /// Returns the start and end dates of the current financial month.
     static func currentFinancialMonth(
         startDay: Int,
+        now: Date = .now,
         calendar: Calendar = .current
     ) -> (start: Date, end: Date) {
-        let now = Date.now
         let start = financialMonthStart(for: now, startDay: startDay, calendar: calendar)
-        let end = calendar.date(byAdding: .day, value: -1, to: calendar.date(byAdding: .month, value: 1, to: start) ?? start) ?? start
-        return (start: start, end: end)
+        return (start: start, end: cycleEnd(start: start, calendar: calendar))
+    }
+
+    /// The cycle's last instant: callers filter with `<= end` and format `end` as the last day.
+    /// It used to be 00:00 of that day, which dropped the whole last day from budgets and the
+    /// health score (#342; #154 hit the same in charts).
+    /// ponytail: 1 ms before the next start, not a half-open range — fixes every `<= end` caller
+    /// at once; switch to `< nextStart` if sub-millisecond timestamps ever matter.
+    /// `startOfDay`: where DST skips midnight (e.g. Havana), a cycle can start at 01:00, and a
+    /// month later that clock time would run the cycle into the next one's first hour.
+    private static func cycleEnd(start: Date, calendar: Calendar) -> Date {
+        let nextStart = calendar.startOfDay(for: calendar.date(byAdding: .month, value: 1, to: start) ?? start)
+        return nextStart.addingTimeInterval(-0.001)
     }
 }
