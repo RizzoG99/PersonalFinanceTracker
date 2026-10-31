@@ -79,7 +79,7 @@ Done when the Plan section is published and the last round either was APPROVE or
 2. Implement. Use `$swiftui-pro` for UI changes.
 3. Rerun until every scenario passes on all five passes. Each new accessibility finding is either caused by the change (fix it) or pre-existing (file an issue per cause, then add an exact-label entry to `knownAccessibilityIssues`).
 
-Done when `scripts/xcb scenarios <Class>` reports `"result": "Passed"` and every pass's `passed` equals its `total`.
+Done when `scripts/xcb scenarios <Class>` reports `"result": "Passed"`, every pass's `passed` equals its `total`, and `flaky` is empty.
 
 ## 7. Visual review
 
@@ -102,10 +102,10 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 
 ## 9. Full verification and PR
 
-1. Run `scripts/xcb scenarios`, which is the regression run over every scenario class, then `scripts/xcb test`. Run them in the background, one after the other, and read the counts, not the exit code.
+1. Run `scripts/xcb scenarios`, which is the regression run over every scenario class, then `scripts/xcb test`. Run them in the background, one after the other, and read the counts and the `flaky` list, not the exit code. List every `flaky` entry under the PR's Limitations.
 2. Add the `CHANGELOG.md` Unreleased bullet for a visible change.
 3. Commit, push, and open the PR by following `$pft-pr-lifecycle` (its publish reference), with `Closes #<n>`. The Evidence table lists each scenario: red before or not, green after, and which screenshots were reviewed.
-4. Fill the issue's Evidence section (PR, commit, counts, what was not reproduced or not automated). Set project Evidence to Verified only when every scenario passed on all five passes and its screenshots were reviewed. Otherwise leave it at Fix in progress and say why.
+4. Fill the issue's Evidence section (PR, commit, counts, what was not reproduced or not automated). Set project Evidence to Verified only when every scenario passed on all five passes without a retry (none of the task's scenarios in `flaky`) and its screenshots were reviewed. An unrelated flaky test doesn't block Verified; it goes under Limitations. Otherwise leave it at Fix in progress and say why.
 
 Done when the PR is open and the issue's Evidence names it.
 

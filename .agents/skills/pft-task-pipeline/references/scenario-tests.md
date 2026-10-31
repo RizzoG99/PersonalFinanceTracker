@@ -36,6 +36,9 @@ The mechanics are in `PersonalFinanceTraker/PersonalFinanceTrakerUITests/Scenari
 ## Reading results
 
 - `scripts/xcb scenarios <Class>` prints a JSON summary. A run is good only when `result` is `Passed` and every pass has `passed == total`.
+- A failed test is retried once (#278). A test that passes on the retry counts as passed, but the summary lists it under `flaky` with its pass and its first failure. Read `flaky` on every run:
+  - An entry for one of the task's own scenarios means the scenario is not green yet. Treat it as a failure.
+  - An entry for an unrelated test goes under the PR's Limitations. If the same test is flaky in 2 of 3 runs, it gets its own issue.
 - Failure screenshots appear in `.build/scenarios/shots/` as `<pass>-<test>-failure-….png`.
 - Full logs are in `.build/scenarios/<pass>.log`.
 - A run takes several minutes: run it in the background.
