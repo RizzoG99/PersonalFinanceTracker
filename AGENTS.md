@@ -76,6 +76,7 @@ scripts/xcb delete-sim   # drop this worktree's dedicated simulators
 - **Verify UI work with scenario tests.** `scripts/xcb scenarios [UITestClass]` runs `ScenarioTestCase` subclasses on iPhone and iPad. With no class it runs every `*ScenarioTests` class, which is the regression run. It prints a JSON summary, and screenshots land in `.build/scenarios/shots/` for review. The mechanics live in `ScenarioTestCase.swift` and the script.
   - Scenario tests are XCTest, because XCUITest requires it. The Swift Testing rule covers unit tests only.
   - They skip themselves under plain `scripts/xcb test` and in CI.
+  - A failed test is retried once. One that passes on retry keeps `result` at `Passed`, but the summary lists it under `flaky` with its first failure. Report every `flaky` entry, for example in the PR's Limitations. `HarnessRetryProbe` checks this mechanism.
   - A pre-existing accessibility finding gets its own GitHub issue first, then an entry in `knownAccessibilityIssues` that points to it.
   - Check launch-state changes through a scenario test. `simctl launch` renders a blank screen once a PIN is set.
 - Run builds and tests in the background and poll for completion; a full run takes several minutes.
