@@ -30,11 +30,12 @@ Assign one verdict per report:
 
 ## 3. File
 
-Filing is in scope when the user invoked this skill to file; otherwise show the titles first. One issue per report, in English, written like a functional analyst turning a customer report into a ticket:
+Filing is in scope when the user invoked this skill to file; otherwise show the titles first. One issue per report, in English, written like a functional analyst turning a customer report into a ticket. The body follows `.github/ISSUE_TEMPLATE/bug.md` (or `feature.md` for a request), which `$pft-task-pipeline` later completes:
 
-- **Summary**, **Tester report** (verbatim quote plus build, full `feedbackIdentifier`, screenshot count), **Steps**, **Current behaviour**, **Expected behaviour**, **Acceptance criteria** (checklist; light/dark, compact/wide, Dynamic Type for UI work), **Related** issues.
-- **Pre-analysis**: the commit sha analysed, what was read or run, and what remains unverified. When the cause needs logs or a device, say so here.
-- State what the tester did not say instead of guessing it.
+- **Report** (*Problem* in `feature.md`): verbatim quote, build, full `feedbackIdentifier`, screenshot count. State what the tester did not say instead of guessing it.
+- **Root cause** (*Functional analysis* in `feature.md`): the pre-analysis. Give the commit sha analysed, what was read or run, and what remains unverified. When the cause needs logs or a device, say so here.
+- **Acceptance scenarios**: a draft list. Cover light/dark, iPhone/iPad, and Dynamic Type for UI work.
+- Name related issues in the Summary.
 
 Labels `bug` or `enhancement`, title prefix `[iOS]`, no AI attribution footer. Add each issue to the **iOS Native** project (`gh project item-add 4 --owner RizzoG99 --url <issue>`) and set Status=Todo, Priority (P0–P3), Area, Evidence=Unverified; read ids live with `gh project field-list 4 --owner RizzoG99 --format json`.
 
