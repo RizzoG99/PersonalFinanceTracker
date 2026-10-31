@@ -225,7 +225,10 @@ struct TransactionFormView: View {
                                 categories: viewModel.filteredCategories,
                                 transactionType: viewModel.transactionType,
                                 selectedCategory: $viewModel.selectedCategory,
-                                onCategoryCreated: viewModel.selectCreatedCategory
+                                onCategoryCreated: viewModel.selectCreatedCategory,
+                                // Through the form's own FocusState, not a global resign, so
+                                // `focusedField` never goes stale (#222, #229).
+                                onWillShowAll: { focusedField = nil }
                             )
                             // Category is always filled by a scan (even when guessed) — the banner
                             // above covers the "check this" nudge, so no per-field caption here.
@@ -723,6 +726,9 @@ struct CategoryChipsGrid: View {
     let transactionType: TransactionType
     @Binding var selectedCategory: CategorySnapshot?
     let onCategoryCreated: (CategorySnapshot) -> Void
+    /// Runs just before the full list opens. The form clears its focus here: left focused,
+    /// Amount's keyboard is restored by the system over the sheet (#259).
+    var onWillShowAll: () -> Void = {}
     @Query(sort: \CategoryModel.name) private var existingCategories: [CategoryModel]
     @State private var showAll = false
     @State private var showAddCategory = false
@@ -762,10 +768,14 @@ struct CategoryChipsGrid: View {
                             selectedCategory = category
                         }
                     }
-                    MoreChip { showAll = true }
+                    MoreChip {
+                        onWillShowAll()
+                        showAll = true
+                    }
                 }
                 .padding(.vertical, 2)
             }
+            .accessibilityIdentifier("categoryStrip")  // scopes UI-test queries to the form
             .onChange(of: selectedCategory?.id) { _, id in
                 // Keep the current selection visible; on reset (nil) return to the start.
                 if let id {
@@ -879,6 +889,7 @@ struct CategoryPickerSheet: View {
                 }
                 .padding()
             }
+            .accessibilityIdentifier("categoryPickerGrid")  // scopes UI-test queries to the sheet
             .navigationTitle("Category")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $search, prompt: Text("Search categories"))

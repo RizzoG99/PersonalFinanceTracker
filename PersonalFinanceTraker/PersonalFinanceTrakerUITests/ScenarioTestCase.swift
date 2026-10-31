@@ -21,10 +21,31 @@ class ScenarioTestCase: XCTestCase {
         guard ProcessInfo.processInfo.environment["SCENARIO_VARIANT"] != nil else {
             throw XCTSkip("Run via scripts/xcb scenarios")
         }
+        // The simulator keeps whatever orientation it was last left in (runs have come up
+        // in landscape), and scenarios are specified in portrait.
+        MainActor.assumeIsolated { XCUIDevice.shared.orientation = .portrait }
     }
 
-    /// Clean app on Home with sample data: `-skipOnboarding` (DEBUG) replaces tapping
-    /// through PIN setup, name entry, the restore prompt and What's New.
+    /// A failed scenario keeps a picture of where it stopped (`<test>-failure-…`), since
+    /// `scripts/xcb scenarios` turns off xcodebuild's own diagnostics collection.
+    override func tearDown() {
+        if (testRun?.failureCount ?? 0) > 0 {
+            // XCTest runs tearDown on the main thread; XCUIScreen is main-actor isolated.
+            MainActor.assumeIsolated {
+                let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+                attachment.name = "\(name.split(separator: " ").last?.dropLast() ?? "test")-failure-\(idiom)-\(variant)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+        super.tearDown()
+    }
+
+    /// App on Home with sample data. `-skipOnboarding` (DEBUG) resets every setting and
+    /// replaces tapping through PIN setup, name entry, the restore prompt and What's New;
+    /// `-seedSampleData` replaces transactions and categories. Goals, recurring rules and
+    /// trips a test creates survive until the pass's next reinstall: create what you need,
+    /// assume nothing about what is already there.
     @MainActor
     func launchApp(_ extraArguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
@@ -36,46 +57,91 @@ class ScenarioTestCase: XCTestCase {
             "-AppleLocale", "en_IE",
         ] + extraArguments
         app.launch()
+        // iPadOS sometimes opens the split view in portrait with the sidebar collapsed, and
+        // the sidebar holds the navigation and "Add transaction" every scenario starts from.
+        if UIDevice.current.userInterfaceIdiom == .pad, !app.collectionViews["Sidebar"].waitForExistence(timeout: 5) {
+            let show = app.buttons["Show Sidebar"]
+            if show.waitForExistence(timeout: 5) { show.tap() }
+            XCTAssertTrue(app.collectionViews["Sidebar"].waitForExistence(timeout: 5), "iPad sidebar still collapsed after Show Sidebar")
+        }
         return app
     }
 
-    /// Attaches a screenshot named `<scenario>-<iphone|ipad>-<variant>` (variant: light,
-    /// dark, light-axxxl) and keeps it in the result bundle even when the test passes.
+    /// Attaches a screenshot named `<scenario>-<topic>-<iphone|ipad>-<variant>` (variant:
+    /// light, dark, light-axxxl) and keeps it in the result bundle even when the test passes.
     @MainActor
     func shoot(_ app: XCUIApplication, _ scenario: String) {
         // Whole screen, not the app window: the keyboard and the lock overlay are
         // separate windows, and they are often what the scenario is about.
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "\(scenario)-\(idiom)-\(variant)"
+        attachment.name = "\(scenario)-\(topic)-\(idiom)-\(variant)"
         attachment.lifetime = .keepAlways
         add(attachment)
     }
 
     /// Pre-existing audit findings, each tracked on GitHub: they don't fail a scenario,
-    /// anything else does. Matched on the screen passed to `auditAccessibility` ("*" for
-    /// chrome on every screen, like the iPad sidebar), the audit description and the
-    /// element label ("?" when the audit names no element; a trailing "*" matches a
-    /// prefix, for labels holding dates or amounts). Delete an entry when its issue is fixed.
-    static let knownAccessibilityIssues: [(screen: String, description: String, label: String, issue: Int)] = [
-        ("Home", "Hit area is too small", "Dismiss", 266),
-        ("Home", "Hit area is too small", "Dismiss reminder prompt", 267),
-        ("Home", "Text clipped", "until *", 268),
-        ("Home", "Potentially inaccessible text", "?", 269),
-        ("*", "Text clipped", "Home", 219),
-        ("*", "Text clipped", "Settings", 219),
-        ("*", "Dynamic Type font sizes are partially unsupported", "Settings", 219),
-        ("*", "Dynamic Type font sizes are partially unsupported", "New", 219),
+    /// anything else does. Matched on the screens passed to `auditAccessibility` ("*" for
+    /// chrome on every screen, like the iPad sidebar), the audit description and one of the
+    /// element labels ("?" when the audit names no element; a trailing "*" matches a prefix,
+    /// for labels holding dates or amounts). Keep labels exact: a broad pattern would hide a
+    /// new finding on the same screen. Delete an entry when its issue is fixed.
+    static let knownAccessibilityIssues: [(screen: String, description: String, labels: [String], issue: Int)] = [
+        ("*", "Text clipped", ["Home", "Settings"], 219),
+        ("*", "Dynamic Type font sizes are partially unsupported", ["Settings", "New"], 219),
+
+        ("Home", "Hit area is too small", ["Dismiss"], 266),
+        ("Home", "Hit area is too small", ["Dismiss reminder prompt"], 267),
+        ("Home", "Text clipped", ["until *"], 268),
+        ("Home", "Potentially inaccessible text", ["?"], 269),
+        // iPad Recent Transactions rows (SampleData names, their categories and amounts).
+        ("Home", "Dynamic Type font sizes are partially unsupported", [
+            "Recent Transactions", "-€*", "+€*",
+            "Morning coffee", "Lunch at bistro", "Monthly salary", "Weekly groceries", "Gas station", "Netflix subscription",
+            "Coffee & Drinks", "Restaurants", "Salary", "Groceries", "Streaming Services", "Gas",
+        ], 275),
+
+        // Category chips in the inline strip and the More chip.
+        ("AddTransaction", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames + ["More"], 271),
+        ("AddTransaction", "Text clipped", defaultCategoryNames, 271),
+        // The amount field and its currency symbol.
+        ("AddTransaction", "Element has no description", [""], 272),
+        ("AddTransaction", "Dynamic Type font sizes are unsupported", ["", "€"], 272),
+        ("AddTransaction", "Text clipped", [""], 272),
+        ("AddTransaction", "Dynamic Type font sizes are partially unsupported", ["Cancel"], 273),
+        ("AddTransaction", "Text clipped", ["New Transaction"], 273),
+        ("AddTransaction", "Dynamic Type font sizes are partially unsupported", ["Group a trip's expenses*"], 274),
+
+        ("CategoryPicker", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames, 271),
+        ("CategoryPicker", "Text clipped", defaultCategoryNames, 271),
+        ("CategoryPicker", "Dynamic Type font sizes are partially unsupported", ["Cancel"], 273),
+        ("CategoryPicker", "Text clipped", ["Cancel"], 273),
+        ("CategoryPicker", "Potentially inaccessible text", ["?"], 269),
+        ("CategoryPicker", "Potentially inaccessible element", ["?"], 269),
     ]
 
-    /// Objective accessibility gate for the screen on display (hit regions, clipped and
+    /// The chip labels a scenario can meet. Mirrors the keys of `DefaultCategoryRefresh`
+    /// (the UI test target can't import the app); exact names, so a new finding on any
+    /// other element of those screens still fails.
+    static let defaultCategoryNames = [
+        "Salary", "Gift", "Investment", "Freelance", "Rental Income", "Bonus", "Prize", "Refund", "Other",
+        "Groceries", "Restaurants", "Coffee & Drinks", "Takeout", "Gas", "Car Maintenance", "Public Transport",
+        "Taxi & Rideshare", "Rent/Mortgage", "Utilities", "Phone Bill", "Internet", "Streaming Services", "Clothing",
+        "Shopping", "Electronics", "Books & Education", "Healthcare", "Pharmacy", "Gym & Fitness", "Personal Care",
+        "Entertainment", "Music", "Hobbies", "Travel", "Education", "Pets", "Banking Fees",
+    ]
+
+    /// Objective accessibility gate for what is on display (hit regions, clipped and
     /// Dynamic Type text, labels). Call it on every screen a scenario changes. Fails once
     /// with every new finding rather than stopping at the first.
+    ///
+    /// The audit covers the whole app, not one view: list every screen that can be visible
+    /// at that moment. On iPad the Add/Edit form is an inspector beside Home, so pass both.
     ///
     /// Contrast is reported, not enforced: on the glass cards its findings change from
     /// run to run (and SampleData's dates change the rows on screen), so they go to a
     /// `<scenario>-contrast-…txt` report for the screenshot review instead. See #224.
     @MainActor
-    func auditAccessibility(_ app: XCUIApplication, _ scenario: String, screen: String) throws {
+    func auditAccessibility(_ app: XCUIApplication, _ scenario: String, screens: String...) throws {
         var failures: [String] = []
         var contrast: [String] = []
         try app.performAccessibilityAudit { issue in
@@ -83,28 +149,34 @@ class ScenarioTestCase: XCTestCase {
             let line = "\(issue.compactDescription) — '\(label)'"
             if issue.auditType == .contrast {
                 contrast.append(line)
-            } else if !Self.isKnown(screen, issue.compactDescription, label) {
+            } else if !Self.isKnown(screens, issue.compactDescription, label) {
                 failures.append(line)
             }
             return true
         }
         if !contrast.isEmpty {
             let report = XCTAttachment(string: contrast.joined(separator: "\n"))
-            report.name = "\(scenario)-contrast-\(idiom)-\(variant).txt"
+            report.name = "\(scenario)-\(topic)-contrast-\(idiom)-\(variant).txt"
             report.lifetime = .keepAlways
             add(report)
         }
-        XCTAssert(failures.isEmpty, "New accessibility issues in \(scenario) on \(screen):\n" + failures.joined(separator: "\n"))
+        XCTAssert(failures.isEmpty, "New accessibility issues in \(scenario) on \(screens.joined(separator: "+")):\n" + failures.joined(separator: "\n"))
     }
 
-    private static func isKnown(_ screen: String, _ description: String, _ label: String) -> Bool {
+    private static func isKnown(_ screens: [String], _ description: String, _ label: String) -> Bool {
         knownAccessibilityIssues.contains { known in
-            (known.screen == "*" || known.screen == screen)
+            (known.screen == "*" || screens.contains(known.screen))
                 && known.description == description
-                && (known.label.hasSuffix("*")
-                ? label.hasPrefix(known.label.dropLast())
-                : label == known.label)
+                && known.labels.contains { pattern in
+                    pattern.hasSuffix("*") ? label.hasPrefix(pattern.dropLast()) : label == pattern
+                }
         }
+    }
+
+    /// The class name minus "ScenarioTests": every task numbers its scenarios from S1, and
+    /// the regression run collects all of them in one folder.
+    private var topic: String {
+        String(describing: type(of: self)).replacingOccurrences(of: "ScenarioTests", with: "")
     }
 
     private var idiom: String {
