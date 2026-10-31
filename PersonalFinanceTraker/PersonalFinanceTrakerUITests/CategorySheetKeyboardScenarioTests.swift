@@ -58,7 +58,11 @@ final class CategorySheetKeyboardScenarioTests: ScenarioTestCase {
         search.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "search field did not bring up the keyboard")
         search.typeText("Gro")
-        XCTAssertEqual(search.value as? String, "Gro", "typing did not reach the search field")
+        // typeText can return before the field's value catches up on a loaded machine. Not
+        // `search` itself: once it holds text it no longer always matches by its placeholder
+        // label (seen at AX-XXXL), and the sheet has only one search field.
+        let typed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'Gro'"), object: app.searchFields.firstMatch)
+        XCTAssertEqual(XCTWaiter().wait(for: [typed], timeout: 5), .completed, "typing did not reach the search field")
         shoot(app, "S3")
     }
 
@@ -72,7 +76,9 @@ final class CategorySheetKeyboardScenarioTests: ScenarioTestCase {
         XCUIDevice.shared.press(.home)
         app.activate()
 
-        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "keyboard did not come back")
+        // Returning from the background restores focus after the resume animation; on a
+        // loaded machine that has taken over 5 s.
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10), "keyboard did not come back")
         XCTAssertEqual(amount.value(forKey: "hasKeyboardFocus") as? Bool, true, "Amount lost focus")
         shoot(app, "S4")
     }

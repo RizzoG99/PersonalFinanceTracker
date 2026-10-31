@@ -21,6 +21,9 @@ class ScenarioTestCase: XCTestCase {
         guard ProcessInfo.processInfo.environment["SCENARIO_VARIANT"] != nil else {
             throw XCTSkip("Run via scripts/xcb scenarios")
         }
+        // The simulator keeps whatever orientation it was last left in (runs have come up
+        // in landscape), and scenarios are specified in portrait.
+        MainActor.assumeIsolated { XCUIDevice.shared.orientation = .portrait }
     }
 
     /// A failed scenario keeps a picture of where it stopped (`<test>-failure-…`), since
@@ -38,8 +41,11 @@ class ScenarioTestCase: XCTestCase {
         super.tearDown()
     }
 
-    /// Clean app on Home with sample data: `-skipOnboarding` (DEBUG) replaces tapping
-    /// through PIN setup, name entry, the restore prompt and What's New.
+    /// App on Home with sample data. `-skipOnboarding` (DEBUG) resets every setting and
+    /// replaces tapping through PIN setup, name entry, the restore prompt and What's New;
+    /// `-seedSampleData` replaces transactions and categories. Goals, recurring rules and
+    /// trips a test creates survive until the pass's next reinstall: create what you need,
+    /// assume nothing about what is already there.
     @MainActor
     func launchApp(_ extraArguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
@@ -51,17 +57,24 @@ class ScenarioTestCase: XCTestCase {
             "-AppleLocale", "en_IE",
         ] + extraArguments
         app.launch()
+        // iPadOS sometimes opens the split view in portrait with the sidebar collapsed, and
+        // the sidebar holds the navigation and "Add transaction" every scenario starts from.
+        if UIDevice.current.userInterfaceIdiom == .pad, !app.collectionViews["Sidebar"].waitForExistence(timeout: 5) {
+            let show = app.buttons["Show Sidebar"]
+            if show.waitForExistence(timeout: 5) { show.tap() }
+            XCTAssertTrue(app.collectionViews["Sidebar"].waitForExistence(timeout: 5), "iPad sidebar still collapsed after Show Sidebar")
+        }
         return app
     }
 
-    /// Attaches a screenshot named `<scenario>-<iphone|ipad>-<variant>` (variant: light,
-    /// dark, light-axxxl) and keeps it in the result bundle even when the test passes.
+    /// Attaches a screenshot named `<scenario>-<topic>-<iphone|ipad>-<variant>` (variant:
+    /// light, dark, light-axxxl) and keeps it in the result bundle even when the test passes.
     @MainActor
     func shoot(_ app: XCUIApplication, _ scenario: String) {
         // Whole screen, not the app window: the keyboard and the lock overlay are
         // separate windows, and they are often what the scenario is about.
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "\(scenario)-\(idiom)-\(variant)"
+        attachment.name = "\(scenario)-\(topic)-\(idiom)-\(variant)"
         attachment.lifetime = .keepAlways
         add(attachment)
     }
@@ -143,7 +156,7 @@ class ScenarioTestCase: XCTestCase {
         }
         if !contrast.isEmpty {
             let report = XCTAttachment(string: contrast.joined(separator: "\n"))
-            report.name = "\(scenario)-contrast-\(idiom)-\(variant).txt"
+            report.name = "\(scenario)-\(topic)-contrast-\(idiom)-\(variant).txt"
             report.lifetime = .keepAlways
             add(report)
         }
@@ -158,6 +171,12 @@ class ScenarioTestCase: XCTestCase {
                     pattern.hasSuffix("*") ? label.hasPrefix(pattern.dropLast()) : label == pattern
                 }
         }
+    }
+
+    /// The class name minus "ScenarioTests": every task numbers its scenarios from S1, and
+    /// the regression run collects all of them in one folder.
+    private var topic: String {
+        String(describing: type(of: self)).replacingOccurrences(of: "ScenarioTests", with: "")
     }
 
     private var idiom: String {
