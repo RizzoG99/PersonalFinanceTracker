@@ -81,6 +81,44 @@ delete_clones() {
   done
 }
 
+# Machine-wide, not per worktree: one simulator run (test or scenarios) at a time across
+# every worktree and agent. This 16 GB Mac can't host several booted simulators: with
+# four up, runs swapped and XCUITest timed out (#278). A second run waits its turn.
+#
+# A kernel flock, not a lock directory: this script re-execs itself holding the lock on an
+# inherited file descriptor, so the script, xcodebuild and every child share it, and it is
+# released only once all of them have exited, however they exit (Ctrl-C, kill -9, crash).
+# There is never a stale lock to detect or take over. The file only names the holder.
+SIM_LOCK=/tmp/pft-xcb-simulator.lock
+with_sim_lock() {   # usage: with_sim_lock "$@" (the script's own arguments)
+  [ -n "${PFT_XCB_LOCKED:-}" ] && return
+  exec env PFT_XCB_LOCKED=1 SIM_LOCK="$SIM_LOCK" python3 -c '
+import fcntl, os, sys
+fd = os.open(os.environ["SIM_LOCK"], os.O_CREAT | os.O_RDWR, 0o644)
+try:
+    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except BlockingIOError:
+    holder = os.pread(fd, 4096, 0).decode(errors="replace").strip() or "unknown"
+    print(f"xcb: waiting for another simulator run to finish ({holder})...", file=sys.stderr)
+    fcntl.flock(fd, fcntl.LOCK_EX)
+os.ftruncate(fd, 0)
+os.pwrite(fd, os.getcwd().encode(), 0)
+os.set_inheritable(fd, True)
+os.execv(sys.argv[1], sys.argv[1:])
+' "$PWD/scripts/xcb" "$@"
+}
+
+# Booted simulators that aren't this worktree's still hold memory. Not shut down here: an
+# idle-looking one may be another session's, or a manual test in progress.
+warn_other_booted() {
+  local others
+  others=$(xcrun simctl list devices booted | grep "(Booted)" \
+    | grep -v -F -e "$SIM_NAME (" -e "$SIM_NAME-ipad (" -e "${PFT_SIM_UDID:-no-override}" || true)
+  [ -z "$others" ] && return
+  echo "xcb: other simulators are booted and compete for memory; shut idle ones down with 'xcrun simctl shutdown <udid>':" >&2
+  echo "$others" >&2
+}
+
 # release-notes/assign-testers poll ASC for scripts/BUILD_NUMBER by build number
 # alone — if `export` never actually uploaded it (auth hiccup, dropped network,
 # never run this session), that poll can't tell "still processing" from "will
@@ -104,12 +142,22 @@ case "${1:-}" in
     ;;
 
   test)
+    with_sim_lock "$@"
     shift
+    warn_other_booted
     echo "xcb: running tests (this can take a few minutes)..." >&2
-    trap delete_clones EXIT
     rm -rf "$RESULT"   # xcodebuild refuses to overwrite an existing bundle
     mkdir -p .build    # the log redirect below needs it on a fresh worktree
     status=0
+    sim=$(resolve_sim)
+    # Leave the simulator as found: shut it down on exit (Ctrl-C included) only if this run
+    # booted it, so finished runs stop holding memory, and never a caller's PFT_SIM_UDID.
+    booted=$(xcrun simctl list devices booted)
+    if [[ "$booted" != *"($sim)"* ]] && [ -z "${PFT_SIM_UDID:-}" ]; then
+      trap 'delete_clones; xcrun simctl shutdown "$sim" 2>/dev/null || true' EXIT
+    else
+      trap delete_clones EXIT
+    fi
     # -quiet still prints a line per test case, so the log goes to a file and only
     # the summary reaches stdout. Read .build/test.log when you need detail.
     #
@@ -125,7 +173,7 @@ case "${1:-}" in
     # establishing connection"). Nothing with a time budget can be stable against that.
     xcodebuild test \
       -project "$PROJECT" -scheme "$SCHEME" \
-      -destination "id=$(resolve_sim)" \
+      -destination "id=$sim" \
       -derivedDataPath .build \
       -resultBundlePath "$RESULT" \
       -parallel-testing-enabled NO \
@@ -141,6 +189,7 @@ case "${1:-}" in
     ;;
 
   scenarios)   # acceptance-scenario UI tests on iPhone + iPad, light/dark/large text
+    with_sim_lock "$@"
     shift
     # One class, or every *ScenarioTests.swift in the UI test target (the regression run).
     only=()
@@ -152,6 +201,7 @@ case "${1:-}" in
         only+=(-only-testing:"PersonalFinanceTrakerUITests/$(basename "$file" .swift)")
       done
     fi
+    warn_other_booted
     out=.build/scenarios
     rm -rf "$out"
     mkdir -p "$out/shots"
