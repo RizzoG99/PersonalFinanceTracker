@@ -27,7 +27,11 @@ final class BudgetLastDayScenarioTests: ScenarioTestCase {
         let app = launchApp(["-seedBudgetBoundaryExpense", "nextCycle"])
         // Control: proves the budget card rendered and is scrolled into view, so the absence
         // below means "not counted", not "not on screen yet".
-        XCTAssertTrue(scrollHomeUntilExists(app, budgetBar(app, "Clothing")), "control budget bar never showed")
+        let control = budgetBar(app, "Clothing")
+        // Once on ipad-light the bar was on screen yet never reported hittable (not reproduced
+        // since); the state goes into the message so the next occurrence says which.
+        XCTAssertTrue(scrollHomeUntilExists(app, control),
+                      "control budget bar never showed (exists \(control.exists), hittable \(control.exists && control.isHittable))")
         XCTAssertFalse(budgetBar(app, "Streaming Services").exists,
                        "the next cycle's expense is counted toward this cycle's budget")
         shoot(app, "S2")
