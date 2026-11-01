@@ -8,10 +8,10 @@ struct FinancialHealthService {
         expenseTransactions: [TransactionSnapshot],
         budgetedCategories: [CategorySnapshot],
         payCycleStartDay: Int = 1,
-        ignoreSubscriptions: Bool = false
+        ignoreSubscriptions: Bool = false,
+        now: Date = .now
     ) -> HealthScore {
         let calendar = Calendar.current
-        let now = Date.now
         let financialMonths = PayCycleService.financialMonths(count: 6, before: now, startDay: payCycleStartDay, calendar: calendar)
         let sixMonthsAgo = financialMonths.first?.start ?? calendar.date(byAdding: .month, value: -6, to: now) ?? now
         let recent = transactions.filter { $0.timestamp >= sixMonthsAgo }
@@ -42,7 +42,7 @@ struct FinancialHealthService {
         let rawStabilityScore = max(0, min(25, Int((1.0 - cov / 0.5) * 25)))
 
         // 3. Budget adherence (current financial month only)
-        let currentFinancialMonth = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay, calendar: calendar)
+        let currentFinancialMonth = PayCycleService.currentFinancialMonth(startDay: payCycleStartDay, now: now, calendar: calendar)
         let thisMonthExpenses = expenseTransactions.filter { $0.timestamp >= currentFinancialMonth.start && $0.timestamp <= currentFinancialMonth.end }
         let rawAdherenceScore: Int
         let adheringCount: Int

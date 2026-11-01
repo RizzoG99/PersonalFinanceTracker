@@ -82,8 +82,8 @@ class ScenarioTestCase: XCTestCase {
     /// Pre-existing audit findings, each tracked on GitHub: they don't fail a scenario,
     /// anything else does. Matched on the screens passed to `auditAccessibility` ("*" for
     /// chrome on every screen, like the iPad sidebar), the audit description and one of the
-    /// element labels ("?" when the audit names no element; a trailing "*" matches a prefix,
-    /// for labels holding dates or amounts). Keep labels exact: a broad pattern would hide a
+    /// element labels ("?" when the audit names no element; "*" stands for the varying part of
+    /// a label holding dates or amounts, like "€* / €*"). Keep labels exact: a broad pattern would hide a
     /// new finding on the same screen. Delete an entry when its issue is fixed.
     static let knownAccessibilityIssues: [(screen: String, description: String, labels: [String], issue: Int)] = [
         ("*", "Text clipped", ["Home", "Settings"], 219),
@@ -99,6 +99,8 @@ class ScenarioTestCase: XCTestCase {
             "Morning coffee", "Lunch at bistro", "Monthly salary", "Weekly groceries", "Gas station", "Netflix subscription",
             "Coffee & Drinks", "Restaurants", "Salary", "Groceries", "Streaming Services", "Gas",
         ], 275),
+        // iPad near-limit budget bars: category name and "€spent / €budget" (#342's scenarios).
+        ("Home", "Dynamic Type font sizes are partially unsupported", ["Clothing", "Streaming Services", "€* / €*"], 345),
 
         // Category chips in the inline strip and the More chip.
         ("AddTransaction", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames + ["More"], 271),
@@ -168,7 +170,7 @@ class ScenarioTestCase: XCTestCase {
             (known.screen == "*" || screens.contains(known.screen))
                 && known.description == description
                 && known.labels.contains { pattern in
-                    pattern.hasSuffix("*") ? label.hasPrefix(pattern.dropLast()) : label == pattern
+                    pattern.contains("*") ? NSPredicate(format: "SELF LIKE %@", pattern).evaluate(with: label) : label == pattern
                 }
         }
     }

@@ -25,6 +25,7 @@ struct PersonalFinanceTrakerApp: App {
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
         configureTips()
         seedSampleDataIfRequested()
+        seedBudgetBoundaryExpenseIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
         PerformanceAuditDataSeeder.seedIfRequested(in: AppContainer.shared)
@@ -247,6 +248,32 @@ private extension PersonalFinanceTrakerApp {
 
     /// `-seedMonthCard <state>` replaces transactions, rules and goals with three ordinary
     /// earlier pay cycles plus a current one in the requested Home month card state (#191):
+    /// `-seedBudgetBoundaryExpense <lastDay|nextCycle>` (#342), on top of `-seedSampleData`:
+    /// `lastDay` adds Streaming Services €100 at noon on the current cycle's last day;
+    /// `nextCycle` adds it at noon on the next cycle's first day, plus Clothing €200 at noon on
+    /// this cycle's first day as a control that must show on Home's budget card. Either date
+    /// can be in the future, which the Add form refuses, hence a seed.
+    @MainActor
+    func seedBudgetBoundaryExpenseIfRequested() {
+        #if DEBUG
+        guard let state = UserDefaults.standard.string(forKey: "seedBudgetBoundaryExpense") else { return }
+        let context = AppContainer.shared.mainContext
+        let calendar = Calendar.current
+        let cycleStart = PayCycleService.financialMonthStart(for: .now, startDay: AppSettings.storedStartDay, calendar: calendar)
+        let nextStart = calendar.date(byAdding: .month, value: 1, to: cycleStart)!
+        func noon(_ day: Date) -> Date { calendar.date(bySettingHour: 12, minute: 0, second: 0, of: day)! }
+
+        if state == "lastDay" {
+            let lastDay = calendar.date(byAdding: .day, value: -1, to: nextStart)!
+            context.insert(TransactionModel(timestamp: noon(lastDay), amount: -100, note: "", category: "Streaming Services"))
+        } else {
+            context.insert(TransactionModel(timestamp: noon(nextStart), amount: -100, note: "", category: "Streaming Services"))
+            context.insert(TransactionModel(timestamp: noon(cycleStart), amount: -200, note: "", category: "Clothing"))
+        }
+        try? context.save()
+        #endif
+    }
+
     /// `onTrack` (with a goal transfer), `faster`, `building`, `noIncome`, `overspent`, `hidden`.
     /// It also moves the pay-cycle start day so today is 12 days in (3 for `building`).
     @MainActor

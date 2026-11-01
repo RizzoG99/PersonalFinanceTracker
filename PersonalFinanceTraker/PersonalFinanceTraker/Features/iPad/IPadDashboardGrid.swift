@@ -109,6 +109,7 @@ struct IPadDashboardGrid: View {
             }
             .padding(24)
         }
+        .accessibilityIdentifier("homeDashboard")  // scopes UI-test scrolling to Home
         .navigationTitle("Home")
         .appBackground()
         .task { viewModel.load() }

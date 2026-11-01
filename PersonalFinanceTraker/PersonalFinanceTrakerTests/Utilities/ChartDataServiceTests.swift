@@ -77,7 +77,7 @@ struct ChartDataServiceTests {
         let service = ChartDataService()
         let (start, end) = PayCycleService.currentFinancialMonth(startDay: 1)
         let calendar = Calendar.current
-        let lastDayEvening = calendar.date(byAdding: .hour, value: 23, to: end) ?? end
+        let lastDayEvening = calendar.date(bySettingHour: 23, minute: 0, second: 0, of: end) ?? end
 
         let filtered = service.filterItems([makeExpense(on: lastDayEvening)], for: .month, referenceDate: start, payCycleStartDay: 1)
         #expect(filtered.count == 1)
