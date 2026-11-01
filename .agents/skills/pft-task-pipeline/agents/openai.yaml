@@ -1,0 +1,5 @@
+interface:
+  display_name: "Task Pipeline"
+  short_description: "Issue to PR: one owner gate, red-first scenario tests"
+policy:
+  allow_implicit_invocation: false

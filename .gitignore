@@ -80,3 +80,7 @@ PersonalFinanceTraker/TestFlight/
 # Real receipt photographs for ReceiptImageFixtureTests — kept local only:
 # they carry merchant names, addresses, VAT numbers and card digits.
 PersonalFinanceTraker/PersonalFinanceTrakerTests/Fixture/Receipts/
+
+# Task-pipeline plans and critic rounds (pft-task-pipeline): local working files,
+# published to the GitHub issue once reviewed.
+.plan/
