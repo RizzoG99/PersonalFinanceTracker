@@ -19,10 +19,11 @@ struct PersonalFinanceTrakerApp: App {
     // window, the launch screen and AppBackground's base can never drift apart.
     init() {
         UIWindow.appearance().backgroundColor = UIColor(named: "LaunchBackground")
+        // First: it resets the app's settings, which everything below may read or seed.
+        skipOnboardingIfRequested()
         seedMemberSinceDateIfNeeded()
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
         configureTips()
-        skipOnboardingIfRequested()
         seedSampleDataIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
@@ -151,8 +152,14 @@ private extension PersonalFinanceTrakerApp {
     /// Must run before `AuthenticationWrapper` reads `pin_setup_complete`; see `skipsOnboarding`.
     func skipOnboardingIfRequested() {
         guard Self.skipsOnboarding else { return }
-        try? PINService().setPIN("1234")
         let defaults = UserDefaults.standard
+        // Every scenario test starts from default settings: `scripts/xcb scenarios` only
+        // reinstalls once per pass, so a theme or first-run flag one test sets would
+        // otherwise leak into the next. Launch arguments live in another domain and survive.
+        if let bundleID = Bundle.main.bundleIdentifier {
+            defaults.removePersistentDomain(forName: bundleID)
+        }
+        try? PINService().setPIN("1234")
         defaults.set(true, forKey: "pin_setup_complete")
         defaults.set(false, forKey: "biometric_lock_enabled")
         defaults.set("Alex", forKey: "user_full_name")

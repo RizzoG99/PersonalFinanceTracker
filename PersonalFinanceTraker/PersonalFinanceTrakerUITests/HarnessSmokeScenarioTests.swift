@@ -17,6 +17,6 @@ final class HarnessSmokeScenarioTests: ScenarioTestCase {
             : app.tabBars.firstMatch
         XCTAssertTrue(home.waitForExistence(timeout: 30), "Home never appeared")
         shoot(app, "S0")
-        try auditAccessibility(app, "S0", screen: "Home")
+        try auditAccessibility(app, "S0", screens: "Home")
     }
 }
