@@ -172,15 +172,26 @@ case "${1:-}" in
     # -collect-test-diagnostics never: on a failure xcodebuild otherwise pulls a
     # sysdiagnose from the simulator, which hung for its full 600s timeout here.
     # A pass is <device>:<appearance>:<content size>; the variant label names the screenshots.
+    # A failed test is retried once (#278): on a loaded Mac XCUITest itself times out now and
+    # then. A pass on retry counts as passed, so the summary lists it under "flaky" instead.
+    #
+    # Only one of the two devices is booted at a time, and each stays up across its own
+    # passes (#278): iPad passes that started on a cold, just-shut-down simulator kept
+    # timing out on their first UI query, both attempts, while the warm iPhone never did.
     status=0
     passes="iphone:light:large iphone:dark:large iphone:light:accessibility-extra-extra-extra-large
             ipad:light:large ipad:dark:large"
+    prev=""
     for pass in $passes; do
       IFS=: read -r device appearance size <<<"$pass"
       udid=$iphone; [ "$device" = ipad ] && udid=$ipad
       variant=$appearance; [ "$size" != large ] && variant="$appearance-axxxl"
       name="$device-$variant"
       echo "xcb: scenarios $name..." >&2
+      # Never a caller's PFT_SIM_UDID device: it isn't ours to shut down.
+      [ -n "$prev" ] && [ "$prev" != "$udid" ] && [ "$prev" != "${PFT_SIM_UDID:-}" ] \
+        && { xcrun simctl shutdown "$prev" 2>/dev/null || true; }
+      prev=$udid
       xcrun simctl boot "$udid" 2>/dev/null || true
       xcrun simctl bootstatus "$udid" >/dev/null 2>&1 || true
       xcrun simctl ui "$udid" appearance "$appearance"
@@ -195,16 +206,17 @@ case "${1:-}" in
         -resultBundlePath "$out/$name.xcresult" \
         "${only[@]}" \
         -collect-test-diagnostics never \
+        -retry-tests-on-failure -test-iterations 2 \
         -parallel-testing-enabled NO \
         -test-timeouts-enabled YES \
         -quiet >"$out/$name.log" 2>&1 || status=1
       xcrun simctl ui "$udid" content_size large
-      [ "$device" = ipad ] && xcrun simctl shutdown "$udid" 2>/dev/null || true
       if [ -d "$out/$name.xcresult" ]; then
         xcrun xcresulttool export attachments --path "$out/$name.xcresult" \
           --output-path "$out/$name-attachments" >/dev/null 2>&1 || true
       fi
     done
+    xcrun simctl shutdown "$ipad" 2>/dev/null || true
 
     # Condensed summary. A pass that ran zero tests, or left no result bundle, is a
     # failure: xcodebuild can exit 0 without running anything (wrong filter, crash).
@@ -212,21 +224,42 @@ case "${1:-}" in
 import json, os, re, shutil, subprocess, sys
 
 out = os.environ["OUT"]
-passes, ok = [], True
+
+def results(kind, bundle):
+    r = subprocess.run(["xcrun", "xcresulttool", "get", "test-results", kind, "--path", bundle],
+                       capture_output=True, text=True)
+    return json.loads(r.stdout or "{}") if r.returncode == 0 else {}
+
+# The summary counts a test that passed on retry as passed, failedTests and testFailures
+# included; only the test tree shows its failed "First Run" repetition.
+def flaky_tests(nodes):
+    for n in nodes:
+        kids = n.get("children", [])
+        if n.get("nodeType") == "Test Case":
+            failed = [r for r in kids if r.get("nodeType") == "Repetition" and r.get("result") == "Failed"]
+            if n.get("result") == "Passed" and failed:
+                messages = [m.get("name", "") for m in failed[0].get("children", []) if m.get("nodeType") == "Failure Message"]
+                yield n.get("nodeIdentifier"), (messages or ["?"])[0][:1500]
+        else:
+            yield from flaky_tests(kids)
+
+passes, flaky, ok = [], [], True
 for name in sorted(n[:-9] for n in os.listdir(out) if n.endswith(".xcresult")):
     bundle = f"{out}/{name}.xcresult"
-    s = json.loads(subprocess.run(
-        ["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", bundle],
-        capture_output=True, text=True).stdout or "{}")
+    s = results("summary", bundle)
+    tree = results("tests", bundle)
+    flaky += [{"pass": name, "test": t, "failure": f} for t, f in flaky_tests(tree.get("testNodes", []))]
     total = s.get("totalTestCount", 0)
     failed = s.get("failedTests", 0)
     # passed > 0, not total > 0: a skipped scenario (env not forwarded) still counts in total.
-    ok = ok and s.get("passedTests", 0) > 0 and failed == 0
+    # An unreadable test tree fails the pass: its flaky tests would otherwise go unreported.
+    ok = ok and s.get("passedTests", 0) > 0 and failed == 0 and "testNodes" in tree
     passes.append({
         "pass": name, "total": total, "passed": s.get("passedTests", 0),
         "failed": failed, "skipped": s.get("skippedTests", 0),
         # Capped: a failure can carry a whole UI hierarchy. Full text is in <pass>.log.
-        "failures": [f"{f.get('testName')}: {f.get('failureText')}"[:1500] for f in s.get("testFailures", [])],
+        "failures": [f"{f.get('testName')}: {f.get('failureText')}"[:1500] for f in s.get("testFailures", [])]
+                    + ([] if "testNodes" in tree else ["xcresulttool could not read the test tree; flaky tests unknown"]),
     })
     # Copy under attachment names, minus xcresulttool's _<n>_<uuid> suffix.
     # Scenario attachments (S1-iphone-dark.png, S1-contrast-iphone-dark.txt) are
@@ -245,7 +278,7 @@ for name in sorted(n[:-9] for n in os.listdir(out) if n.endswith(".xcresult")):
                 shutil.copy(f"{att}/{a['exportedFileName']}", f"{out}/shots/{readable}")
 ok = ok and len(passes) == int(os.environ["EXPECTED"])
 shots = sorted(os.listdir(f"{out}/shots"))
-print(json.dumps({"result": "Passed" if ok else "Failed", "passes": passes,
+print(json.dumps({"result": "Passed" if ok else "Failed", "flaky": flaky, "passes": passes,
                   "shotsDir": f"{out}/shots", "shots": shots}, indent=2))
 sys.exit(0 if ok else 1)
 PYEOF
