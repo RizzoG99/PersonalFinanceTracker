@@ -45,14 +45,15 @@ class ScenarioTestCase: XCTestCase {
     /// replaces tapping through PIN setup, name entry, the restore prompt and What's New;
     /// `-seedSampleData` replaces transactions and categories. Goals, recurring rules and
     /// trips a test creates survive until the pass's next reinstall: create what you need,
-    /// assume nothing about what is already there.
+    /// assume nothing about what is already there. `hideTips: false` resets TipKit instead,
+    /// for scenarios about what a real first-run user sees.
     @MainActor
-    func launchApp(_ extraArguments: [String] = []) -> XCUIApplication {
+    func launchApp(_ extraArguments: [String] = [], hideTips: Bool = true) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = [
             "-skipOnboarding",
             "-seedSampleData",
-            "-hideTips",
+            hideTips ? "-hideTips" : "-resetTips",
             "-AppleLanguages", "(en)",
             "-AppleLocale", "en_IE",
         ] + extraArguments
