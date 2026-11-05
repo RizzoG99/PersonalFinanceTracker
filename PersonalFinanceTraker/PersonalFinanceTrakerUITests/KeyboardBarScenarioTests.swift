@@ -107,12 +107,7 @@ final class KeyboardBarScenarioTests: ScenarioTestCase {
         let app = launchApp()
         openAddFocused(app)
         amountField(app).typeText("5")
-        // On iPhone the bar's toggles have no label yet (#347), only a value; Keep adding
-        // comes first. Switch to the label once #347 is fixed.
-        let keepAdding = app.buttons["Keep adding"].exists
-            ? app.buttons["Keep adding"]
-            : app.buttons.matching(NSPredicate(format: "value == 'Off'")).firstMatch
-        keepAdding.tap()
+        app.buttons["Keep adding"].tap()
         let chip = app.scrollViews["categoryStrip"].staticTexts.firstMatch
         XCTAssertTrue(chip.waitForExistence(timeout: 5), "no category chip")
         chip.tap()
@@ -125,6 +120,17 @@ final class KeyboardBarScenarioTests: ScenarioTestCase {
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "keyboard did not come back after save")
         XCTAssertTrue(bar(app).waitForExistence(timeout: 3), "keyboard bar missing after Keep adding save")
         shoot(app, "S5")
+    }
+
+    /// #347: iPhone's bar shows only icons, but VoiceOver still needs each button's name.
+    @MainActor
+    func testS6_barButtonsKeepTheirNames() throws {
+        let app = launchApp()
+        openAddFocused(app)
+        for name in ["Keep adding", "Repeat", "Math operation"] {
+            XCTAssertTrue(app.buttons[name].exists, "no button named \(name) in the keyboard bar")
+        }
+        shoot(app, "S6")
     }
 
     // MARK: - Steps
