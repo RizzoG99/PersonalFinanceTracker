@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Add Transaction on iPhone: VoiceOver now reads the names of the Keep adding, Repeat and Math operation buttons above the keyboard, instead of just "Off" or "button".
 - Recurring: swiping to delete a rule now removes it from the list right away, to prevent a crash some testers hit. If the delete can't be saved, the rule comes back instead of quietly disappearing. If you still see a crash here, please report it.
 - Spending on the last day of your pay cycle now counts toward your budgets (Home's "Near budget limit" card and Plan) and your Health Score. Before, anything you spent on that day was left out until the next cycle began.
 - Add Transaction: tapping "More" to see all categories while typing the amount now closes the keyboard first, so it no longer covers the category list, and it stays closed after you pick a category.

@@ -33,7 +33,8 @@ private struct KeyboardBarLabelStyle: LabelStyle {
                 configuration.title
             }
         } else {
-            configuration.icon
+            // Not `configuration.icon` alone: that drops the title VoiceOver reads (#347).
+            Label(configuration).labelStyle(.iconOnly)
         }
     }
 }
