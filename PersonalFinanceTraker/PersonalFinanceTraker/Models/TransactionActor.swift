@@ -296,8 +296,15 @@ actor TransactionActor: ITransactionRepository {
         var desc = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == id })
         desc.fetchLimit = 1
         guard let rule = try modelContext.fetch(desc).first else { return }
+        let previousEndDate = rule.endDate
         rule.endDate = endDate
-        try modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            // Not `rollback()`: this context is shared, and other pending changes aren't ours to drop.
+            rule.endDate = previousEndDate
+            throw error
+        }
         await refreshSafeToSpendWidgetSnapshot()
     }
 

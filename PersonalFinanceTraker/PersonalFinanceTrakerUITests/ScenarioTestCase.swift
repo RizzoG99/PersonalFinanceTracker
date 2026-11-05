@@ -113,6 +113,9 @@ class ScenarioTestCase: XCTestCase {
         ("AddTransaction", "Text clipped", ["New Transaction"], 273),
         ("AddTransaction", "Dynamic Type font sizes are partially unsupported", ["Group a trip's expenses*"], 274),
 
+        ("Recurring", "Dynamic Type font sizes are partially unsupported", ["Close"], 273),
+        ("Recurring", "Label not human-readable", ["-€*"], 349),
+
         ("CategoryPicker", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames, 271),
         ("CategoryPicker", "Text clipped", defaultCategoryNames, 271),
         ("CategoryPicker", "Dynamic Type font sizes are partially unsupported", ["Cancel"], 273),

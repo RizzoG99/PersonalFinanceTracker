@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Recurring: swiping to delete a rule now removes it from the list right away, to prevent a crash some testers hit. If the delete can't be saved, the rule comes back instead of quietly disappearing. If you still see a crash here, please report it.
 - Spending on the last day of your pay cycle now counts toward your budgets (Home's "Near budget limit" card and Plan) and your Health Score. Before, anything you spent on that day was left out until the next cycle began.
 - Add Transaction: tapping "More" to see all categories while typing the amount now closes the keyboard first, so it no longer covers the category list, and it stays closed after you pick a category.
 - Default categories now have their own distinct colors and filled icons (Groceries, Restaurants and Coffee no longer look alike, and no expense is green like income). Categories you already have are updated once on the next launch, but only where they still use the old default icon or color: anything you changed yourself, and your own categories, stay as they are. When adding a category or setting up a category during CSV import, tapping an icon now suggests a matching color until you pick one yourself, and it matches the color of the default that uses that icon. Upcoming charges in Plan and Home, the Recurring list, the per-category bars in a trip, and the weekly streak notes in Insights now use each category's own icon and color.

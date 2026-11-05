@@ -29,6 +29,7 @@ struct PersonalFinanceTrakerApp: App {
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
         PerformanceAuditDataSeeder.seedIfRequested(in: AppContainer.shared)
+        seedRecurringRulesIfRequested()
         seedMonthlyRecapIfRequested()
         seedGoalProjectionsIfRequested()
     }
@@ -241,6 +242,31 @@ private extension PersonalFinanceTrakerApp {
                     amount: amount, note: note, category: category
                 ))
             }
+        }
+        try? context.save()
+        #endif
+    }
+
+    /// `-seedRecurringRules <1|2>` (#253) replaces recurring rules with "Rule A" (and "Rule B"),
+    /// each with a transaction from an hour ago, so it sits at the top of Activity. Runs after the
+    /// performance seeder, which deletes rules and transactions.
+    @MainActor
+    func seedRecurringRulesIfRequested() {
+        #if DEBUG
+        let count = UserDefaults.standard.integer(forKey: "seedRecurringRules")
+        guard count > 0 else { return }
+        let context = AppContainer.shared.mainContext
+        try? context.delete(model: RecurrenceRule.self)
+        let date = Date.now.addingTimeInterval(-3600)
+        for title in ["Rule A", "Rule B"].prefix(count) {
+            let rule = RecurrenceRule(
+                frequency: .monthly, interval: 1, startDate: date, lastMaterializedDate: date,
+                amount: -10, note: title, category: "Streaming Services", currencyCode: "EUR"
+            )
+            context.insert(rule)
+            context.insert(TransactionModel(
+                timestamp: date, amount: -10, note: title, category: "Streaming Services", recurrenceRuleId: rule.id
+            ))
         }
         try? context.save()
         #endif
