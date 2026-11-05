@@ -84,8 +84,9 @@ class ScenarioTestCase: XCTestCase {
     /// anything else does. Matched on the screens passed to `auditAccessibility` ("*" for
     /// chrome on every screen, like the iPad sidebar), the audit description and one of the
     /// element labels ("?" when the audit names no element; "*" stands for the varying part of
-    /// a label holding dates or amounts, like "€* / €*"). Keep labels exact: a broad pattern would hide a
-    /// new finding on the same screen. Delete an entry when its issue is fixed.
+    /// a label holding dates or amounts, like "€* / €*"; "value=…" matches an unlabeled element by
+    /// what it holds). Keep labels exact: a broad pattern would hide a new finding on the same
+    /// screen. Delete an entry when its issue is fixed.
     static let knownAccessibilityIssues: [(screen: String, description: String, labels: [String], issue: Int)] = [
         ("*", "Text clipped", ["Home", "Settings"], 219),
         ("*", "Dynamic Type font sizes are partially unsupported", ["Settings", "New"], 219),
@@ -102,6 +103,10 @@ class ScenarioTestCase: XCTestCase {
         ], 275),
         // iPad near-limit budget bars: category name and "€spent / €budget" (#342's scenarios).
         ("Home", "Dynamic Type font sizes are partially unsupported", ["Clothing", "Streaming Services", "€* / €*"], 345),
+
+        // The name field: it has no label, and `-skipOnboarding` fills in "Alex".
+        ("Settings", "Text clipped", ["value=Alex"], 353),
+        ("Settings", "Dynamic Type font sizes are partially unsupported", ["DATA"], 354),
 
         // Category chips in the inline strip and the More chip.
         ("AddTransaction", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames + ["More"], 271),
@@ -155,7 +160,8 @@ class ScenarioTestCase: XCTestCase {
             let line = "\(issue.compactDescription) — '\(label)'"
             if issue.auditType == .contrast {
                 contrast.append(line)
-            } else if !Self.isKnown(screens, issue.compactDescription, label) {
+            } else if !Self.isKnown(screens, issue.compactDescription, label),
+                      !Self.isKnown(screens, issue.compactDescription, "value=\(issue.element?.value as? String ?? "")") {
                 failures.append(line)
             }
             return true
