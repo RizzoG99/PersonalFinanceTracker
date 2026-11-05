@@ -1,7 +1,12 @@
 #!/bin/bash
 # PreToolUse(Bash): enforce CLAUDE.md git rules. Exit 2 = block, stderr goes to the agent.
-CMD=$(python3 -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
+INPUT=$(cat)
+CMD=$(printf '%s' "$INPUT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
 block() { echo "git-guard: $1" >&2; exit 2; }
+
+# The hook can start in the primary checkout; the git checks below must see where the command runs.
+CWD=$(printf '%s' "$INPUT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null)
+[ -d "$CWD" ] && cd "$CWD"
 
 # No AI attribution in commit messages, PR/issue bodies or comments.
 if printf '%s' "$CMD" | grep -qE 'git commit|gh (pr|issue) (create|edit|comment|review)' &&

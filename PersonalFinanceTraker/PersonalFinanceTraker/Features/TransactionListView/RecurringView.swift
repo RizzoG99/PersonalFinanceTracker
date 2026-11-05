@@ -11,17 +11,17 @@ import SwiftData
 /// edit its definition, swipe to stop it. Finding the transactions a rule already produced is
 /// the Activity tab's job (the Recurring filter chip), not this screen's — see issue #58.
 ///
-/// Presented as a sheet that owns its own nested edit/add sheets — iPhone only, from Activity's
-/// toolbar (`ActivityView`, under `MainTabView`). iPad never reaches this: its Activity pane is
-/// `IPadLedgerTable`, with no Recurring entry of its own — see `IPadRecurringSection` for the
-/// iPad sidebar destination, which shares this file's list/row logic (`RecurringRulesContent`
-/// below) but presents its own local edit sheet instead of a NavigationStack push.
+/// Presented as a sheet that owns its own nested edit/add sheets — iPhone only, from Plan's
+/// "See all" (`PlanView`). iPad never reaches this: see `IPadRecurringSection` for the iPad
+/// sidebar destination, which shares this file's list/row logic (`RecurringRulesContent` below)
+/// but presents its own local edit sheet instead of a NavigationStack push.
 struct RecurringView: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
     let materializationService: RecurrenceMaterializationService
 
     @State private var rules: [RecurrenceRuleSnapshot] = []
+    @State private var stoppedRuleIDs: Set<UUID> = []
     @State private var showingAddSheet = false
     // Owned locally rather than routed through viewModel.transactionToEdit (the root-level sheet
     // MainTabView/IPadInspector present) so editing stacks *on top of* this screen instead of
@@ -33,17 +33,12 @@ struct RecurringView: View {
         rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
     }
 
-    /// Stops future occurrences only — deliberately does NOT touch any already-materialized
-    /// transaction. "Delete" here means "I'm done with this commitment", not "erase its history".
-    private func stopRecurrence(_ rule: RecurrenceRuleSnapshot) {
-        Task {
-            try? await viewModel.repo.closeRecurrenceRule(id: rule.id, endDate: .now)
-            rules.removeAll { $0.id == rule.id }
-        }
-    }
-
     var body: some View {
-        RecurringRulesContent(rules: rules, onSelect: { editingRule = $0 }, onDelete: stopRecurrence)
+        RecurringRulesContent(
+            rules: rules.filter { !stoppedRuleIDs.contains($0.id) },
+            onSelect: { editingRule = $0 },
+            onDelete: { stopRecurrence($0, stoppedIDs: $stoppedRuleIDs, repo: viewModel.repo) }
+        )
             .navigationTitle("Recurring")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -98,6 +93,7 @@ struct IPadRecurringSection: View {
     let materializationService: RecurrenceMaterializationService
 
     @State private var rules: [RecurrenceRuleSnapshot] = []
+    @State private var stoppedRuleIDs: Set<UUID> = []
     @State private var editingRule: RecurrenceRuleSnapshot?
     @State private var committedSpending = CommittedSpendingModel()
 
@@ -106,19 +102,12 @@ struct IPadRecurringSection: View {
         rules = (try? await viewModel.repo.fetchAllRecurrenceRules()) ?? []
     }
 
-    private func stopRecurrence(_ rule: RecurrenceRuleSnapshot) {
-        Task {
-            try? await viewModel.repo.closeRecurrenceRule(id: rule.id, endDate: .now)
-            rules.removeAll { $0.id == rule.id }
-        }
-    }
-
     var body: some View {
         // iPad has no Plan tab — fixed expenses to confirm (#188) live with the rules instead.
         RecurringRulesContent(
-            rules: rules,
+            rules: rules.filter { !stoppedRuleIDs.contains($0.id) },
             onSelect: { editingRule = $0 },
-            onDelete: stopRecurrence,
+            onDelete: { stopRecurrence($0, stoppedIDs: $stoppedRuleIDs, repo: viewModel.repo) },
             committedSpending: committedSpending
         )
         .onChange(of: dataChanged.revision) { Task { await reloadRules() } }
@@ -133,6 +122,28 @@ struct IPadRecurringSection: View {
         }
         .onChange(of: editingRule) { _, rule in
             if rule == nil { Task { await reloadRules() } }
+        }
+    }
+}
+
+/// Stops future occurrences only — deliberately does NOT touch any already-materialized
+/// transaction. "Delete" here means "I'm done with this commitment", not "erase its history".
+///
+/// The id goes in before any `await`, so the list drops the row in the same update as the
+/// destructive swipe's collapse (#253). A set rather than an edit to `rules`: a reload finishing
+/// late replaces `rules` and would bring the row back. A failed save takes the id out again.
+@MainActor @discardableResult
+func stopRecurrence(
+    _ rule: RecurrenceRuleSnapshot,
+    stoppedIDs: Binding<Set<UUID>>,
+    repo: any ITransactionRepository
+) -> Task<Void, Never> {
+    stoppedIDs.wrappedValue.insert(rule.id)
+    return Task {
+        do {
+            try await repo.closeRecurrenceRule(id: rule.id, endDate: .now)
+        } catch {
+            stoppedIDs.wrappedValue.remove(rule.id)
         }
     }
 }
