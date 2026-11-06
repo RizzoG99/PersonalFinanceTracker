@@ -32,7 +32,15 @@ struct AnomalyCalloutView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.textDim)
+                    .frame(width: 12, height: 12)
+                    // 44 × 44 tap target, all of its width on the trailing side: iOS also gives a
+                    // button taps ~13 pt outside its frame, and at large text sizes any growth
+                    // towards the message would let taps on the text dismiss the callout (#266).
+                    .padding(EdgeInsets(top: 16, leading: 0, bottom: 16, trailing: 32))
+                    .contentShape(.rect)
             }
+            // Cancels the insets in layout, so the icon and the card keep their size.
+            .padding(EdgeInsets(top: -16, leading: 0, bottom: -16, trailing: -32))
             .accessibilityLabel("Dismiss")
         }
         .padding(16)

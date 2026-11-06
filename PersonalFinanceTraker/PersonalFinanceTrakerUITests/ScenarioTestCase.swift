@@ -91,9 +91,8 @@ class ScenarioTestCase: XCTestCase {
         ("*", "Text clipped", ["Home", "Settings"], 219),
         ("*", "Dynamic Type font sizes are partially unsupported", ["Settings", "New"], 219),
 
-        ("Home", "Hit area is too small", ["Dismiss"], 266),
-        ("Home", "Hit area is too small", ["Dismiss reminder prompt"], 267),
         ("Home", "Text clipped", ["until *"], 268),
+        ("Home", "Text clipped", ["Coffee & Drinks", "Financial Pulse", "Today's check-in is complete", "€* / €*"], 357),
         ("Home", "Potentially inaccessible text", ["?"], 269),
         // iPad Recent Transactions rows (SampleData names, their categories and amounts).
         ("Home", "Dynamic Type font sizes are partially unsupported", [

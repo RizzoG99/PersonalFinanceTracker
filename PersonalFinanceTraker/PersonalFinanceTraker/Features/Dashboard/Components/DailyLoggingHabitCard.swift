@@ -280,10 +280,15 @@ private struct DailyLoggingReminderPrompt: View {
             Button("Set", action: onSetReminder)
                 .buttonStyle(.bordered)
                 .controlSize(.small)
-            Button("Dismiss reminder prompt", systemImage: "xmark", action: onDismissReminder)
-                .buttonStyle(.plain)
-                .labelStyle(.iconOnly)
-                .frame(width: 28, height: 28)
+            Button(action: onDismissReminder) {
+                Label("Dismiss reminder prompt", systemImage: "xmark")
+                    .labelStyle(.iconOnly)
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            // 44 × 44 tap target in a 28 × 28 layout slot, so the row keeps its height.
+            .padding(-8)
         }
         .padding(.top, 2)
     }
