@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Home: the X that closes the unusual-spending warning and the X that closes the daily-reminder prompt are now easier to tap. They look the same as before.
 - Add Transaction on iPhone: VoiceOver now reads the names of the Keep adding, Repeat and Math operation buttons above the keyboard, instead of just "Off" or "button".
 - Recurring: swiping to delete a rule now removes it from the list right away, to prevent a crash some testers hit. If the delete can't be saved, the rule comes back instead of quietly disappearing. If you still see a crash here, please report it.
 - Spending on the last day of your pay cycle now counts toward your budgets (Home's "Near budget limit" card and Plan) and your Health Score. Before, anything you spent on that day was left out until the next cycle began.

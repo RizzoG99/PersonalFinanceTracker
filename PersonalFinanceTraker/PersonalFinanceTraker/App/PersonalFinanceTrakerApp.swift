@@ -25,6 +25,7 @@ struct PersonalFinanceTrakerApp: App {
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
         configureTips()
         seedSampleDataIfRequested()
+        seedSpendingAnomalyIfRequested()
         seedBudgetBoundaryExpenseIfRequested()
         seedFixedExpenseCardsIfRequested()
         seedMonthCardIfRequested()
@@ -191,6 +192,25 @@ private extension PersonalFinanceTrakerApp {
         for category in categories {
             category.monthlyBudget = budgets[category.name]
         }
+        try? context.save()
+        #endif
+    }
+
+    /// `-seedSpendingAnomaly` (#266) adds a spike to the current cycle's fourth week and a
+    /// transaction today, which completes the check-in: Home's anomaly callout needs both, and
+    /// `SampleData`'s dates, relative to today, only give them on some days.
+    @MainActor
+    func seedSpendingAnomalyIfRequested() {
+        #if DEBUG
+        guard ProcessInfo.processInfo.arguments.contains("-seedSpendingAnomaly") else { return }
+        let context = AppContainer.shared.mainContext
+        let calendar = Calendar.current
+        let cycleStart = PayCycleService.financialMonthStart(for: .now, startDay: AppSettings.storedStartDay, calendar: calendar)
+        for (dayOffset, amount) in [(0, Decimal(-200)), (8, -200), (15, -200), (22, -5000)] {
+            let date = calendar.date(byAdding: .day, value: dayOffset, to: cycleStart)!
+            context.insert(TransactionModel(timestamp: date, amount: amount, note: "Weekly groceries", category: "Groceries"))
+        }
+        context.insert(TransactionModel(timestamp: .now, amount: -5, note: "Morning coffee", category: "Coffee & Drinks"))
         try? context.save()
         #endif
     }
