@@ -28,19 +28,20 @@ final class CategorySheetKeyboardScenarioTests: ScenarioTestCase {
         let app = launchApp()
         let inline = openCategorySheetFromFocusedAmount(app)
 
-        // A category only the full list has: picking it must add it to the inline strip
-        // (`inlineCategories` appends an out-of-top-5 selection; the chip itself exposes no
-        // selected state, see #270).
+        // A category only the full list has: picking it must add it to the inline strip,
+        // selected (`inlineCategories` appends an out-of-top-5 selection).
         let grid = app.scrollViews["categoryPickerGrid"]
         let picked = try XCTUnwrap(
-            grid.staticTexts.allElementsBoundByIndex.first { !inline.contains($0.label) && $0.isHittable },
+            grid.buttons.allElementsBoundByIndex.first { !inline.contains($0.label) && $0.isHittable },
             "no category outside the inline strip is visible in the sheet"
         )
         let name = picked.label
         picked.tap()
 
         XCTAssertTrue(app.navigationBars["Category"].waitForNonExistence(timeout: 5), "sheet did not close")
-        XCTAssertTrue(strip(app).staticTexts[name].waitForExistence(timeout: 5), "'\(name)' is not in the strip after picking it")
+        let chip = strip(app).buttons[name]
+        XCTAssertTrue(chip.waitForExistence(timeout: 5), "'\(name)' is not in the strip after picking it")
+        XCTAssertTrue(chip.isSelected, "'\(name)' is not selected after picking it")
         XCTAssertFalse(app.keyboards.firstMatch.waitForExistence(timeout: 2), "keyboard came back after the sheet closed")
         shoot(app, "S2")
         // iPad shows the form as an inspector beside Home.
@@ -125,7 +126,7 @@ final class CategorySheetKeyboardScenarioTests: ScenarioTestCase {
         }
         XCTAssertTrue(more.isHittable, "More chip not reachable")
         XCTAssertTrue(app.keyboards.firstMatch.exists, "keyboard went away before tapping More — precondition broken")
-        let inline = Set(categories.staticTexts.allElementsBoundByIndex.map(\.label))
+        let inline = Set(categories.buttons.allElementsBoundByIndex.map(\.label))
 
         more.tap()
         XCTAssertTrue(app.navigationBars["Category"].waitForExistence(timeout: 5), "category sheet did not open")

@@ -108,7 +108,7 @@ final class KeyboardBarScenarioTests: ScenarioTestCase {
         openAddFocused(app)
         amountField(app).typeText("5")
         app.buttons["Keep adding"].tap()
-        let chip = app.scrollViews["categoryStrip"].staticTexts.firstMatch
+        let chip = app.scrollViews["categoryStrip"].buttons.firstMatch
         XCTAssertTrue(chip.waitForExistence(timeout: 5), "no category chip")
         chip.tap()
         let save = app.buttons["Add Transaction"]

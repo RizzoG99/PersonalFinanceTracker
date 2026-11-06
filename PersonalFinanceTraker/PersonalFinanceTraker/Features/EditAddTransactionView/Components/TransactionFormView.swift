@@ -763,11 +763,10 @@ struct CategoryChipsGrid: View {
                         CategoryChip(
                             category: category,
                             isSelected: selectedCategory?.persistentId == category.persistentId
-                        )
-                        .id(category.id)
-                        .onTapGesture {
+                        ) {
                             selectedCategory = category
                         }
+                        .id(category.id)
                     }
                     MoreChip {
                         onWillShowAll()
@@ -881,8 +880,7 @@ struct CategoryPickerSheet: View {
                         CategoryChip(
                             category: category,
                             isSelected: selectedCategory?.persistentId == category.persistentId
-                        )
-                        .onTapGesture {
+                        ) {
                             selectedCategory = category
                             dismiss()
                         }
@@ -917,38 +915,44 @@ struct CategoryPickerSheet: View {
 struct CategoryChip: View {
     let category: CategorySnapshot
     let isSelected: Bool
+    let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 6) {
-            Image(systemName: category.systemImage)
-                .font(.system(size: 20))
-                .foregroundStyle(category.categoryColor)
-                .frame(height: 24)  // fixed icon row so every chip is the same height
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: category.systemImage)
+                    .font(.system(size: 20))
+                    .foregroundStyle(category.categoryColor)
+                    .frame(height: 24)  // fixed icon row so every chip is the same height
+                    .accessibilityHidden(true)  // the button reads as the category name alone
 
-            Text(category.name.localizedCategoryDisplay)
-                .font(.caption2)
-                // Reserve 2 lines even for 1-line labels so every chip is the same height.
-                .lineLimit(2, reservesSpace: true)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.textPrimary)
+                Text(category.name.localizedCategoryDisplay)
+                    .font(.caption2)
+                    // Reserve 2 lines even for 1-line labels so every chip is the same height.
+                    .lineLimit(2, reservesSpace: true)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.textPrimary)
+            }
+            // Fixed width so chips line up in the horizontal scroller (was maxWidth:.infinity for the grid).
+            .frame(width: 84)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 8)
+            .background(
+                isSelected
+                    ? category.categoryColor.opacity(0.2)
+                    : Color.clear
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(
+                        isSelected ? category.categoryColor : Color.textDim.opacity(0.3),
+                        lineWidth: isSelected ? 2 : 1
+                    )
+            )
+            .cornerRadius(12)
         }
-        // Fixed width so chips line up in the horizontal scroller (was maxWidth:.infinity for the grid).
-        .frame(width: 84)
-        .padding(.vertical, 12)
-        .padding(.horizontal, 8)
-        .background(
-            isSelected
-                ? category.categoryColor.opacity(0.2)
-                : Color.clear
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(
-                    isSelected ? category.categoryColor : Color.textDim.opacity(0.3),
-                    lineWidth: isSelected ? 2 : 1
-                )
-        )
-        .cornerRadius(12)
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
