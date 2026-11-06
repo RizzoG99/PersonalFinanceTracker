@@ -10,7 +10,7 @@ This repository is configured for both Claude Code and Codex.
 - `.claude/skills` and `.codex/skills` contain relative symlinks for native discovery. Edit only `.agents/skills`; when adding a shared skill, add a symlink for each supported agent.
 - Keep shared project facts aligned between this file and `AGENTS.md`; keep tool-specific instructions in the file for that tool.
 
-Shared project skills include `$swiftui-pro`, `$feature-brainstorm`, `$ux-audit`, `$graphify`, `$diagnosing-bugs`, `$performance-audit`, `$performance-profiling`, `$retro`, `$writing-for-agents`, `$pft-pr-lifecycle`, `$testflight-feedback`, and `$pft-task-pipeline`. Use `$diagnosing-bugs` for uncertain regressions, `$performance-audit` for audit-only repository-wide performance investigations, `$performance-profiling` for one specific slowness complaint, `$retro` for an explicitly requested coding-session retrospective, `$writing-for-agents` for agent-facing documentation, `$pft-pr-lifecycle` for explicitly requested issue-to-PR delivery, `$testflight-feedback` for periodic triage of TestFlight feedback into GitHub issues, and `$pft-task-pipeline` for taking a task end to end. That pipeline has one owner gate after the brainstorm, then a critic-reviewed plan, red-first scenario tests on iPhone and iPad, a code review, and a PR. Issue bodies follow `.github/ISSUE_TEMPLATE/{bug,feature}.md`.
+Issue bodies follow `.github/ISSUE_TEMPLATE/{bug,feature}.md`.
 
 For every new or materially changed user-facing view, use `$swiftui-pro` before implementation. Inspect the two closest existing screens/components and follow its `references/design.md` preflight and quality gate. Do not call UI work complete without checking app-theme consistency, relevant UI states, light/dark appearance, compact and wide layouts, accessibility Dynamic Type, and VoiceOver semantics. Report any check that could not be run.
 
@@ -75,8 +75,6 @@ Notes:
 - **Everything is per-worktree, no configuration.** `-derivedDataPath .build` is relative, so each worktree gets its own build tree (`.build/` is gitignored), and the script creates its own simulator named `pft-<worktree-dir>` on first use, so concurrent agents never share a device. `PFT_SIM_UDID=<udid>` overrides it.
 - **Never hardcode a simulator OS version.** `simctl`'s runtime *identifier* is rounded (`iOS-26-4`) while its real version is `26.4.1`, and a bare `name=iPhone 17` destination expands to `OS:latest`, which can resolve to a runtime that has no such device. The script targets the device by UDID, which avoids both. If you write a destination by hand, get it from `xcodebuild -showdestinations`, never from `simctl list devices`.
 - **Never call MCP tool names as Bash commands.** `mcp__xcode__BuildProject` is not a shell command.
-
-**If you do use the MCP** (Xcode already open, single checkout): schemas are deferred, so load them with `ToolSearch` first — `query: "select:mcp__xcode__BuildProject,mcp__xcode__RunAllTests"` — then call with `tabIdentifier: "windowtab1"`. Verify the identifier with `mcp__xcode__XcodeListWindows` first; match on `WorkspacePath`, not the first hit.
 
 **Note**: The project is primarily developed in Xcode. Open `PersonalFinanceTraker/PersonalFinanceTraker.xcodeproj` to work in the IDE.
 
