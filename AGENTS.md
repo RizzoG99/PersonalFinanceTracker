@@ -68,6 +68,7 @@ scripts/xcb build
 scripts/xcb test
 scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests
 scripts/xcb scenarios HarnessSmokeScenarioTests   # acceptance-scenario UI tests, iPhone + iPad
+scripts/xcb shots-diff   # which scenario screenshots changed since the last accepted review
 scripts/xcb which-sim    # print this worktree's simulator name + UDID
 scripts/xcb clean-sims   # delete leftover "Clone N of ..." simulators
 scripts/xcb delete-sim   # drop this worktree's dedicated simulators
@@ -80,6 +81,7 @@ scripts/xcb delete-sim   # drop this worktree's dedicated simulators
   - A failed test is retried once. One that passes on retry keeps `result` at `Passed`, but the summary lists it under `flaky` with its first failure. Report every `flaky` entry, for example in the PR's Limitations. `HarnessRetryProbe` checks this mechanism.
   - A pre-existing accessibility finding gets its own GitHub issue first, then an entry in `knownAccessibilityIssues` that points to it.
   - Check launch-state changes through a scenario test. `simctl launch` renders a blank screen once a PIN is set.
+  - `scripts/xcb shots-diff [baseline-dir]` is triage for re-reviews: JSON listing the PNGs that changed since the last accepted review, with before/after crops in `.build/scenarios/diff/`. Assertions stay the gate. Run `scripts/xcb shots-diff --accept` once you have reviewed a run, or pass another checkout's `.build/scenarios/shots` as the baseline.
 - Run builds and tests in the background and poll for completion; a full run takes several minutes.
 - One simulator run at a time, machine-wide. `scripts/xcb test` and `scenarios` take a kernel `flock` on `/tmp/pft-xcb-simulator.lock`. A run started from another worktree waits for it ("waiting for another simulator run…"). Don't kill a waiting run, and never delete the file. The lock is released when the holder's processes exit, however they exit. `test` shuts its simulator down afterwards if the run booted it. Both commands list other booted simulators, which hold memory, but they never shut those down.
 - Everything is per-worktree with no configuration: `-derivedDataPath .build` is relative (`.build/` is gitignored), and the script creates a simulator named `pft-<worktree-dir>` on first use so concurrent agents never share a device. `PFT_SIM_UDID=<udid>` overrides it.

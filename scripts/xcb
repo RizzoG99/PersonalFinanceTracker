@@ -335,6 +335,27 @@ PYEOF
     exit $status
     ;;
 
+  shots-diff)   # which scenario screenshots changed, as JSON with crops; triage, never pass/fail
+    shift
+    mkdir -p .build
+    [ .build/shots-diff -nt scripts/shots-diff.swift ] \
+      || xcrun swiftc -O -module-name shotsdiff scripts/shots-diff.swift -o .build/shots-diff
+    if [ "${1:-}" = --self-test ]; then
+      # -O drops assert(), so the checks need a debug build.
+      xcrun swiftc -module-name shotsdiff scripts/shots-diff.swift -o .build/shots-diff-debug
+      exec .build/shots-diff-debug --self-test
+    fi
+    if [ "${1:-}" = --accept ]; then
+      # Explicit, never part of a run: an unreviewed run must not become the baseline, or
+      # what it changed reads as "same". File by file, so accepting one class keeps the rest.
+      mkdir -p .build/scenarios-baseline
+      find .build/scenarios/shots -name 'S[0-9]*.png' -exec cp -f {} .build/scenarios-baseline/ \;
+      echo "xcb: baseline now holds $(ls .build/scenarios-baseline | wc -l | tr -d ' ') screenshots" >&2
+      exit 0
+    fi
+    exec .build/shots-diff "${1:-.build/scenarios-baseline}" .build/scenarios/shots .build/scenarios/diff
+    ;;
+
   analyze)
     shift
     echo "xcb: static analysis..." >&2
@@ -539,9 +560,11 @@ if bad:
     ;;
 
   *)
-    echo "usage: scripts/xcb {build|test|scenarios|analyze|archive|export|release-notes|assign-testers|release|clean-sims|delete-sim|which-sim} [extra xcodebuild args]" >&2
+    echo "usage: scripts/xcb {build|test|scenarios|shots-diff|analyze|archive|export|release-notes|assign-testers|release|clean-sims|delete-sim|which-sim} [extra xcodebuild args]" >&2
     echo "  scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests" >&2
     echo "  scripts/xcb scenarios [UITestClass]      # iPhone+iPad, light/dark/large text; no class = all *ScenarioTests" >&2
+    echo "  scripts/xcb shots-diff [baseline-dir]    # screenshots changed since the last accepted review" >&2
+    echo "  scripts/xcb shots-diff --accept          # after reviewing, make the current screenshots the baseline" >&2
     echo "  PFT_SIM_UDID=<udid> scripts/xcb test    # target a specific simulator" >&2
     echo "  scripts/xcb release [beta-group]         # test + analyze + archive + export + release-notes, optionally assign-testers" >&2
     echo "  scripts/xcb release-notes                # send CHANGELOG.md's Unreleased section as TestFlight notes" >&2
