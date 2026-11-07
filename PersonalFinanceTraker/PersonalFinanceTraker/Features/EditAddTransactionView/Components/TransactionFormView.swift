@@ -970,15 +970,15 @@ struct GoalChipsGrid: View {
                         GoalChip(
                             goal: goal,
                             isSelected: selectedGoal?.id == goal.id
-                        )
-                        .id(goal.id)
-                        .onTapGesture {
+                        ) {
                             selectedGoal = goal
                         }
+                        .id(goal.id)
                     }
                 }
                 .padding(.vertical, 2)
             }
+            .accessibilityIdentifier("goalStrip")  // scopes UI-test queries to the form
             .onChange(of: selectedGoal?.id) { _, id in
                 if let id {
                     withAnimation { proxy.scrollTo(id, anchor: .center) }
@@ -993,37 +993,43 @@ struct GoalChipsGrid: View {
 struct GoalChip: View {
     let goal: GoalSnapshot
     let isSelected: Bool
+    let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 6) {
-            Image(systemName: goal.iconName)
-                .font(.system(size: 20))
-                .foregroundStyle(goal.goalColor)
-                .frame(height: 24)  // fixed icon row so every chip is the same height
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: goal.iconName)
+                    .font(.system(size: 20))
+                    .foregroundStyle(goal.goalColor)
+                    .frame(height: 24)  // fixed icon row so every chip is the same height
+                    .accessibilityHidden(true)  // the button reads as the goal name alone
 
-            Text(goal.name)
-                .font(.caption2)
-                // Reserve 2 lines even for 1-line labels so every chip is the same height.
-                .lineLimit(2, reservesSpace: true)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.textPrimary)
+                Text(goal.name)
+                    .font(.caption2)
+                    // Reserve 2 lines even for 1-line labels so every chip is the same height.
+                    .lineLimit(2, reservesSpace: true)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.textPrimary)
+            }
+            // Fixed width so chips line up in the horizontal scroller (was maxWidth:.infinity for the grid).
+            .frame(width: 84)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 8)
+            .background(
+                isSelected
+                    ? goal.goalColor.opacity(0.2)
+                    : Color.clear
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(
+                        isSelected ? goal.goalColor : Color.textDim.opacity(0.3),
+                        lineWidth: isSelected ? 2 : 1
+                    )
+            )
+            .cornerRadius(12)
         }
-        // Fixed width so chips line up in the horizontal scroller (was maxWidth:.infinity for the grid).
-        .frame(width: 84)
-        .padding(.vertical, 12)
-        .padding(.horizontal, 8)
-        .background(
-            isSelected
-                ? goal.goalColor.opacity(0.2)
-                : Color.clear
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(
-                    isSelected ? goal.goalColor : Color.textDim.opacity(0.3),
-                    lineWidth: isSelected ? 2 : 1
-                )
-        )
-        .cornerRadius(12)
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
