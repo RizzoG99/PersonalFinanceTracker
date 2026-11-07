@@ -74,10 +74,36 @@ class ScenarioTestCase: XCTestCase {
     func shoot(_ app: XCUIApplication, _ scenario: String) {
         // Whole screen, not the app window: the keyboard and the lock overlay are
         // separate windows, and they are often what the scenario is about.
-        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        let attachment = XCTAttachment(screenshot: settledScreenshot())
         attachment.name = "\(scenario)-\(topic)-\(idiom)-\(variant)"
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    /// Scrolls by the same distance on every run, so screenshots land on the same offset:
+    /// `swipeUp()` travels a different distance each time. Holding before the lift leaves no
+    /// momentum. It covers less ground than a swipe, so loops around it need more turns.
+    @MainActor
+    func scrollUp(_ scrollView: XCUIElement) {
+        let start = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75))
+        let end = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25))
+        start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.2)
+    }
+
+    /// The screen once two captures in a row match, so scroll momentum or a fading sidebar
+    /// doesn't reach the picture or the audit that follows it. A blinking cursor can keep it
+    /// from settling; it then returns the latest capture after the time limit.
+    @MainActor
+    private func settledScreenshot() -> XCUIScreenshot {
+        var shot = XCUIScreen.main.screenshot()
+        let deadline = Date.now.addingTimeInterval(3)
+        while Date.now < deadline {
+            Thread.sleep(forTimeInterval: 0.2)
+            let next = XCUIScreen.main.screenshot()
+            if next.pngRepresentation == shot.pngRepresentation { return next }
+            shot = next
+        }
+        return shot
     }
 
     /// Pre-existing audit findings, each tracked on GitHub: they don't fail a scenario,

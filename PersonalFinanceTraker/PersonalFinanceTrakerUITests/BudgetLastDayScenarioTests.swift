@@ -64,9 +64,9 @@ final class BudgetLastDayScenarioTests: ScenarioTestCase {
         }
         // Hittable, not just existing: iPhone's Home is not lazy, so the bar exists off screen,
         // and the screenshot must show it.
-        for _ in 0..<8 {
+        for _ in 0..<16 {
             if element.waitForExistence(timeout: 2), element.isHittable { return true }
-            home.swipeUp()
+            scrollUp(home)
         }
         return element.waitForExistence(timeout: 5) && element.isHittable
     }

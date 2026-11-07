@@ -119,8 +119,8 @@ final class DismissTapTargetScenarioTests: ScenarioTestCase {
         func isReady() -> Bool {
             element.waitForExistence(timeout: 2) && element.isHittable && element.frame.midY + besideTheGlyph.dy + 4 < bottomLimit
         }
-        for _ in 0..<8 where !isReady() {
-            home.swipeUp()
+        for _ in 0..<16 where !isReady() {
+            scrollUp(home)
         }
         XCTAssertTrue(isReady(), "\(element) never came clear of the tab bar")
         waitForStableFrame(element)
