@@ -53,6 +53,7 @@ scripts/xcb build
 scripts/xcb test
 scripts/xcb test -only-testing:PersonalFinanceTrakerTests/SearchTests
 scripts/xcb scenarios HarnessSmokeScenarioTests   # acceptance-scenario UI tests, iPhone + iPad
+scripts/xcb shots-diff   # which scenario screenshots changed since the last accepted review
 scripts/xcb which-sim    # print this worktree's simulator name + UDID
 scripts/xcb clean-sims   # delete leftover "Clone N of ..." simulators
 scripts/xcb delete-sim   # drop this worktree's dedicated simulators
@@ -66,6 +67,7 @@ scripts/xcb delete-sim   # drop this worktree's dedicated simulators
 - A failed test is retried once. One that passes on retry keeps `result` at `Passed`, but the summary lists it under `flaky` with its first failure. Report every `flaky` entry, for example in the PR's Limitations. `HarnessRetryProbe` checks this mechanism.
 - A pre-existing accessibility finding gets its own GitHub issue first, then an entry in `knownAccessibilityIssues` that points to it.
 - Check launch-state changes through a scenario test. `simctl launch` renders a blank screen once a PIN is set.
+- `scripts/xcb shots-diff [baseline-dir]` is triage for re-reviews: JSON listing the PNGs that changed since the last accepted review, with before/after crops in `.build/scenarios/diff/`. Assertions stay the gate. Run `scripts/xcb shots-diff --accept` once you have reviewed a run, or pass another checkout's `.build/scenarios/shots` as the baseline.
 
 **Run builds and tests in the background** (`run_in_background: true`), then wait with a `Monitor` until-loop. A full test run takes several minutes and will otherwise eat a foreground timeout.
 
