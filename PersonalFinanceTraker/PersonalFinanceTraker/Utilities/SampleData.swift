@@ -63,7 +63,7 @@ struct SampleData {
         let entertainmentCat = findCategory(named: "Entertainment")
         let petCat = findCategory(named: "Pets")
 
-        return [
+        let transactions = [
             // Today's transactions
             TransactionModel(
                 timestamp: calendar.date(byAdding: .hour, value: -1, to: now) ?? now,
@@ -217,8 +217,14 @@ struct SampleData {
                 categoryModel: petCat
             )
         ]
+        // A second apart: rows with equal timestamps come back in no fixed order, so which of
+        // them reached Home's Recent Transactions changed from run to run.
+        for (offset, transaction) in transactions.enumerated() {
+            transaction.timestamp.addTimeInterval(-Double(offset))
+        }
+        return transactions
     }
-    
+
     static func populateModelContext(_ modelContext: ModelContext) {
         // Only populate if empty
         let catDesc = FetchDescriptor<CategoryModel>()
