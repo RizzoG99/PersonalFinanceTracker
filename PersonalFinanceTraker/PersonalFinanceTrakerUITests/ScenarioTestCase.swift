@@ -50,22 +50,26 @@ class ScenarioTestCase: XCTestCase {
     @MainActor
     func launchApp(_ extraArguments: [String] = [], hideTips: Bool = true) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = [
+        app.launchArguments = Self.launchArguments(hideTips: hideTips) + extraArguments
+        app.launch()
+        // The sidebar holds the navigation and "Add transaction" every scenario starts from. It
+        // used to open collapsed now and then, with the whole split at 448 pt (#358); tapping
+        // "Show Sidebar" did not fix that, so a collapsed sidebar now fails instead.
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            XCTAssertTrue(app.collectionViews["Sidebar"].waitForExistence(timeout: 10), "iPad sidebar collapsed at launch: the narrow layout of #358 is back")
+        }
+        return app
+    }
+
+    /// `launchApp`'s arguments, for a test that launches the app itself.
+    static func launchArguments(hideTips: Bool) -> [String] {
+        [
             "-skipOnboarding",
             "-seedSampleData",
             hideTips ? "-hideTips" : "-resetTips",
             "-AppleLanguages", "(en)",
             "-AppleLocale", "en_IE",
-        ] + extraArguments
-        app.launch()
-        // iPadOS sometimes opens the split view in portrait with the sidebar collapsed, and
-        // the sidebar holds the navigation and "Add transaction" every scenario starts from.
-        if UIDevice.current.userInterfaceIdiom == .pad, !app.collectionViews["Sidebar"].waitForExistence(timeout: 5) {
-            let show = app.buttons["Show Sidebar"]
-            if show.waitForExistence(timeout: 5) { show.tap() }
-            XCTAssertTrue(app.collectionViews["Sidebar"].waitForExistence(timeout: 5), "iPad sidebar still collapsed after Show Sidebar")
-        }
-        return app
+        ]
     }
 
     /// Attaches a screenshot named `<scenario>-<topic>-<iphone|ipad>-<variant>` (variant:

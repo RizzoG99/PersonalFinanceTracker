@@ -48,15 +48,6 @@ struct IPadRootView: View {
         // Shake never reached this shell before (only MainTabView had .onShake attached), and
         // shaking an iPad isn't a comfortable gesture anyway — issue #52.
         .hideAmountsShortcut(appSettings)
-        .inspector(isPresented: inspectorPresented) {
-            IPadInspector(
-                models: models,
-                showingAddItemView: $showingAddItemView,
-                pendingReceiptScan: pendingReceiptScan,
-                pendingTravelId: pendingTravelId
-            )
-                .inspectorColumnWidth(min: 320, ideal: 400, max: 560)
-        }
         .background { AppBackground() }
         // On iPhone these hang off AppToolbarModifier, which the iPad shell suppresses. Settings
         // is a sidebar destination here, so the import flow it starts needs a host that outlives
@@ -313,6 +304,18 @@ struct IPadRootView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 HideAmountsButton()
             }
+        }
+        // On the detail column, not on the NavigationSplitView (#358): attached to the split, a
+        // closed inspector still had its column reserved on the second launch after install, so
+        // the whole split was laid out at 448 pt of 834 and sometimes stayed there.
+        .inspector(isPresented: inspectorPresented) {
+            IPadInspector(
+                models: models,
+                showingAddItemView: $showingAddItemView,
+                pendingReceiptScan: pendingReceiptScan,
+                pendingTravelId: pendingTravelId
+            )
+                .inspectorColumnWidth(min: 320, ideal: 400, max: 560)
         }
     }
 
