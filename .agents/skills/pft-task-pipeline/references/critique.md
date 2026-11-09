@@ -4,7 +4,7 @@ A **critic** is the *other* agent, run headless and read-only, so a second model
 - Claude Code calls Codex.
 - Codex calls Claude.
 
-Critics read code and run `rg`, `graphify` and `gh issue view` only. They never edit files, build, or run tests: only one agent runs simulators.
+Critics only read: files, `rg`, `graphify`, `gh issue view`, and `git diff` / `git show` / `git log`. They never edit files, build, or run tests: only one agent runs a simulator or emulator.
 
 ## Running a round
 
@@ -17,7 +17,14 @@ scripts/critic claude <n> <kind> <k>   # Codex → Claude
 
 It writes `.plan/<n>-<kind>-r<k>.md` and fails loudly if the prompt is missing or the critic wrote nothing. On a branch without `scripts/critic`, `git show origin/main:scripts/critic` shows the two underlying commands.
 
-Verify every BLOCKING finding against the cited file:line before acting on it. A finding you can disprove with evidence is answered in the Review log, not applied.
+## Rounds and decisions
+
+- Verify every BLOCKING finding against the cited file:line before acting on it. A finding you can disprove with evidence is answered in the plan's Review log, not applied.
+- Fix every BLOCKING finding you confirm, log the round in the Review log, and run the next round. Stop at APPROVE, or after round 3.
+- BLOCKING findings left after round 3:
+  - **Technical**: decide yourself, applying the best-evidenced option. Record the disagreement in the issue's decision record (iOS: Decision log; Android: a `D-xx` row) and list it under the PR's Limitations.
+  - **Product questions**: escalate to the owner as soon as one appears, in any round.
+- File out-of-scope problems a critic uncovers as their own issues.
 
 ## Plan critique prompt (round 1)
 
@@ -28,7 +35,7 @@ Review the plan in `.plan/<n>.md` against GitHub issue #<n> (`gh issue view <n>`
 
 Rules:
 - Every finding cites objective evidence: a file:line you read, or a command plus an excerpt of its output. If you can't verify a concern, drop it.
-- Read files with your file-reading tool. Use the shell only for `rg`, `graphify query` and `gh issue view`.
+- Read files with your file-reading tool, or with `sed -n`/`cat` if you have none. Use the shell only to read: `rg`, `graphify query`, `gh issue view`, `git diff`, `git show`, `git log`.
 - Check especially:
   - whether each scenario test will actually work: element queries and labels, focus and keyboard, first-run behaviour on a clean install, iPad layout, and background/foreground with the PIN lock;
   - whether the fix location is right;

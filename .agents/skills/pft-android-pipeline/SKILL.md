@@ -19,7 +19,9 @@ Run every command from the task worktree root, one per call: Gradle as `Android/
 
 ## Authority
 
-- The gate (step 2) and **escalations** are the only moments for the owner. Escalate, with AskUserQuestion, only a genuine product question: one whose answer changes what the user sees or can do. A functional deviation from frozen iOS is always a product question (#75 difference policy). Everything technical, decide and record as a `D-xx` decision.
+- The gate (step 2) and **escalations** are the only moments for the owner. Escalate only a genuine product question: one whose answer changes what the user sees or can do. Everything technical, decide and record as a `D-xx` decision.
+- Under #75's difference policy, two kinds of deviation from frozen iOS are always product questions: a functional one, and a visual one that changes information hierarchy, usability, accessibility, or product identity. Android-native presentation that keeps all four is a technical `D-xx`.
+- Ask with your structured-question tool (AskUserQuestion in Claude Code). Without one, ask in a plain message and stop until the owner answers.
 - Explain options in plain words, defining any jargon with an example, in the owner's language, before asking.
 - Creating and editing issues, project fields, and commits on the task branch are in scope. Pushing and opening a PR are in scope only as the owner chose at the gate. Merging and Google Play releases are not.
 
@@ -36,11 +38,13 @@ Done when exactly one issue holds the task, it names its parent, and it is on th
 
 ## 1. Analysis
 
-- **Frozen iOS functional analysis**: read the iOS source at the frozen commit named in #75 (`git show <frozen>:<path>`), never at today's `main`. Cover entry points, happy path, states (populated, empty, no results, loading, error, locked), data and calculation rules, localization and accessibility. Cite `file:line` at the frozen commit, and record what iOS does *not* do as carefully as what it does (#111 is the worked example).
+- **Baseline**: #75 names two frozen iOS commits: `83bc9db` for the historical contracts, and `b649dfff` (with Android at `a498bc9`) for the drift capabilities inventoried in #281. Take the one in the issue's *Parity identity*; for a new issue, the one its parent tracker uses. Record it in *Parity identity* before reading any iOS code.
+- **Frozen iOS functional analysis**: read the iOS source at that commit (`git show <frozen>:<path>`), never at today's `main`. Cover entry points, happy path, states (populated, empty, no results, loading, error, locked), data and calculation rules, localization and accessibility. Cite `file:line` at the frozen commit, and record what iOS does *not* do as carefully as what it does (#111 is the worked example).
 - **Drift check**: diff the same paths between the frozen commit and `origin/main`. Each relevant change becomes a new parity item, an approved extension, or an explicit deferral.
+- **Visual reference**: list the frozen iOS screenshots already attached to the issue or its parent, and every state in scope that has none. At `b649dfff` the iOS scenario harness exists, so missing states can be captured by running `scripts/xcb scenarios` in a worktree at that commit. At `83bc9db` it does not, so a missing state needs a screenshot from the owner, or approval to compare against current iOS as a `D-xx`.
 - **Android inventory**: what exists in `Android/` today, with `file:line`. Orient with `graphify query` when the graph exists. Use `$diagnosing-bugs` for a gap whose cause is uncertain.
 
-Done when every frozen behaviour in scope is stated with a citation and every Android difference is listed.
+Done when the baseline is recorded, every frozen behaviour in scope is stated with a citation, every Android difference is listed, and every UI state in scope has an iOS screenshot or a named way to get one.
 
 ## 2. Brainstorm and gate
 
@@ -48,21 +52,22 @@ Present 2–3 genuinely different options with pros and cons and a recommendatio
 
 - acceptance scenarios `AC-01..n`, each *Given … when … then …*, with deterministic fixtures and explicit expected values for money and dates, observable on a compact phone and a wide layout, including regressions the change could cause;
 - every difference from frozen iOS as a `D-xx` row, typed functional or visual, with the decision you propose;
+- for each UI state without an iOS screenshot, how it will be obtained;
 - how to publish: commits only on the task branch, a PR into `codex/android-native`, or a PR into `main` once `Android/` is there.
 
-Ask the owner to pick the option, approve the scenarios and the functional deviations, and choose how to publish.
+Ask the owner to pick the option, approve the scenarios, the deviations that are product questions, and the missing-screenshot plan, and choose how to publish.
 
-Done when the owner has decided all four.
+Done when the owner has decided all five.
 
 ## 3. Ticket
 
-Rewrite the issue body on #75's capability template: keep the report, fill Parity identity (frozen iOS commit, Android comparison commit), User promise, Scope and non-goals, Frozen iOS functional analysis, the Android inventory, Acceptance scenarios, and the Differences and decisions table with the owner's approvals. Set Status to In Progress and Evidence to Contract ready.
+Rewrite the issue body on #75's capability template: keep the report, fill Parity identity (frozen iOS commit, Android comparison commit), User promise, Scope and non-goals, Frozen iOS functional analysis, Visual reference, the Android inventory, Acceptance scenarios, and the Differences and decisions table with the owner's approvals. Set Status to In Progress and Evidence to Contract ready.
 
 Done when every template section is filled except Android implementation and evidence, Verification checklist, and Final verdict.
 
 ## 4. Plan
 
-Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from the base in *Where the code is*). Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), add a `.plan/` line to `info/exclude` inside the directory `git rev-parse --git-common-dir` prints, with the Edit tool. The plan names:
+Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from the base in *Where the code is*). When the session already runs in a fresh worktree on that base, keep it and rename its branch with `git branch -m <name>`. Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), add a `.plan/` line to `info/exclude` inside the directory `git rev-parse --git-common-dir` prints, with the Edit tool. The plan names:
 
 - each `AC-xx`'s test: JVM or instrumented, the class, the steps, the exact semantics queries, its capture cells, and which AC is expected to go **red** on today's code;
 - every file to change and the change, including both `values/strings.xml` and `values-it/strings.xml` for new copy;
@@ -82,13 +87,13 @@ Run critic rounds with the mechanics and prompts in [`../pft-task-pipeline/refer
 - the plan checklist → whether each AC test will actually work (semantics queries, locale and font-scale recreation, the PIN gate, first-run seeding, compact vs wide), whether the fix location is right, side effects on other callers, and any `D-xx` the plan silently introduces;
 - the code-review checklist → the logic the task changes, coroutine scope and cancellation (a failure that escapes `viewModelScope` kills the process, #133), raw `Throwable.message` reaching the screen (#135), Room migrations, vacuous tests, and regressions in sibling capabilities.
 
-Fix every BLOCKING finding in the plan and log each round in the plan's Review log, at most 3 rounds. After round 3, decide remaining technical findings yourself and record them as `D-xx`; escalate product questions as soon as they appear, in any round. Then publish a short plan to the issue and file out-of-scope problems as their own issues.
+`critique.md` also holds the round limit and what to do with findings left after it. Then publish a short plan to the issue.
 
 Done when the plan is on the issue and the last round either was APPROVE or its remaining findings are recorded as decided.
 
 ## 6. Red, then green
 
-1. Write the AC tests and run them on the unchanged code. At least one AC must go red for the reason the task is about. If none does, record why as a `D-xx`, and check that some test covers the root cause.
+1. Write the AC tests and run them on the unchanged code, before any fix. At least one test must go **red** for the reason the task is about. When the AC matching the report stays green on the emulator, add a narrower JVM or instrumented test that goes red on the root cause. Only when no test can go red at all, record why and what evidence replaces it as a `D-xx`; it goes under the Limitations.
 2. Implement. For UI changes, read `.agents/skills/android-compose-pro/SKILL.md` and its `references/design.md` in the task worktree (the skill exists only on the Android branch, so it may not be invocable from this session), plus `Android/README.md`'s semantics rules.
 3. Rerun until every AC test passes and every capture cell is written.
 
@@ -104,7 +109,7 @@ Open every capture cell the task produced (EN and IT, light and dark, compact an
 - nothing clipped or overlapping at large font scale or in Italian;
 - the semantics dump: every control labelled, headings marked, status changes announced.
 
-Done when every cell was checked and each problem is fixed or recorded as a `D-xx`.
+Done when every cell was checked and each problem is fixed, recorded as a technical `D-xx`, or escalated as a product question (see *Authority*).
 
 ## 8. Code review
 
@@ -114,10 +119,13 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 
 ## 9. Full verification and publication
 
-1. Run the four gates CI requires, one after another, in the background: `Android/gradlew -p Android` with `:app:assembleDebug`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:connectedDebugAndroidTest`. Read the counts from the JUnit XML, not the exit code. CI runs instrumentation on API 26 and 34; locally there is one AVD, so name its API level and leave the CI matrix as the only proof for the others.
+1. Run the four gates CI requires, one after another, in the background: `Android/gradlew -p Android` with `:app:assembleDebug`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:connectedDebugAndroidTest`. Read the counts from the JUnit XML, not the exit code. CI runs instrumentation on API 26 and 34; locally there is one AVD, so name its API level and leave the CI matrix as the only proof for the others. Edit no code or test after these runs; if one changes, rerun them.
 2. Skip the `CHANGELOG.md` bullet: it feeds TestFlight only, and Android has no release-notes channel until #81 (precedent: #146 has none). A PR then needs `no-changelog` in its body for CI and `PFT_SKIP_CHANGELOG=1 gh pr create …` for the `git-guard.sh` hook.
 3. Commit, then publish as the owner chose at the gate. For a PR, follow `$pft-pr-lifecycle` (its publish reference) with `Closes #<n>`, overriding it in three places: the base is the one chosen at the gate, the changelog rule is step 2's, and the project fields are project 3's.
-4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, TalkBack by hand, API levels). Set Evidence to Verified and Parity to Matched only when every AC passed and every cell was reviewed; the verdict text says "Matched with approved deviations" when any `D-xx` was approved (the project field has no such option). A capability the owner approved as Android-only or postponed at the gate takes Parity Platform-specific or Deferred instead. Otherwise set Evidence to Gap found, link the gap issue, and say why.
+4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, TalkBack by hand, API levels). The verdict names its reviewers: you, and the critic round that approved the final diff. Then set the fields by what the evidence shows:
+   - **Verified** and Parity **Matched**: every AC passed, every cell was reviewed, and every item of #75's Definition of Done that applies is ticked, including TalkBack where the AC depends on it. The verdict text says "Matched with approved deviations" when any `D-xx` was approved (the project field has no such option). A capability the owner approved as Android-only or postponed takes Parity Platform-specific or Deferred instead.
+   - **Verifying**: everything that ran passed, but a required check was not run (for example a manual TalkBack pass). Name it.
+   - **Gap found**: an AC failed or an unapproved difference remains. Link the gap issue and say why.
 
 Done when the commits are published as chosen and the issue's verdict names them.
 
