@@ -27,16 +27,19 @@ Run every command from the task worktree root, one per call: Gradle as `Android/
 
 ## 0. Intake
 
+- "Pick one": choose from project 3 an issue with Status Todo and Evidence Gap found, P1 before lower priorities, whose body names an Android starting point (`file:line` or class), with the smallest blast radius. Name the pick and why in one line, then continue.
 - GitHub issue: read it with `gh issue view <n> --comments`, then its parent milestone tracker (#76–#82).
 - Idea or defect without an issue: file it on the shape in #75's "Capability issue template".
   - New capability: title `[Android][M<k>][Parity <ID>] <promise>`, a sub-issue of its milestone tracker.
   - Defect in a verified capability: title `[Android][M<k>][Parity Gap] <what happens>`, with a *Gap identity* section naming the parent capability and its `AC-xx` (precedent: #130).
 
-Make sure the issue is on the **Android Native** project (`gh project item-add 3 --owner RizzoG99 --url <issue>`) with Status, Roadmap phase, Area, Parity, Evidence set; read field and option ids live (`gh project field-list 3 --owner RizzoG99 --format json`).
+Make sure the issue is on the **Android Native** project (`gh project item-add 3 --owner RizzoG99 --url <issue>`) with Status, Roadmap phase, Area, Parity, Evidence set; read field and option ids live (`gh project field-list 3 --owner RizzoG99 --format json`), and the project node id `gh project item-edit` needs from `gh project view 3 --owner RizzoG99 --format json --jq .id`.
 
 Done when exactly one issue holds the task, it names its parent, and it is on the project.
 
 ## 1. Analysis
+
+ACs already on the issue are hypotheses: confirm or correct each against frozen iOS before carrying it forward.
 
 - **Baseline**: #75 names two frozen iOS commits: `83bc9db` for the historical contracts, and `b649dfff` (with Android at `a498bc9`) for the drift capabilities inventoried in #281. Take the one in the issue's *Parity identity*; for a new issue, the one its parent tracker uses. Record it in *Parity identity* before reading any iOS code.
 - **Frozen iOS functional analysis**: read the iOS source at that commit (`git show <frozen>:<path>`), never at today's `main`. Cover entry points, happy path, states (populated, empty, no results, loading, error, locked), data and calculation rules, localization and accessibility. Cite `file:line` at the frozen commit, and record what iOS does *not* do as carefully as what it does (#111 is the worked example).
@@ -48,7 +51,7 @@ Done when the baseline is recorded, every frozen behaviour in scope is stated wi
 
 ## 2. Brainstorm and gate
 
-Present 2–3 genuinely different options with pros and cons and a recommendation (for a new or unclear capability, run `$feature-brainstorm` to get there). Propose:
+Present 2–3 genuinely different options with pros and cons and a recommendation (for a new or unclear capability, run `$feature-brainstorm` to get there). Every iOS behaviour you show the owner carries its user-visible precondition (for example "with at least one recurring transaction", "after the PIN is set"), so the owner can reproduce it. Propose:
 
 - acceptance scenarios `AC-01..n`, each *Given … when … then …*, with deterministic fixtures and explicit expected values for money and dates, observable on a compact phone and a wide layout, including regressions the change could cause;
 - every difference from frozen iOS as a `D-xx` row, typed functional or visual, with the decision you propose;
@@ -67,7 +70,9 @@ Done when every template section is filled except Android implementation and evi
 
 ## 4. Plan
 
-Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from the base in *Where the code is*). When the session already runs in a fresh worktree on that base, keep it and rename its branch with `git branch -m <name>`. Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), add a `.plan/` line to `info/exclude` inside the directory `git rev-parse --git-common-dir` prints, with the Edit tool. The plan names:
+First read every file under this skill's `references/`, `../pft-task-pipeline/references/critique.md`, and `scripts/critic`: they live only on `main` and vanish from the tree once you switch. Later, reach them with `git show main:<path>`.
+
+The session's worktree is always cut from `main`, so create the task branch in it from the base in *Where the code is*: `git switch -c fix/<n>-<slug> codex/android-native` (or `feature/<n>-<slug>`). Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), add a `.plan/` line to `info/exclude` inside the directory `git rev-parse --git-common-dir` prints, with the Edit tool. The plan names:
 
 - each `AC-xx`'s test: JVM or instrumented, the class, the steps, the exact semantics queries, its capture cells, and which AC is expected to go **red** on today's code;
 - every file to change and the change, including both `values/strings.xml` and `values-it/strings.xml` for new copy;
@@ -75,13 +80,13 @@ Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from t
 - Room schema changes and the migration test that proves them;
 - the verification commands.
 
-Read [references/parity-tests.md](references/parity-tests.md) before writing the test part.
+Write the test part from [references/parity-tests.md](references/parity-tests.md) (`git show main:.agents/skills/pft-android-pipeline/references/parity-tests.md` after the switch).
 
 Done when every AC maps to a test and every change to a file.
 
 ## 5. Plan critique
 
-Run critic rounds with the mechanics and prompts in [`../pft-task-pipeline/references/critique.md`](../pft-task-pipeline/references/critique.md) (on `codex/android-native`, which lacks `scripts/critic`, use the commands it falls back to), substituting:
+Run critic rounds with the mechanics and prompts in [`../pft-task-pipeline/references/critique.md`](../pft-task-pipeline/references/critique.md) (on `codex/android-native`, which lacks `scripts/critic`, use the commands it falls back to). Run `codex exec` in the background, since a foreground run dumps about 1 MB into context, and give it an absolute `-C <worktree path>`. Substitute:
 
 - "iOS repo" → "Android app under `Android/`; read `Android/README.md` and the issue's parent tracker too";
 - the plan checklist → whether each AC test will actually work (semantics queries, locale and font-scale recreation, the PIN gate, first-run seeding, compact vs wide), whether the fix location is right, side effects on other callers, and any `D-xx` the plan silently introduces;
@@ -113,15 +118,15 @@ Done when every cell was checked and each problem is fixed, recorded as a techni
 
 ## 8. Code review
 
-Run critic rounds on the diff as in step 5. After every fix rerun step 6, and if the fix changes what is on screen, repeat step 7 for the cells that changed.
+Run critic rounds on the diff as in step 5, adding `-c model_reasoning_effort=high` to `codex exec`. After every fix rerun step 6, and if the fix changes what is on screen, repeat step 7 for the cells that changed.
 
 Done when the last round was APPROVE on the final diff, or its remaining findings are recorded as decided.
 
 ## 9. Full verification and publication
 
-1. Run the four gates CI requires, one after another, in the background: `Android/gradlew -p Android` with `:app:assembleDebug`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:connectedDebugAndroidTest`. Read the counts from the JUnit XML, not the exit code. CI runs instrumentation on API 26 and 34; locally there is one AVD, so name its API level and leave the CI matrix as the only proof for the others. Edit no code or test after these runs; if one changes, rerun them.
+1. Run the four gates CI requires in one background call: `Android/gradlew -p Android :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:connectedDebugAndroidTest --continue`. Read the counts from the JUnit XML, not the exit code. CI runs instrumentation on API 26 and 34; locally there is one AVD, so name its API level and leave the CI matrix as the only proof for the others. Edit no code or test after these runs; if one changes, rerun them. A test changed after its red run must go red again on the unfixed code (commit the fix first, then `git checkout codex/android-native -- <production files>`, run the test, and `git checkout HEAD -- <production files>`) before it counts.
 2. Skip the `CHANGELOG.md` bullet: it feeds TestFlight only, and Android has no release-notes channel until #81 (precedent: #146 has none). A PR then needs `no-changelog` in its body for CI and `PFT_SKIP_CHANGELOG=1 gh pr create …` for the `git-guard.sh` hook.
-3. Commit, then publish as the owner chose at the gate. For a PR, follow `$pft-pr-lifecycle` (its publish reference) with `Closes #<n>`, overriding it in three places: the base is the one chosen at the gate, the changelog rule is step 2's, and the project fields are project 3's.
+3. Commit by staging explicit paths (`git add <file>…`): `graphify-out/` is tracked on `codex/android-native` and the hooks rewrite it, so `git add -A` sweeps it in. Commit messages and PR bodies carry no AI attribution (no `Co-Authored-By` trailer, no "Generated with" footer). Then publish as the owner chose at the gate. For a PR, follow `$pft-pr-lifecycle` (its publish reference) with `Closes #<n>`, overriding it in three places: the base is the one chosen at the gate, the changelog rule is step 2's, and the project fields are project 3's.
 4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, TalkBack by hand, API levels). The verdict names its reviewers: you, and the last critic round with its verdict. When that verdict was REVISE after round 3, name the `D-xx` rows that decided the remaining findings and their Limitations entries. Then set the fields by what the evidence shows:
    - **Verified** and Parity **Matched**: every AC passed, every cell was reviewed, and every item of #75's Definition of Done that applies is ticked, including TalkBack where the AC depends on it. The verdict text says "Matched with approved deviations" when any `D-xx` was approved (the project field has no such option). A capability the owner approved as Android-only or postponed takes Parity Platform-specific or Deferred instead.
    - **Verifying**: everything that ran passed, but a required check was not run (for example a manual TalkBack pass). Name it.
