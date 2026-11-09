@@ -136,6 +136,9 @@ class ScenarioTestCase: XCTestCase {
         // Category chips in the inline strip and the More chip.
         ("AddTransaction", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames + ["More"], 271),
         ("AddTransaction", "Text clipped", defaultCategoryNames, 271),
+        // Goal chips, with `-seedGoalProjections`' first goals on screen.
+        ("AddTransaction", "Dynamic Type font sizes are partially unsupported", ["Japan trip", "New laptop", "Emergency fund"], 363),
+        ("AddTransaction", "Text clipped", ["Japan trip", "New laptop", "Emergency fund"], 363),
         // The amount field and its currency symbol.
         ("AddTransaction", "Element has no description", [""], 272),
         ("AddTransaction", "Dynamic Type font sizes are unsupported", ["", "€"], 272),
