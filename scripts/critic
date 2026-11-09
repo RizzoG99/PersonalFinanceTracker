@@ -1,0 +1,36 @@
+#!/bin/bash
+# Run one headless, read-only critic round. See .agents/skills/pft-task-pipeline/references/critique.md.
+# Usage: scripts/critic <codex|claude> <n> <plan|review> <round>
+# Reads .plan/<n>-<kind>-prompt-r<round>.md, writes .plan/<n>-<kind>-r<round>.md.
+# ponytail: one wrapper so a round is one plain command an allow rule can match.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if [[ $# -ne 4 ]]; then
+  echo "usage: scripts/critic <codex|claude> <n> <plan|review> <round>" >&2
+  exit 2
+fi
+critic=$1 n=$2 kind=$3 round=$4
+[[ $kind == plan || $kind == review ]] || { echo "kind must be plan or review" >&2; exit 2; }
+
+prompt=".plan/$n-$kind-prompt-r$round.md"
+out=".plan/$n-$kind-r$round.md"
+[[ -f $prompt ]] || { echo "missing $prompt" >&2; exit 1; }
+
+case $critic in
+  codex)
+    codex exec -s read-only -C "$PWD" -o "$out" - < "$prompt"
+    ;;
+  claude)
+    claude -p --permission-mode plan \
+      --allowed-tools "Read,Grep,Glob,Bash(rg:*),Bash(graphify:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git show:*)" \
+      < "$prompt" > "$out"
+    ;;
+  *)
+    echo "critic must be codex or claude" >&2
+    exit 2
+    ;;
+esac
+
+[[ -s $out ]] || { echo "critic wrote nothing to $out" >&2; exit 1; }
+echo "$out"

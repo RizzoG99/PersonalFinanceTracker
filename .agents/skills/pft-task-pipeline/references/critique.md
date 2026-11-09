@@ -8,20 +8,14 @@ Critics read code and run `rg`, `graphify` and `gh issue view` only. They never 
 
 ## Running a round
 
-Write the prompt to `.plan/<n>-<kind>-prompt-r<k>.md` and the answer goes to `.plan/<n>-<kind>-r<k>.md`, where `<kind>` is `plan` or `review`. Run it in the background and wait for the output file.
-
-Claude Code → Codex:
+Write the prompt to `.plan/<n>-<kind>-prompt-r<k>.md`, where `<kind>` is `plan` or `review`, then run the round in the background as one plain command from the worktree root:
 
 ```bash
-codex exec -s read-only -C <worktree> -o .plan/<n>-<kind>-r<k>.md - < .plan/<n>-<kind>-prompt-r<k>.md
+scripts/critic codex <n> <kind> <k>    # Claude Code → Codex
+scripts/critic claude <n> <kind> <k>   # Codex → Claude
 ```
 
-Codex → Claude:
-
-```bash
-claude -p --permission-mode plan --allowed-tools "Read,Grep,Glob,Bash(rg:*),Bash(graphify:*),Bash(gh issue view:*),Bash(git diff:*)" \
-  < .plan/<n>-<kind>-prompt-r<k>.md > .plan/<n>-<kind>-r<k>.md
-```
+It writes `.plan/<n>-<kind>-r<k>.md` and fails loudly if the prompt is missing or the critic wrote nothing. On a branch without `scripts/critic`, `git show origin/main:scripts/critic` shows the two underlying commands.
 
 Verify every BLOCKING finding against the cited file:line before acting on it. A finding you can disprove with evidence is answered in the Review log, not applied.
 

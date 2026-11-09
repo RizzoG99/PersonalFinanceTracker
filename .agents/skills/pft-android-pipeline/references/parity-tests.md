@@ -23,20 +23,20 @@ Every `AC-xx` maps to at least one test, named in the issue. Worked examples on 
 
 ## Running
 
-Run from `Android/`, in the background. Boot the AVD first (`emulator -list-avds`; the Mac has `Pixel_7a`) and check `adb devices`. One device run at a time on this Mac: never start the emulator while an `xcb test` or `xcb scenarios` run holds the simulator.
+Run from the worktree root, one command per call, in the background. Boot the AVD first (`emulator -list-avds`; the Mac has `Pixel_7a`) and check `adb devices`. One device run at a time on this Mac: never start the emulator while an `xcb test` or `xcb scenarios` run holds the simulator.
 
-- JVM, one class: `./gradlew :app:testDebugUnitTest --tests '<fqcn>'`.
-- Instrumented, one class: `./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=<fqcn>`.
-- Results: `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/outputs/androidTest-results/connected/**/*.xml`. Read `tests`, `failures`, `errors`, `skipped` from the XML; a Gradle exit code of 0 with zero tests is not a pass.
+- JVM, one class: `Android/gradlew -p Android :app:testDebugUnitTest --tests '<fqcn>'`.
+- Instrumented, one class: `Android/gradlew -p Android :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=<fqcn>`.
+- Results: `Android/app/build/test-results/testDebugUnitTest/*.xml` and `Android/app/build/outputs/androidTest-results/connected/**/*.xml`. Read `tests`, `failures`, `errors`, `skipped` from the XML; a Gradle exit code of 0 with zero tests is not a pass.
 
 ## Pulling captures
 
 `connectedDebugAndroidTest` uninstalls the app when it finishes, and the app's files go with it. For captures, install and run the class directly, then pull. Take the runner and package from `adb shell pm list instrumentation` (`instrumentation:<runner> (target=<package>)`):
 
 ```bash
-./gradlew :app:installDebug :app:installDebugAndroidTest
+Android/gradlew -p Android :app:installDebug :app:installDebugAndroidTest
 adb shell am instrument -w -e class <fqcn> <runner>
-adb pull /sdcard/Android/data/<package>/files/<matrix-dir> ../.build/android-captures/
+adb pull /sdcard/Android/data/<package>/files/<matrix-dir> .build/android-captures/
 ```
 
 If the AVD has no emulated storage, `CaptureHarness.outputDir` falls back to the internal files dir; reach it with `adb shell run-as <package>`. An empty pull means nothing was photographed, never that the cells passed.

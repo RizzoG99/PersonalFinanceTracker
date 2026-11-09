@@ -13,7 +13,9 @@ Run the steps in order; each ends on its completion criterion. A later step that
 
 ## Where the code is
 
-The Android app lives in `Android/` (Kotlin, Compose, Room, DataStore). Check `git ls-tree origin/main Android`: while it prints nothing, the code lives only on `codex/android-native` (draft PR #146, worktree `.worktrees/android-native`), so the task branch starts from `codex/android-native`. That worktree may hold another agent's uncommitted work: read it, never edit it.
+The Android app lives in `Android/` (Kotlin, Compose, Room, DataStore). Check `git ls-tree origin/main Android`: while it prints nothing, the code lives only on `codex/android-native` (draft PR #146, worktree `.worktrees/android-native`), so the task branch starts from `codex/android-native`. Its worktree may hold another agent's uncommitted work and sits outside this session's working directory: read its files with `git show codex/android-native:<path>`, and leave the worktree itself untouched.
+
+Run every command from the task worktree root, one per call: Gradle as `Android/gradlew -p Android <task>`.
 
 ## Authority
 
@@ -60,7 +62,7 @@ Done when every template section is filled except Android implementation and evi
 
 ## 4. Plan
 
-Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from the base in *Where the code is*). Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), append `.plan/` to `$(git rev-parse --git-common-dir)/info/exclude`. The plan names:
+Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from the base in *Where the code is*). Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), add a `.plan/` line to `info/exclude` inside the directory `git rev-parse --git-common-dir` prints, with the Edit tool. The plan names:
 
 - each `AC-xx`'s test: JVM or instrumented, the class, the steps, the exact semantics queries, its capture cells, and which AC is expected to go **red** on today's code;
 - every file to change and the change, including both `values/strings.xml` and `values-it/strings.xml` for new copy;
@@ -74,7 +76,7 @@ Done when every AC maps to a test and every change to a file.
 
 ## 5. Plan critique
 
-Run critic rounds with the mechanics and prompts in [`../pft-task-pipeline/references/critique.md`](../pft-task-pipeline/references/critique.md), substituting:
+Run critic rounds with the mechanics and prompts in [`../pft-task-pipeline/references/critique.md`](../pft-task-pipeline/references/critique.md) (on `codex/android-native`, which lacks `scripts/critic`, use the commands it falls back to), substituting:
 
 - "iOS repo" → "Android app under `Android/`; read `Android/README.md` and the issue's parent tracker too";
 - the plan checklist → whether each AC test will actually work (semantics queries, locale and font-scale recreation, the PIN gate, first-run seeding, compact vs wide), whether the fix location is right, side effects on other callers, and any `D-xx` the plan silently introduces;
@@ -112,7 +114,7 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 
 ## 9. Full verification and publication
 
-1. From `Android/`, run the four gates CI requires, one after another, in the background: `./gradlew :app:assembleDebug`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:connectedDebugAndroidTest`. Read the counts from the JUnit XML, not the exit code. CI runs instrumentation on API 26 and 34; locally there is one AVD, so name its API level and leave the CI matrix as the only proof for the others.
+1. Run the four gates CI requires, one after another, in the background: `Android/gradlew -p Android` with `:app:assembleDebug`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:connectedDebugAndroidTest`. Read the counts from the JUnit XML, not the exit code. CI runs instrumentation on API 26 and 34; locally there is one AVD, so name its API level and leave the CI matrix as the only proof for the others.
 2. Skip the `CHANGELOG.md` bullet: it feeds TestFlight only, and Android has no release-notes channel until #81 (precedent: #146 has none). A PR then needs `no-changelog` in its body for CI and `PFT_SKIP_CHANGELOG=1 gh pr create …` for the `git-guard.sh` hook.
 3. Commit, then publish as the owner chose at the gate. For a PR, follow `$pft-pr-lifecycle` (its publish reference) with `Closes #<n>`, overriding it in three places: the base is the one chosen at the gate, the changelog rule is step 2's, and the project fields are project 3's.
 4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, TalkBack by hand, API levels). Set Evidence to Verified and Parity to Matched only when every AC passed and every cell was reviewed; the verdict text says "Matched with approved deviations" when any `D-xx` was approved (the project field has no such option). A capability the owner approved as Android-only or postponed at the gate takes Parity Platform-specific or Deferred instead. Otherwise set Evidence to Gap found, link the gap issue, and say why.

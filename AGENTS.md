@@ -30,6 +30,7 @@ Personal Finance Tracker is a SwiftUI iOS app for income, expense, budget, insig
   - `$pft-task-pipeline`: user-invoked end-to-end delivery of one task. It has one owner gate after the brainstorm, then a critic-reviewed plan, red-first scenario tests on iPhone and iPad, a code review, and a PR. Issue bodies follow `.github/ISSUE_TEMPLATE/{bug,feature}.md`.
   - `$pft-android-pipeline`: the Android twin of `$pft-task-pipeline`. It drives a parity capability or gap through a frozen-iOS analysis, one owner gate, red-first emulator tests, and a parity verdict. Issue bodies follow the capability template in #75.
 - Prefer `rg` and graphify queries before broad source browsing.
+- Run one shell command per call from the worktree root, with paths instead of `cd`; put multi-step logic in a scratch script run with one `bash <script>`. Plain commands are what approval rules can match, so they run without asking the owner. Read another branch's files with `git show <branch>:<path>`, not from its worktree.
 - Preserve unrelated user changes in the working tree.
 - Keep implementation scoped to the relevant feature folder, model, utility, and test files.
 - For every new or materially changed user-facing view, use `$swiftui-pro` before implementation, inspect the two closest existing screens/components, and follow its `references/design.md` preflight and quality gate.
