@@ -30,7 +30,7 @@ The mechanics are in `PersonalFinanceTraker/PersonalFinanceTrakerUITests/Scenari
 - **A text or search field found by its placeholder** may stop matching once it holds text (seen at AX-XXXL). Read its value through a query that doesn't depend on the label.
 - **The keyboard is a separate window.** `shoot` captures the whole screen, so it shows. Check it with `app.keyboards.firstMatch`.
 - **Background and foreground**: `XCUIDevice.shared.press(.home)`, then `app.activate()`. Coming back within 30 s (`BiometricAuthService.defaultGraceInterval`) shows no PIN overlay.
-- **The simulator may not reproduce device timing.** If the scenario matching the report stays green on today's code, say so in the Decision log, and make sure another scenario goes red on the root cause.
+- **The simulator may not reproduce device timing.** If the scenario matching the report stays green on today's code, say so in the Decision log, and add a narrower scenario or unit test that goes red on the root cause (SKILL step 6).
 - Verify launch-state behaviour through a scenario test. `simctl launch` renders a blank screen once a PIN is set.
 
 ## Reading results

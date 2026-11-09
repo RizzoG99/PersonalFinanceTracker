@@ -60,7 +60,7 @@ For every acceptance criterion, record:
 
 Use `scripts/xcb` as defined by `AGENTS.md`. Start with the narrowest relevant tests, then run broader validation proportional to the change. Read the JSON test summary and confirm the expected tests actually ran; build success is not visual, accessibility, localization, or runtime evidence.
 
-Test evidence is current only when it aligns with the PR's current HEAD. Record the HEAD SHA, command, runtime, and exact passed, failed, skipped, and expected-failure counts from the result bundle. Rerun after later commits or when the surviving artifact cannot be tied to the current source. Re-read the PR body after final QA: completed checks still described there as unverified leave the lifecycle evidence stale.
+Test evidence is current when the code and tests it ran against are what the PR's HEAD contains. Committing the tested working tree unchanged, or adding only docs, changelog, or plan files, keeps it current: record the resulting HEAD SHA. Any later change to code or tests makes it stale, and so does an artifact that can't be tied to the current source: rerun. Record the HEAD SHA, command, runtime, and exact passed, failed, skipped, and expected-failure counts from the result bundle. Re-read the PR body after final QA: completed checks still described there as unverified leave the lifecycle evidence stale.
 
 ### SwiftData schema transitions
 

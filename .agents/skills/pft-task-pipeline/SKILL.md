@@ -11,10 +11,10 @@ Run the steps in order; each ends on its completion criterion. A later step that
 
 ## Authority
 
-- The gate (step 2) and **escalations** are the only moments for the owner. Escalate, with AskUserQuestion, only a genuine product question: one whose answer changes what the user sees or can do. Everything technical, decide and record in the Decision log.
+- The gate (step 2) and **escalations** are the only moments for the owner. Escalate only a genuine product question: one whose answer changes what the user sees or can do. Everything technical, decide and record in the Decision log.
+- Ask with your structured-question tool (AskUserQuestion in Claude Code). Without one, ask in a plain message and stop until the owner answers.
 - Explain options in plain words, defining any jargon with an example, in the owner's language, before asking.
 - Creating issues, editing issues, project fields, commits on the task branch, push, and the PR are in scope. Merging, releasing, and TestFlight are not.
-- Before publishing, if the branch is stacked on another unmerged branch, ask how to publish (stacked PRs or one PR).
 
 ## 0. Intake
 
@@ -34,13 +34,13 @@ Done when exactly one issue holds the task and is on the project.
 - **Bug**: find the mechanism. Orient with `graphify query`, then read the code. Use `$diagnosing-bugs` when the cause is uncertain.
 - **Feature, or a bug that exposes a gap in how a feature is specified**: fill the *Functional analysis* section, which both templates have (in `bug.md` it is optional). Cover prerequisites, affected screens and models, states (empty, error, first run, Hide amounts, locked), data and privacy, and iPhone vs iPad.
 
-Done when the root cause is stated with file:line, or every functional gap is listed as an answered fact or an open question.
+Done when the root cause is stated with file:line, or every functional gap is listed as an answered fact or an open question. Set project Evidence to Analyzed.
 
 ## 2. Brainstorm and gate
 
-Present 2–3 genuinely different options with pros and cons and a recommendation (for a new or unclear feature, run `$feature-brainstorm` to get there). Propose acceptance **scenarios** S1..Sn, each *Given … when … then …*, observable on screen, on iPhone and iPad, including regressions the fix could cause. Ask the owner to pick the option and approve the scenarios.
+Present 2–3 genuinely different options with pros and cons and a recommendation (for a new or unclear feature, run `$feature-brainstorm` to get there). Propose acceptance **scenarios** S1..Sn, each *Given … when … then …*, observable on screen, on iPhone and iPad, including regressions the fix could cause. If the task depends on unmerged work, also ask how to publish (stacked PRs or one PR). Ask the owner to pick the option and approve the scenarios.
 
-Done when the owner has chosen an option and approved the scenario list.
+Done when the owner has chosen an option, approved the scenario list, and, for stacked work, chosen how to publish. A stacking found only later is a new escalation.
 
 ## 3. Ticket
 
@@ -50,7 +50,7 @@ Done when every template section is filled except Plan and Evidence.
 
 ## 4. Plan
 
-Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from `main` unless the task depends on unmerged work). Write the plan to `.plan/<n>.md` in the worktree; `.plan/` is gitignored, so it never gets committed. The plan names:
+Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from `main` unless the task depends on unmerged work). When the session already runs in a fresh worktree, keep it and rename its branch with `git branch -m <name>`. Write the plan to `.plan/<n>.md` in the worktree; `.plan/` is gitignored, so it never gets committed. The plan names:
 
 - each scenario's test: class `<Topic>ScenarioTests`, the steps, the exact element queries, and which scenario is expected to go **red** on today's code;
 - every file to change and the change;
@@ -63,23 +63,17 @@ Done when every scenario maps to a test and every change to a file.
 
 ## 5. Plan critique
 
-Run critic **rounds** as in [references/critique.md](references/critique.md). Fix every BLOCKING finding in the plan and log each round in the plan's Review log. Run rounds until the verdict is APPROVE, at most 3.
-
-If BLOCKING findings remain after round 3:
-- **Technical** findings: decide yourself. Apply the best-evidenced option, and record the disagreement in the Decision log and later in the PR's Limitations.
-- **Product questions**: escalate. Escalate a product question as soon as it appears, in any round.
-
-Then publish a short plan to the issue's Plan section, plus a Decision log entry for anything the critique changed. File out-of-scope problems the critique uncovered as their own issues.
+Run critic **rounds** on the plan as in [references/critique.md](references/critique.md), which holds the round limit and what to do with findings left after it. Then publish a short plan to the issue's Plan section, plus a Decision log entry for anything the critique changed.
 
 Done when the Plan section is published and the last round either was APPROVE or its remaining findings are recorded as decided.
 
 ## 6. Red, then green
 
-1. Write the scenario tests and run `scripts/xcb scenarios <Class>` on the unchanged code. At least one scenario must go red for the reason the task is about. If none does, record why (for example, device-only timing) in the Decision log, and check that some test covers the root cause.
+1. Write the scenario tests and run `scripts/xcb scenarios <Class>` on the unchanged code, before any fix. At least one test must go **red** for the reason the task is about. When the scenario matching the report stays green (device-only timing), add a narrower scenario or unit test that goes red on the root cause. Only when no test can go red at all, record why and what evidence replaces it in the Decision log; it goes under the PR's Limitations. Set project Evidence to Fix in progress.
 2. Implement. Use `$swiftui-pro` for UI changes.
 3. Rerun until every scenario passes on all five passes. Each new accessibility finding is either caused by the change (fix it) or pre-existing (file an issue per cause, then add an exact-label entry to `knownAccessibilityIssues`).
 
-Done when `scripts/xcb scenarios <Class>` reports `"result": "Passed"`, every pass's `passed` equals its `total`, and `flaky` is empty.
+Done when `scripts/xcb scenarios <Class>` reports `"result": "Passed"`, every pass's `passed` equals its `total`, `flaky` is empty, and every planned scenario has its `S<k>-<Topic>-…` screenshot in every pass. A missing test method only shrinks `total`, so the screenshots are what prove every scenario ran.
 
 ## 7. Visual review
 
@@ -94,7 +88,7 @@ Done when every scenario screenshot was checked and each problem is fixed or rec
 
 ## 8. Code review
 
-Run critic rounds on the diff as in [references/critique.md](references/critique.md), with the same round limit and decision rule as step 5. After every fix:
+Run critic rounds on the diff as in [references/critique.md](references/critique.md). After every fix:
 - rerun step 6's command;
 - if the fix changes what is on screen, repeat step 7 for the screenshots that changed.
 
@@ -102,7 +96,7 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 
 ## 9. Full verification and PR
 
-1. Run `scripts/xcb scenarios`, which is the regression run over every scenario class, then `scripts/xcb test`. Run them in the background, one after the other, and read the counts and the `flaky` list, not the exit code. List every `flaky` entry under the PR's Limitations.
+1. Run `scripts/xcb scenarios`, which is the regression run over every scenario class, then `scripts/xcb test`. Run them in the background, one after the other, and read the counts and the `flaky` list, not the exit code. Check that the task's `S<k>-<Topic>-…` screenshots are in every pass. List every `flaky` entry under the PR's Limitations. Edit no code or test after these runs; if one changes, rerun them.
 2. Add the `CHANGELOG.md` Unreleased bullet for a visible change.
 3. Commit, push, and open the PR by following `$pft-pr-lifecycle` (its publish reference), with `Closes #<n>`. The Evidence table lists each scenario: red before or not, green after, and which screenshots were reviewed.
 4. Fill the issue's Evidence section (PR, commit, counts, what was not reproduced or not automated). Set project Evidence to Verified only when every scenario passed on all five passes without a retry (none of the task's scenarios in `flaky`) and its screenshots were reviewed. An unrelated flaky test doesn't block Verified; it goes under Limitations. Otherwise leave it at Fix in progress and say why.
