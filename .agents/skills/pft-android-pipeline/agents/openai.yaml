@@ -1,0 +1,5 @@
+interface:
+  display_name: "Android Task Pipeline"
+  short_description: "Android issue to parity verdict: one owner gate, red-first emulator tests"
+policy:
+  allow_implicit_invocation: false
