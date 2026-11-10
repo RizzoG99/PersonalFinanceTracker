@@ -66,3 +66,20 @@ enum RecurrenceOccurrenceCalculator {
         return calendar.date(from: targetComps) ?? date
     }
 }
+
+extension RecurrenceRuleSnapshot {
+    /// The next occurrence within a year of `date`, nil when there is none.
+    ///
+    /// ponytail: the year keeps the walk short; a rule repeating every 2+ years shows no date
+    /// until it's within a year, and sorts last until then.
+    func nextOccurrence(after date: Date) -> Date? {
+        RecurrenceOccurrenceCalculator.occurrenceDates(
+            frequency: frequency,
+            interval: interval,
+            startDate: startDate,
+            ruleEndDate: endDate,
+            since: date,
+            through: Calendar.current.date(byAdding: .year, value: 1, to: date) ?? date
+        ).first
+    }
+}
