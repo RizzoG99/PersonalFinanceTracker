@@ -133,7 +133,7 @@ jobs:
           emulator-options: >-
             -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
             -camera-back none
-          script: bash .github/scripts/emulator-focus-diag.sh
+          script: bash .github/scripts/android-connected-tests.sh
       - name: Upload API ${{ matrix.api-level }} instrumentation evidence
         if: always()
         uses: actions/upload-artifact@v7
