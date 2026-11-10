@@ -278,14 +278,16 @@ private extension PersonalFinanceTrakerApp {
         let context = AppContainer.shared.mainContext
         try? context.delete(model: RecurrenceRule.self)
         let date = Date.now.addingTimeInterval(-3600)
-        for title in ["Rule A", "Rule B"].prefix(count) {
+        for (index, title) in ["Rule A", "Rule B"].prefix(count).enumerated() {
             let rule = RecurrenceRule(
                 frequency: .monthly, interval: 1, startDate: date, lastMaterializedDate: date,
                 amount: -10, note: title, category: "Streaming Services", currencyCode: "EUR"
             )
             context.insert(rule)
+            // A second apart: Activity sorts by timestamp alone, so equal ones can swap between runs.
             context.insert(TransactionModel(
-                timestamp: date, amount: -10, note: title, category: "Streaming Services", recurrenceRuleId: rule.id
+                timestamp: date.addingTimeInterval(Double(index)), amount: -10, note: title,
+                category: "Streaming Services", recurrenceRuleId: rule.id
             ))
         }
         try? context.save()

@@ -22,13 +22,13 @@ final class RecurringDeleteScenarioTests: ScenarioTestCase {
         let ruleB = row(app, "Rule B")
         scrollUntilHittable(app, ruleA, ruleB)
 
-        // `fetchAllRecurrenceRules` has no order, so the second row is the lower one.
-        let (second, first) = ruleA.frame.minY > ruleB.frame.minY ? (ruleA, ruleB) : (ruleB, ruleA)
-        swipeDelete(app, second)
+        // Same next date, so `fetchAllRecurrenceRules` puts them in name order (#366).
+        XCTAssertLessThan(ruleA.frame.minY, ruleB.frame.minY, "Rule A isn't above Rule B")
+        swipeDelete(app, ruleB)
 
-        XCTAssertTrue(second.waitForNonExistence(timeout: 10), "the deleted rule is still listed")
+        XCTAssertTrue(ruleB.waitForNonExistence(timeout: 10), "the deleted rule is still listed")
         XCTAssertEqual(app.state, .runningForeground, "the app crashed")
-        XCTAssertTrue(first.exists, "the other rule left too")
+        XCTAssertTrue(ruleA.exists, "the other rule left too")
         XCTAssertTrue(app.staticTexts["1"].waitForExistence(timeout: 5), "Active doesn't show 1")
         shoot(app, "S1")
         try auditAccessibility(app, "S1", screens: "Recurring")
