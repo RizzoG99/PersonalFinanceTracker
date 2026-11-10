@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -109,6 +110,10 @@ fun PersonalFinanceNavHost(
     var settingsVisible by rememberSaveable { mutableStateOf(false) }
     var tabTransitionDirection by rememberSaveable { mutableStateOf(1) }
     val snackbarHostState = remember { SnackbarHostState() }
+    // Compact Activity's own queue, drawn in this Scaffold so Material lifts it above the + (#368).
+    // A separate state, not the shell's: Activity's Undo never expires (#376), and on one shared
+    // queue it would hold back the shell's "Transaction saved".
+    val activitySnackbarHostState = remember { SnackbarHostState() }
 
     val systemDark = isSystemInDarkTheme()
     val themeMode by application.preferencesRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
@@ -157,7 +162,12 @@ fun PersonalFinanceNavHost(
     val isExpandedWidth = LocalConfiguration.current.screenWidthDp >= 840
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
+        snackbarHost = {
+            Column {
+                SnackbarHost(activitySnackbarHostState)
+                SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) }
+            }
+        },
         floatingActionButton = {
             if (onMainDestination && !isExpandedWidth) {
                 FloatingActionButton(onClick = { dashboardTransactionEditorVisible = true }) {
@@ -272,7 +282,7 @@ fun PersonalFinanceNavHost(
                         isDarkTheme = isDarkTheme,
                         onToggleTheme = onToggleTheme,
                         onOpenSettings = { settingsVisible = true },
-                        shellSnackbarHostState = snackbarHostState,
+                        shellSnackbarHostState = activitySnackbarHostState,
                     )
                 }
             }

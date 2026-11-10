@@ -153,8 +153,8 @@ fun ActivityScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onOpenSettings: () -> Unit = {},
-    // The shell's host, when the shell has a floating +: Material lifts a snackbar above a FAB only
-    // within one Scaffold, so a host of our own would put Undo under the + (#368).
+    // A state the shell draws in its own Scaffold, when the shell has a floating +: Material lifts a
+    // snackbar above a FAB only within one Scaffold, so a host of our own would put Undo under the + (#368).
     shellSnackbarHostState: SnackbarHostState? = null,
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
@@ -299,7 +299,13 @@ fun ActivityScreen(
             onConfirm = {
                 deletingTransaction = null
                 scope.launch {
-                    if (viewModel.delete(transaction)) showUndoDeletion(snackbarHostState, viewModel, transaction, application)
+                    if (viewModel.delete(transaction)) {
+                        val result = snackbarHostState.showSnackbar(
+                            message = application.getString(R.string.transaction_deleted),
+                            actionLabel = application.getString(R.string.undo),
+                        )
+                        if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
+                    }
                 }
             },
         )
@@ -473,7 +479,11 @@ fun ActivityTwoPaneScreen(
                 scope.launch {
                     if (viewModel.delete(transaction)) {
                         selectedId = null
-                        showUndoDeletion(snackbarHostState, viewModel, transaction, application)
+                        val result = snackbarHostState.showSnackbar(
+                            message = application.getString(R.string.transaction_deleted),
+                            actionLabel = application.getString(R.string.undo),
+                        )
+                        if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
                     }
                 }
             },
@@ -1952,10 +1962,6 @@ private suspend fun showUndoDeletion(
     transaction: FinanceTransaction,
     application: PersonalFinanceApplication,
 ) {
-    // One Undo at a time, as on frozen iOS, where a new delete commits the pending one
-    // (TransactionListViewModel.swift:525). An Undo never expires (#376), so a queued one would
-    // otherwise hold the shared host and block every later message, "Transaction saved" included (#368).
-    snackbarHostState.currentSnackbarData?.dismiss()
     val result = snackbarHostState.showSnackbar(
         message = application.getString(R.string.transaction_deleted),
         actionLabel = application.getString(R.string.undo),

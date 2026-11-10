@@ -240,9 +240,10 @@ class ActivityUndoPlacementTest {
     }
 
     /**
-     * Regression from the shared host (code review r1): two deletes without resolving the first
-     * Undo, then a save from +. Undo never expires (#376), so a queued second Undo used to hold the
-     * shell's host and "Transaction saved" never showed. One Undo at a time, as on iOS.
+     * Regression guard for the snackbar plumbing (code review r1/r2): two deletes without resolving
+     * the first Undo, then a save from +. Undo never expires (#376), so if Activity shared the
+     * shell's queue, the queued second Undo would hold back "Transaction saved". Each delete keeps
+     * its own Undo afterwards, as before #368.
      */
     @Test
     fun ac03_saveFromPlusAfterTwoDeletesStillConfirms_compact() {
@@ -284,8 +285,15 @@ class ActivityUndoPlacementTest {
         } finally {
             rule.mainClock.autoAdvance = true
         }
-        // Both deletes stand; the new expense is the only row.
         assertEquals(listOf(0), transactions().map { BigDecimal("-3.00").compareTo(it.amount) })
+
+        // Neither earlier Undo was discarded: each still restores its own row, in order.
+        listOf(coffee, tea).forEach { id ->
+            waitForUndo()
+            rule.onNode(undo).performClick()
+            rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
+        }
+        assertEquals(3, transactions().size)
     }
 
     /**
