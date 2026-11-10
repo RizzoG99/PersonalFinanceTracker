@@ -36,7 +36,17 @@
       "Bash(scripts/critic *)",
       "Bash(Android/gradlew -p Android *)",
       "Bash(adb devices)",
-      "Bash(emulator -list-avds)"
+      "Bash(adb wait-for-device)",
+      "Bash(adb shell *)",
+      "Bash(adb logcat *)",
+      "Bash(adb pull *)",
+      "Bash(adb install *)",
+      "Bash(adb emu kill)",
+      "Bash(emulator -list-avds)",
+      "Bash(emulator -avd *)",
+      "Bash(git grep *)",
+      "Bash(gh run view *)",
+      "Bash(gh run list *)"
     ]
   },
   "disabledMcpjsonServers": [

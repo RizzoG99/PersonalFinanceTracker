@@ -21,14 +21,14 @@ Every `AC-xx` maps to at least one test, named in the issue. Worked examples on 
 - Assert the precondition too, so a broken setup fails loudly instead of passing vacuously.
 - Query by semantics (text, content description, role, `testTag`). An element with no stable label gets a test-only `Modifier.testTag`; a state shown only as colour is invisible to TalkBack, so assert something structural and file the missing semantics as its own issue.
   - An unlabelled `Switch` sits beside its label: find it with `isToggleable() and hasAnySibling(hasText(label))`, and prove it is on through the content that appears when it is.
-- Use `waitUntil` / `waitForIdle`, never `Thread.sleep`.
+- Use `waitUntil` / `waitForIdle`, never `Thread.sleep`. Size `waitUntil` deadlines for the CI emulator, not the Mac: the API 34 job (software rendering, 2 cores) needed 20 s where 5 s passed locally (#287). A deadline is only an upper bound, so a generous one costs nothing when the UI is fast.
 - Transient UI (a snackbar's 4 s lifetime) can pass entirely inside one idle sync while `mainClock.autoAdvance` is on. Set `composeRule.mainClock.autoAdvance = false` right after the triggering tap, then loop on `advanceTimeByFrame()` until the snackbar shows, and assert it.
 - A tap that seems lost: compare the `boundsInWindow` of the target and its neighbours for overlap before blaming production code.
 - Prefer driving `MainActivity` when the state is reachable for real. When it is not (a mid-session Room failure), capture the production composable in that state and record the choice as a `D-xx`, rather than adding a production hook to photograph it.
 
 ## Running
 
-Run from the worktree root, one command per call, in the background. Boot the AVD first (`emulator -list-avds`; the Mac has `Pixel_7a`) and check `adb devices`. One device run at a time on this Mac: never start the emulator while an `xcb test` or `xcb scenarios` run holds the simulator.
+Run from the worktree root, one command per call, in the background, and wait with Monitor rather than an `until … sleep` loop. Call `adb` and `emulator` by bare name (both are on PATH): an absolute SDK path, a `A=…; $A …` chain, or a `$(…)` matches no allow rule in `.claude/settings.json` and asks the owner every time. Boot the AVD first (`emulator -list-avds`; the Mac has `Pixel_7a`) and check `adb devices`. One device run at a time on this Mac: never start the emulator while an `xcb test` or `xcb scenarios` run holds the simulator.
 
 - JVM, one class: `Android/gradlew -p Android :app:testDebugUnitTest --tests '<fqcn>'`.
 - Instrumented, one class: `Android/gradlew -p Android :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=<fqcn>`; one method: `class=<fqcn>#<method>`.
@@ -46,3 +46,15 @@ adb pull /sdcard/Android/data/<package>/files/<matrix-dir> .build/android-captur
 ```
 
 If the AVD has no emulated storage, `CaptureHarness.outputDir` falls back to the internal files dir; reach it with `adb shell run-as <package>`. An empty pull means nothing was photographed, never that the cells passed.
+
+## TalkBack on the AVD
+
+The `Pixel_7a` image ships TalkBack, so a TalkBack AC can be checked here instead of left for the owner (#287). Read what TalkBack speaks from its verbose log rather than listening.
+
+1. Install the build under test with `Android/gradlew -p Android :app:installDebug`.
+2. With TalkBack off, open its settings: `adb shell am start -n com.google.android.marvin.talkback/com.android.talkback.TalkBackPreferencesActivity`. Under *Advanced settings*, turn on *Single-tap to activate*, so that `input tap` activates instead of only moving focus. Then go to *Developer settings*, set *Log output level* to *VERBOSE*, and confirm. To find a control, run `adb shell uiautomator dump /sdcard/u.xml` and then `adb shell cat /sdcard/u.xml`, and tap the centre of its `bounds` with `adb shell input tap <x> <y>`.
+3. Turn TalkBack on: `adb shell settings put secure enabled_accessibility_services com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService`, then `adb shell settings put secure accessibility_enabled 1`.
+4. Before each step, clear the log with `adb logcat -c`. Then drive the app with `adb shell input tap` and read what was spoken with `adb logcat -d -e 'action=SPEAK'`. Each line has a `text="…"` field holding the utterance. When the screen is needed, run `adb shell screencap -p /sdcard/s.png`, then `adb pull /sdcard/s.png <scratchpad>/`.
+5. Restore the AVD whatever the outcome. Turn TalkBack off with `adb shell settings put secure enabled_accessibility_services '""'` and `adb shell settings put secure accessibility_enabled 0`. Then set *Log output level* and *Single-tap to activate* back to their defaults. The owner uses this AVD too.
+
+Record the spoken lines as the AC's evidence, and the AVD's API level next to them.
