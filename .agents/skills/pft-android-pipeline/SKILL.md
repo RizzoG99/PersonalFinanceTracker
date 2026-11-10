@@ -15,7 +15,7 @@ Run the steps in order; each ends on its completion criterion. A later step that
 
 The Android app lives in `Android/` (Kotlin, Compose, Room, DataStore). Check `git ls-tree origin/main Android`: while it prints nothing, the code lives only on `codex/android-native` (draft PR #146, worktree `.worktrees/android-native`), so the task branch starts from `codex/android-native`. Its worktree may hold another agent's uncommitted work and sits outside this session's working directory: read its files with `git show codex/android-native:<path>`, and leave the worktree itself untouched.
 
-Run every command from the task worktree root, one per call: Gradle as `Android/gradlew -p Android <task>`.
+Run every command from the task worktree root, one per call: Gradle as `Android/gradlew -p Android <task>`, and `adb` and `emulator` by bare name. Use the shapes the allow rules in `.claude/settings.json` match. An absolute SDK path, a variable chain (`A=…; $A …`), `$(…)`, `cd Android && ./gradlew`, or an `until … sleep` loop matches none of them and asks the owner every time. Wait for background runs with Monitor.
 
 ## Authority
 
@@ -72,7 +72,7 @@ Done when every template section is filled except Android implementation and evi
 
 First read every file under this skill's `references/`, `../pft-task-pipeline/references/critique.md`, and `scripts/critic`: they live only on `main` and vanish from the tree once you switch. Later, reach them with `git show main:<path>`.
 
-The session's worktree is always cut from `main`, so create the task branch in it from the base in *Where the code is*: `git switch -c fix/<n>-<slug> codex/android-native` (or `feature/<n>-<slug>`). Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), add a `.plan/` line to `info/exclude` inside the directory `git rev-parse --git-common-dir` prints, with the Edit tool. The plan names:
+The session's worktree is always cut from `main`, so create the task branch in it from the base in *Where the code is*: `git switch -c fix/<n>-<slug> codex/android-native` (or `feature/<n>-<slug>`). The switch also replaces `.claude/settings.json` and `.claude/hooks/` with the base's copies. If `git diff main codex/android-native -- .claude/settings.json .claude/hooks` shows they have fallen behind `main`, tell the owner once, since the allow rules and git guards are then missing for the rest of the task, and keep to the command shapes above. Write the plan to `.plan/<n>.md` in the worktree. `.plan/` must stay out of commits: if `git check-ignore -q .plan/x` fails (it does on `codex/android-native`, whose `.gitignore` predates it), add a `.plan/` line to `info/exclude` inside the directory `git rev-parse --git-common-dir` prints, with the Edit tool. The plan names:
 
 - each `AC-xx`'s test: JVM or instrumented, the class, the steps, the exact semantics queries, its capture cells, and which AC is expected to go **red** on today's code;
 - every file to change and the change, including both `values/strings.xml` and `values-it/strings.xml` for new copy;
@@ -114,6 +114,8 @@ Open every capture cell the task produced (EN and IT, light and dark, compact an
 - nothing clipped or overlapping at large font scale or in Italian;
 - the semantics dump: every control labelled, headings marked, status changes announced.
 
+When an AC depends on what TalkBack says, run the TalkBack pass from [references/parity-tests.md](references/parity-tests.md) on the AVD and record the spoken lines. Leave TalkBack to the owner only when the AVD cannot reach the state.
+
 Done when every cell was checked and each problem is fixed, recorded as a technical `D-xx`, or escalated as a product question (see *Authority*).
 
 ## 8. Code review
@@ -127,12 +129,17 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 1. Run the four gates CI requires in one background call: `Android/gradlew -p Android :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:connectedDebugAndroidTest --continue`. Read the counts from the JUnit XML, not the exit code. CI runs instrumentation on API 26 and 34; locally there is one AVD, so name its API level and leave the CI matrix as the only proof for the others. Edit no code or test after these runs; if one changes, rerun them. A test changed after its red run must go red again on the unfixed code (commit the fix first, then `git checkout codex/android-native -- <production files>`, run the test, and `git checkout HEAD -- <production files>`) before it counts.
 2. Skip the `CHANGELOG.md` bullet: it feeds TestFlight only, and Android has no release-notes channel until #81 (precedent: #146 has none). A PR then needs `no-changelog` in its body for CI and `PFT_SKIP_CHANGELOG=1 gh pr create …` for the `git-guard.sh` hook.
 3. Commit by staging explicit paths (`git add <file>…`): `graphify-out/` is tracked on `codex/android-native` and the hooks rewrite it, so `git add -A` sweeps it in. Commit messages and PR bodies carry no AI attribution (no `Co-Authored-By` trailer, no "Generated with" footer). Then publish as the owner chose at the gate. For a PR, follow `$pft-pr-lifecycle` (its publish reference) with `Closes #<n>`, overriding it in three places: the base is the one chosen at the gate, the changelog rule is step 2's, and the project fields are project 3's.
-4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, TalkBack by hand, API levels). The verdict names its reviewers: you, and the last critic round with its verdict. When that verdict was REVISE after round 3, name the `D-xx` rows that decided the remaining findings and their Limitations entries. Then set the fields by what the evidence shows:
+4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, a TalkBack state the AVD could not reach, API levels). The verdict names its reviewers: you, and the last critic round with its verdict. When that verdict was REVISE after round 3, name the `D-xx` rows that decided the remaining findings and their Limitations entries. Then set the fields by what the evidence shows:
    - **Verified** and Parity **Matched**: every AC passed, every cell was reviewed, and every item of #75's Definition of Done that applies is ticked, including TalkBack where the AC depends on it. The verdict text says "Matched with approved deviations" when any `D-xx` was approved (the project field has no such option). A capability the owner approved as Android-only or postponed takes Parity Platform-specific or Deferred instead.
-   - **Verifying**: everything that ran passed, but a required check was not run (for example a manual TalkBack pass). Name it.
+   - **Verifying**: everything that ran passed, but a required check was not run (for example a TalkBack state the AVD could not reach). Name it.
    - **Gap found**: an AC failed or an unapproved difference remains. Link the gap issue and say why.
+5. Read the PR's CI. When a check fails in code the task did not touch, do not fix it inside the task PR on a guess:
+   - compare with the base branch's recent runs (`gh run list --branch codex/android-native`), and check whether the failing tests ran before the task's own tests;
+   - prove a toolchain or CI hypothesis on a separate branch before committing it (#287's emulator pin was committed to the task PR, failed, and had to be reverted);
+   - file it as `[Android][CI] <what happens>` (precedent: #372), and name it under the PR's Limitations.
+6. After the merge: `Closes #<n>` fires only on merges into `main`, so a PR into `codex/android-native` leaves the issue open. Close it with `gh issue close <n> --comment` naming the PR and the verdict, and set Status and Evidence on project 3. If the gate changed what the task delivers, retitle the issue to match.
 
-Done when the commits are published as chosen and the issue's verdict names them.
+Done when the commits are published as chosen and the issue's verdict names them; once merged, the issue is closed and its title matches what shipped.
 
 ## Report
 
