@@ -382,7 +382,7 @@ class ActivityUndoPlacementTest {
                 // The CI artifact carries no device files: put the evidence in the failure itself.
                 throw AssertionError(
                     "${c.id}: delete never landed; stored=${transactions().map { it.note }}\n" +
-                        rule.onAllNodes(isRoot()).printToString(),
+                        rule.onAllNodes(isRoot()).printToString(maxDepth = Int.MAX_VALUE),
                     e,
                 )
             }
@@ -409,6 +409,10 @@ class ActivityUndoPlacementTest {
             rule.onNode(localizedUndo).performClick()
             rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
             runBlocking { app.database.clearAllTables(); app.categoryRepository.seedDefaultsIfEmpty() }
+            // Let the row leave the screen before the next cell seeds another "coffee": a row keeps
+            // the swipe callback of the transaction it was first composed for (#386), so a reused
+            // slot would open the dialog for this cell's, already-gone, transaction.
+            rule.waitUntil(timeoutMillis = 20_000) { rule.onAllNodes(hasText("coffee")).fetchSemanticsNodes().isEmpty() }
         }
     }
 }
