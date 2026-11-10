@@ -6,8 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
@@ -364,12 +369,23 @@ class ActivityUndoPlacementTest {
             with(NavShellMarkers(c.locale)) { rule.selectTab(activityTab) }
             swipeCoffeeLeft()
             // The dialog is its own window, which may keep the device language (see SaveFeedbackTest).
-            rule.onNode(
-                // `base` shares the application's (now re-localized) resources: name English explicitly.
+            // `base` shares the application's (now re-localized) resources: name English explicitly.
+            val confirm = (
                 hasText(CaptureHarness.localeContext(base, Locale.ENGLISH).getString(R.string.delete_transaction)) or
-                    hasText(localized.getString(R.string.delete_transaction)),
-            ).performClick()
-            rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
+                    hasText(localized.getString(R.string.delete_transaction))
+                ) and hasClickAction() and hasAnyAncestor(isDialog())
+            rule.waitUntil(timeoutMillis = 20_000) { rule.onAllNodes(confirm).fetchSemanticsNodes().isNotEmpty() }
+            rule.onNode(confirm).performClick()
+            try {
+                rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
+            } catch (e: ComposeTimeoutException) {
+                // The CI artifact carries no device files: put the evidence in the failure itself.
+                throw AssertionError(
+                    "${c.id}: delete never landed; stored=${transactions().map { it.note }}\n" +
+                        rule.onAllNodes(isRoot()).printToString(),
+                    e,
+                )
+            }
             // Both the message and the action in the cell's language, or the cell is not evidence.
             val localizedUndo = hasText(localized.getString(R.string.undo)) and hasClickAction()
             val localizedMessage = hasText(localized.getString(R.string.transaction_deleted))
