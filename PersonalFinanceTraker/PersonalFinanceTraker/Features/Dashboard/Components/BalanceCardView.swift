@@ -78,12 +78,13 @@ struct BalanceCardView: View {
         let lastDay = SafeToSpendSnapshot.lastDay(before: safe.payday).formatted(.dateTime.day().month(.abbreviated))
         let perDay = SafeToSpendSnapshot.perDay(safe.amount, from: viewModel.currentDate(), until: safe.payday)
             .map { appSettings.hideAmounts ? "••••" : $0.formatted(.currency(code: CurrencyService().baseCurrency).precision(.fractionLength(0))) }
+        let standing = safe.standing
         return VStack(alignment: .leading, spacing: 4) {
             // Fixed-width mask when hidden — a plain blur would still leak the
             // amount's digit count (and thus rough magnitude) via glyph width.
             Text(masked(safe.amount))
                 .font(.largeTitle.bold())
-                .foregroundStyle(safe.amount < 0 ? Color.negative : Color.textPrimary)
+                .foregroundStyle(standing.color(default: .textPrimary))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .monospacedDigit()
@@ -92,17 +93,22 @@ struct BalanceCardView: View {
                 .privacyBlur(radius: 8)
 
             Group {
-                if safe.amount < 0 {
+                switch standing {
+                case .overPlan:
                     Text("Over plan until \(lastDay)")
-                } else if let perDay {
-                    Text("until \(lastDay) · \(perDay)/day")
-                        .accessibilityLabel(Text("until \(lastDay), \(perDay) per day"))
-                } else {
-                    Text("until \(lastDay)")
+                case .usingBuffer:
+                    Text("Using your safety buffer until \(lastDay)")
+                case .withinPlan:
+                    if let perDay {
+                        Text("until \(lastDay) · \(perDay)/day")
+                            .accessibilityLabel(Text("until \(lastDay), \(perDay) per day"))
+                    } else {
+                        Text("until \(lastDay)")
+                    }
                 }
             }
             .font(.subheadline)
-            .foregroundStyle(safe.amount < 0 ? Color.negative : Color.textMid)
+            .foregroundStyle(standing.color(default: .textMid))
         }
         .accessibilityElement(children: .combine)
     }
@@ -150,6 +156,17 @@ struct BalanceCardView: View {
 
     private func masked(_ amount: Decimal) -> String {
         appSettings.hideAmounts ? "••••••" : amount.formattedEUR()
+    }
+}
+
+private extension SafeToSpendSnapshot.Standing {
+    /// Amber like a budget near its limit, red only once past the buffer.
+    func color(default normal: Color) -> Color {
+        switch self {
+        case .withinPlan: normal
+        case .usingBuffer: .categoryAmber
+        case .overPlan: .negative
+        }
     }
 }
 

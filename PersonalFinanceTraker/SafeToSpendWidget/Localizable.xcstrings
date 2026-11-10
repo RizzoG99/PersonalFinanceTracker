@@ -81,6 +81,22 @@
         }
       }
     },
+    "widget.safe_to_spend.using_buffer %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in safety buffer until %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nel margine di sicurezza fino al %@"
+          }
+        }
+      }
+    },
     "widget.safe_to_spend.unavailable" : {
       "localizations" : {
         "en" : {

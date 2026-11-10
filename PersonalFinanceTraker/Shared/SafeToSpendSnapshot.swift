@@ -14,6 +14,17 @@ struct SafeToSpendSnapshot: Codable, Sendable, Equatable {
     let payday: Date
     /// False when this cycle has no income — the amount is then just minus the spending.
     let hasIncome: Bool
+    /// The safety buffer already taken out of `amount`.
+    let buffer: Decimal
+
+    /// Where the amount stands (#260). The buffer is a cushion the user chose, not a limit:
+    /// spending into it is a warning, only going past it is over plan.
+    enum Standing: Equatable { case withinPlan, usingBuffer, overPlan }
+
+    static func standing(_ amount: Decimal, buffer: Decimal) -> Standing {
+        if amount >= 0 { return .withinPlan }
+        return amount + buffer >= 0 ? .usingBuffer : .overPlan
+    }
 
     private static let fileName = "safe_to_spend_snapshot.json"
 
