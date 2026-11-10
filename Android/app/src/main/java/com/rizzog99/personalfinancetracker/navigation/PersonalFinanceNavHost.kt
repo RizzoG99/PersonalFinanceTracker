@@ -272,6 +272,7 @@ fun PersonalFinanceNavHost(
                         isDarkTheme = isDarkTheme,
                         onToggleTheme = onToggleTheme,
                         onOpenSettings = { settingsVisible = true },
+                        shellSnackbarHostState = snackbarHostState,
                     )
                 }
             }

@@ -153,6 +153,9 @@ fun ActivityScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onOpenSettings: () -> Unit = {},
+    // The shell's host, when the shell has a floating +: Material lifts a snackbar above a FAB only
+    // within one Scaffold, so a host of our own would put Undo under the + (#368).
+    shellSnackbarHostState: SnackbarHostState? = null,
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: ActivityViewModel = viewModel(
@@ -164,7 +167,7 @@ fun ActivityScreen(
     )
     val state by viewModel.uiState.collectAsState()
     val error by viewModel.error.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = shellSnackbarHostState ?: remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var editingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var isCreating by remember { mutableStateOf(false) }
@@ -186,7 +189,8 @@ fun ActivityScreen(
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        // Two hosts on one state would draw every snackbar twice.
+        snackbarHost = { if (shellSnackbarHostState == null) SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) { innerPadding ->
