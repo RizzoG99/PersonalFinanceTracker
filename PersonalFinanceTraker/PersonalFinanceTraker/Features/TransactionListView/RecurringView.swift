@@ -19,6 +19,9 @@ struct RecurringView: View {
     @Environment(TransactionListViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
     let materializationService: RecurrenceMaterializationService
+    /// Plan's model (owned by MainTabView): read here only for the hidden suggestions (#214) —
+    /// the cards themselves stay on Plan.
+    let committedSpending: CommittedSpendingModel
 
     @State private var rules: [RecurrenceRuleSnapshot] = []
     @State private var stoppedRuleIDs: Set<UUID> = []
@@ -37,7 +40,9 @@ struct RecurringView: View {
         RecurringRulesContent(
             rules: rules.filter { !stoppedRuleIDs.contains($0.id) },
             onSelect: { editingRule = $0 },
-            onDelete: { stopRecurrence($0, stoppedIDs: $stoppedRuleIDs, repo: viewModel.repo) }
+            onDelete: { stopRecurrence($0, stoppedIDs: $stoppedRuleIDs, repo: viewModel.repo) },
+            committedSpending: committedSpending,
+            showsFixedExpenseCards: false
         )
             .navigationTitle("Recurring")
             .navigationBarTitleDisplayMode(.inline)
@@ -108,7 +113,8 @@ struct IPadRecurringSection: View {
             rules: rules.filter { !stoppedRuleIDs.contains($0.id) },
             onSelect: { editingRule = $0 },
             onDelete: { stopRecurrence($0, stoppedIDs: $stoppedRuleIDs, repo: viewModel.repo) },
-            committedSpending: committedSpending
+            committedSpending: committedSpending,
+            showsFixedExpenseCards: true
         )
         .onChange(of: dataChanged.revision) { Task { await reloadRules() } }
         .navigationTitle("Recurring")
@@ -157,8 +163,10 @@ private struct RecurringRulesContent: View {
     let rules: [RecurrenceRuleSnapshot]
     let onSelect: (RecurrenceRuleSnapshot) -> Void
     let onDelete: (RecurrenceRuleSnapshot) -> Void
-    /// iPad only: Plan's fixed-expense cards (#188), scrolling with the rules.
-    var committedSpending: CommittedSpendingModel?
+    /// Plan's fixed-expense model: its hidden suggestions (#214) on both hosts.
+    let committedSpending: CommittedSpendingModel
+    /// iPad only: the fixed-expense cards (#188), scrolling with the rules. iPhone has them on Plan.
+    let showsFixedExpenseCards: Bool
 
     private var categoryByPersistentId: [PersistentIdentifier: CategorySnapshot] {
         Dictionary(uniqueKeysWithValues: viewModel.availableCategories.map { ($0.persistentId, $0) })
@@ -193,7 +201,7 @@ private struct RecurringRulesContent: View {
                 // the canvas as the system's default white on iPad's form-sheet style.
                 ScrollView {
                     VStack(spacing: 24) {
-                        if let committedSpending, !committedSpending.isEmpty {
+                        if showsFixedExpenseCards, !committedSpending.isEmpty {
                             FixedExpensesSection(model: committedSpending)
                         }
                         EmptyStateView(
@@ -201,6 +209,7 @@ private struct RecurringRulesContent: View {
                             message: "No recurring transactions yet",
                             subtitle: "Rules you add manually, or accept from an import, show up here."
                         )
+                        HiddenSuggestionsRow(model: committedSpending)
                     }
                     .readableWidth()
                 }
@@ -209,7 +218,7 @@ private struct RecurringRulesContent: View {
                 .padding(.top, 24)
             } else {
                 List {
-                    if let committedSpending, !committedSpending.isEmpty {
+                    if showsFixedExpenseCards, !committedSpending.isEmpty {
                         FixedExpensesSection(model: committedSpending)
                             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 8, trailing: 16))
                             .listRowBackground(Color.clear)
@@ -243,6 +252,16 @@ private struct RecurringRulesContent: View {
                                 Label("Delete", systemImage: "trash")
                             }
                         }
+                    }
+
+                    if !committedSpending.hidden.isEmpty {
+                        Section {
+                            HiddenSuggestionsRow(model: committedSpending)
+                        }
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listSectionSeparator(.hidden)
                     }
                 }
                 .listStyle(.plain)

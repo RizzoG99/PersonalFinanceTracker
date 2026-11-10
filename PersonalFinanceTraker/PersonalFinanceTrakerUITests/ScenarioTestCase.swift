@@ -154,6 +154,25 @@ class ScenarioTestCase: XCTestCase {
         ("Recurring", "Dynamic Type font sizes are partially unsupported", ["Close"], 273),
         ("Recurring", "Label not human-readable", ["-€*"], 349),
 
+        // Fixed-expense suggestion cards: Plan on iPhone, Recurring on iPad.
+        ("Plan", "Dynamic Type font sizes are partially unsupported", ["Not fixed", "Plan for it"], 378),
+        ("Recurring", "Dynamic Type font sizes are partially unsupported", ["Not fixed", "Plan for it"], 378),
+        ("Plan", "Text clipped", ["About -€*, varies"], 378),
+        ("Recurring", "Text clipped", ["About -€*, varies"], 378),
+        // Plan's Coming up header and its no-rules empty state.
+        ("Plan", "Hit area is too small", ["See all"], 379),
+        ("Plan", "Dynamic Type font sizes are partially unsupported", [
+            "Coming up", "Next 14 days", "See all", "No recurring payments", "Add rent, subscriptions or bills to see them coming.",
+        ], 379),
+
+        // iPad: the sections below the fixed-expense cards — stat cards (`-seedFixedExpenseCards`'
+        // two rules) and the hidden-suggestions row with one hidden.
+        ("Recurring", "Dynamic Type font sizes are partially unsupported", [
+            "Active", "2", "Monthly spend", "-€235.00", "Hidden suggestions", "1",
+        ], 381),
+
+        ("HiddenSuggestions", "Dynamic Type font sizes are partially unsupported", ["Done"], 273),
+
         ("CategoryPicker", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames, 271),
         ("CategoryPicker", "Text clipped", defaultCategoryNames, 271),
         ("CategoryPicker", "Dynamic Type font sizes are partially unsupported", ["Cancel"], 273),

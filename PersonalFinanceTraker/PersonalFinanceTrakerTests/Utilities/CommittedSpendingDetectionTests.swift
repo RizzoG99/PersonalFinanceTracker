@@ -162,6 +162,46 @@ struct CommittedSpendingDetectionTests {
         #expect(detect(inputs, today: today, rules: [rule]).isEmpty)
     }
 
+    // MARK: - Hidden suggestions (#214)
+
+    @Test func unfilteredDetectionSplitsIntoShownAndHidden() {
+        let inputs = [
+            input("Netflix", -12.99, day(2026, 8, 5)), input("Netflix", -12.99, day(2026, 9, 5)),
+            input("Affitto", -650, day(2026, 8, 1)), input("Affitto", -650, day(2026, 9, 1)),
+        ]
+        let today = day(2026, 9, 10)
+        let all = detect(inputs, today: today)
+        let netflix = try! #require(all.first { $0.note == "Netflix" })
+        let dismissed = [RecurrenceDetector.dismissalPattern(for: netflix)]
+
+        let hidden = all.filter { RecurrenceDetector.isDismissed($0, by: dismissed) }
+        let shown = all.filter { !RecurrenceDetector.isDismissed($0, by: dismissed) }
+        #expect(hidden.map(\.note) == ["Netflix"])
+        // The split matches what detect filters itself.
+        #expect(shown.map(\.note) == detect(inputs, today: today, dismissed: dismissed).map(\.note))
+    }
+
+    @Test func dismissalMatchesLikeDetection() {
+        let suggestion = try! #require(detect([
+            input("Affitto settembre", -650, day(2026, 8, 1)), input("Affitto ottobre", -650, day(2026, 9, 1)),
+        ], today: day(2026, 9, 3)).first)
+        // Month name in the note, amount within the 15 % tolerance: same commitment.
+        #expect(RecurrenceDetector.isDismissed(suggestion, by: [DismissedRecurrencePattern(note: "affitto", amount: -700)]))
+        #expect(!RecurrenceDetector.isDismissed(suggestion, by: [DismissedRecurrencePattern(note: "affitto", amount: -900)]))
+        #expect(!RecurrenceDetector.isDismissed(suggestion, by: [DismissedRecurrencePattern(note: "netflix", amount: -650)]))
+    }
+
+    @Test func showAgainDropsEveryDuplicateAndKeepsTheRest() {
+        let suggestion = try! #require(detect([
+            input("Netflix", -12.99, day(2026, 8, 5)), input("Netflix", -12.99, day(2026, 9, 5)),
+        ], today: day(2026, 9, 10)).first)
+        let pattern = RecurrenceDetector.dismissalPattern(for: suggestion)
+        let other = DismissedRecurrencePattern(note: "palestra", amount: -35)
+        // `dismiss` appends, so one series can be stored twice.
+        let remaining = DismissedRecurrencePatterns.removing(suggestion, from: [pattern, other, pattern])
+        #expect(remaining == [other])
+    }
+
     @Test func driftingSeriesIsSuggestedAndAnchoredOnLatestPayment() {
         // Anchored on the first payment (the 26th), the 25 Sep payment read as "early" and a
         // phantom 26 Sep occurrence went unpaid, so the series was dropped as stopped.

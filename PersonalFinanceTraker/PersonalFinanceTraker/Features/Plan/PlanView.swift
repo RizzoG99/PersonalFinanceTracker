@@ -63,6 +63,9 @@ struct PlanView: View {
                         FixedExpensesSection(model: committedSpending)
                             .padding(16)
                     }
+                    // No "See all" here, so Recurring's hidden suggestions (#214) need a way in.
+                    HiddenSuggestionsRow(model: committedSpending)
+                        .padding(.horizontal, 16)
                     welcome
                 } else {
                     LazyVStack(spacing: 24) {
@@ -110,7 +113,7 @@ struct PlanView: View {
         // there stacks the edit surface on top instead of popping back here first.
         .sheet(isPresented: $showingRecurringView, onDismiss: { Task { await reloadRules() } }) {
             NavigationStack {
-                RecurringView(materializationService: materializationService)
+                RecurringView(materializationService: materializationService, committedSpending: committedSpending)
             }
             .presentationBackground { AppBackground() }
         }
