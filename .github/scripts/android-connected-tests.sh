@@ -1,17 +1,29 @@
 #!/usr/bin/env bash
-# #372: on API 34 the Pixel Launcher ANRs shortly after boot ("Input dispatching timed out
-# (Application does not have a focused window)"). Its "isn't responding" dialog then keeps
-# window focus for the whole run, and Espresso's pressBack() needs the app window to have it.
-# The dialog can appear ~15 s after boot completes, so watch for a while and close any that shows.
+# #372: right after boot, android-emulator-runner sends `input keyevent 82` (MENU). On the API 34
+# image the Pixel Launcher may not have a focused window yet, so input dispatch times out and the
+# launcher ANRs. Its "isn't responding" dialog then keeps window focus for the whole run, and
+# Espresso's pressBack() needs the app window to have it. Build first so any boot ANR has already
+# fired, then close the dialog before the suite.
 set -u
+cd Android
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace || exit 1
 
 anr_dialog() { adb shell dumpsys window | grep -q "mCurrentFocus=.*Application Not Responding"; }
 
-for _ in $(seq 12); do
+# TEMPORARY (#372 verification): force the real failure so the dismissal path runs.
+pid=$(adb shell pidof com.google.android.apps.nexuslauncher)
+adb shell su 0 kill -STOP "$pid"
+adb shell input keyevent KEYCODE_MENU
+for _ in $(seq 15); do anr_dialog && break; sleep 2; done
+adb shell su 0 kill -CONT "$pid"
+adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"
+# END TEMPORARY
+
+for _ in $(seq 6); do
   if anr_dialog; then
     echo "Closing system ANR dialog:"
     adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"
-    # ponytail: CLOSE_SYSTEM_DIALOGS makes the ANR dialog force-close the hung app; HOME brings the launcher back.
+    # ponytail: CLOSE_SYSTEM_DIALOGS makes the ANR dialog close the hung app; HOME brings the launcher back.
     adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null
     adb shell input keyevent KEYCODE_HOME
   fi
@@ -23,4 +35,4 @@ if anr_dialog; then
   exit 1
 fi
 
-cd Android && ./gradlew :app:connectedDebugAndroidTest --stacktrace
+./gradlew :app:connectedDebugAndroidTest --stacktrace
