@@ -3,22 +3,14 @@
 # image the Pixel Launcher may not have a focused window yet, so input dispatch times out and the
 # launcher ANRs. Its "isn't responding" dialog then keeps window focus for the whole run, and
 # Espresso's pressBack() needs the app window to have it. Build first so any boot ANR has already
-# fired, then close the dialog before the suite.
+# fired, then close the dialog before the suite. Verified by freezing the launcher (SIGSTOP + MENU)
+# to force the dialog on API 26 and 34: run 42817202420.
 set -u
 cd Android
 ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace || exit 1
 
 # API 26 swaps a closed ANR dialog for an "Application Error" one, so match both.
 anr_dialog() { adb shell dumpsys window | grep -qE "mCurrentFocus=.*Application (Not Responding|Error)"; }
-
-# TEMPORARY (#372 verification): force the real failure so the dismissal path runs.
-pid=$(adb shell pidof com.google.android.apps.nexuslauncher)
-adb shell su 0 kill -STOP "$pid"
-adb shell input keyevent KEYCODE_MENU
-for _ in $(seq 15); do anr_dialog && break; sleep 2; done
-adb shell su 0 kill -CONT "$pid"
-adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"
-# END TEMPORARY
 
 for _ in $(seq 6); do
   if anr_dialog; then
