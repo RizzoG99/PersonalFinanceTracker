@@ -8,7 +8,8 @@ set -u
 cd Android
 ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace || exit 1
 
-anr_dialog() { adb shell dumpsys window | grep -q "mCurrentFocus=.*Application Not Responding"; }
+# API 26 swaps a closed ANR dialog for an "Application Error" one, so match both.
+anr_dialog() { adb shell dumpsys window | grep -qE "mCurrentFocus=.*Application (Not Responding|Error)"; }
 
 # TEMPORARY (#372 verification): force the real failure so the dismissal path runs.
 pid=$(adb shell pidof com.google.android.apps.nexuslauncher)
@@ -21,7 +22,7 @@ adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"
 
 for _ in $(seq 6); do
   if anr_dialog; then
-    echo "Closing system ANR dialog:"
+    echo "Closing system ANR/error dialog:"
     adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"
     # ponytail: CLOSE_SYSTEM_DIALOGS makes the ANR dialog close the hung app; HOME brings the launcher back.
     adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null
@@ -31,7 +32,7 @@ for _ in $(seq 6); do
 done
 adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"
 if anr_dialog; then
-  echo "An ANR dialog still holds window focus; Espresso tests would fail" >&2
+  echo "A system ANR/error dialog still holds window focus; Espresso tests would fail" >&2
   exit 1
 fi
 
