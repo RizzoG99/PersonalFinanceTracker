@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
@@ -257,11 +258,15 @@ class ActivityUndoPlacementTest {
         }
         rule.onAllNodes(undo).assertCountEquals(1)
 
+        // Activity's search box is a text field too: the amount is the editor's first new field.
+        val before = rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().map { it.id }.toSet()
         rule.onNode(plus).performClick()
         rule.waitForIdle()
-        rule.onAllNodes(hasSetTextAction())[0].performTextInput("3.00")
+        val amount = rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().first { it.id !in before }.id
+        rule.onNode(SemanticsMatcher("id $amount") { it.id == amount }).performTextInput("3.00")
         rule.waitForIdle()
         val save = hasContentDescription(string(R.string.add_transaction)) and hasClickAction()
+        rule.onNode(save).assertIsEnabled()
         rule.mainClock.autoAdvance = false
         try {
             rule.onNode(save).performClick()
@@ -272,7 +277,8 @@ class ActivityUndoPlacementTest {
                 Thread.sleep(16)
             }
             assertTrue(
-                "'Transaction saved' never showed: stored=${transactions().map { it.note }}",
+                "'Transaction saved' never showed: stored=${transactions().map { it.amount }}, " +
+                    "undo showing=${rule.onAllNodes(undo).fetchSemanticsNodes().size}",
                 rule.onAllNodes(saved).fetchSemanticsNodes().isNotEmpty(),
             )
         } finally {
