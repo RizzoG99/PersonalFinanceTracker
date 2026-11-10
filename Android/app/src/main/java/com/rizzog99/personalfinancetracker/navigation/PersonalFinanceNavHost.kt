@@ -32,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -144,11 +143,11 @@ fun PersonalFinanceNavHost(
         navController.popBackStack()
     }
     val savedMessage = stringResource(R.string.transaction_saved)
-    val undoLabel = stringResource(R.string.undo)
+    // A confirmation only: frozen iOS offers no Undo after a save, and this one never reversed it (#287).
     val onTransactionSaved: () -> Unit = {
         transactionEditorScope.launch {
             snackbarHostState.currentSnackbarData?.dismiss()
-            snackbarHostState.showSnackbar(message = savedMessage, actionLabel = undoLabel, duration = androidx.compose.material3.SnackbarDuration.Short)
+            snackbarHostState.showSnackbar(message = savedMessage)
         }
     }
     val onMainDestination = currentDestination?.route in mainDestinations.map(MainDestination::route) &&
