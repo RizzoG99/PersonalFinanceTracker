@@ -10,12 +10,14 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.unit.Density
@@ -86,7 +88,9 @@ class ActivityUndoPlacementTest {
     }
 
     /** One −12.50 EUR "coffee" expense in Groceries; returns its id. */
-    private fun seedCoffee(): String {
+    private fun seedCoffee(): String = seedExpense("coffee")
+
+    private fun seedExpense(note: String): String {
         val id = UUID.randomUUID().toString()
         val groceries = groceries()
         runBlocking {
@@ -95,7 +99,7 @@ class ActivityUndoPlacementTest {
                     id = id,
                     timestamp = Instant.now(),
                     amount = BigDecimal("-12.50"),
-                    note = "coffee",
+                    note = note,
                     categoryLabel = groceries.name,
                     categoryId = groceries.id,
                     currencyCode = "EUR",
@@ -104,7 +108,7 @@ class ActivityUndoPlacementTest {
                 ),
             )
         }
-        assertTrue("precondition: coffee stored", transactions().any { it.id == id })
+        assertTrue("precondition: $note stored", transactions().any { it.id == id })
         return id
     }
 
@@ -120,8 +124,10 @@ class ActivityUndoPlacementTest {
         with(NavShellMarkers()) { rule.selectTab(activityTab) }
     }
 
-    private fun swipeCoffeeLeft() {
-        rule.onNodeWithText("coffee").performScrollTo().performTouchInput { swipeLeft() }
+    private fun swipeCoffeeLeft() = swipeLeftOn("coffee")
+
+    private fun swipeLeftOn(note: String) {
+        rule.onNodeWithText(note).performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
     }
 
@@ -230,6 +236,50 @@ class ActivityUndoPlacementTest {
         val restored = transactions().single { it.id == occurrence.id }
         assertEquals(0, BigDecimal("-12.50").compareTo(restored.amount))
         assertEquals(occurrence.recurrenceRuleId, restored.recurrenceRuleId)
+    }
+
+    /**
+     * Regression from the shared host (code review r1): two deletes without resolving the first
+     * Undo, then a save from +. Undo never expires (#376), so a queued second Undo used to hold the
+     * shell's host and "Transaction saved" never showed. One Undo at a time, as on iOS.
+     */
+    @Test
+    fun ac03_saveFromPlusAfterTwoDeletesStillConfirms_compact() {
+        val coffee = seedExpense("coffee")
+        val tea = seedExpense("tea")
+        host(widthDp = 411)
+
+        listOf("coffee" to coffee, "tea" to tea).forEach { (note, id) ->
+            swipeLeftOn(note)
+            rule.onNodeWithText(string(R.string.delete_transaction)).performClick()
+            rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
+            waitForUndo()
+        }
+        rule.onAllNodes(undo).assertCountEquals(1)
+
+        rule.onNode(plus).performClick()
+        rule.waitForIdle()
+        rule.onAllNodes(hasSetTextAction())[0].performTextInput("3.00")
+        rule.waitForIdle()
+        val save = hasContentDescription(string(R.string.add_transaction)) and hasClickAction()
+        rule.mainClock.autoAdvance = false
+        try {
+            rule.onNode(save).performClick()
+            val saved = hasText(string(R.string.transaction_saved))
+            val deadline = System.currentTimeMillis() + 60_000
+            while (rule.onAllNodes(saved).fetchSemanticsNodes().isEmpty() && System.currentTimeMillis() < deadline) {
+                rule.mainClock.advanceTimeByFrame()
+                Thread.sleep(16)
+            }
+            assertTrue(
+                "'Transaction saved' never showed: stored=${transactions().map { it.note }}",
+                rule.onAllNodes(saved).fetchSemanticsNodes().isNotEmpty(),
+            )
+        } finally {
+            rule.mainClock.autoAdvance = true
+        }
+        // Both deletes stand; the new expense is the only row.
+        assertEquals(listOf(0), transactions().map { BigDecimal("-3.00").compareTo(it.amount) })
     }
 
     /**

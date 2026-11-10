@@ -299,13 +299,7 @@ fun ActivityScreen(
             onConfirm = {
                 deletingTransaction = null
                 scope.launch {
-                    if (viewModel.delete(transaction)) {
-                        val result = snackbarHostState.showSnackbar(
-                            message = application.getString(R.string.transaction_deleted),
-                            actionLabel = application.getString(R.string.undo),
-                        )
-                        if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
-                    }
+                    if (viewModel.delete(transaction)) showUndoDeletion(snackbarHostState, viewModel, transaction, application)
                 }
             },
         )
@@ -479,11 +473,7 @@ fun ActivityTwoPaneScreen(
                 scope.launch {
                     if (viewModel.delete(transaction)) {
                         selectedId = null
-                        val result = snackbarHostState.showSnackbar(
-                            message = application.getString(R.string.transaction_deleted),
-                            actionLabel = application.getString(R.string.undo),
-                        )
-                        if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
+                        showUndoDeletion(snackbarHostState, viewModel, transaction, application)
                     }
                 }
             },
@@ -1962,6 +1952,10 @@ private suspend fun showUndoDeletion(
     transaction: FinanceTransaction,
     application: PersonalFinanceApplication,
 ) {
+    // One Undo at a time, as on frozen iOS, where a new delete commits the pending one
+    // (TransactionListViewModel.swift:525). An Undo never expires (#376), so a queued one would
+    // otherwise hold the shared host and block every later message, "Transaction saved" included (#368).
+    snackbarHostState.currentSnackbarData?.dismiss()
     val result = snackbarHostState.showSnackbar(
         message = application.getString(R.string.transaction_deleted),
         actionLabel = application.getString(R.string.undo),
