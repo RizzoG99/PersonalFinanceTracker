@@ -64,6 +64,28 @@ struct TransactionActorRecurrenceTests {
         #expect(active.isEmpty)
     }
 
+    /// #366: with no sort, the list could change order from one launch to the next.
+    @Test func rulesComeSoonestFirstThenByNameWithEndedLast() async throws {
+        let actor = makeFileBackedActor()
+        let soon = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: 3, to: .now)!)
+        let later = Calendar.current.date(byAdding: .day, value: 10, to: .now)!
+        func rule(_ note: String, _ startDate: Date) -> RecurrenceRuleInput {
+            RecurrenceRuleInput(frequency: .monthly, interval: 1, startDate: startDate, amount: -10, note: note, category: "Housing", currencyCode: "EUR")
+        }
+
+        // Saved in the reverse of the expected order, so the store's row order fails this. The
+        // rows show the day only, so Rule A's later hour must not put it after Rule B.
+        let ended = rule("Aaa ended", date(2026, 1, 1))
+        try await actor.addRecurrenceRule(ended)
+        try await actor.closeRecurrenceRule(id: ended.id, endDate: date(2026, 1, 15))
+        for input in [rule("Later", later), rule("Rule B", soon.addingTimeInterval(9 * 3600)), rule("Rule A", soon.addingTimeInterval(10 * 3600))] {
+            try await actor.addRecurrenceRule(input)
+        }
+
+        #expect(try await actor.fetchAllRecurrenceRules().map(\.note) == ["Rule A", "Rule B", "Later", "Aaa ended"])
+        #expect(try await actor.fetchActiveRecurrenceRules().map(\.note) == ["Rule A", "Rule B", "Later"])
+    }
+
     @Test func fetchRecurrenceRuleById() async throws {
         let actor = makeActor()
         let input = ruleInput(startDate: date(2026, 1, 1))

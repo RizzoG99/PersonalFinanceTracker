@@ -306,15 +306,7 @@ private struct RecurringRulesContent: View {
         if let endDate = rule.endDate, endDate < .now {
             return cadence + " · " + String(localized: "Ended \(endDate.formatted(date: .abbreviated, time: .omitted))")
         }
-        let next = RecurrenceOccurrenceCalculator.occurrenceDates(
-            frequency: rule.frequency,
-            interval: rule.interval,
-            startDate: rule.startDate,
-            ruleEndDate: rule.endDate,
-            since: .now,
-            through: Calendar.current.date(byAdding: .year, value: 1, to: .now) ?? .now
-        ).first
-        guard let next else { return cadence }
+        guard let next = rule.nextOccurrence(after: .now) else { return cadence }
         return cadence + " · " + String(localized: "next \(next.formatted(date: .abbreviated, time: .omitted))")
     }
 }

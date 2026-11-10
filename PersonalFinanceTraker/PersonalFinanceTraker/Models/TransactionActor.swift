@@ -259,12 +259,30 @@ actor TransactionActor: ITransactionRepository {
     func fetchActiveRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
         let today = Calendar.current.startOfDay(for: .now)
         let all = try modelContext.fetch(FetchDescriptor<RecurrenceRule>())
-        return all.filter { $0.isActive(asOf: today) }.map(RecurrenceRuleSnapshot.init)
+        return inDisplayOrder(all.filter { $0.isActive(asOf: today) })
     }
 
     func fetchAllRecurrenceRules() async throws -> [RecurrenceRuleSnapshot] {
-        let all = try modelContext.fetch(FetchDescriptor<RecurrenceRule>())
-        return all.map(RecurrenceRuleSnapshot.init)
+        inDisplayOrder(try modelContext.fetch(FetchDescriptor<RecurrenceRule>()))
+    }
+
+    /// Soonest next day first, as the rows show it, and rules with none last. Name, then id,
+    /// settle ties, so the order never depends on how the store returns rows (#366). In memory
+    /// because the next occurrence isn't stored.
+    private func inDisplayOrder(_ rules: [RecurrenceRule]) -> [RecurrenceRuleSnapshot] {
+        let now = Date.now
+        return rules
+            .map(RecurrenceRuleSnapshot.init)
+            .map { rule in
+                let next = rule.nextOccurrence(after: now).map { Calendar.current.startOfDay(for: $0) }
+                return (rule: rule, next: next ?? .distantFuture)
+            }
+            .sorted { lhs, rhs in
+                if lhs.next != rhs.next { return lhs.next < rhs.next }
+                let byName = lhs.rule.title.localizedStandardCompare(rhs.rule.title)
+                return byName == .orderedSame ? lhs.rule.id.uuidString < rhs.rule.id.uuidString : byName == .orderedAscending
+            }
+            .map(\.rule)
     }
 
     func fetchRecurrenceRule(id: UUID) async throws -> RecurrenceRuleSnapshot? {
