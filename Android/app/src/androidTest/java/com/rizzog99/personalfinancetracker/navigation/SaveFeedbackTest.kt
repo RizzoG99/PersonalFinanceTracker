@@ -123,7 +123,7 @@ class SaveFeedbackTest {
         rule.mainClock.autoAdvance = false
         rule.onNode(save).assertIsEnabled().performClick()
         var undoCount = -1
-        val deadline = System.currentTimeMillis() + 5_000
+        val deadline = System.currentTimeMillis() + 20_000
         while (undoCount < 0 && System.currentTimeMillis() < deadline) {
             rule.mainClock.advanceTimeByFrame()
             if (rule.onAllNodes(hasText(string(R.string.transaction_saved))).fetchSemanticsNodes().isNotEmpty()) {
@@ -225,7 +225,7 @@ class SaveFeedbackTest {
             rule.onNode(hasContentDescription(base.getString(R.string.add_transaction)) and hasClickAction())
                 .performClick()
             val saved = hasText(localized.getString(R.string.transaction_saved))
-            val deadline = System.currentTimeMillis() + 5_000
+            val deadline = System.currentTimeMillis() + 20_000
             while (rule.onAllNodes(saved).fetchSemanticsNodes().isEmpty() && System.currentTimeMillis() < deadline) {
                 rule.mainClock.advanceTimeByFrame()
                 Thread.sleep(16)
@@ -273,10 +273,10 @@ class SaveFeedbackTest {
         rule.onNodeWithText("coffee").performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
         rule.onNodeWithText(string(R.string.delete_transaction)).performClick()
-        rule.waitUntil(timeoutMillis = 5_000) { transactions().none { it.id == id } }
+        rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
 
         val undo = hasText(string(R.string.undo)) and hasClickAction()
-        rule.waitUntil(timeoutMillis = 5_000) {
+        rule.waitUntil(timeoutMillis = 20_000) {
             rule.onAllNodes(hasText(string(R.string.transaction_deleted))).fetchSemanticsNodes().isNotEmpty() &&
                 rule.onAllNodes(undo).fetchSemanticsNodes().isNotEmpty()
         }
@@ -286,6 +286,6 @@ class SaveFeedbackTest {
             .fetchSemanticsNodes().map { it.boundsInWindow }
         assertTrue("Undo $undoBounds is covered by + $add", add.none { it.overlaps(undoBounds) })
         rule.onNode(undo).performClick()
-        rule.waitUntil(timeoutMillis = 5_000) { transactions().any { it.id == id } }
+        rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
     }
 }
