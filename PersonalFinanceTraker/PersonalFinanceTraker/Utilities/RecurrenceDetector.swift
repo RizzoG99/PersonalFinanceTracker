@@ -132,12 +132,11 @@ enum RecurrenceDetector {
                 guard nextDate.addingTimeInterval(window) >= today else { continue }
 
                 let amount = median(group.map(\.amount))
-                if existingRules.contains(where: { commitmentKey(goalId: $0.goalId, note: $0.note) == key && isSameAmount($0.amount, amount) })
-                    || dismissed.contains(where: { commitmentKey(goalId: $0.goalId, note: $0.note) == key && isSameAmount($0.amount, amount) }) {
+                if existingRules.contains(where: { commitmentKey(goalId: $0.goalId, note: $0.note) == key && isSameAmount($0.amount, amount) }) {
                     continue
                 }
 
-                suggestions.append(RecurrenceSuggestion(
+                let suggestion = RecurrenceSuggestion(
                     frequency: cadence.frequency,
                     interval: cadence.interval,
                     amount: amount,
@@ -150,7 +149,8 @@ enum RecurrenceDetector {
                     occurrenceDates: dates,
                     amountsIdentical: identical,
                     goalId: key.goalId
-                ))
+                )
+                if !isDismissed(suggestion, by: dismissed) { suggestions.append(suggestion) }
             }
         }
 
@@ -165,6 +165,12 @@ enum RecurrenceDetector {
 
     static func dismissalPattern(for suggestion: RecurrenceSuggestion) -> DismissedRecurrencePattern {
         DismissedRecurrencePattern(note: normalizeNote(suggestion.note), amount: suggestion.amount, goalId: suggestion.goalId)
+    }
+
+    /// "Not fixed" was answered to this series: same goal or normalised note, amount within tolerance.
+    static func isDismissed(_ suggestion: RecurrenceSuggestion, by patterns: [DismissedRecurrencePattern]) -> Bool {
+        let key = commitmentKey(goalId: suggestion.goalId, note: suggestion.note)
+        return patterns.contains { commitmentKey(goalId: $0.goalId, note: $0.note) == key && isSameAmount($0.amount, suggestion.amount) }
     }
 
     // MARK: - Forecast-only rules

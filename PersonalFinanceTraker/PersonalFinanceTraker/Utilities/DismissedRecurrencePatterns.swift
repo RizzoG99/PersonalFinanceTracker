@@ -22,6 +22,21 @@ enum DismissedRecurrencePatterns {
         UserDefaults.standard.set(try? JSONEncoder().encode(patterns), forKey: defaultsKey)
     }
 
+    /// "Show again" (#214): the next detection pass suggests it again.
+    static func restore(_ suggestion: RecurrenceSuggestion) {
+        let patterns = removing(suggestion, from: all)
+        if patterns.isEmpty {
+            removeAll()
+        } else {
+            UserDefaults.standard.set(try? JSONEncoder().encode(patterns), forKey: defaultsKey)
+        }
+    }
+
+    /// Every pattern that hides `suggestion` — `dismiss` appends, so there can be duplicates.
+    static func removing(_ suggestion: RecurrenceSuggestion, from patterns: [DismissedRecurrencePattern]) -> [DismissedRecurrencePattern] {
+        patterns.filter { !RecurrenceDetector.isDismissed(suggestion, by: [$0]) }
+    }
+
     static func removeAll() {
         UserDefaults.standard.removeObject(forKey: defaultsKey)
     }
