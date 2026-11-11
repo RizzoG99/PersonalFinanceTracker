@@ -25,6 +25,7 @@ struct PersonalFinanceTrakerApp: App {
         UNUserNotificationCenter.current().delegate = NotificationTapHandler.shared
         configureTips()
         seedSampleDataIfRequested()
+        seedPendingCheckInIfRequested()
         seedSpendingAnomalyIfRequested()
         seedBudgetBoundaryExpenseIfRequested()
         seedFixedExpenseCardsIfRequested()
@@ -191,6 +192,32 @@ private extension PersonalFinanceTrakerApp {
         let categories = (try? context.fetch(FetchDescriptor<CategoryModel>())) ?? []
         for category in categories {
             category.monthlyBudget = budgets[category.name]
+        }
+        try? context.save()
+        #endif
+    }
+
+    /// `-seedPendingCheckIn` (#215) leaves Financial Pulse pending with every button on it:
+    /// nothing dated today, two daily habits (≥3 days each, so two quick templates and the
+    /// secondary "New transaction") and ≥3 logged days, which shows the reminder prompt.
+    /// Rules go too, so none materialises a payment today.
+    @MainActor
+    func seedPendingCheckInIfRequested() {
+        #if DEBUG
+        guard ProcessInfo.processInfo.arguments.contains("-seedPendingCheckIn") else { return }
+        let context = AppContainer.shared.mainContext
+        try? context.delete(model: TransactionModel.self)
+        try? context.delete(model: RecurrenceRule.self)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        func day(_ offset: Int, hour: Int) -> Date {
+            calendar.date(byAdding: DateComponents(day: -offset, hour: hour), to: today)!
+        }
+        for offset in 1...4 {
+            context.insert(TransactionModel(timestamp: day(offset, hour: 9), amount: -3.5, note: "Morning coffee", category: "Coffee & Drinks"))
+        }
+        for offset in 1...3 {
+            context.insert(TransactionModel(timestamp: day(offset, hour: 8), amount: -2, note: "Bus ticket", category: "Public Transport"))
         }
         try? context.save()
         #endif

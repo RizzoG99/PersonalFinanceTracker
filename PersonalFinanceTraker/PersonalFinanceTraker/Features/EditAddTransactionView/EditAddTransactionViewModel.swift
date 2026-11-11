@@ -132,6 +132,12 @@ final class EditAddTransactionViewModel {
         } else if let draft {
             populateForm(from: draft)
         }
+        #if DEBUG
+        // `-seedReceiptTotalCandidates` (#215): the "Which total is right?" chips without a scan.
+        if editingItem == nil, ProcessInfo.processInfo.arguments.contains("-seedReceiptTotalCandidates") {
+            receiptTotalCandidates = [12.5, 15]
+        }
+        #endif
     }
 
     /// The open-time load, kept so work that *needs* it can wait rather than race it. Category

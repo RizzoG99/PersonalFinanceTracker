@@ -314,6 +314,19 @@ struct NewContentBadge: View {
     }
 }
 
+// MARK: - Secondary Button
+
+extension View {
+    /// The one look for secondary actions: system `.bordered` with a neutral tint. The app's
+    /// root indigo tint drew an indigo label on a faint indigo fill, 3–4:1 in light and under
+    /// 3:1 on dark glass (#206, #215). Primary actions keep `.borderedProminent` indigo, so the
+    /// main action on a card still stands out. Not `.glass`: glass inside `GlassCard` is discouraged.
+    /// An inner `.tint` on the button itself overrides this one, so don't set one.
+    func secondaryButtonStyle() -> some View {
+        buttonStyle(.bordered).tint(.primary)
+    }
+}
+
 // MARK: - Glass Card Component
 
 struct GlassCard<Content: View>: View {

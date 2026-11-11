@@ -103,7 +103,7 @@ struct CSVCategoryMappingView: View {
                 Button(action: { autoMap() }) {
                     Label("Auto-Map All", systemImage: "wand.and.stars")
                 }
-                .buttonStyle(.bordered)
+                .secondaryButtonStyle()
             }
             if showsStepActions {
                 ToolbarItem(placement: .topBarTrailing) {

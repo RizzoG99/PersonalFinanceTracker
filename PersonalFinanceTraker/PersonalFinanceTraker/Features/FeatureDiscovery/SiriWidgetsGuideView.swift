@@ -357,7 +357,7 @@ private struct SiriPhraseRow: View {
         Button(action: onCopy) {
             Label(isCopied ? copiedTitle : copyTitle, systemImage: isCopied ? "checkmark" : "doc.on.doc")
         }
-        .buttonStyle(.bordered)
+        .secondaryButtonStyle()
         .controlSize(.small)
         .frame(minHeight: 44)
     }

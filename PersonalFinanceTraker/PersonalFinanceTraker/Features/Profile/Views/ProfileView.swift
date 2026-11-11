@@ -261,7 +261,7 @@ struct ProfileView: View {
             Button("Back Up Now") {
                 Task { await runManualBackup() }
             }
-            .buttonStyle(.bordered)
+            .secondaryButtonStyle()
             .controlSize(.small)
         }
         .padding(.vertical, 4)

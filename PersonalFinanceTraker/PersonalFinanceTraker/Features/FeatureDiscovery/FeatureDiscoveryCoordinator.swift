@@ -71,6 +71,14 @@ final class FeatureDiscoveryCoordinator {
     }
 
     func showWhatsNew(appVersion: String) {
+        #if DEBUG
+        // `-whatsNewFixture` (#215): a built-in release with action buttons, whatever the remote
+        // manifest and the app version say, so a scenario test sees the same content every run.
+        if ProcessInfo.processInfo.arguments.contains("-whatsNewFixture") {
+            present(FeatureDiscoveryManifest.fallback.releases.first { $0.id == "1.0-financial-pulse" })
+            return
+        }
+        #endif
         present(manifest.releases.last { $0.version == appVersion })
     }
 
