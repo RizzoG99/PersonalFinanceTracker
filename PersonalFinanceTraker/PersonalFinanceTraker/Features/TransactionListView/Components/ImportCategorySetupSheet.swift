@@ -133,7 +133,8 @@ struct ImportCategorySetupSheet: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    // Checkmark like every other form sheet (#250); the title is the VoiceOver label.
+                    Button("Add Category", systemImage: "checkmark") {
                         draft.name = trimmedName
                         onSave(draft)
                         dismiss()

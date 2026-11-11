@@ -102,8 +102,8 @@ struct AddEditCreditCardSheet: View {
                         .foregroundStyle(.textPrimary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
-                        .foregroundStyle(isValid ? .accentIndigo : .textDim)
+                    // Checkmark like every other form sheet (#250); the title is the VoiceOver label.
+                    Button(isEditing ? "Update Card" : "Add Card", systemImage: "checkmark", action: save)
                         .disabled(!isValid)
                 }
             }

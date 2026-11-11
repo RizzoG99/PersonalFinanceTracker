@@ -2216,6 +2216,16 @@
         }
       }
     },
+    "Amount to spend today" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importo da spendere oggi"
+          }
+        }
+      }
+    },
     "Amounts hidden" : {
       "localizations" : {
         "en" : {
@@ -12486,6 +12496,38 @@
         }
       }
     },
+    "Update Card" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Card"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna carta"
+          }
+        }
+      }
+    },
+    "Update Category" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Category"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna categoria"
+          }
+        }
+      }
+    },
     "Update Goal" : {
       "localizations" : {
         "en" : {
@@ -12757,6 +12799,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "settimane"
+          }
+        }
+      }
+    },
+    "What if I spend…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E se spendessi…"
           }
         }
       }
