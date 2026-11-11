@@ -2216,6 +2216,16 @@
         }
       }
     },
+    "Amount to spend today" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importo da spendere oggi"
+          }
+        }
+      }
+    },
     "Amounts hidden" : {
       "localizations" : {
         "en" : {
@@ -12789,6 +12799,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "settimane"
+          }
+        }
+      }
+    },
+    "What if I spend…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E se spendessi…"
           }
         }
       }

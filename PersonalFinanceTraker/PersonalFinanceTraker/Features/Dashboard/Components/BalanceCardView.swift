@@ -11,6 +11,10 @@ struct BalanceCardView: View {
     @Environment(DashboardViewModel.self) private var viewModel
     @Environment(AppSettings.self) private var appSettings
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// "What if I spend €X today?" (#213) — a simulation only, nothing is recorded.
+    @State private var whatIfText = ""
+    @FocusState private var whatIfFocus: WhatIfField?
+    private enum WhatIfField { case amount }
 
     var body: some View {
         GlassCard {
@@ -41,6 +45,7 @@ struct BalanceCardView: View {
                     } else {
                         hero(safe)
                         breakdown(safe)
+                        whatIf(safe)
                     }
                 } else {
                     Text(verbatim: "€000.00")
@@ -75,21 +80,27 @@ struct BalanceCardView: View {
     }
 
     private func hero(_ safe: SafeToSpend) -> some View {
+        outcome(safe.amount, of: safe, font: .largeTitle.bold())
+    }
+
+    /// The amount left and where it stands — the hero's figure, and also what a what-if spend
+    /// would leave, so both read the same way.
+    private func outcome(_ amount: Decimal, of safe: SafeToSpend, font: Font) -> some View {
         let lastDay = SafeToSpendSnapshot.lastDay(before: safe.payday).formatted(.dateTime.day().month(.abbreviated))
-        let perDay = SafeToSpendSnapshot.perDay(safe.amount, from: viewModel.currentDate(), until: safe.payday)
+        let perDay = SafeToSpendSnapshot.perDay(amount, from: viewModel.currentDate(), until: safe.payday)
             .map { appSettings.hideAmounts ? "••••" : $0.formatted(.currency(code: CurrencyService().baseCurrency).precision(.fractionLength(0))) }
-        let standing = safe.standing
+        let standing = SafeToSpendSnapshot.standing(amount, buffer: safe.buffer)
         return VStack(alignment: .leading, spacing: 4) {
             // Fixed-width mask when hidden — a plain blur would still leak the
             // amount's digit count (and thus rough magnitude) via glyph width.
-            Text(masked(safe.amount))
-                .font(.largeTitle.bold())
+            Text(masked(amount))
+                .font(font)
                 .foregroundStyle(standing.color(default: .textPrimary))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .monospacedDigit()
-                .contentTransition(.numericText(value: Double(truncating: safe.amount as NSDecimalNumber)))
-                .animation(.default, value: safe.amount)
+                .contentTransition(.numericText(value: Double(truncating: amount as NSDecimalNumber)))
+                .animation(.default, value: amount)
                 .privacyBlur(radius: 8)
 
             Group {
@@ -135,6 +146,38 @@ struct BalanceCardView: View {
                 .foregroundStyle(.textMid)
         }
         .tint(.textMid)
+    }
+
+    /// "If I spend €X today, am I still within plan until payday?" (#213). Nothing is saved:
+    /// the answer is the hero's own figure minus X, read the same way as the hero.
+    private func whatIf(_ safe: SafeToSpend) -> some View {
+        DisclosureGroup {
+            VStack(alignment: .leading, spacing: 8) {
+                TextField("Amount", text: $whatIfText, prompt: Text(verbatim: "€0"))
+                    .keyboardType(.decimalPad)
+                    .focused($whatIfFocus, equals: .amount)
+                    .padding(10)
+                    .background(.formRow, in: .rect(cornerRadius: 10))
+                    .accessibilityLabel("Amount to spend today")
+                    .accessibilityIdentifier("whatIfAmount")
+                    .onChange(of: whatIfText) { _, text in
+                        let clean = AmountParser.sanitizedInput(text)
+                        if clean != text { whatIfText = clean }
+                    }
+                // Empty or unreadable input shows nothing rather than an error: it's a question
+                // being typed, not a form to submit.
+                if let spend = AmountParser.parse(whatIfText, requirePositive: true) {
+                    outcome(safe.amount - spend, of: safe, font: .title2.bold())
+                }
+            }
+            .padding(.top, 8)
+        } label: {
+            Text("What if I spend…")
+                .font(.subheadline)
+                .foregroundStyle(.textMid)
+        }
+        .tint(.textMid)
+        .keyboardFieldNavigation($whatIfFocus, order: [.amount], hideFocusButtons: true)
     }
 
     /// Label and amount side by side; stacked at accessibility sizes so long Italian labels fit.
