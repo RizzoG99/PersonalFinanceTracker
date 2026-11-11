@@ -185,6 +185,7 @@ class ForegroundRelockTest {
         assertTrue("precondition: an amount was typed, got '$amountBefore'", amountBefore.isNotBlank())
         assertFalse("precondition: unlocked", pinShown())
         rule.waitUntil(DEADLINE) { imeWindowShown() }
+        instrumentation.uiAutomation.waitForIdle(1_000, 10_000) // #398: let the keyboard settle.
 
         awayFor(30_000)
         rule.waitUntil(DEADLINE) { pinShown() }
@@ -224,7 +225,27 @@ class ForegroundRelockTest {
     @Test
     fun ac03_screenOffWhileAwayRelocksEvenOnAQuickReturn() {
         rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
-        shell("input keyevent KEYCODE_SLEEP")
+        // The broadcast is asynchronous to the key event: wait until it has reached this process
+        // (and, through the main looper, the activity's own receiver) before coming back.
+        val screenOff = java.util.concurrent.CountDownLatch(1)
+        val probe = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
+                screenOff.countDown()
+            }
+        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            instrumentation.targetContext,
+            probe,
+            android.content.IntentFilter(android.content.Intent.ACTION_SCREEN_OFF),
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+        try {
+            shell("input keyevent KEYCODE_SLEEP")
+            assertTrue("no screen-off broadcast", screenOff.await(DEADLINE, java.util.concurrent.TimeUnit.MILLISECONDS))
+            instrumentation.waitForIdleSync()
+        } finally {
+            instrumentation.targetContext.unregisterReceiver(probe)
+        }
         shell("input keyevent KEYCODE_WAKEUP")
         shell("wm dismiss-keyguard")
         now += 2_000

@@ -5,6 +5,7 @@ import android.os.Build
 import android.view.WindowManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
@@ -159,16 +160,25 @@ class RecentsPrivacyTest {
         captureRecents("home-nopin", expectCover = Build.VERSION.SDK_INT >= 29)
     }
 
-    /** The cover is its own window, so an open sheet and its draft are hidden too. */
+    /** The sheet draws its own cover too, so an open sheet and its draft are hidden as well. */
     @Test
     fun ac05_anOpenSheetIsHiddenToo() {
         awaitHome()
         rule.onNode(hasContentDescription(string(R.string.add_transaction)) and hasClickAction()).performClick()
         rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size == 2 }
-        rule.onAllNodes(hasSetTextAction())[1].performTextInput("Recents draft")
+        // The amount field, as SaveFeedbackTest types it: the dependable input in this sheet.
+        rule.onAllNodes(hasSetTextAction())[0].performTextInput("12.50")
+        instrumentation.uiAutomation.waitForIdle(1_000, 10_000) // #398: let the keyboard settle.
+        val before = amountText()
+        assertTrue("precondition: an amount in the open sheet; got '$before'", before.isNotBlank())
+
         captureRecents("sheet-nopin", expectCover = Build.VERSION.SDK_INT >= 29)
-        rule.onNode(hasSetTextAction() and hasText("Recents draft")).assertExists()
+        assertEquals("the sheet and its draft survive Overview", before, amountText())
     }
+
+    private fun amountText(): String =
+        rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().firstOrNull()
+            ?.config?.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
 
     @Test
     fun ac05_relockedOverAnOpenSheetStaysHidden() {
@@ -180,7 +190,12 @@ class RecentsPrivacyTest {
         runBlocking { app.pinLockRepository.setPin(hash = PinCodec.hash("123456", "recents-salt"), salt = "recents-salt") }
         rule.onNode(hasContentDescription(string(R.string.add_transaction)) and hasClickAction()).performClick()
         rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size == 2 }
-        rule.onAllNodes(hasSetTextAction())[1].performTextInput("Recents draft")
+        val note = hasSetTextAction() and hasText(string(R.string.note))
+        rule.onNode(note).performClick()
+        rule.onNode(note).performTextInput("Recents draft")
+        // Let the keyboard finish opening: leaving mid-animation is #398, a Compose 1.6 crash that
+        // predates #319 and is not what this test is about.
+        instrumentation.uiAutomation.waitForIdle(1_000, 10_000)
 
         rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
         now += 30_000

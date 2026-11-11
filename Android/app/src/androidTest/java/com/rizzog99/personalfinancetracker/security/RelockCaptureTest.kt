@@ -162,6 +162,7 @@ class RelockCaptureTest {
         val note = hasSetTextAction() and hasText(string(R.string.note, locale))
         rule.onNode(note).performClick()
         rule.onNode(note).performTextInput(DRAFT)
+        instrumentation.uiAutomation.waitForIdle(1_000, 10_000) // #398: let the keyboard settle.
 
         rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
         now += 30_000
