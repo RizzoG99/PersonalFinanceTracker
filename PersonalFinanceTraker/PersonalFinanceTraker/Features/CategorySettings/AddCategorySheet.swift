@@ -98,7 +98,8 @@ struct AddCategorySheet: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Add") {
+                    // Checkmark like every other form sheet (#250); the title is the VoiceOver label.
+                    Button("Add Category", systemImage: "checkmark") {
                         let category = CategoryModel(
                             name: name.trimmingCharacters(in: .whitespaces),
                             systemImage: selectedSymbol,

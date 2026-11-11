@@ -86,7 +86,8 @@ struct EditCategorySheet: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    // Checkmark like every other form sheet (#250); the title is the VoiceOver label.
+                    Button("Update Category", systemImage: "checkmark") {
                         let newName = CategoryNameValidator.renamedName(stored: category.name, edited: editedName)
                         // Name written here too, so this list and a reopened sheet show it at once;
                         // the actor then finds it stored and only rewrites the copies.
