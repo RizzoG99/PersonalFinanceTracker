@@ -5940,6 +5940,38 @@
         }
       }
     },
+    "Hidden suggestions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hidden suggestions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggerimenti nascosti"
+          }
+        }
+      }
+    },
+    "Its card comes back in Check your fixed expenses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its card comes back in Check your fixed expenses"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sua scheda torna in Controlla le spese fisse"
+          }
+        }
+      }
+    },
     "Hide amounts" : {
       "localizations" : {
         "en" : {
@@ -10777,6 +10809,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra tutte (%lld)"
+          }
+        }
+      }
+    },
+    "Show %@ again" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show %@ again"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra di nuovo %@"
+          }
+        }
+      }
+    },
+    "Show again" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show again"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra di nuovo"
+          }
+        }
+      }
+    },
+    "Suggestions you answered Not fixed to" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions you answered Not fixed to"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggerimenti a cui hai risposto Non è fissa"
+          }
+        }
+      }
+    },
+    "You answered “Not fixed” to these. Show one again to get its card back." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You answered “Not fixed” to these. Show one again to get its card back."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai risposto “Non è fissa” a questi. Mostrane uno di nuovo per riavere la sua scheda."
           }
         }
       }

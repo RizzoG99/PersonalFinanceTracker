@@ -9,8 +9,10 @@ number that shipped it.
 ## Unreleased
 
 - Home and the Safe to Spend widget: when your spending only eats into your safety buffer, the amount turns amber and says "Using your safety buffer" instead of red "Over plan". Red now means you've gone past the buffer too.
+- Recurring: fixed-expense suggestions you answered "Not fixed" to are no longer gone for good. A "Hidden suggestions" row at the bottom of Recurring lists them, and "Show again" brings the card back. On iPhone the card comes back on Plan.
 - iPad: the app no longer sometimes opens squeezed into the left half of the screen, with the sidebar hidden and the right half empty until you left the app and came back. It happened mostly on the second launch after installing the app.
 - Add Transaction: VoiceOver now reads goal chips as buttons and says which one is selected. They look the same as before.
+- Recurring: rules now stay in the same order every time you open the app, with the next payment due first and rules due on the same day in name order. The missed-payment cards follow the same order.
 - Add Transaction and Activity's bulk edit: VoiceOver now reads category chips as buttons and says which one is selected. They look the same as before.
 - Home: the X that closes the unusual-spending warning and the X that closes the daily-reminder prompt are now easier to tap. They look the same as before.
 - Add Transaction on iPhone: VoiceOver now reads the names of the Keep adding, Repeat and Math operation buttons above the keyboard, instead of just "Off" or "button".

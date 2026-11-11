@@ -236,17 +236,26 @@ private extension PersonalFinanceTrakerApp {
         }
 
         // Missed: forecast-only rules whose last due date (~10 days ago) has no payment.
-        let goal = GoalModel(name: "Emergency fund", targetAmount: 5000)
-        context.insert(goal)
-        let cursor = monthsAgo(1, plusDays: 10)
-        context.insert(RecurrenceRule(
-            frequency: .monthly, interval: 1, startDate: cursor, lastMaterializedDate: cursor,
-            autoRecord: false, amount: -35, note: "Palestra", category: "Gym & Fitness", currencyCode: "EUR"
-        ))
-        context.insert(RecurrenceRule(
-            frequency: .monthly, interval: 1, startDate: cursor, lastMaterializedDate: cursor,
-            autoRecord: false, amount: -200, note: "", category: "→ Emergency fund", currencyCode: "EUR", goalId: goal.id
-        ))
+        // `-fixedExpenseSuggestionsOnly` (#214) leaves them out: suggestions with no rules at all.
+        if !ProcessInfo.processInfo.arguments.contains("-fixedExpenseSuggestionsOnly") {
+            let goal = GoalModel(name: "Emergency fund", targetAmount: 5000)
+            context.insert(goal)
+            let cursor = monthsAgo(1, plusDays: 10)
+            context.insert(RecurrenceRule(
+                frequency: .monthly, interval: 1, startDate: cursor, lastMaterializedDate: cursor,
+                autoRecord: false, amount: -35, note: "Palestra", category: "Gym & Fitness", currencyCode: "EUR"
+            ))
+            context.insert(RecurrenceRule(
+                frequency: .monthly, interval: 1, startDate: cursor, lastMaterializedDate: cursor,
+                autoRecord: false, amount: -200, note: "", category: "→ Emergency fund", currencyCode: "EUR", goalId: goal.id
+            ))
+        }
+        // `-clearBudgets` (#214): with no rules either, iPhone Plan shows its welcome state.
+        if ProcessInfo.processInfo.arguments.contains("-clearBudgets") {
+            for category in (try? context.fetch(FetchDescriptor<CategoryModel>())) ?? [] {
+                category.monthlyBudget = nil
+            }
+        }
 
         // Suggestions: monthly series whose next payment is still a few days away.
         let series: [(note: String, category: String, amounts: [Decimal])] = [
@@ -278,14 +287,16 @@ private extension PersonalFinanceTrakerApp {
         let context = AppContainer.shared.mainContext
         try? context.delete(model: RecurrenceRule.self)
         let date = Date.now.addingTimeInterval(-3600)
-        for title in ["Rule A", "Rule B"].prefix(count) {
+        for (index, title) in ["Rule A", "Rule B"].prefix(count).enumerated() {
             let rule = RecurrenceRule(
                 frequency: .monthly, interval: 1, startDate: date, lastMaterializedDate: date,
                 amount: -10, note: title, category: "Streaming Services", currencyCode: "EUR"
             )
             context.insert(rule)
+            // A second apart: Activity sorts by timestamp alone, so equal ones can swap between runs.
             context.insert(TransactionModel(
-                timestamp: date, amount: -10, note: title, category: "Streaming Services", recurrenceRuleId: rule.id
+                timestamp: date.addingTimeInterval(Double(index)), amount: -10, note: title,
+                category: "Streaming Services", recurrenceRuleId: rule.id
             ))
         }
         try? context.save()

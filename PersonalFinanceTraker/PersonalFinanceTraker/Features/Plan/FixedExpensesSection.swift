@@ -57,6 +57,9 @@ struct PendingUndo: Identifiable {
 @MainActor @Observable
 final class CommittedSpendingModel {
     private(set) var suggestions: [RecurrenceSuggestion] = []
+    /// Detected series the user answered "Not fixed" to (#214) — only those that would come
+    /// back, so "Show again" always brings a card. Not counted in `count` / `isEmpty`.
+    private(set) var hidden: [RecurrenceSuggestion] = []
     private(set) var missed: [MissedPayment] = []
     private(set) var pendingUndo: PendingUndo?
     /// Bumped on every successful answer — drives the success haptic.
@@ -99,11 +102,15 @@ final class CommittedSpendingModel {
         let inputs = transactions.map(TransactionInput.init)
         // ponytail: recomputed from scratch on every data change — a personal ledger is a few
         // thousand rows; cache per revision if this ever shows up in a profile.
+        // Unfiltered, then split: the dismissed ones are the "Hidden suggestions" list (#214).
         let detected = await Task.detached(priority: .utility) {
-            RecurrenceDetector.detect(in: inputs, existingRules: rules, dismissed: dismissed)
+            RecurrenceDetector.detect(in: inputs, existingRules: rules)
         }.value
+        hidden = detected.filter { RecurrenceDetector.isDismissed($0, by: dismissed) }
         // An answer waiting out its undo toast isn't written yet — keep its card hidden.
-        suggestions = detected.filter { RecurrenceDetector.dismissalPattern(for: $0) != pendingSuggestionPattern }
+        suggestions = detected.filter {
+            !RecurrenceDetector.isDismissed($0, by: dismissed) && RecurrenceDetector.dismissalPattern(for: $0) != pendingSuggestionPattern
+        }
         missed = rules
             .filter { $0.id != pendingUndo?.ruleId }
             .compactMap { rule in RecurrenceDetector.missedOccurrence(rule: rule).map { MissedPayment(rule: rule, due: $0) } }
@@ -152,6 +159,16 @@ final class CommittedSpendingModel {
             commit: { DismissedRecurrencePatterns.dismiss([suggestion]) },
             restore: { [weak self] in withAnimation { self?.suggestions.insert(suggestion, at: 0) } }
         )
+    }
+
+    /// "Show again" (#214): forgets every "Not fixed" for it, and its card is back at the top.
+    /// The caller bumps the data signal so the next reload re-sorts it among the others.
+    func showAgain(_ suggestion: RecurrenceSuggestion) {
+        DismissedRecurrencePatterns.restore(suggestion)
+        withAnimation {
+            hidden.removeAll { $0.id == suggestion.id }
+            suggestions.insert(suggestion, at: 0)
+        }
     }
 
     /// "Stopped paying": ends the rule once the undo toast expires, so it stops being planned for.
@@ -500,6 +517,110 @@ private struct MissedPaymentCard: View {
         Button(action: onStopped) { Text(stoppedLabel).frame(maxWidth: .infinity) }
             .secondaryCardButton()
             .accessibilityHint(stoppedHint)
+    }
+}
+
+/// "Hidden suggestions (N) ›" (#214): opens the list of suggestions answered "Not fixed", where
+/// each can be shown again. Nothing when none is hidden. Owns its sheet, so any host can place it.
+struct HiddenSuggestionsRow: View {
+    let model: CommittedSpendingModel
+    @State private var showing = false
+
+    var body: some View {
+        if !model.hidden.isEmpty {
+            // Same shape as "Review N more".
+            Button { showing = true } label: {
+                HStack {
+                    Text("Hidden suggestions")
+                    Spacer()
+                    Text(model.hidden.count, format: .number)
+                        .foregroundStyle(.textDim)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .accessibilityHidden(true)
+                }
+                .font(.subheadline)
+                .foregroundStyle(.accentIndigo)
+                .frame(minHeight: 44)
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Suggestions you answered Not fixed to")
+            .accessibilityIdentifier("hiddenSuggestionsRow")
+            .sheet(isPresented: $showing) {
+                HiddenSuggestionsSheet(model: model)
+            }
+        }
+    }
+}
+
+/// The hidden list: each suggestion as its card shows it, with "Show again" instead of the answers.
+private struct HiddenSuggestionsSheet: View {
+    let model: CommittedSpendingModel
+    @Environment(\.dismiss) private var dismiss
+    @Environment(DataChangedSignal.self) private var dataChanged
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("You answered \u{201C}Not fixed\u{201D} to these. Show one again to get its card back.")
+                        .font(.subheadline)
+                        .foregroundStyle(.textMid)
+                    GlassEffectContainer(spacing: 20) {
+                        VStack(spacing: 12) {
+                            ForEach(model.hidden) { suggestion in
+                                card(suggestion)
+                            }
+                        }
+                    }
+                }
+                .padding(16)
+                .readableWidth()
+            }
+            .navigationTitle("Hidden suggestions")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .tint(.accentIndigo)
+            .controlSize(.large)
+        }
+        .presentationBackground { AppBackground() }
+        // Last one shown again: nothing left here.
+        .onChange(of: model.hidden.isEmpty) { _, isEmpty in
+            if isEmpty { dismiss() }
+        }
+    }
+
+    private func card(_ suggestion: RecurrenceSuggestion) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                ChargeRowLayout(
+                    category: suggestion.category, categoryId: suggestion.categoryPersistentId, title: Text(suggestion.title),
+                    amount: suggestion.amount, currencyCode: suggestion.currencyCode,
+                    approximate: !suggestion.amountsIdentical
+                ) {
+                    Text(suggestion.frequency.cadenceLabel(interval: suggestion.interval))
+                        .font(.caption)
+                        .foregroundStyle(.textDim)
+                }
+                .accessibilityElement(children: .combine)
+
+                Button {
+                    model.showAgain(suggestion)
+                    dataChanged.bump()
+                } label: {
+                    Text("Show again").frame(maxWidth: .infinity)
+                }
+                .secondaryCardButton()
+                // A list of identical "Show again" buttons is useless to VoiceOver without the name.
+                .accessibilityLabel(Text("Show \(suggestion.title) again"))
+                .accessibilityHint("Its card comes back in Check your fixed expenses")
+            }
+        }
     }
 }
 
