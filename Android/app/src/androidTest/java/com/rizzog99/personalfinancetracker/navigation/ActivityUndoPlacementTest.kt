@@ -316,10 +316,12 @@ class ActivityUndoPlacementTest {
         // still restores tea. Coffee's may have run out during the editor flow (5 s, #376); if it is the
         // one still up, it restores coffee first.
         stepUntil("one Undo up") { rule.onAllNodes(undo).fetchSemanticsNodes().size == 1 }
+        val firstUndo = rule.onNode(undo).fetchSemanticsNode().id
         rule.onNode(undo).performClick()
         stepUntil("a row restored") { transactions().any { it.id == coffee || it.id == tea } }
         if (transactions().none { it.id == tea }) {
-            val coffeeUndo = rule.onAllNodes(undo).fetchSemanticsNodes().singleOrNull()?.id
+            // The tapped one was coffee's; tea's is the next node, whenever the hand-off happened.
+            val coffeeUndo = firstUndo
             stepUntil("tea's Undo up") {
                 rule.onAllNodes(undo).fetchSemanticsNodes().let { it.size == 1 && it.single().id != coffeeUndo }
             }
