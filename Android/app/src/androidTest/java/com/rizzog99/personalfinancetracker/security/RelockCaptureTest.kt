@@ -188,7 +188,14 @@ class RelockCaptureTest {
         writeLockSemantics(locale, File(dir, "$name.txt"))
 
         enterPin(locale)
-        rule.onNode(hasContentDescription(string(R.string.dismiss, locale)) and hasClickAction()).performClick()
+        // Back, not the sheet's close button: Home has its own "Dismiss" (the reminder card). The
+        // first Back may only close the keyboard the restored focus brought back.
+        repeat(3) {
+            if (rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()) {
+                shell("input keyevent KEYCODE_BACK")
+                rule.waitForIdle()
+            }
+        }
         rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isEmpty() }
     }
 
