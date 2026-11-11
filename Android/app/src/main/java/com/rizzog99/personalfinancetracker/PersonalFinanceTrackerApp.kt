@@ -1,14 +1,13 @@
 package com.rizzog99.personalfinancetracker
 
 import android.app.Activity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -105,8 +104,8 @@ fun PersonalFinanceTrackerApp() {
                 // No PIN means nothing to unlock into; a relocked session waits for the PIN.
                 SideEffect { if (lock !is PinLock.Set) session.unlock() }
                 val relocked = lockState == LockState.RELOCKED && lock is PinLock.Set
-                val cover = MaterialTheme.colorScheme.surface
-                // Every window below (sheets, dialogs) inherits this and drops its text focus.
+                // Every window below (sheets, dialogs) inherits these: when to draw its cover, and how
+                // to drop its text focus before the lock window arrives.
                 val obscured = remember(session) {
                     { session.away || session.privacyCover || session.state == LockState.RELOCKED }
                 }
@@ -116,22 +115,20 @@ fun PersonalFinanceTrackerApp() {
                 ) {
                     ReleaseTextFocusWhileObscured()
                     // The wrapper is always there, so the NavHost's composition group never changes.
-                    // While relocked it draws nothing of the shell and hides it from TalkBack: the
-                    // first frame after a return may land before the lock window is attached.
+                    // While obscured it draws a plain surface instead of the shell (Overview's live
+                    // tile, and the first frame after a return before the lock window is attached);
+                    // while relocked TalkBack cannot reach it either.
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .then(
-                                if (relocked) {
-                                    Modifier
-                                        .clearAndSetSemantics {}
-                                        .drawWithContent { drawRect(cover) }
-                                } else {
-                                    Modifier
-                                },
-                            ),
+                            .then(if (relocked) Modifier.clearAndSetSemantics {} else Modifier)
+                            .coverWhenObscured(),
                     ) {
                         PersonalFinanceNavHost()
+                    }
+                    if (privacyCover) {
+                        // State marker only (the cover itself is drawn above): lets tests see it.
+                        Box(Modifier.testTag(PRIVACY_COVER_TAG))
                     }
                     if (relocked && lock is PinLock.Set) {
                         LockOverlay {
@@ -142,37 +139,10 @@ fun PersonalFinanceTrackerApp() {
                                 onUnlocked = session::unlock,
                             )
                         }
-                    } else if (privacyCover) {
-                        // The lock window already hides everything while relocked.
-                        PrivacyCover()
                     }
                 }
             }
         }
-    }
-}
-
-/**
- * iOS's app-switcher cover (#319 AC-05, D-11): a plain surface in its own window, above any sheet
- * or dialog, for as long as Overview shows the app as a live tile.
- */
-@Composable
-private fun PrivacyCover() {
-    Dialog(
-        onDismissRequest = {},
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false,
-        ),
-    ) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .testTag(PRIVACY_COVER_TAG),
-        )
     }
 }
 

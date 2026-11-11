@@ -79,10 +79,9 @@ class MainActivity : FragmentActivity() {
      */
     override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
         super.onTopResumedActivityChanged(isTopResumedActivity)
-        val cover = !isTopResumedActivity && !isInMultiWindowMode
-        // Focus first: the cover is a new window, and must not land on a focused text field.
-        if (cover) lockSession.textFocus.releaseAll()
-        lockSession.privacyCover = cover
+        // No focus release and no new window here: the keyboard may still be animating in, and either
+        // one then crashed Compose 1.6's text input. Each window draws its own cover instead.
+        lockSession.privacyCover = !isTopResumedActivity && !isInMultiWindowMode
     }
 
     override fun onDestroy() {

@@ -4,6 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.platform.LocalFocusManager
 
 /**
@@ -39,6 +43,21 @@ class TextFocusReleasers {
 }
 
 val LocalTextFocusReleasers = staticCompositionLocalOf<TextFocusReleasers?> { null }
+
+/**
+ * iOS's app-switcher cover (#319 AC-05, D-11), drawn by each window over itself: while the app is
+ * obscured this paints a plain surface instead of the content. Overview shows the app as a *live*
+ * tile, which neither `FLAG_SECURE` nor `setRecentsScreenshotEnabled` hides.
+ *
+ * ponytail: a draw-only cover on every window that shows content (the shell and each sheet), not one
+ * cover window on top. Adding a window while a sheet's keyboard was still animating in crashed
+ * Compose 1.6's text input; drawing changes no window, layout or focus.
+ */
+fun Modifier.coverWhenObscured(): Modifier = composed {
+    val obscured = LocalAppObscured.current
+    val cover = MaterialTheme.colorScheme.surface
+    drawWithContent { if (obscured()) drawRect(cover) else drawContent() }
+}
 
 /**
  * Registers *this* window's focus manager. [beforeRelease] runs first, so a form can note which

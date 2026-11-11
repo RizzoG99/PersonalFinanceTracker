@@ -140,6 +140,7 @@ import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.LocalAppObscured
 import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileObscured
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
@@ -812,7 +813,7 @@ private fun ActivityFiltersSheet(
     ModalBottomSheet(onDismissRequest = onDismiss) {
         ReleaseTextFocusWhileObscured()
         Column(
-            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
+            modifier = Modifier.fillMaxWidth().coverWhenObscured().verticalScroll(rememberScrollState()).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
@@ -1186,7 +1187,7 @@ fun TransactionEditorSheet(
             receiptMappingRepository = receiptMappingRepository,
             onDismiss = onDismiss,
             onSave = onSave,
-            modifier = Modifier.fillMaxHeight(0.9f),
+            modifier = Modifier.fillMaxHeight(0.9f).coverWhenObscured(),
         )
     }
 }
@@ -1788,6 +1789,7 @@ private fun CategoryPickerSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .coverWhenObscured()
                 .fillMaxHeight(0.9f)
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
