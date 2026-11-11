@@ -67,9 +67,12 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -95,6 +98,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.AccessibilityManager
+import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -145,6 +150,9 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.UUID
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -168,6 +176,7 @@ fun ActivityScreen(
     val state by viewModel.uiState.collectAsState()
     val error by viewModel.error.collectAsState()
     val snackbarHostState = shellSnackbarHostState ?: remember { SnackbarHostState() }
+    val accessibilityManager = LocalAccessibilityManager.current
     val scope = rememberCoroutineScope()
     var editingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var isCreating by remember { mutableStateOf(false) }
@@ -300,11 +309,7 @@ fun ActivityScreen(
                 deletingTransaction = null
                 scope.launch {
                     if (viewModel.delete(transaction)) {
-                        val result = snackbarHostState.showSnackbar(
-                            message = application.getString(R.string.transaction_deleted),
-                            actionLabel = application.getString(R.string.undo),
-                        )
-                        if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
+                        showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
                     }
                 }
             },
@@ -317,7 +322,9 @@ fun ActivityScreen(
             onDeleteThisOnly = {
                 recurringDeletionTransaction = null
                 scope.launch {
-                    if (viewModel.delete(transaction)) showUndoDeletion(snackbarHostState, viewModel, transaction, application)
+                    if (viewModel.delete(transaction)) {
+                        showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
+                    }
                 }
             },
             onDeleteThisAndFuture = {
@@ -346,6 +353,7 @@ fun ActivityTwoPaneScreen(
     val state by viewModel.uiState.collectAsState()
     val error by viewModel.error.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val accessibilityManager = LocalAccessibilityManager.current
     val scope = rememberCoroutineScope()
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = selectedId?.let { id -> state.allTransactions.firstOrNull { it.id == id } }
@@ -479,11 +487,7 @@ fun ActivityTwoPaneScreen(
                 scope.launch {
                     if (viewModel.delete(transaction)) {
                         selectedId = null
-                        val result = snackbarHostState.showSnackbar(
-                            message = application.getString(R.string.transaction_deleted),
-                            actionLabel = application.getString(R.string.undo),
-                        )
-                        if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
+                        showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
                     }
                 }
             },
@@ -498,7 +502,7 @@ fun ActivityTwoPaneScreen(
                 scope.launch {
                     if (viewModel.delete(transaction)) {
                         selectedId = null
-                        showUndoDeletion(snackbarHostState, viewModel, transaction, application)
+                        showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
                     }
                 }
             },
@@ -1956,15 +1960,45 @@ private fun RecurringEditDialog(
     )
 }
 
+/** Frozen iOS commits a delete 5 s after its Undo banner shows (`TransactionListViewModel.swift:548`). */
+internal const val UNDO_WINDOW_MILLIS = 5_000L
+
+private class UndoVisuals(override val message: String, override val actionLabel: String) : SnackbarVisuals {
+    override val withDismissAction = false
+    override val duration = SnackbarDuration.Indefinite
+}
+
+/**
+ * Every Activity delete's "Transaction deleted · Undo" (#376). Material only offers 4 s or 10 s, so
+ * the 5 s window is timed here, from when **this** snackbar shows: a delete queued behind another
+ * Undo still gets its full window. Android's accessibility timeout ("Time to take action", TalkBack
+ * below API 29) extends it, as it does Material's own durations (D-01).
+ */
 private suspend fun showUndoDeletion(
     snackbarHostState: SnackbarHostState,
     viewModel: ActivityViewModel,
     transaction: FinanceTransaction,
     application: PersonalFinanceApplication,
+    accessibilityManager: AccessibilityManager?,
 ) {
-    val result = snackbarHostState.showSnackbar(
+    val visuals = UndoVisuals(
         message = application.getString(R.string.transaction_deleted),
         actionLabel = application.getString(R.string.undo),
     )
+    val result = coroutineScope {
+        val timer = launch {
+            snapshotFlow { snackbarHostState.currentSnackbarData }.first { it?.visuals === visuals }
+            delay(
+                accessibilityManager?.calculateRecommendedTimeoutMillis(
+                    UNDO_WINDOW_MILLIS,
+                    containsIcons = false,
+                    containsText = true,
+                    containsControls = true,
+                ) ?: UNDO_WINDOW_MILLIS,
+            )
+            snackbarHostState.currentSnackbarData?.takeIf { it.visuals === visuals }?.dismiss()
+        }
+        snackbarHostState.showSnackbar(visuals).also { timer.cancel() }
+    }
     if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
 }
