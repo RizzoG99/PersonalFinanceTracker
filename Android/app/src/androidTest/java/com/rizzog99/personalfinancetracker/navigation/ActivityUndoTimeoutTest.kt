@@ -26,6 +26,7 @@ import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import com.rizzog99.personalfinancetracker.ui.CaptureHarness
 import com.rizzog99.personalfinancetracker.ui.theme.PersonalFinanceTheme
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
 import java.math.BigDecimal
@@ -184,7 +185,13 @@ class ActivityUndoTimeoutTest {
         host(widthDp)
 
         deleteAndFreezeOnUndo("coffee", id)
-        assertUndoLastsFiveSeconds(shownAt = rule.mainClock.currentTime)
+        val shownAt = rule.mainClock.currentTime
+        // Step-7 evidence, inside the window: pull `ui-undo-timeout/` (references/parity-tests.md).
+        advance(500)
+        val dir = CaptureHarness.outputDir("ui-undo-timeout")
+        CaptureHarness.writePng(rule, dir, "undo-${widthDp}dp")
+        CaptureHarness.writeSemantics(rule, dir, "undo-${widthDp}dp")
+        assertUndoLastsFiveSeconds(shownAt)
 
         rule.mainClock.autoAdvance = true
         rule.waitForIdle()
