@@ -147,14 +147,18 @@ class ForegroundRelockTest {
         rule.assertSingleShell()
     }
 
-    /** The same boundary through a real departure: Home, then back through the launcher. */
+    /**
+     * The same boundary through a real departure: the Home key. The return brings the same task and
+     * instance forward (NEW_TASK | REORDER_TO_FRONT); a launcher intent or the scenario did not on
+     * the tablet AVD.
+     */
     @Test
-    fun ac01_realHomeAndLauncherReturn() {
+    fun ac01_realHomeDeparture() {
         assertFalse("precondition: unlocked", pinShown())
         shell("input keyevent KEYCODE_HOME")
         rule.waitUntil(DEADLINE) { rule.activityRule.scenario.state == Lifecycle.State.CREATED }
         now += 30_000
-        shell("monkey -p ${instrumentation.targetContext.packageName} -c android.intent.category.LAUNCHER 1")
+        shell("am start -W -f 0x10020000 -n ${instrumentation.targetContext.packageName}/.MainActivity")
         rule.waitUntil(DEADLINE) { rule.activityRule.scenario.state == Lifecycle.State.RESUMED }
         rule.waitUntil(DEADLINE) { pinShown() }
     }
@@ -213,6 +217,34 @@ class ForegroundRelockTest {
                 .fetchSemanticsNodes().isNotEmpty()
         }
         rule.onNode(noteWithDraft).assertIsFocused()
+    }
+
+    /**
+     * Wide layouts edit inline, in the shell's own window: the shell's focus release and the
+     * editor's must not undo each other (code review r1).
+     */
+    @Test
+    fun ac02_wideInlineEditorKeepsDraftAndFocus(): Unit = with(m) {
+        var widthDp = 0
+        rule.activityRule.scenario.onActivity { widthDp = it.resources.configuration.screenWidthDp }
+        org.junit.Assume.assumeTrue("the inline editor needs an expanded width (≥ 840 dp)", widthDp >= 840)
+        rule.selectTab(activityTab)
+        val note = hasSetTextAction() and hasText(string(R.string.note))
+        rule.waitUntil(DEADLINE) { rule.onAllNodes(note).fetchSemanticsNodes().isNotEmpty() }
+        rule.onNode(note).performClick()
+        rule.onNode(note).performTextInput("Inline")
+        instrumentation.uiAutomation.waitForIdle(1_000, 10_000) // #398: let the keyboard settle.
+        assertTrue("precondition: draft typed", rule.onAllNodes(hasText("Inline") and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty())
+
+        awayFor(30_000)
+        rule.waitUntil(DEADLINE) { pinShown() }
+        enterPin()
+
+        val inline = hasSetTextAction() and hasText("Inline")
+        rule.waitUntil(DEADLINE) {
+            rule.onAllNodes(inline and SemanticsMatcher.expectValue(SemanticsProperties.Focused, true))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test

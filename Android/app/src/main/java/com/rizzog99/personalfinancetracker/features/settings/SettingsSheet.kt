@@ -49,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -151,6 +152,7 @@ fun SettingsSheet(
     confirming?.let { confirmation ->
         AlertDialog(
             onDismissRequest = { confirming = null; pendingRestoreUri = null },
+            modifier = Modifier.coverWhenObscured(),
             title = {
                 Text(
                     stringResource(

@@ -35,11 +35,23 @@ val LocalAppObscured = staticCompositionLocalOf<() -> Boolean> { { false } }
  * is why each registers itself instead of the shell clearing focus once.
  */
 class TextFocusReleasers {
-    private val releasers = mutableSetOf<() -> Unit>()
+    /** One per registration: note which field had focus, then clear the window's focus. */
+    class Releaser(val noteFocus: () -> Unit, val clear: () -> Unit)
 
-    fun add(release: () -> Unit) = releasers.add(release)
-    fun remove(release: () -> Unit) = releasers.remove(release)
-    fun releaseAll() = releasers.toList().forEach { it() }
+    private val releasers = mutableSetOf<Releaser>()
+
+    fun add(releaser: Releaser) = releasers.add(releaser)
+    fun remove(releaser: Releaser) = releasers.remove(releaser)
+
+    /**
+     * Every note before any clear: two registrations can share a window (the shell and the tablet's
+     * inline editor), and clearing first would leave the editor nothing to remember.
+     */
+    fun releaseAll() {
+        val all = releasers.toList()
+        all.forEach { it.noteFocus() }
+        all.forEach { it.clear() }
+    }
 }
 
 val LocalTextFocusReleasers = staticCompositionLocalOf<TextFocusReleasers?> { null }
@@ -71,11 +83,11 @@ fun ReleaseTextFocusWhileObscured(beforeRelease: () -> Unit = {}) {
     val focusManager = LocalFocusManager.current
     val noteFocus = rememberUpdatedState(beforeRelease)
     DisposableEffect(registry, focusManager) {
-        val release: () -> Unit = {
-            noteFocus.value()
-            focusManager.clearFocus(force = true)
-        }
-        registry.add(release)
-        onDispose { registry.remove(release) }
+        val releaser = TextFocusReleasers.Releaser(
+            noteFocus = { noteFocus.value() },
+            clear = { focusManager.clearFocus(force = true) },
+        )
+        registry.add(releaser)
+        onDispose { registry.remove(releaser) }
     }
 }

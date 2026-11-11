@@ -1886,6 +1886,7 @@ private fun ReceiptCaptureAction(
     if (sourcePickerVisible) {
         AlertDialog(
             onDismissRequest = { sourcePickerVisible = false },
+            modifier = Modifier.coverWhenObscured(),
             title = { Text(stringResource(R.string.scan_receipt)) },
             text = { Text(stringResource(R.string.receipt_privacy_detail)) },
             confirmButton = {
@@ -1957,6 +1958,7 @@ private fun inferReceiptCategory(
 private fun DeleteTransactionDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.delete_transaction_confirmation_title)) },
         text = { Text(stringResource(R.string.delete_transaction_confirmation_message)) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
@@ -1974,6 +1976,7 @@ private fun RecurringDeleteDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.recurring_delete_title)) },
         text = { Text(stringResource(R.string.recurring_delete_message)) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
@@ -1994,6 +1997,7 @@ private fun RecurringEditDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.recurring_edit_title)) },
         text = { Text(stringResource(R.string.recurring_edit_message)) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },

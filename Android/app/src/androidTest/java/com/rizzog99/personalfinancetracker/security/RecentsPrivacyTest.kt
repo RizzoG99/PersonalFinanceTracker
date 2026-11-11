@@ -144,8 +144,9 @@ class RecentsPrivacyTest {
         File(CaptureHarness.outputDir("relock-319"), name).outputStream().use {
             shot.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
-        // The launcher intent brings the existing task forward; `am start -n` would stack a second activity.
-        shell("monkey -p $pkg -c android.intent.category.LAUNCHER 1")
+        // Back to the same activity in the same task: NEW_TASK finds the task, REORDER_TO_FRONT the
+        // instance. A launcher intent or the scenario did not bring it back on the tablet AVD.
+        shell("am start -W -f 0x10020000 -n $pkg/.MainActivity")
         rule.waitUntil(DEADLINE) { !coverShown }
     }
 

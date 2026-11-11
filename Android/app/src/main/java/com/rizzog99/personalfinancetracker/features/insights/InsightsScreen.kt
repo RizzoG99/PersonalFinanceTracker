@@ -922,6 +922,7 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
     if (choosingIcon) {
         AlertDialog(
             onDismissRequest = { choosingIcon = false },
+            modifier = Modifier.coverWhenObscured(),
             title = { Text(stringResource(R.string.choose_goal_icon)) },
             text = {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -1049,6 +1050,7 @@ private fun GoalDatePicker(initial: Instant, onDismiss: () -> Unit, onConfirm: (
 private fun DeleteGoalDialog(goal: FinanceGoal, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.delete_goal_confirmation_title)) },
         text = { Text(stringResource(R.string.delete_goal_confirmation_message, goal.name)) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },

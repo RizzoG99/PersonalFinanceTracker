@@ -473,6 +473,7 @@ private fun CategoryIconPicker(selected: String, onSelected: (String) -> Unit) {
 private fun DeleteCategoryDialog(category: FinanceCategory, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.delete_category_confirmation_title)) },
         text = { Text(stringResource(R.string.delete_category_confirmation_message, category.name)) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },

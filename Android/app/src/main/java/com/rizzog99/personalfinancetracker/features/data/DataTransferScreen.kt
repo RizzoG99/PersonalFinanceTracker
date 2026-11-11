@@ -95,6 +95,7 @@ import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
@@ -304,6 +305,7 @@ private fun ImportWizardScreen(
     if (showHelp) {
         AlertDialog(
             onDismissRequest = { showHelp = false },
+            modifier = Modifier.coverWhenObscured(),
             title = { Text(stringResource(stepTitles[step - 1])) },
             text = { Text(stringResource(stepDetails[step - 1])) },
             confirmButton = { TextButton(onClick = { showHelp = false }) { Text(stringResource(R.string.dismiss)) } },
