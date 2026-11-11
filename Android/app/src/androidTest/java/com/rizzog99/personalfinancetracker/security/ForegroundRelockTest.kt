@@ -190,22 +190,28 @@ class ForegroundRelockTest {
         rule.waitUntil(DEADLINE) { pinShown() }
 
         // The window TalkBack and the keyboard follow is the lock, not the sheet underneath.
-        rule.waitUntil(DEADLINE) {
-            instrumentation.uiAutomation.rootInActiveWindow
-                ?.findAccessibilityNodeInfosByText(string(R.string.pin_unlock_title))
-                ?.isNotEmpty() == true
+        runCatching {
+            rule.waitUntil(DEADLINE) { string(R.string.pin_unlock_title) in activeWindowTexts() }
+        }.onFailure {
+            shell("screencap -p /data/local/tmp/ac02-failure.png")
+            throw AssertionError("the lock is not the active window; windows:\n${windowDump()}", it)
         }
-        assertTrue(
+        assertFalse(
             "the sheet's draft must not be readable in the active window while locked",
-            instrumentation.uiAutomation.rootInActiveWindow
-                ?.findAccessibilityNodeInfosByText("Coffee").isNullOrEmpty(),
+            activeWindowTexts().any { "Coffee" in it },
         )
         instrumentation.uiAutomation.waitForIdle(500, 5_000)
         assertFalse("the keyboard must be down while locked", imeWindowShown())
 
         enterPin()
         assertEquals(amountBefore, editableText(0))
-        rule.onNode(hasSetTextAction() and hasText("Coffee")).assertIsFocused()
+        // Given back once the sheet's window has focus again, which is a frame or two after unlock.
+        val noteWithDraft = hasSetTextAction() and hasText("Coffee")
+        rule.waitUntil(DEADLINE) {
+            rule.onAllNodes(noteWithDraft and SemanticsMatcher.expectValue(SemanticsProperties.Focused, true))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onNode(noteWithDraft).assertIsFocused()
     }
 
     @Test
@@ -254,6 +260,35 @@ class ForegroundRelockTest {
     private fun editableText(index: Int): String =
         rule.onAllNodes(hasSetTextAction())[index].fetchSemanticsNode()
             .config.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
+
+    /**
+     * Every text and description in the window TalkBack would read. Walked by hand: Compose's
+     * accessibility provider does not implement `findAccessibilityNodeInfosByText`, so that search
+     * finds nothing in any Compose window.
+     */
+    private fun activeWindowTexts(): List<String> {
+        val out = mutableListOf<String>()
+        fun walk(node: android.view.accessibility.AccessibilityNodeInfo?) {
+            node ?: return
+            node.text?.let { out += it.toString() }
+            node.contentDescription?.let { out += it.toString() }
+            for (i in 0 until node.childCount) walk(node.getChild(i))
+        }
+        walk(instrumentation.uiAutomation.rootInActiveWindow)
+        return out
+    }
+
+    private fun windowDump(): String {
+        val automation = instrumentation.uiAutomation
+        automation.serviceInfo = automation.serviceInfo.apply {
+            flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+        }
+        return automation.windows.joinToString("\n") { w ->
+            val root = w.root
+            "type=${w.type} layer=${w.layer} active=${w.isActive} focused=${w.isFocused} " +
+                "pkg=${root?.packageName} title=${w.title} children=${root?.childCount}"
+        }
+    }
 
     /** The real input-method window, not this app's view of its insets. */
     private fun imeWindowShown(): Boolean {

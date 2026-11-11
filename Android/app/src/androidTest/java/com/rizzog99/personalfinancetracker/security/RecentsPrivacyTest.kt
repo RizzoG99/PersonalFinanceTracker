@@ -20,6 +20,7 @@ import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.compose.ui.test.hasTestTag
 import com.rizzog99.personalfinancetracker.MainActivity
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
@@ -116,20 +117,35 @@ class RecentsPrivacyTest {
         return flags and WindowManager.LayoutParams.FLAG_SECURE != 0
     }
 
-    /** Opens Recents, photographs the screen, and comes back. */
-    private fun captureRecents(state: String) {
-        if (secureExpected) return // a FLAG_SECURE screen photographs black by design.
+    private val coverShown
+        get() = rule.onAllNodes(hasTestTag(PRIVACY_COVER_TAG)).fetchSemanticsNodes().isNotEmpty()
+
+    /**
+     * Opens Overview, photographs the screen, and comes back. Overview keeps the app *resumed* as a
+     * live tile, so the wait is for the launcher to hold the active window, not for a lifecycle state.
+     */
+    private fun captureRecents(state: String, expectCover: Boolean) {
+        val pkg = instrumentation.targetContext.packageName
+        assertTrue("precondition: the app is in front", !coverShown)
         shell("input keyevent KEYCODE_APP_SWITCH")
-        // Recents keeps the task visible as a thumbnail: on API 36 the activity is only paused.
-        rule.waitUntil(DEADLINE) { rule.activityRule.scenario.state != Lifecycle.State.RESUMED }
+        rule.waitUntil(DEADLINE) {
+            instrumentation.uiAutomation.rootInActiveWindow?.packageName?.toString().let { it != null && it != pkg }
+        }
+        if (expectCover) rule.waitUntil(DEADLINE) { coverShown }
+        if (Build.VERSION.SDK_INT < 29 || secureExpected) {
+            // No live tile before API 29; and a FLAG_SECURE screen photographs black by design.
+            rule.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+            return
+        }
         instrumentation.uiAutomation.waitForIdle(500, 5_000)
         val shot = instrumentation.uiAutomation.takeScreenshot()
         val name = "recents-$state-api${Build.VERSION.SDK_INT}-${Build.MODEL.replace(' ', '_')}.png"
         File(CaptureHarness.outputDir("relock-319"), name).outputStream().use {
             shot.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
-        rule.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
-        rule.waitForIdle()
+        // The launcher intent brings the existing task forward; `am start -n` would stack a second activity.
+        shell("monkey -p $pkg -c android.intent.category.LAUNCHER 1")
+        rule.waitUntil(DEADLINE) { !coverShown }
     }
 
     @Test
@@ -140,7 +156,18 @@ class RecentsPrivacyTest {
             secureExpected,
             activityWindowIsSecure(),
         )
-        captureRecents("home-nopin")
+        captureRecents("home-nopin", expectCover = Build.VERSION.SDK_INT >= 29)
+    }
+
+    /** The cover is its own window, so an open sheet and its draft are hidden too. */
+    @Test
+    fun ac05_anOpenSheetIsHiddenToo() {
+        awaitHome()
+        rule.onNode(hasContentDescription(string(R.string.add_transaction)) and hasClickAction()).performClick()
+        rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size == 2 }
+        rule.onAllNodes(hasSetTextAction())[1].performTextInput("Recents draft")
+        captureRecents("sheet-nopin", expectCover = Build.VERSION.SDK_INT >= 29)
+        rule.onNode(hasSetTextAction() and hasText("Recents draft")).assertExists()
     }
 
     @Test
@@ -181,10 +208,15 @@ class RecentsPrivacyTest {
                 dialogFlags and WindowManager.LayoutParams.FLAG_SECURE != 0,
             )
         }
-        captureRecents("relocked-sheet")
+        // Relocked, the lock window is the cover; the separate one stays away.
+        captureRecents("relocked-sheet", expectCover = false)
+        assertTrue("no second cover over the lock", !coverShown)
     }
 
     private companion object {
         const val DEADLINE = 20_000L
+
+        /** A literal, not the production constant: the test must also compile against the red baseline. */
+        const val PRIVACY_COVER_TAG = "privacyCover"
     }
 }

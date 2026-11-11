@@ -100,6 +100,7 @@ import com.rizzog99.personalfinancetracker.ui.components.ErrorState
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
+import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileObscured
 import com.rizzog99.personalfinancetracker.ui.components.SheetDragHandle
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
@@ -751,6 +752,7 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
         dragHandle = null,
         containerColor = MaterialTheme.colorScheme.background,
     ) {
+        ReleaseTextFocusWhileObscured()
         AppBackground(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.96f)) {
             SheetDragHandle()
             Column(
@@ -974,6 +976,7 @@ private fun GoalDetailSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
+        ReleaseTextFocusWhileObscured()
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),

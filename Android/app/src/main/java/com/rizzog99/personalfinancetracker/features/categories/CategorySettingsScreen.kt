@@ -65,6 +65,7 @@ import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
+import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileObscured
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import kotlinx.coroutines.launch
@@ -302,6 +303,7 @@ private fun CategoryEditorSheet(
     val canSave = trimmedName.isNotEmpty() && nameError == null
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
+        ReleaseTextFocusWhileObscured()
         Column(
             modifier = Modifier
                 .fillMaxWidth()

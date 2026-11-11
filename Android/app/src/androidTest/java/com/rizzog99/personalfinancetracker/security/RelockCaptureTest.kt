@@ -173,14 +173,10 @@ class RelockCaptureTest {
             .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
         "0123456789".forEach { rule.onNode(key(it)).assertIsDisplayed() }
         rule.onAllNodes(hasContentDescription(string(R.string.backspace, locale))).assertCountEquals(1)
-        rule.waitUntil(DEADLINE) {
-            instrumentation.uiAutomation.rootInActiveWindow
-                ?.findAccessibilityNodeInfosByText(string(R.string.pin_unlock_title, locale))
-                ?.isNotEmpty() == true
-        }
+        rule.waitUntil(DEADLINE) { string(R.string.pin_unlock_title, locale) in activeWindowTexts() }
         assertTrue(
             "${cell.id}: the draft must not be readable in the active window",
-            instrumentation.uiAutomation.rootInActiveWindow?.findAccessibilityNodeInfosByText(DRAFT).isNullOrEmpty(),
+            activeWindowTexts().none { DRAFT in it },
         )
 
         val name = "relocked-${cell.id}-$device"
@@ -193,6 +189,19 @@ class RelockCaptureTest {
         enterPin(locale)
         rule.onNode(hasContentDescription(string(R.string.dismiss, locale)) and hasClickAction()).performClick()
         rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isEmpty() }
+    }
+
+    /** What TalkBack can read in the active window (walked: Compose has no text search). */
+    private fun activeWindowTexts(): List<String> {
+        val out = mutableListOf<String>()
+        fun walk(node: android.view.accessibility.AccessibilityNodeInfo?) {
+            node ?: return
+            node.text?.let { out += it.toString() }
+            node.contentDescription?.let { out += it.toString() }
+            for (i in 0 until node.childCount) walk(node.getChild(i))
+        }
+        walk(instrumentation.uiAutomation.rootInActiveWindow)
+        return out
     }
 
     /** The lock window's semantics only, one line per labelled node with its bounds. */

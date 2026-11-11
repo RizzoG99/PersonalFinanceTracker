@@ -95,6 +95,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -103,6 +105,7 @@ import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -135,6 +138,8 @@ import com.rizzog99.personalfinancetracker.ui.components.EmptyState
 import com.rizzog99.personalfinancetracker.ui.components.ErrorState
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
+import com.rizzog99.personalfinancetracker.ui.components.LocalAppObscured
+import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileObscured
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
@@ -805,6 +810,7 @@ private fun ActivityFiltersSheet(
     }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
+        ReleaseTextFocusWhileObscured()
         Column(
             modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -1233,6 +1239,36 @@ private fun TransactionEditorContent(
     val matchingCategories = categories.filter { it.type == selectedType }
     val selectedCategory = matchingCategories.firstOrNull { it.id == selectedCategoryId }
     var isAmountFocused by remember { mutableStateOf(false) }
+    // #319: the field that had focus when the app left or locked, given back on the return — as
+    // frozen iOS's form does (`TransactionFormView.swift:460-490` at `b649dfff`).
+    val amountFocus = remember { FocusRequester() }
+    val noteFocus = remember { FocusRequester() }
+    var isNoteFocused by remember { mutableStateOf(false) }
+    var focusToRestore by remember { mutableStateOf<FocusRequester?>(null) }
+    ReleaseTextFocusWhileObscured(
+        beforeRelease = {
+            focusToRestore = when {
+                isAmountFocused -> amountFocus
+                isNoteFocused -> noteFocus
+                else -> focusToRestore
+            }
+        },
+    )
+    // Straight from snapshot state, not from recomposition: this sheet may recompose before the
+    // shell does, and a stale "not obscured" gave focus back to a field that was leaving. Only once
+    // this window has window focus again, too: restarting input while the lock window is still going
+    // away hit Compose 1.6's `textFieldValue!!` in CursorAnchorInfoController (#319).
+    val obscured = LocalAppObscured.current
+    val windowInfo = LocalWindowInfo.current
+    LaunchedEffect(obscured, windowInfo) {
+        snapshotFlow { Triple(obscured(), windowInfo.isWindowFocused, focusToRestore) }
+            .collect { (isObscured, windowFocused, field) ->
+                if (!isObscured && windowFocused && field != null) {
+                    runCatching { field.requestFocus() }
+                    focusToRestore = null
+                }
+            }
+    }
     val amount = AmountInput.parse(amountText)
     val displayedAmountText = when {
         amountText.isBlank() || isAmountFocused -> amountText
@@ -1405,9 +1441,13 @@ private fun TransactionEditorContent(
                         .fillMaxWidth()
                         .align(Alignment.Center)
                         .padding(horizontal = 72.dp)
+                        .focusRequester(amountFocus)
                         .onFocusChanged { focusState ->
                             isAmountFocused = focusState.isFocused
-                            if (!focusState.isFocused && amountText.isNotBlank() && AmountInput.parse(amountText) == null) {
+                            // Leaving the app is not finishing the field: a half-typed "12," survives it.
+                            if (!focusState.isFocused && focusToRestore == null &&
+                                amountText.isNotBlank() && AmountInput.parse(amountText) == null
+                            ) {
                                 amountText = ""
                             }
                         },
@@ -1505,7 +1545,10 @@ private fun TransactionEditorContent(
             OutlinedTextField(
                 value = note,
                 onValueChange = { note = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(noteFocus)
+                    .onFocusChanged { isNoteFocused = it.isFocused },
                 label = { Text(stringResource(R.string.note)) },
                 supportingText = { Text(stringResource(R.string.note_optional)) },
             )
@@ -1741,6 +1784,7 @@ private fun CategoryPickerSheet(
         onDismissRequest = onDismiss,
         sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
+        ReleaseTextFocusWhileObscured()
         Column(
             modifier = Modifier
                 .fillMaxWidth()

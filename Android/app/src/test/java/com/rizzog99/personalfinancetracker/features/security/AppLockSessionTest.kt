@@ -23,7 +23,7 @@ class AppLockSessionTest {
         away(29_999)
         session.relockIfGraceExpired()
 
-        assertEquals(LockState.UNLOCKED, session.state.value)
+        assertEquals(LockState.UNLOCKED, session.state)
     }
 
     @Test
@@ -33,7 +33,7 @@ class AppLockSessionTest {
         away(31_000)
         session.relockIfGraceExpired()
 
-        assertEquals(LockState.RELOCKED, session.state.value)
+        assertEquals(LockState.RELOCKED, session.state)
     }
 
     /** The boundary belongs to the lock: at exactly the interval, ask again. */
@@ -44,7 +44,7 @@ class AppLockSessionTest {
         away(30_000)
         session.relockIfGraceExpired()
 
-        assertEquals(LockState.RELOCKED, session.state.value)
+        assertEquals(LockState.RELOCKED, session.state)
     }
 
     @Test
@@ -52,7 +52,7 @@ class AppLockSessionTest {
         val session = unlockedSession()
         session.noteLeft()
 
-        assertEquals(LockState.UNLOCKED, session.state.value)
+        assertEquals(LockState.UNLOCKED, session.state)
     }
 
     /** A second return without another absence must not reuse a stale timestamp. */
@@ -65,52 +65,86 @@ class AppLockSessionTest {
         away(600_000)
         session.relockIfGraceExpired()
 
-        assertEquals(LockState.UNLOCKED, session.state.value)
+        assertEquals(LockState.UNLOCKED, session.state)
     }
 
+    /** Screen off while away: a return well inside the 30 s still asks. */
     @Test
-    fun ac03_screenOffSpendsTheGrace() {
+    fun ac03_screenOffWhileAwaySpendsTheGrace() {
         val session = unlockedSession()
         session.noteLeft()
         session.invalidateGrace()
-
-        assertEquals(LockState.RELOCKED, session.state.value)
-
-        // And returning inside the window does not undo it.
         away(2_000)
         session.relockIfGraceExpired()
-        assertEquals(LockState.RELOCKED, session.state.value)
+
+        assertEquals(LockState.RELOCKED, session.state)
+    }
+
+    /**
+     * Screen off in front: the activity stops right after, and the lock lands on the return — never
+     * mid-frame over a focused text field.
+     */
+    @Test
+    fun ac03_screenOffInFrontRelocksOnTheReturn() {
+        val session = unlockedSession()
+        session.invalidateGrace()
+        session.noteLeft()
+        assertEquals(LockState.UNLOCKED, session.state)
+
+        away(1_000)
+        session.relockIfGraceExpired()
+        assertEquals(LockState.RELOCKED, session.state)
+    }
+
+    /** Without a PIN nothing relocks, and the spent grace does not linger into a later PIN. */
+    @Test
+    fun ac08_withoutAPinTheReturnClearsEverything() {
+        val session = unlockedSession()
+        session.noteLeft()
+        session.invalidateGrace()
+        away(60_000)
+        session.relockIfGraceExpired(canRelock = false)
+        assertEquals(LockState.UNLOCKED, session.state)
+        assertEquals(false, session.away)
+
+        session.noteLeft()
+        away(1_000)
+        session.relockIfGraceExpired()
+        assertEquals(LockState.UNLOCKED, session.state)
     }
 
     @Test
-    fun ac03_screenOffInFrontRelocks() {
+    fun ac02_awayFollowsTheDeparture() {
         val session = unlockedSession()
-        session.invalidateGrace()
-
-        assertEquals(LockState.RELOCKED, session.state.value)
+        session.noteLeft()
+        assertEquals(true, session.away)
+        session.relockIfGraceExpired()
+        assertEquals(false, session.away)
     }
 
     /** A cold start has no grace to be lenient with, and nothing moves it off the full gate but a PIN. */
     @Test
     fun ac04_aFreshSessionIsColdAndStaysCold() {
         val session = AppLockSession(clock = { now })
-        assertEquals(LockState.COLD, session.state.value)
+        assertEquals(LockState.COLD, session.state)
 
         session.noteLeft()
         away(60_000)
         session.relockIfGraceExpired()
-        assertEquals(LockState.COLD, session.state.value)
+        assertEquals(LockState.COLD, session.state)
 
         session.invalidateGrace()
-        assertEquals(LockState.COLD, session.state.value)
+        assertEquals(LockState.COLD, session.state)
     }
 
     @Test
     fun ac01_unlockingARelockedSessionUnlocksIt() {
         val session = unlockedSession()
         session.invalidateGrace()
+        session.relockIfGraceExpired()
+        assertEquals(LockState.RELOCKED, session.state)
         session.unlock()
 
-        assertEquals(LockState.UNLOCKED, session.state.value)
+        assertEquals(LockState.UNLOCKED, session.state)
     }
 }
