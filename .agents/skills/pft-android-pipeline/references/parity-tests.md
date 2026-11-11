@@ -13,7 +13,7 @@ Every `AC-xx` maps to at least one test, named in the issue. Worked examples on 
 - **Instrumented** (`app/src/androidTest`): anything the user sees, persistence across process death, Room migrations, locale recreation, the PIN gate.
 - **Capture matrix**: one `CaptureHarness.Cell` per variant the AC cares about: locale (EN, IT), theme (light, dark), width (411 dp compact, a wide value), font scale (1, large). Host the production composable with its real locals; a bare `Box` sets no `LocalContentColor` and renders dark cells black-on-black.
   - A `ModalBottomSheet` or dialog is its own window whose `ComposeView` re-provides `LocalContext`, `LocalConfiguration`, and `LocalDensity`, so the harness's locale and font-scale override stops at its edge. Check every sheet or dialog cell shows the cell's locale and font scale before trusting it.
-  - A wide cell (900 dp) on the phone AVD squeezes content the real tablet would not; treat clipping seen only there as a harness artifact, not a defect.
+  - Run every wide AC on the tablet AVD as well (`Pixel_Tablet`), the way iOS scenarios run on iPad: a wide cell (900 dp) on the phone AVD squeezes content the real tablet would not. Clipping seen only on the phone's wide cell is a harness artifact, not a defect; on the tablet it is real (#376).
 
 ## Shape
 
@@ -28,7 +28,11 @@ Every `AC-xx` maps to at least one test, named in the issue. Worked examples on 
 
 ## Running
 
-Run from the worktree root, one command per call, in the background, and wait with Monitor rather than an `until … sleep` loop. Call `adb` and `emulator` by bare name (both are on PATH): an absolute SDK path, a `A=…; $A …` chain, or a `$(…)` matches no allow rule in `.claude/settings.json` and asks the owner every time. Boot the AVD first (`emulator -list-avds`; the Mac has `Pixel_7a`) and check `adb devices`. One device run at a time on this Mac: never start the emulator while an `xcb test` or `xcb scenarios` run holds the simulator.
+Run from the worktree root, one command per call, in the background, and wait with Monitor rather than an `until … sleep` loop. Call `adb` and `emulator` by bare name (both are on PATH): an absolute SDK path, a `A=…; $A …` chain, or a `$(…)` matches no allow rule in `.claude/settings.json` and asks the owner every time. Boot the AVD first (`emulator -list-avds`; the Mac has `Pixel_7a` for phones and `Pixel_Tablet` for wide layouts) and check `adb devices`. One device run at a time on this Mac: never start the emulator while an `xcb test` or `xcb scenarios` run holds the simulator, and run one AVD at a time. Switch with `adb emu kill`, then `emulator -avd <name> -no-snapshot-save -no-boot-anim` in the background, and wait until `adb shell getprop sys.boot_completed` prints `1`.
+
+If `Pixel_Tablet` is missing, create it from the phone's already-installed image (no download): `/Users/gabrielerizzo/Library/Android/sdk/cmdline-tools/latest/bin/avdmanager create avd -n Pixel_Tablet -k "system-images;android-36;google_apis_playstore;arm64-v8a" -d pixel_tablet`. It is 2560×1600 at 320 dpi, so 1280×800 dp in landscape: the shell's expanded layout (rail plus two-pane).
+
+- Wide ACs on the tablet: run just those methods with `class=<fqcn>#<method>,<fqcn>#<method>`. A test that overrides `screenWidthDp` keeps its override, but the device behind it is really wide.
 
 - JVM, one class: `Android/gradlew -p Android :app:testDebugUnitTest --tests '<fqcn>'`.
 - Instrumented, one class: `Android/gradlew -p Android :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=<fqcn>`; one method: `class=<fqcn>#<method>`.
