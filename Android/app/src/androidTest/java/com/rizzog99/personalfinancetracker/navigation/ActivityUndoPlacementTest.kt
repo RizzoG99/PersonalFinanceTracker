@@ -273,7 +273,7 @@ class ActivityUndoPlacementTest {
      * the first Undo, then a save from +. If Activity shared the shell's queue, the queued Undos would
      * hold back "Transaction saved" for up to 5 s each (#376). So the clock stays frozen from the
      * deletes through the save, and "Transaction saved" must show while an Undo is still up: only two
-     * queues can show both at once. Each delete keeps its own Undo afterwards, as before #368.
+     * queues can show both at once. The queued second Undo still works afterwards, as before #368.
      */
     @Test
     fun ac03_saveFromPlusAfterTwoDeletesStillConfirms_compact() {
@@ -312,13 +312,21 @@ class ActivityUndoPlacementTest {
         assertTrue("'Transaction saved' waited behind Activity's Undo", undoAlongside)
         assertEquals(listOf(0), transactions().map { BigDecimal("-3.00").compareTo(it.amount) })
 
-        // Neither earlier Undo was discarded: each still restores its own row, in order.
-        listOf(coffee, tea).forEach { id ->
-            stepUntil("one Undo up") { rule.onAllNodes(undo).fetchSemanticsNodes().size == 1 }
+        // Tea's Undo was not discarded: queued behind coffee's, its window starts when it shows, so it
+        // still restores tea. Coffee's may have run out during the editor flow (5 s, #376); if it is the
+        // one still up, it restores coffee first.
+        stepUntil("one Undo up") { rule.onAllNodes(undo).fetchSemanticsNodes().size == 1 }
+        rule.onNode(undo).performClick()
+        stepUntil("a row restored") { transactions().any { it.id == coffee || it.id == tea } }
+        if (transactions().none { it.id == tea }) {
+            val coffeeUndo = rule.onAllNodes(undo).fetchSemanticsNodes().singleOrNull()?.id
+            stepUntil("tea's Undo up") {
+                rule.onAllNodes(undo).fetchSemanticsNodes().let { it.size == 1 && it.single().id != coffeeUndo }
+            }
             rule.onNode(undo).performClick()
-            stepUntil("$id restored") { transactions().any { it.id == id } }
+            stepUntil("tea restored") { transactions().any { it.id == tea } }
         }
-        assertEquals(3, transactions().size)
+        assertTrue("tea restored", transactions().any { it.id == tea })
     }
 
     /**
@@ -423,9 +431,11 @@ class ActivityUndoPlacementTest {
             assertTrue("${c.id}: Undo $undoBounds covered by + $plusBounds", !plusBounds.overlaps(undoBounds))
             CaptureHarness.writePng(rule, outputDir, c.id)
             CaptureHarness.writeSemantics(rule, outputDir, c.id)
-            // Let the Undo expire so the next cell starts with none showing.
-            rule.mainClock.advanceTimeBy(6_000)
+            // Restore so the next cell starts from the same single row, as before #376: the clock is still
+            // frozen inside the 5 s window, so the Undo is there to tap.
+            rule.onNode(localizedUndo).performClick()
             rule.mainClock.autoAdvance = true
+            rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
             runBlocking { app.database.clearAllTables(); app.categoryRepository.seedDefaultsIfEmpty() }
             // Let the row leave the screen before the next cell seeds another "coffee": a row keeps
             // the swipe callback of the transaction it was first composed for (#386), so a reused
