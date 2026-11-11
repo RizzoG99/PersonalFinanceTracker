@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Home: a new "What if I spend…" row under Safe to Spend. Type an amount to see what would be left until payday, and per day, if you spent it today. Nothing is saved.
 - Categories and credit cards: the New/Edit Category sheets (including the one that opens during a CSV import) and the Add/Edit Card sheet now confirm with a checkmark at the top right, like the transaction, goal and travel sheets. Before, they showed "Add" or "Save" there. VoiceOver reads the checkmark by what it does, for example "Add Category" or "Update Card".
 - Home and the Safe to Spend widget: when your spending only eats into your safety buffer, the amount turns amber and says "Using your safety buffer" instead of red "Over plan". Red now means you've gone past the buffer too.
 - Recurring: fixed-expense suggestions you answered "Not fixed" to are no longer gone for good. A "Hidden suggestions" row at the bottom of Recurring lists them, and "Show again" brings the card back. On iPhone the card comes back on Plan.
