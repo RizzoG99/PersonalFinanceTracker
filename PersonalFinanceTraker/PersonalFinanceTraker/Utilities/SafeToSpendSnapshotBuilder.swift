@@ -19,6 +19,7 @@ struct SafeToSpend: Equatable, Sendable {
     let payday: Date
 
     var amount: Decimal { income - spent - recurring - goals - buffer }
+    var standing: SafeToSpendSnapshot.Standing { SafeToSpendSnapshot.standing(amount, buffer: buffer) }
 }
 
 enum SafeToSpendSnapshotBuilder {
@@ -67,6 +68,6 @@ enum SafeToSpendSnapshotBuilder {
             transactions: transactions, activeRules: activeRules, payCycleStartDay: payCycleStartDay,
             bufferPercent: bufferPercent, currencyService: currencyService, now: now, calendar: calendar
         )
-        return SafeToSpendSnapshot(generatedAt: now, currencyCode: currencyService.baseCurrency, amount: safe.amount, payday: safe.payday, hasIncome: safe.income > 0)
+        return SafeToSpendSnapshot(generatedAt: now, currencyCode: currencyService.baseCurrency, amount: safe.amount, payday: safe.payday, hasIncome: safe.income > 0, buffer: safe.buffer)
     }
 }

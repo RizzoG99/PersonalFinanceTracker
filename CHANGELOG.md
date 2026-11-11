@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Home and the Safe to Spend widget: when your spending only eats into your safety buffer, the amount turns amber and says "Using your safety buffer" instead of red "Over plan". Red now means you've gone past the buffer too.
 - Recurring: fixed-expense suggestions you answered "Not fixed" to are no longer gone for good. A "Hidden suggestions" row at the bottom of Recurring lists them, and "Show again" brings the card back. On iPhone the card comes back on Plan.
 - iPad: the app no longer sometimes opens squeezed into the left half of the screen, with the sidebar hidden and the right half empty until you left the app and came back. It happened mostly on the second launch after installing the app.
 - Add Transaction: VoiceOver now reads goal chips as buttons and says which one is selected. They look the same as before.

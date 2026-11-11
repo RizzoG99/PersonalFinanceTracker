@@ -42,23 +42,32 @@ struct SafeToSpendWidgetView: View {
         let lastDay = SafeToSpendSnapshot.lastDay(before: entry.payday).formatted(.dateTime.day().month(.abbreviated))
         let perDay = SafeToSpendSnapshot.perDay(amount, from: entry.date, until: entry.payday)
             .map { $0.formatted(.currency(code: entry.currencyCode).precision(.fractionLength(0))) }
-        let until = amount < 0
-            ? String(localized: "widget.safe_to_spend.over_plan \(lastDay)")
-            : String(localized: "widget.safe_to_spend.until \(lastDay)")
+        let standing = SafeToSpendSnapshot.standing(amount, buffer: entry.buffer)
+        let until = switch standing {
+        case .overPlan: String(localized: "widget.safe_to_spend.over_plan \(lastDay)")
+        case .usingBuffer: String(localized: "widget.safe_to_spend.using_buffer \(lastDay)")
+        case .withinPlan: String(localized: "widget.safe_to_spend.until \(lastDay)")
+        }
+        // Amber like Home's hero: dipping into the buffer is a warning, not overspending (#260).
+        let tint: Color? = switch standing {
+        case .overPlan: Color("negative")
+        case .usingBuffer: Color("categoryAmber")
+        case .withinPlan: nil
+        }
         let formatted = amount.formatted(.currency(code: entry.currencyCode))
         var spoken = "\(formatted), \(until)"
         if let perDay { spoken += ", " + String(localized: "widget.safe_to_spend.per_day_spoken \(perDay)") }
         return VStack(alignment: .leading, spacing: 2) {
             Text(amount.formatted(.currency(code: entry.currencyCode)))
                 .font(.title.bold())
-                .foregroundStyle(amount < 0 ? Color("negative") : Color.primary)
+                .foregroundStyle(tint ?? Color.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.55)
                 .monospacedDigit()
             // Two lines, not one with "·": the per-day figure was the part getting truncated.
             Text(until)
                 .font(.caption)
-                .foregroundStyle(amount < 0 ? Color("negative") : Color.secondary)
+                .foregroundStyle(tint ?? Color.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             if let perDay {

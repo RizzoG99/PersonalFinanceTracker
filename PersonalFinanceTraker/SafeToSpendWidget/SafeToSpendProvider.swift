@@ -14,6 +14,7 @@ struct SafeToSpendProvider: TimelineProvider {
             currencyCode: "EUR",
             payday: Calendar.current.date(byAdding: .day, value: 20, to: .now) ?? .now,
             hasIncome: true,
+            buffer: 0,
             needsRefresh: false
         )
     }
@@ -44,6 +45,7 @@ struct SafeToSpendProvider: TimelineProvider {
             currencyCode: snapshot?.currencyCode ?? "EUR",
             payday: snapshot?.payday ?? date,
             hasIncome: snapshot?.hasIncome ?? true,
+            buffer: snapshot?.buffer ?? 0,
             needsRefresh: amount == nil
         )
     }

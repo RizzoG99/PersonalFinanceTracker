@@ -14,7 +14,20 @@ struct SafeToSpendSnapshotTests {
     }
 
     private func snapshot(amount: Decimal = 600, paydayIn days: Int = 20) -> SafeToSpendSnapshot {
-        SafeToSpendSnapshot(generatedAt: day(0), currencyCode: "EUR", amount: amount, payday: day(days), hasIncome: true)
+        SafeToSpendSnapshot(generatedAt: day(0), currencyCode: "EUR", amount: amount, payday: day(days), hasIncome: true, buffer: 0)
+    }
+
+    // #260: the buffer is a cushion, so spending into it warns instead of reading as overspending.
+    @Test(arguments: [
+        (Decimal(50), Decimal(100), SafeToSpendSnapshot.Standing.withinPlan),
+        (0, 100, .withinPlan),
+        (-40, 100, .usingBuffer),
+        (-100, 100, .usingBuffer),
+        (-101, 100, .overPlan),
+        (-1, 0, .overPlan),
+    ])
+    func standingAgainstTheBuffer(amount: Decimal, buffer: Decimal, expected: SafeToSpendSnapshot.Standing) {
+        #expect(SafeToSpendSnapshot.standing(amount, buffer: buffer) == expected)
     }
 
     @Test func amountStaysValidUntilTheDayBeforePayday() {
