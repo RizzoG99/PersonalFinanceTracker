@@ -51,6 +51,7 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.receipt.ReceiptCategoryConcept
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 
 /**
  * Lets the user state, once, which of their own categories each kind of purchase belongs to.
@@ -201,7 +202,7 @@ private fun ConceptRow(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.coverWhenObscured()) {
                 DropdownMenuItem(
                     text = { Text(automatic) },
                     onClick = { onPair(null); expanded = false },

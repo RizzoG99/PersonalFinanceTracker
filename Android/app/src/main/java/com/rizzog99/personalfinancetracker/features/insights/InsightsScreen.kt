@@ -1037,6 +1037,7 @@ private fun GoalDatePicker(initial: Instant, onDismiss: () -> Unit, onConfirm: (
     val state = rememberDatePickerState(initialSelectedDateMillis = initial.toEpochMilli())
     DatePickerDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         confirmButton = {
             TextButton(onClick = { state.selectedDateMillis?.let { onConfirm(Instant.ofEpochMilli(it)) } }) {
                 Text(stringResource(R.string.save))

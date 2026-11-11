@@ -251,7 +251,7 @@ fun SettingsSheet(
                 DropdownMenu(
                     expanded = dayMenuExpanded,
                     onDismissRequest = { dayMenuExpanded = false },
-                    modifier = Modifier.heightIn(max = 320.dp),
+                    modifier = Modifier.heightIn(max = 320.dp).coverWhenObscured(),
                 ) {
                     (1..28).forEach { day ->
                         DropdownMenuItem(

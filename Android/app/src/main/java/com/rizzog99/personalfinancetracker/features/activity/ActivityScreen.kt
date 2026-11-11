@@ -947,6 +947,7 @@ private fun CustomDateRangePickerDialog(
 
     DatePickerDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         confirmButton = {
             TextButton(
                 enabled = selectedStart != null && selectedEnd != null,
@@ -1636,6 +1637,7 @@ private fun TransactionEditorContent(
         )
         DatePickerDialog(
             onDismissRequest = { datePickerVisible = false },
+            modifier = Modifier.coverWhenObscured(),
             confirmButton = {
                 TextButton(
                     enabled = datePickerState.selectedDateMillis != null,
