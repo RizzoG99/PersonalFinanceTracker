@@ -197,12 +197,15 @@ private struct DailyRepeatButton: View {
     private var amountHidden: Bool { settings?.hideAmounts ?? false }
 
     var body: some View {
+        // The indigo tint sits on the prominent branch only: on the button itself it would
+        // override the secondary style's neutral tint.
         if isPrimary {
             repeatButton
                 .buttonStyle(.borderedProminent)
+                .tint(.accentIndigo)
         } else {
             repeatButton
-                .buttonStyle(.bordered)
+                .secondaryButtonStyle()
         }
     }
 
@@ -227,7 +230,6 @@ private struct DailyRepeatButton: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .tint(.accentIndigo)
         .controlSize(.regular)
         // Amount dropped from the label while hidden: this Button is a single
         // accessibility element, so its own label overrides whatever .privacyBlur()
@@ -250,9 +252,10 @@ private struct DailyAddButton: View {
         if isPrimary {
             addButton
                 .buttonStyle(.borderedProminent)
+                .tint(.accentIndigo)
         } else {
             addButton
-                .buttonStyle(.bordered)
+                .secondaryButtonStyle()
         }
     }
 
@@ -261,7 +264,6 @@ private struct DailyAddButton: View {
             Label(isPrimary ? "Add Transaction" : "New transaction", systemImage: "plus.circle.fill")
                 .frame(maxWidth: .infinity)
         }
-        .tint(.accentIndigo)
         .controlSize(.regular)
         .accessibilityLabel(Text("Add new transaction"))
     }
@@ -278,7 +280,7 @@ private struct DailyLoggingReminderPrompt: View {
                 .foregroundStyle(.textMid)
             Spacer(minLength: 8)
             Button("Set", action: onSetReminder)
-                .buttonStyle(.bordered)
+                .secondaryButtonStyle()
                 .controlSize(.small)
             Button(action: onDismissReminder) {
                 Label("Dismiss reminder prompt", systemImage: "xmark")

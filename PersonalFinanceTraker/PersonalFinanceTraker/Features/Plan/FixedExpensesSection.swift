@@ -425,7 +425,7 @@ private struct FixedExpenseSuggestionCard: View {
 
     @ViewBuilder private var actions: some View {
         Button(action: onDismiss) { Text("Not fixed").frame(maxWidth: .infinity) }
-            .secondaryCardButton()
+            .secondaryButtonStyle()
             .accessibilityHint("Won't suggest this payment again")
         Button { onConfirm(autoRecord) } label: { Text("Plan for it").frame(maxWidth: .infinity) }
             .buttonStyle(.borderedProminent)
@@ -489,7 +489,7 @@ private struct MissedPaymentCard: View {
                             Image(systemName: "ellipsis")
                                 .accessibilityLabel(Text("More answers for \(payment.title)"))
                         }
-                        .secondaryCardButton()
+                        .secondaryButtonStyle()
                         .buttonBorderShape(.circle)
                     }
                 } else {
@@ -512,10 +512,10 @@ private struct MissedPaymentCard: View {
 
     @ViewBuilder private var secondaryActions: some View {
         Button(action: onSkip) { Text("Skip this one").frame(maxWidth: .infinity) }
-            .secondaryCardButton()
+            .secondaryButtonStyle()
             .accessibilityHint(skipHint)
         Button(action: onStopped) { Text(stoppedLabel).frame(maxWidth: .infinity) }
-            .secondaryCardButton()
+            .secondaryButtonStyle()
             .accessibilityHint(stoppedHint)
     }
 }
@@ -615,19 +615,11 @@ private struct HiddenSuggestionsSheet: View {
                 } label: {
                     Text("Show again").frame(maxWidth: .infinity)
                 }
-                .secondaryCardButton()
+                .secondaryButtonStyle()
                 // A list of identical "Show again" buttons is useless to VoiceOver without the name.
                 .accessibilityLabel(Text("Show \(suggestion.title) again"))
                 .accessibilityHint("Its card comes back in Check your fixed expenses")
             }
         }
-    }
-}
-
-private extension View {
-    /// Neutral grey, not the indigo tint: on the dark glass card an indigo fill all but vanished
-    /// (and its indigo label fell under 4.5:1). Also sets it apart from the prominent answer.
-    func secondaryCardButton() -> some View {
-        buttonStyle(.bordered).tint(.primary)
     }
 }

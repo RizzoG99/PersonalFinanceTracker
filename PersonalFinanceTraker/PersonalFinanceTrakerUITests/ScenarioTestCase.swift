@@ -123,6 +123,8 @@ class ScenarioTestCase: XCTestCase {
 
         ("Home", "Text clipped", ["until *"], 268),
         ("Home", "Text clipped", ["Coffee & Drinks", "Streaming Services", "Financial Pulse", "Today's check-in is complete", "€* / €*"], 357),
+        // Financial Pulse quick-log buttons with `-seedPendingCheckIn`'s two habits (#215's S1).
+        ("Home", "Text clipped", ["Log Morning coffee", "Log Bus ticket", "-€3.50", "-€2.00"], 357),
         ("Home", "Potentially inaccessible text", ["?"], 269),
         // iPad Recent Transactions rows (SampleData names, their categories and amounts).
         ("Home", "Dynamic Type font sizes are partially unsupported", [
@@ -136,6 +138,22 @@ class ScenarioTestCase: XCTestCase {
         // The name field: it has no label, and `-skipOnboarding` fills in "Alex".
         ("Settings", "Text clipped", ["value=Alex"], 353),
         ("Settings", "Dynamic Type font sizes are partially unsupported", ["DATA"], 354),
+        ("Settings", "Dynamic Type font sizes are unsupported", ["DISCOVER"], 354),
+        // The backup rows under "Back Up Now"; "?" are unlabeled elements beside them (iPhone).
+        ("Settings", "Dynamic Type font sizes are partially unsupported", ["Restore from Backup", "Delete All Data", "?"], 393),
+        ("Settings", "Text clipped", ["Restore from Backup", "Delete All Data", "?"], 393),
+        ("Settings", "Dynamic Type font sizes are unsupported", ["?"], 393),
+
+        // Unattributed, and only on some runs (iPad dark, #215's S2), like Home's.
+        ("SiriGuide", "Potentially inaccessible text", ["?"], 269),
+        // Siri & Widgets guide phrase rows and their Copy button.
+        ("SiriGuide", "Text clipped", [
+            "Exact Siri phrase: Add a transaction in Personal Finance", "Exact Siri phrase: Log an expense in Personal Finance",
+        ], 392),
+        ("SiriGuide", "Dynamic Type font sizes are partially unsupported", [
+            "Exact Siri phrase: Add a transaction in Personal Finance", "Exact Siri phrase: Log an expense in Personal Finance",
+            "Copy", "Copied",
+        ], 392),
 
         // Category chips in the inline strip and the More chip.
         ("AddTransaction", "Dynamic Type font sizes are partially unsupported", defaultCategoryNames + ["More"], 271),

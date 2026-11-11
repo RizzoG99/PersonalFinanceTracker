@@ -62,5 +62,15 @@ final class AppShellModels {
         transactions = TransactionListViewModel(repo: actor)
         dashboard = DashboardViewModel(repo: actor)
         compass = CompassViewModel(repo: actor)
+        #if DEBUG
+        // `-seedCSVImport` (#215): the import wizard on a small file, past the system file picker
+        // that UI tests can't drive. Its categories match none of the app's, so mapping has work.
+        if ProcessInfo.processInfo.arguments.contains("-seedCSVImport") {
+            let url = FileManager.default.temporaryDirectory.appending(path: "seed-import.csv")
+            let csv = "Date,Description,Amount,Category\n2026-01-05,Coffee,-3.50,Caffetteria\n2026-01-06,Bus,-2.00,Trasporti\n"
+            try? csv.write(to: url, atomically: true, encoding: .utf8)
+            transactions.loadCSVFile(from: url)
+        }
+        #endif
     }
 }

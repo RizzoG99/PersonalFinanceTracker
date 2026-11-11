@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- Secondary buttons look the same everywhere and are easier to read, especially in dark mode: Copy in Siri & Widgets, the extra "Log …" and "New transaction" buttons and "Set" on Home's Financial Pulse, Back Up Now in Settings, What's New actions, the receipt "Which total is right?" amounts and Auto-Map in CSV import. They're now grey instead of faint indigo. Main buttons stay indigo.
 - Home and the Safe to Spend widget: when your spending only eats into your safety buffer, the amount turns amber and says "Using your safety buffer" instead of red "Over plan". Red now means you've gone past the buffer too.
 - Recurring: fixed-expense suggestions you answered "Not fixed" to are no longer gone for good. A "Hidden suggestions" row at the bottom of Recurring lists them, and "Show again" brings the card back. On iPhone the card comes back on Plan.
 - iPad: the app no longer sometimes opens squeezed into the left half of the screen, with the sidebar hidden and the right half empty until you left the app and came back. It happened mostly on the second launch after installing the app.

@@ -430,8 +430,7 @@ private struct FeatureDiscoveryReleaseCopy: View {
                 .foregroundStyle(.textMid)
             if let actionTitle = item.actionTitle {
                 Button(actionTitle, action: onAction)
-                    .buttonStyle(.bordered)
-                    .tint(.accentIndigo)
+                    .secondaryButtonStyle()
             }
         }
     }

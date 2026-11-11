@@ -711,7 +711,7 @@ private struct ReceiptTotalCandidatesRow: View {
                         Button(AmountParser.format(candidate, currencyCode: currencyCode)) {
                             onSelect(candidate)
                         }
-                        .buttonStyle(.bordered)
+                        .secondaryButtonStyle()
                     }
                 }
             }
