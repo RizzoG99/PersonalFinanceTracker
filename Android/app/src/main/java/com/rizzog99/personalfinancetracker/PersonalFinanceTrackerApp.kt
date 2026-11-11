@@ -6,16 +6,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rizzog99.personalfinancetracker.data.local.StartupFailure
 import com.rizzog99.personalfinancetracker.data.security.PinLock
+import com.rizzog99.personalfinancetracker.features.security.AppLockSession
+import com.rizzog99.personalfinancetracker.features.security.LockState
 import com.rizzog99.personalfinancetracker.features.security.PinUnlockScreen
 import com.rizzog99.personalfinancetracker.navigation.PersonalFinanceNavHost
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
@@ -29,8 +28,8 @@ fun PersonalFinanceTrackerApp() {
     val themeMode by application.preferencesRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
     val pinLock by application.pinLockRepository.state.collectAsState()
     val biometricEnabled by application.preferencesRepository.biometricEnabled.collectAsState(initial = false)
-    // Unlocked once per process — a PIN gates cold starts, not every foreground resume.
     val session: AppLockSession = viewModel()
+    val lockState by session.state.collectAsState()
 
     val startupFailure by application.startupFailure.collectAsState()
     val databaseProbed by application.databaseProbed.collectAsState()
@@ -74,20 +73,20 @@ fun PersonalFinanceTrackerApp() {
             // Reading the secret means a file read plus a Keystore decrypt. Hold on the plain app
             // background until that answers, rather than flashing the dashboard at someone the
             // lock screen is about to stop.
-            !session.unlocked && lock is PinLock.Unknown ->
+            lockState == LockState.COLD && lock is PinLock.Unknown ->
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                     FoundationStartupLoadingState(
                         message = stringResource(R.string.startup_loading_security),
                     )
                 }
-            !session.unlocked && lock is PinLock.Set -> PinUnlockScreen(
+            lockState == LockState.COLD && lock is PinLock.Set -> PinUnlockScreen(
                 expectedHash = lock.secret.hash,
                 expectedSalt = lock.secret.salt,
                 biometricEnabled = biometricEnabled,
-                onUnlocked = { session.unlocked = true },
+                onUnlocked = session::unlock,
             )
             else -> {
-                SideEffect { session.unlocked = true }
+                SideEffect { session.unlock() }
                 PersonalFinanceNavHost()
             }
         }
@@ -101,23 +100,4 @@ internal fun FoundationStartupLoadingState(message: String) {
         message = message,
         modifier = Modifier.fillMaxSize(),
     )
-}
-
-/**
- * "This process is past the app-lock gate", held where a configuration change cannot reach it.
- *
- * A `remember`ed flag here was #136: the composition dies with the activity, so a locale change —
- * or a rotation, or a dark-mode switch — reset it to `false`, put `PinUnlockScreen` in front of a
- * session already past the gate, and took `PersonalFinanceNavHost` out of the composition with the
- * user's selected destination inside it. That is the same shell loss as #132, reached by
- * recreation instead of by a mid-session PIN set.
- *
- * ponytail: a `ViewModel` holding one boolean, not `rememberSaveable`. The distinction is the whole
- * point. `rememberSaveable` writes to the saved-instance-state bundle, which Android restores after
- * a **process kill** — so a cold start would come back already unlocked and skip the PIN entirely.
- * A `ViewModel` is retained across configuration changes and dies with the process, which is
- * exactly the "once per process" lifetime the gate is documented to have.
- */
-internal class AppLockSession : ViewModel() {
-    var unlocked by mutableStateOf(false)
 }

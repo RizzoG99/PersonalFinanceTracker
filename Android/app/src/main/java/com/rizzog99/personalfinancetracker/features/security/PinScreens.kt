@@ -99,6 +99,8 @@ fun PinUnlockScreen(
     expectedSalt: String,
     biometricEnabled: Boolean,
     onUnlocked: () -> Unit,
+    /** Test seam (#319 `AC-06`): replaces the system prompt; `null` is production. */
+    requestBiometric: ((onSuccess: () -> Unit) -> Unit)? = null,
 ) {
     var entered by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
@@ -117,7 +119,12 @@ fun PinUnlockScreen(
     }
 
     LaunchedEffect(biometricEnabled, activity) {
-        if (!biometricEnabled || activity == null) return@LaunchedEffect
+        if (!biometricEnabled) return@LaunchedEffect
+        if (requestBiometric != null) {
+            requestBiometric(onUnlocked)
+            return@LaunchedEffect
+        }
+        if (activity == null) return@LaunchedEffect
         val canAuthenticate = BiometricManager.from(activity)
             .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
         if (canAuthenticate != BiometricManager.BIOMETRIC_SUCCESS) return@LaunchedEffect
