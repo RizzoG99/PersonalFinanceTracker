@@ -31,7 +31,7 @@ Done when exactly one issue holds the task and is on the project.
 
 ## 1. Analysis
 
-- **Bug**: find the mechanism. Orient with `graphify query`, then read the code. Use `$diagnosing-bugs` when the cause is uncertain.
+- **Bug**: find the mechanism. Orient with `graphify query`, then read the code. Use `$diagnosing-bugs` when the cause is uncertain. When the cause looks like an iOS or SwiftUI bug, prove it with a minimal app in the scratchpad that reproduces it outside this project (#358). The fix is then a workaround in the app, and the step ends with a Feedback for Apple drafted for the owner to file.
 - **Feature, or a bug that exposes a gap in how a feature is specified**: fill the *Functional analysis* section, which both templates have (in `bug.md` it is optional). Cover prerequisites, affected screens and models, states (empty, error, first run, Hide amounts, locked), data and privacy, and iPhone vs iPad.
 
 Done when the root cause is stated with file:line, or every functional gap is listed as an answered fact or an open question. Set project Evidence to Analyzed.
@@ -84,13 +84,13 @@ Open the screenshots in `.build/scenarios/shots/` for every scenario: iPhone lig
 - the iPad layout;
 - the contrast reports (`S*-contrast-*.txt`): report-only, but flag anything this change made worse.
 
-Done when every scenario screenshot was checked and each problem is fixed or recorded.
+Done when every scenario screenshot was checked, each problem is fixed or recorded, and `scripts/xcb shots-diff --accept` has made the reviewed run the baseline.
 
 ## 8. Code review
 
 Run critic rounds on the diff as in [references/critique.md](references/critique.md). After every fix:
 - rerun step 6's command;
-- if the fix changes what is on screen, repeat step 7 for the screenshots that changed.
+- run `scripts/xcb shots-diff` and repeat step 7 for every screenshot it lists under `review`.
 
 Done when the last round was APPROVE on the final diff, or its remaining findings are recorded as decided.
 

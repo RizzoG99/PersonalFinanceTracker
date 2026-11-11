@@ -15,13 +15,17 @@ The mechanics are in `PersonalFinanceTraker/PersonalFinanceTrakerUITests/Scenari
 - `shoot(app, "S<k>")` goes at the moment the scenario's *then* holds. The file is named `S<k>-<Topic>-<device>-<variant>.png`, so scenarios from different tasks don't collide. `try auditAccessibility(app, "S<k>", screens: …)` follows, on every screen the change touches.
 - Assert the precondition too (for example "keyboard visible before tapping More"). That way a broken setup fails loudly instead of letting the scenario pass vacuously.
 - Use waits (`waitForExistence`, `waitForNonExistence`, or `XCTNSPredicateExpectation` for a value), never sleeps or immediate reads. Scenario runs share the Mac with other work, and a read right after `typeText` or a foreground return has come back stale. "Stays hidden" means `XCTAssertFalse(x.waitForExistence(timeout: 2))`.
+- Act on the element the scenario names, found by its label, never by its position in a list. #366's S1 deleted "the lower row", so it passed whatever order the rules came in.
+- **Reproducible**: two runs on unchanged code take the same screenshots, so `scripts/xcb shots-diff` shows only what a change moved.
+  - Scroll with `scrollUp(_:)`, never `swipeUp()`, which travels a different distance each time.
+  - Give every row a test seeds a distinct timestamp. Rows with equal timestamps come back in no fixed order (#366).
 
 ## Gotchas found so far
 
 - **Every launch starts from default settings and first-run flags**, because `-skipOnboarding` clears them. First-run behaviour therefore applies in every test. For example, the first iPhone open of Add Transaction does not auto-focus Amount (`TransactionFormView.isFirstEverOpen`), so the test taps the field. Data is different: goals, recurring rules and trips persist until the pass's next reinstall (see the `launchApp` doc).
 - **iPad layout differs.**
   - Add/Edit Transaction is an inspector beside Home, not a sheet.
-  - Navigation is the sidebar (`app.collectionViews["Sidebar"]`), not the tab bar. iPadOS sometimes launches with the sidebar collapsed; `launchApp` reopens it.
+  - Navigation is the sidebar (`app.collectionViews["Sidebar"]`), not the tab bar. `launchApp` fails when the sidebar is collapsed at launch: that is the narrow layout of #358 come back, an app bug, never something to tap around.
   - On iPad, pass every visible screen to `auditAccessibility` (for example `screens: "AddTransaction", "Home"`).
 - **The audit covers the whole app**, not one view. Known-issue labels must be exact. A trailing `*` is allowed only for labels holding dates or amounts. Never use a bare wildcard: it hides new findings.
 - **Elements with no stable label**: add a test-only `.accessibilityIdentifier` on the containing view (precedent: `categoryStrip`, `categoryPickerGrid`). Query by identifier, not by text that also appears elsewhere on screen.
