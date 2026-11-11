@@ -272,20 +272,31 @@ class SaveFeedbackTest {
 
         rule.onNodeWithText("coffee").performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
-        rule.onNodeWithText(string(R.string.delete_transaction)).performClick()
-        rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
-
         val undo = hasText(string(R.string.undo)) and hasClickAction()
-        rule.waitUntil(timeoutMillis = 20_000) {
-            rule.onAllNodes(hasText(string(R.string.transaction_deleted))).fetchSemanticsNodes().isNotEmpty() &&
+        // Frozen from the tap: the Undo lasts 5 s (#376), and a wait under auto-advance could run the
+        // virtual clock past it on a slow emulator. The deadline is wall-clock, for the Room write.
+        rule.mainClock.autoAdvance = false
+        try {
+            rule.onNodeWithText(string(R.string.delete_transaction)).performClick()
+            val deadline = System.currentTimeMillis() + 60_000
+            fun shown() = transactions().none { it.id == id } &&
+                rule.onAllNodes(hasText(string(R.string.transaction_deleted))).fetchSemanticsNodes().isNotEmpty() &&
                 rule.onAllNodes(undo).fetchSemanticsNodes().isNotEmpty()
+            while (!shown() && System.currentTimeMillis() < deadline) {
+                rule.mainClock.advanceTimeByFrame()
+                Thread.sleep(16)
+            }
+            assertTrue("never: deleted and Undo shown", shown())
+            rule.mainClock.advanceTimeBy(500) // past the enter animation, well inside the window
+            // A covered Undo would swallow the tap (#368), so prove nothing clickable sits on top of it.
+            val undoBounds = rule.onNode(undo).fetchSemanticsNode().boundsInWindow
+            val add = rule.onAllNodes(hasContentDescription(string(R.string.add_transaction)) and hasClickAction())
+                .fetchSemanticsNodes().map { it.boundsInWindow }
+            assertTrue("Undo $undoBounds is covered by + $add", add.none { it.overlaps(undoBounds) })
+            rule.onNode(undo).performClick()
+        } finally {
+            rule.mainClock.autoAdvance = true
         }
-        // A covered Undo would swallow the tap (#368), so prove nothing clickable sits on top of it.
-        val undoBounds = rule.onNode(undo).fetchSemanticsNode().boundsInWindow
-        val add = rule.onAllNodes(hasContentDescription(string(R.string.add_transaction)) and hasClickAction())
-            .fetchSemanticsNodes().map { it.boundsInWindow }
-        assertTrue("Undo $undoBounds is covered by + $add", add.none { it.overlaps(undoBounds) })
-        rule.onNode(undo).performClick()
         rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
     }
 }

@@ -111,8 +111,8 @@ fun PersonalFinanceNavHost(
     var tabTransitionDirection by rememberSaveable { mutableStateOf(1) }
     val snackbarHostState = remember { SnackbarHostState() }
     // Compact Activity's own queue, drawn in this Scaffold so Material lifts it above the + (#368).
-    // A separate state, not the shell's: Activity's Undo never expires (#376), and on one shared
-    // queue it would hold back the shell's "Transaction saved".
+    // A separate state, not the shell's: on one shared queue, each pending Activity Undo would hold
+    // back the shell's "Transaction saved" for its whole 5 s window (#376).
     val activitySnackbarHostState = remember { SnackbarHostState() }
 
     val systemDark = isSystemInDarkTheme()

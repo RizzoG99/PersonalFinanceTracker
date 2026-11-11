@@ -6,11 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.assertIsEnabled
@@ -44,6 +44,7 @@ import java.util.Locale
 import java.util.UUID
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -137,9 +138,34 @@ class ActivityUndoPlacementTest {
         rule.waitForIdle()
     }
 
-    private fun waitForUndo() = rule.waitUntil(timeoutMillis = 20_000) {
+    private fun undoShowing() =
         rule.onAllNodes(hasText(string(R.string.transaction_deleted))).fetchSemanticsNodes().isNotEmpty() &&
             rule.onAllNodes(undo).fetchSemanticsNodes().isNotEmpty()
+
+    /** Steps the frozen clock a frame at a time; the wall-clock deadline is for Room's real-time writes. */
+    private fun stepUntil(what: String, condition: () -> Boolean) {
+        val deadline = System.currentTimeMillis() + 60_000
+        while (!condition() && System.currentTimeMillis() < deadline) {
+            rule.mainClock.advanceTimeByFrame()
+            Thread.sleep(16)
+        }
+        assertTrue("never: $what", condition())
+    }
+
+    /**
+     * Taps [confirm] and freezes the clock until [id] has left Room and Undo shows. Undo lasts 5 s
+     * (#376): under auto-advance, a wait on a slow emulator could run the virtual clock past it.
+     */
+    private fun confirmDeleteAndFreezeOnUndo(id: String, confirm: Int = R.string.delete_transaction) {
+        rule.mainClock.autoAdvance = false
+        rule.onNodeWithText(string(confirm)).performClick()
+        stepUntil("deleted and Undo shown") { transactions().none { it.id == id } && undoShowing() }
+        rule.mainClock.advanceTimeBy(500) // past the enter animation, well inside the 5 s window
+    }
+
+    @After
+    fun restoreClock() {
+        rule.mainClock.autoAdvance = true
     }
 
     /**
@@ -159,12 +185,11 @@ class ActivityUndoPlacementTest {
         host(widthDp = 411)
 
         swipeCoffeeLeft()
-        rule.onNodeWithText(string(R.string.delete_transaction)).performClick()
-        rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
-        waitForUndo()
+        confirmDeleteAndFreezeOnUndo(id)
         assertPlusClearOf(undo)
 
         rule.onNode(undo).performClick()
+        rule.mainClock.autoAdvance = true
         rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
         val restored = transactions().single { it.id == id }
         assertEquals(0, BigDecimal("-12.50").compareTo(restored.amount))
@@ -232,12 +257,11 @@ class ActivityUndoPlacementTest {
         host(widthDp = 411)
 
         swipeCoffeeLeft()
-        rule.onNodeWithText(string(R.string.delete_this_transaction)).performClick()
-        rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == occurrence.id } }
-        waitForUndo()
+        confirmDeleteAndFreezeOnUndo(occurrence.id, confirm = R.string.delete_this_transaction)
         assertPlusClearOf(undo)
 
         rule.onNode(undo).performClick()
+        rule.mainClock.autoAdvance = true
         rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == occurrence.id } }
         val restored = transactions().single { it.id == occurrence.id }
         assertEquals(0, BigDecimal("-12.50").compareTo(restored.amount))
@@ -246,9 +270,10 @@ class ActivityUndoPlacementTest {
 
     /**
      * Regression guard for the snackbar plumbing (code review r1/r2): two deletes without resolving
-     * the first Undo, then a save from +. Undo never expires (#376), so if Activity shared the
-     * shell's queue, the queued second Undo would hold back "Transaction saved". Each delete keeps
-     * its own Undo afterwards, as before #368.
+     * the first Undo, then a save from +. If Activity shared the shell's queue, the queued Undos would
+     * hold back "Transaction saved" for up to 5 s each (#376). So the clock stays frozen from the
+     * deletes through the save, and "Transaction saved" must show while an Undo is still up: only two
+     * queues can show both at once. Each delete keeps its own Undo afterwards, as before #368.
      */
     @Test
     fun ac03_saveFromPlusAfterTwoDeletesStillConfirms_compact() {
@@ -256,47 +281,42 @@ class ActivityUndoPlacementTest {
         val tea = seedExpense("tea")
         host(widthDp = 411)
 
-        listOf("coffee" to coffee, "tea" to tea).forEach { (note, id) ->
-            swipeLeftOn(note)
-            rule.onNodeWithText(string(R.string.delete_transaction)).performClick()
-            rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
-            waitForUndo()
-        }
+        swipeLeftOn("coffee")
+        confirmDeleteAndFreezeOnUndo(coffee)
+        rule.mainClock.autoAdvance = true // the swipe needs running frames: a few hundred ms of window
+        swipeLeftOn("tea")
+        confirmDeleteAndFreezeOnUndo(tea)
         rule.onAllNodes(undo).assertCountEquals(1)
 
         // Activity's search box is a text field too: the amount is the editor's first new field.
         val before = rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().map { it.id }.toSet()
+        val fab = rule.onNode(plus).fetchSemanticsNode().id
         rule.onNode(plus).performClick()
-        rule.waitForIdle()
+        stepUntil("editor open") { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().any { it.id !in before } }
         val amount = rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().first { it.id !in before }.id
         rule.onNode(SemanticsMatcher("id $amount") { it.id == amount }).performTextInput("3.00")
-        rule.waitForIdle()
-        val save = hasContentDescription(string(R.string.add_transaction)) and hasClickAction()
-        rule.onNode(save).assertIsEnabled()
-        rule.mainClock.autoAdvance = false
-        try {
-            rule.onNode(save).performClick()
-            val saved = hasText(string(R.string.transaction_saved))
-            val deadline = System.currentTimeMillis() + 60_000
-            while (rule.onAllNodes(saved).fetchSemanticsNodes().isEmpty() && System.currentTimeMillis() < deadline) {
-                rule.mainClock.advanceTimeByFrame()
-                Thread.sleep(16)
-            }
-            assertTrue(
-                "'Transaction saved' never showed: stored=${transactions().map { it.amount }}, " +
-                    "undo showing=${rule.onAllNodes(undo).fetchSemanticsNodes().size}",
-                rule.onAllNodes(saved).fetchSemanticsNodes().isNotEmpty(),
-            )
-        } finally {
-            rule.mainClock.autoAdvance = true
+        // The editor's save button shares the +'s label, and on a frozen clock the + may not have left
+        // yet: the save button is the one that is not the +.
+        val save = hasContentDescription(string(R.string.add_transaction)) and hasClickAction() and
+            SemanticsMatcher("not the +") { it.id != fab }
+        stepUntil("save enabled") { rule.onAllNodes(save and isEnabled()).fetchSemanticsNodes().size == 1 }
+        assertTrue("precondition: an Activity Undo is still up at save", undoShowing())
+        rule.onNode(save).performClick()
+        val saved = hasText(string(R.string.transaction_saved))
+        var undoAlongside = false
+        stepUntil("'Transaction saved' shown") {
+            val shown = rule.onAllNodes(saved).fetchSemanticsNodes().isNotEmpty()
+            if (shown) undoAlongside = undoShowing()
+            shown
         }
+        assertTrue("'Transaction saved' waited behind Activity's Undo", undoAlongside)
         assertEquals(listOf(0), transactions().map { BigDecimal("-3.00").compareTo(it.amount) })
 
         // Neither earlier Undo was discarded: each still restores its own row, in order.
         listOf(coffee, tea).forEach { id ->
-            waitForUndo()
+            stepUntil("one Undo up") { rule.onAllNodes(undo).fetchSemanticsNodes().size == 1 }
             rule.onNode(undo).performClick()
-            rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
+            stepUntil("$id restored") { transactions().any { it.id == id } }
         }
         assertEquals(3, transactions().size)
     }
@@ -375,39 +395,37 @@ class ActivityUndoPlacementTest {
                     hasText(localized.getString(R.string.delete_transaction))
                 ) and hasClickAction() and hasAnyAncestor(isDialog())
             rule.waitUntil(timeoutMillis = 20_000) { rule.onAllNodes(confirm).fetchSemanticsNodes().isNotEmpty() }
+            // Frozen from the tap: the Undo lasts 5 s (#376), and an idle sync could run past it.
+            rule.mainClock.autoAdvance = false
             rule.onNode(confirm).performClick()
-            try {
-                rule.waitUntil(timeoutMillis = 20_000) { transactions().none { it.id == id } }
-            } catch (e: ComposeTimeoutException) {
-                // The CI artifact carries no device files: put the evidence in the failure itself.
-                throw AssertionError(
-                    "${c.id}: delete never landed; stored=${transactions().map { it.note }}\n" +
-                        rule.onAllNodes(isRoot()).printToString(maxDepth = Int.MAX_VALUE),
-                    e,
-                )
-            }
             // Both the message and the action in the cell's language, or the cell is not evidence.
             val localizedUndo = hasText(localized.getString(R.string.undo)) and hasClickAction()
             val localizedMessage = hasText(localized.getString(R.string.transaction_deleted))
             try {
-                rule.waitUntil(timeoutMillis = 20_000) {
-                    rule.onAllNodes(localizedUndo).fetchSemanticsNodes().isNotEmpty() &&
+                stepUntil("${c.id}: delete landed and localized snackbar shown") {
+                    transactions().none { it.id == id } &&
+                        rule.onAllNodes(localizedUndo).fetchSemanticsNodes().isNotEmpty() &&
                         rule.onAllNodes(localizedMessage).fetchSemanticsNodes().isNotEmpty()
                 }
-            } catch (e: Throwable) {
+            } catch (e: AssertionError) {
+                // The CI artifact carries no device files: put the evidence in the failure itself.
                 CaptureHarness.writeSemantics(rule, outputDir, "${c.id}-timeout")
-                throw AssertionError("${c.id}: localized snackbar never showed", e)
+                throw AssertionError(
+                    "${c.id}: stored=${transactions().map { it.note }}\n" +
+                        rule.onAllNodes(isRoot()).printToString(maxDepth = Int.MAX_VALUE),
+                    e,
+                )
             }
-            rule.waitForIdle()
+            rule.mainClock.advanceTimeBy(500) // past the enter animation, well inside the 5 s window
             val plusNode = hasContentDescription(localized.getString(R.string.add_transaction)) and hasClickAction()
             val undoBounds = rule.onNode(localizedUndo).fetchSemanticsNode().boundsInWindow
             val plusBounds = rule.onNode(plusNode).fetchSemanticsNode().boundsInWindow
             assertTrue("${c.id}: Undo $undoBounds covered by + $plusBounds", !plusBounds.overlaps(undoBounds))
             CaptureHarness.writePng(rule, outputDir, c.id)
             CaptureHarness.writeSemantics(rule, outputDir, c.id)
-            // Restore so the next cell starts from the same single row; the Undo is indefinite (#376).
-            rule.onNode(localizedUndo).performClick()
-            rule.waitUntil(timeoutMillis = 20_000) { transactions().any { it.id == id } }
+            // Let the Undo expire so the next cell starts with none showing.
+            rule.mainClock.advanceTimeBy(6_000)
+            rule.mainClock.autoAdvance = true
             runBlocking { app.database.clearAllTables(); app.categoryRepository.seedDefaultsIfEmpty() }
             // Let the row leave the screen before the next cell seeds another "coffee": a row keeps
             // the swipe callback of the transaction it was first composed for (#386), so a reused
