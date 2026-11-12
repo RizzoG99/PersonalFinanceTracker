@@ -89,7 +89,7 @@ Done when every AC maps to a test and every change to a file.
 Run critic rounds with the mechanics and prompts in [`../pft-task-pipeline/references/critique.md`](../pft-task-pipeline/references/critique.md) (on `codex/android-native`, which lacks `scripts/critic`, use the commands it falls back to). Run `codex exec` in the background, since a foreground run dumps about 1 MB into context, and give it an absolute `-C <worktree path>`. Substitute:
 
 - "iOS repo" → "Android app under `Android/`; read `Android/README.md` and the issue's parent tracker too";
-- the plan checklist → whether each AC test will actually work (semantics queries, locale and font-scale recreation, the PIN gate, first-run seeding, compact vs wide), whether the fix location is right, side effects on other callers, and any `D-xx` the plan silently introduces;
+- the plan checklist's scenario-test item → whether each AC test will actually work (semantics queries, locale and font-scale recreation, the PIN gate, first-run seeding, compact vs wide), and "iPhone AND iPad" → compact AND wide; keep its other items, and add any `D-xx` the plan silently introduces;
 - the code-review checklist → the logic the task changes, coroutine scope and cancellation (a failure that escapes `viewModelScope` kills the process, #133), raw `Throwable.message` reaching the screen (#135), Room migrations, vacuous tests, and regressions in sibling capabilities.
 
 `critique.md` also holds the round limit and what to do with findings left after it. Then publish a short plan to the issue.

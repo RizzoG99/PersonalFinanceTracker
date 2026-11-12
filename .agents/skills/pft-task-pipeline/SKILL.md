@@ -53,7 +53,7 @@ Done when every template section is filled except Plan and Evidence.
 Create the worktree and branch (`fix/<n>-<slug>` or `feature/<n>-<slug>`, from `main` unless the task depends on unmerged work). When the session already runs in a fresh worktree, keep it and rename its branch with `git branch -m <name>`. Write the plan to `.plan/<n>.md` in the worktree; `.plan/` is gitignored, so it never gets committed. The plan names:
 
 - each scenario's test: class `<Topic>ScenarioTests`, the steps, the exact element queries, and which scenario is expected to go **red** on today's code;
-- every file to change and the change;
+- every file to change, tagged Create, Modify or Delete, and the change, with no design choice left to the implementer;
 - side effects on behaviour that is not under test, and how each is covered or why it is accepted;
 - the verification commands.
 
