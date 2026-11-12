@@ -184,11 +184,17 @@ class ForegroundRelockTest {
         val note = hasSetTextAction() and hasText(string(R.string.note))
         rule.onNode(note).performClick()
         rule.onNode(note).performTextInput("Coffee")
-        rule.waitForIdle()
+        rule.waitUntil(DEADLINE) { imeWindowShown() }
+        // One real key event before leaving, so the field's input session is the one key events reach.
+        // In this harness `input text` lands only after `performTextInput` has started that session;
+        // without this step the key events after unlock were not heard either (recorded on PR #399).
+        shell("input text X")
+        rule.waitUntil(DEADLINE) {
+            rule.onAllNodes(hasSetTextAction() and hasText("CoffeeX")).fetchSemanticsNodes().isNotEmpty()
+        }
         val amountBefore = editableText(0)
         assertTrue("precondition: an amount was typed, got '$amountBefore'", amountBefore.isNotBlank())
         assertFalse("precondition: unlocked", pinShown())
-        rule.waitUntil(DEADLINE) { imeWindowShown() }
         instrumentation.uiAutomation.waitForIdle(1_000, 10_000) // #398: let the keyboard settle.
 
         awayFor(30_000)
@@ -211,12 +217,25 @@ class ForegroundRelockTest {
         enterPin()
         assertEquals(amountBefore, editableText(0))
         // Given back once the sheet's window has focus again, which is a frame or two after unlock.
-        val noteWithDraft = hasSetTextAction() and hasText("Coffee")
+        val noteWithDraft = hasSetTextAction() and hasText("CoffeeX")
         rule.waitUntil(DEADLINE) {
             rule.onAllNodes(noteWithDraft and SemanticsMatcher.expectValue(SemanticsProperties.Focused, true))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         rule.onNode(noteWithDraft).assertIsFocused()
+
+        // Focused is not enough: typing must still reach the field, through real key events.
+        shell("input text More")
+        runCatching {
+            rule.waitUntil(DEADLINE) {
+                rule.onAllNodes(hasSetTextAction() and hasText("CoffeeXMore")).fetchSemanticsNodes().isNotEmpty()
+            }
+        }.onFailure {
+            val fields = rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().map { node ->
+                node.config.getOrNull(SemanticsProperties.EditableText)?.text
+            }
+            throw AssertionError("typing after unlock did not reach Note; fields now: $fields", it)
+        }
     }
 
     /**
