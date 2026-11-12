@@ -84,6 +84,16 @@ class MainActivity : FragmentActivity() {
         lockSession.privacyCover = !isTopResumedActivity && !isInMultiWindowMode
     }
 
+    /**
+     * Paused means a translucent activity is on top — the notification-permission prompt, say —
+     * not Overview (which keeps this activity resumed). Frozen iOS does not cover behind its own
+     * prompts (#193), so neither does this. Leaving for good is covered by the Recents flags.
+     */
+    override fun onPause() {
+        super.onPause()
+        lockSession.privacyCover = false
+    }
+
     override fun onDestroy() {
         unregisterReceiver(screenOff)
         super.onDestroy()
