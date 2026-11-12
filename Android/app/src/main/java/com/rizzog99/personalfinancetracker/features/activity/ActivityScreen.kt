@@ -69,6 +69,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -1268,10 +1269,12 @@ private fun TransactionEditorContent(
         snapshotFlow { Triple(obscured(), windowInfo.isWindowFocused, focusToRestore) }
             .collect { (isObscured, windowFocused, field) ->
                 if (!isObscured && windowFocused && field != null) {
+                    focusToRestore = null
                     runCatching { field.requestFocus() }
                     // A programmatic focus does not raise the keyboard; iOS gives it back with the field.
+                    // One frame later, once the field's input session has started — sooner is ignored.
+                    withFrameNanos {}
                     keyboard?.show()
-                    focusToRestore = null
                 }
             }
     }
