@@ -190,13 +190,17 @@ class RelockCaptureTest {
         enterPin(locale)
         // Back, not the sheet's close button: Home has its own "Dismiss" (the reminder card). The
         // first Back may only close the keyboard the restored focus brought back.
-        repeat(3) {
-            if (rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()) {
+        // Each Back is given time to land before the next: on the API 34 CI emulator a quicker loop
+        // left the sheet open and the next cell stacked a second one.
+        val sheetOpen = { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty() }
+        repeat(5) {
+            if (sheetOpen()) {
                 shell("input keyevent KEYCODE_BACK")
+                instrumentation.uiAutomation.waitForIdle(500, 5_000)
                 rule.waitForIdle()
             }
         }
-        rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isEmpty() }
+        rule.waitUntil(DEADLINE) { !sheetOpen() }
     }
 
     /** What TalkBack can read in the active window (walked: Compose has no text search). */

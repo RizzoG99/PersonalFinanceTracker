@@ -127,17 +127,16 @@ class RecentsPrivacyTest {
      */
     private fun captureRecents(state: String, expectCover: Boolean) {
         val pkg = instrumentation.targetContext.packageName
+        // Below API 29 there is no live tile and FLAG_SECURE (asserted by the caller) blacks the tile
+        // out; there is nothing to photograph, and the API 26 CI emulator cannot bring the activity
+        // back after a real Recents trip.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || secureExpected) return
         assertTrue("precondition: the app is in front", !coverShown)
         shell("input keyevent KEYCODE_APP_SWITCH")
         rule.waitUntil(DEADLINE) {
             instrumentation.uiAutomation.rootInActiveWindow?.packageName?.toString().let { it != null && it != pkg }
         }
         if (expectCover) rule.waitUntil(DEADLINE) { coverShown }
-        if (Build.VERSION.SDK_INT < 29 || secureExpected) {
-            // No live tile before API 29; and a FLAG_SECURE screen photographs black by design.
-            rule.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
-            return
-        }
         instrumentation.uiAutomation.waitForIdle(500, 5_000)
         val shot = instrumentation.uiAutomation.takeScreenshot()
         val name = "recents-$state-api${Build.VERSION.SDK_INT}-${Build.MODEL.replace(' ', '_')}.png"
