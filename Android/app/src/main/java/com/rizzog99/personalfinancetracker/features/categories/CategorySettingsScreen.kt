@@ -65,7 +65,9 @@ import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
+import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileObscured
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import kotlinx.coroutines.launch
 
@@ -302,9 +304,11 @@ private fun CategoryEditorSheet(
     val canSave = trimmedName.isNotEmpty() && nameError == null
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
+        ReleaseTextFocusWhileObscured()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .coverWhenObscured()
                 .heightIn(max = 720.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 8.dp),
@@ -469,6 +473,7 @@ private fun CategoryIconPicker(selected: String, onSelected: (String) -> Unit) {
 private fun DeleteCategoryDialog(category: FinanceCategory, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.delete_category_confirmation_title)) },
         text = { Text(stringResource(R.string.delete_category_confirmation_message, category.name)) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },

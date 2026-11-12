@@ -100,8 +100,10 @@ import com.rizzog99.personalfinancetracker.ui.components.ErrorState
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
+import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileObscured
 import com.rizzog99.personalfinancetracker.ui.components.SheetDragHandle
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.theme.CardShape
@@ -751,7 +753,8 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
         dragHandle = null,
         containerColor = MaterialTheme.colorScheme.background,
     ) {
-        AppBackground(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.96f)) {
+        ReleaseTextFocusWhileObscured()
+        AppBackground(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.96f).coverWhenObscured()) {
             SheetDragHandle()
             Column(
                 modifier = Modifier
@@ -919,6 +922,7 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
     if (choosingIcon) {
         AlertDialog(
             onDismissRequest = { choosingIcon = false },
+            modifier = Modifier.coverWhenObscured(),
             title = { Text(stringResource(R.string.choose_goal_icon)) },
             text = {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -974,8 +978,9 @@ private fun GoalDetailSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
+        ReleaseTextFocusWhileObscured()
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().coverWhenObscured().padding(horizontal = 24.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1032,6 +1037,7 @@ private fun GoalDatePicker(initial: Instant, onDismiss: () -> Unit, onConfirm: (
     val state = rememberDatePickerState(initialSelectedDateMillis = initial.toEpochMilli())
     DatePickerDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         confirmButton = {
             TextButton(onClick = { state.selectedDateMillis?.let { onConfirm(Instant.ofEpochMilli(it)) } }) {
                 Text(stringResource(R.string.save))
@@ -1045,6 +1051,7 @@ private fun GoalDatePicker(initial: Instant, onDismiss: () -> Unit, onConfirm: (
 private fun DeleteGoalDialog(goal: FinanceGoal, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.delete_goal_confirmation_title)) },
         text = { Text(stringResource(R.string.delete_goal_confirmation_message, goal.name)) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },

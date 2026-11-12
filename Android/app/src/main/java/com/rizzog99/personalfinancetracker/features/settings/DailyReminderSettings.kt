@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -130,6 +131,7 @@ private fun ReminderTimePickerDialog(
     )
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.reminder_time)) },
         text = {
             // The default period selector paints the chosen AM/PM on `tertiaryContainer`, which

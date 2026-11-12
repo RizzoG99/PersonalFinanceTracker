@@ -1,5 +1,9 @@
 package com.rizzog99.personalfinancetracker.features.security
 
+import android.app.KeyguardManager
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.ComponentActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.background
@@ -46,8 +50,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withResumed
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.security.PinCodec
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 
 const val PIN_LENGTH = 6
@@ -99,11 +108,14 @@ fun PinUnlockScreen(
     expectedSalt: String,
     biometricEnabled: Boolean,
     onUnlocked: () -> Unit,
+    /** Test seam (#319 `AC-06`): replaces the system prompt; `null` is production. */
+    requestBiometric: ((onSuccess: () -> Unit) -> Unit)? = null,
 ) {
     var entered by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
+    // Unwrapped: inside the relock window LocalContext is the dialog's wrapper, not the activity.
     val context = LocalContext.current
-    val activity = context as? FragmentActivity
+    val activity = remember(context) { context.findActivity() }
 
     LaunchedEffect(entered) {
         if (entered.length < PIN_LENGTH) return@LaunchedEffect
@@ -116,26 +128,35 @@ fun PinUnlockScreen(
         }
     }
 
+    // Frozen iOS asks only at the end of a real return from the background, never over the lock
+    // screen (#319 AC-06). So: once per start of the *activity* (a dialog's own lifecycle never
+    // stops), only once resumed and past the keyguard, cancelled when the app leaves or the lock
+    // goes away. A relock caused by the screen turning off composes this while stopped; starting
+    // BiometricPrompt then would fail its fragment commit or sit behind the lock screen.
     LaunchedEffect(biometricEnabled, activity) {
         if (!biometricEnabled || activity == null) return@LaunchedEffect
-        val canAuthenticate = BiometricManager.from(activity)
-            .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-        if (canAuthenticate != BiometricManager.BIOMETRIC_SUCCESS) return@LaunchedEffect
-        val prompt = BiometricPrompt(
-            activity,
-            ContextCompat.getMainExecutor(activity),
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    onUnlocked()
-                }
-            },
-        )
-        prompt.authenticate(
-            BiometricPrompt.PromptInfo.Builder()
-                .setTitle(activity.getString(R.string.biometric_unlock))
-                .setNegativeButtonText(activity.getString(R.string.use_pin_instead))
-                .build(),
-        )
+        val keyguard = activity.getSystemService(KeyguardManager::class.java)
+        activity.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            activity.lifecycle.withResumed {}
+            if (keyguard?.isKeyguardLocked == true) return@repeatOnLifecycle
+            // A success that lands after this attempt ended (stopped, unlocked by PIN, superseded by
+            // a later lock) must not unlock anything.
+            var active = true
+            val cancel = try {
+                startBiometric(activity, requestBiometric) { if (active) onUnlocked() }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Exception) {
+                // A prompt that cannot start leaves the PIN pad, which is always there (#133).
+                null
+            }
+            try {
+                awaitCancellation()
+            } finally {
+                active = false
+                cancel?.invoke()
+            }
+        }
     }
 
     PinScaffold(
@@ -152,6 +173,44 @@ fun PinUnlockScreen(
         onBackspace = { if (entered.isNotEmpty()) entered = entered.dropLast(1) },
         onClose = null,
     )
+}
+
+/** Starts the prompt and returns how to cancel it; `null` when there is nothing to cancel. */
+private fun startBiometric(
+    activity: ComponentActivity,
+    seam: ((onSuccess: () -> Unit) -> Unit)?,
+    onSuccess: () -> Unit,
+): (() -> Unit)? {
+    if (seam != null) {
+        seam(onSuccess)
+        return null
+    }
+    val host = activity as? FragmentActivity ?: return null
+    val canAuthenticate = BiometricManager.from(host)
+        .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+    if (canAuthenticate != BiometricManager.BIOMETRIC_SUCCESS) return null
+    val prompt = BiometricPrompt(
+        host,
+        ContextCompat.getMainExecutor(host),
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                onSuccess()
+            }
+        },
+    )
+    prompt.authenticate(
+        BiometricPrompt.PromptInfo.Builder()
+            .setTitle(host.getString(R.string.biometric_unlock))
+            .setNegativeButtonText(host.getString(R.string.use_pin_instead))
+            .build(),
+    )
+    return prompt::cancelAuthentication
+}
+
+private tailrec fun Context.findActivity(): ComponentActivity? = when (this) {
+    is ComponentActivity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 @Composable

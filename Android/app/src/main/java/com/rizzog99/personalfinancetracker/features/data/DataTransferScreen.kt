@@ -95,6 +95,7 @@ import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
+import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
@@ -304,6 +305,7 @@ private fun ImportWizardScreen(
     if (showHelp) {
         AlertDialog(
             onDismissRequest = { showHelp = false },
+            modifier = Modifier.coverWhenObscured(),
             title = { Text(stringResource(stepTitles[step - 1])) },
             text = { Text(stringResource(stepDetails[step - 1])) },
             confirmButton = { TextButton(onClick = { showHelp = false }) { Text(stringResource(R.string.dismiss)) } },
@@ -727,7 +729,7 @@ private fun CategorySelectorListItem(label: String, selection: String?, categori
             colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.coverWhenObscured()) {
             DropdownMenuItem(text = { Text(stringResource(R.string.import_create_category, createName)) }, onClick = { onSelected(null); expanded = false })
             categories.forEach { category -> DropdownMenuItem(text = { Text(category.name) }, onClick = { onSelected(category.id); expanded = false }) }
         }
@@ -767,7 +769,7 @@ private fun MappingSelectorListItem(labelRes: Int, selected: String?, headers: L
             colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.coverWhenObscured()) {
             DropdownMenuItem(text = { Text(stringResource(R.string.import_not_mapped)) }, onClick = { onSelected(null); expanded = false })
             headers.forEach { header -> DropdownMenuItem(text = { Text(header) }, onClick = { onSelected(header); expanded = false }) }
         }
