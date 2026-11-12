@@ -224,7 +224,11 @@ class ForegroundRelockTest {
         }
         rule.onNode(noteWithDraft).assertIsFocused()
 
-        // Focused is not enough: typing must still reach the field, through real key events.
+        // Focused is not enough: typing must still reach the field, through real key events — once the
+        // keyboard is back on screen, as a person types. (Typing the same instant focus returns lost
+        // the first key while input reattached: "CoffeeXore". Recorded on PR #399.)
+        rule.waitUntil(DEADLINE) { imeWindowShown() }
+        instrumentation.uiAutomation.waitForIdle(500, 5_000)
         shell("input text More")
         runCatching {
             rule.waitUntil(DEADLINE) {

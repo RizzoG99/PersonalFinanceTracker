@@ -105,6 +105,7 @@ import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -1262,11 +1263,14 @@ private fun TransactionEditorContent(
     // away hit Compose 1.6's `textFieldValue!!` in CursorAnchorInfoController (#319).
     val obscured = LocalAppObscured.current
     val windowInfo = LocalWindowInfo.current
+    val keyboard = LocalSoftwareKeyboardController.current
     LaunchedEffect(obscured, windowInfo) {
         snapshotFlow { Triple(obscured(), windowInfo.isWindowFocused, focusToRestore) }
             .collect { (isObscured, windowFocused, field) ->
                 if (!isObscured && windowFocused && field != null) {
                     runCatching { field.requestFocus() }
+                    // A programmatic focus does not raise the keyboard; iOS gives it back with the field.
+                    keyboard?.show()
                     focusToRestore = null
                 }
             }
