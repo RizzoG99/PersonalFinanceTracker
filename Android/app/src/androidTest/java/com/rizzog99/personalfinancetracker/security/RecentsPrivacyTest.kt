@@ -191,11 +191,8 @@ class RecentsPrivacyTest {
         runBlocking { app.pinLockRepository.setPin(hash = PinCodec.hash("123456", "recents-salt"), salt = "recents-salt") }
         rule.onNode(hasContentDescription(string(R.string.add_transaction)) and hasClickAction()).performClick()
         rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size == 2 }
-        val note = hasSetTextAction() and hasText(string(R.string.note))
-        rule.onNode(note).performClick()
-        rule.onNode(note).performTextInput("Recents draft")
-        // Let the keyboard finish opening: leaving mid-animation is #398, a Compose 1.6 crash that
-        // predates #319 and is not what this test is about.
+        // No text field focused on the way out: leaving with the keyboard up is #398, a Compose 1.6
+        // crash that reproduces on unchanged code. A covered draft is ac05_anOpenSheetIsHiddenToo's job.
         instrumentation.uiAutomation.waitForIdle(1_000, 10_000)
 
         rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
