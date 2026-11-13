@@ -96,11 +96,11 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 
 ## 9. Full verification and PR
 
-1. Run `scripts/xcb test` in the background and read the counts, not the exit code. Edit no code or test after this run and step 6's last one; if one changes, rerun both. Don't run `scripts/xcb scenarios` without a class here: that regression run over every scenario class takes over two hours on this Mac and blocks every other worktree, so it runs in the cloud (step 4).
+1. Full verification runs in the cloud, on the PR: `CI` runs `scripts/xcb test`, and `Scenarios` runs the regression over every scenario class (step 4 reads both). The Mac runs only step 6's class: the regression takes over two hours here and blocks every other worktree. Edit no code or test after step 6's last run; if one changes, rerun step 6.
 2. Add the `CHANGELOG.md` Unreleased bullet for a visible change.
 3. Commit, push, and open the PR by following `$pft-pr-lifecycle` (its publish reference), with `Closes #<n>`. The Evidence table lists each scenario: red before or not, green after, and which screenshots were reviewed.
-4. Stay on the task until the PR's `Scenarios` run ends. It is the regression run, one job per pass, on the runner's older iOS: about an hour, and not a required check. Wait for it in the background (`gh run watch <run-id> --exit-status`, or the app's PR monitor when the session has one), then fetch each pass's summary, screenshots and reports with `gh run download <run-id>`. **Triage** every failure, every `flaky` entry and every `S*-dynamictype-*.txt` report yourself, without asking the owner:
-   - a failure in the task's scenarios, or caused by the change: fix it, then rerun from step 6;
+4. Stay on the task until the PR's `CI` and `Scenarios` runs end. `Scenarios` is one job per pass, on the runner's older iOS: about an hour, and not a required check. Wait for them in the background (`gh run watch <run-id> --exit-status`, or the app's PR monitor when the session has one), then fetch each scenario pass's summary, screenshots and reports with `gh run download <run-id>`. **Triage** every failure, every `flaky` entry and every `S*-dynamictype-*.txt` report yourself, without asking the owner:
+   - a `CI` failure, or one in the task's scenarios, or one caused by the change: fix it, then rerun from step 6;
    - an unrelated failure that repeats on `gh run rerun <run-id> --failed`: a defect on that iOS version. File it (below);
    - a failure gone on rerun, and every `flaky` entry: list it under the PR's Limitations;
    - a Dynamic Type report: these findings don't fail on the runner, because that audit now and then reports every element on a screen. The same few labels on several passes are a defect: file it. Dozens of labels on one test in one pass are that noise: leave them.
@@ -108,7 +108,7 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
    To file a defect: search the open issues first (`gh issue list --search`) and add the evidence to a match instead of duplicating it. Otherwise create it from `.github/ISSUE_TEMPLATE/bug.md` with the run, the passes and the finding text, put it on the project as in step 0, and link it under Limitations. For an audit finding, also add its `knownAccessibilityIssues` entry to the PR: the one edit allowed after step 1's runs.
 5. Fill the issue's Evidence section (PR, commit, counts, what was not reproduced or not automated). Set project Evidence to Verified only when every scenario passed on all five passes without a retry (none of the task's scenarios in `flaky`) and its screenshots were reviewed. An unrelated flaky test doesn't block Verified; it goes under Limitations. Otherwise leave it at Fix in progress and say why.
 
-Done when the `Scenarios` run has ended, each of its failures, `flaky` entries and Dynamic Type reports is fixed, filed or listed under Limitations, and the issue's Evidence names the PR and the run.
+Done when `CI` has passed, the `Scenarios` run has ended, each of its failures, `flaky` entries and Dynamic Type reports is fixed, filed or listed under Limitations, and the issue's Evidence names the PR and the run.
 
 ## Report
 
