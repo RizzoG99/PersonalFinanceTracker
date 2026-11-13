@@ -5,7 +5,8 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
+import com.rizzog99.personalfinancetracker.features.activity.ACTIVITY_SEARCH_TAG
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.performTextInput
@@ -70,8 +71,8 @@ class NavShellEvidenceTest {
     }
 
     private fun typeInActivitySearch(text: String) {
-        rule.onAllNodes(hasSetTextAction()).assertCountEquals(1)
-        rule.onNode(hasSetTextAction()).performTextInput(text)
+        rule.onAllNodes(hasTestTag(ACTIVITY_SEARCH_TAG)).assertCountEquals(1)
+        rule.onNode(hasTestTag(ACTIVITY_SEARCH_TAG)).performTextInput(text)
         rule.waitForIdle()
     }
 
@@ -146,7 +147,7 @@ class NavShellEvidenceTest {
         rule.waitForIdle()
 
         rule.assertOnly(activityTab)
-        rule.onNode(hasSetTextAction()).assert(hasText("coffee"))
+        rule.onNode(hasTestTag(ACTIVITY_SEARCH_TAG)).assert(hasText("coffee"))
     }
 
     @Test
