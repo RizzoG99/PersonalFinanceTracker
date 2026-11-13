@@ -153,7 +153,7 @@ class ScenarioTestCase: XCTestCase {
         ("Settings", "Dynamic Type font sizes are unsupported", ["?"], 393),
         // iOS 26.5 only (the cloud runner's simulator); iOS 27.0 reports neither.
         ("Settings", "Dynamic Type font sizes are partially unsupported", ["Export Transactions", "CSV or Excel"], 412),
-        ("Settings", "Text clipped", ["Export Transactions", "DISCOVER"], 412),
+        ("Settings", "Text clipped", ["Export Transactions", "CSV or Excel", "DISCOVER"], 412),
 
         // Unattributed, and only on some runs (iPad dark, #215's S2), like Home's.
         ("SiriGuide", "Potentially inaccessible text", ["?"], 269),
@@ -184,7 +184,10 @@ class ScenarioTestCase: XCTestCase {
         // ("€2,900.00") and move with the month the relative sample dates fall in; row amounts
         // carry a sign ("-€", "+€"), so "€*" doesn't reach them.
         ("Activity", "Text clipped", ["Expenses"], 401),
-        ("Activity", "Label not human-readable", ["€*"], 402),
+        // The arrows are the cards' icons, reported by symbol name on iOS 26.5 only.
+        ("Activity", "Label not human-readable", ["€*", "arrow.down.left", "arrow.up.right"], 402),
+        // iOS 26.5 only (the cloud runner's simulator).
+        ("Activity", "Text clipped", ["Search transactions..."], 416),
         // The filter-chip strip, cut by the screen edge; "?" is the audit naming no element.
         ("Activity", "Hit area is too small", ["Amount"], 403),
         ("Activity", "Text clipped", ["?"], 403),
