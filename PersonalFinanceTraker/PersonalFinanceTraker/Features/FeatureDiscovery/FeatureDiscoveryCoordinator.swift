@@ -32,20 +32,16 @@ final class FeatureDiscoveryCoordinator {
     init(defaults: UserDefaults = .standard, service: FeatureDiscoveryService = FeatureDiscoveryService()) {
         self.defaults = defaults
         self.service = service
-        // Set before the remote manifest loads, so a scenario test needn't wait on the network.
-        hasUnseenRelease = Self.forcesUnseenRelease
-    }
-
-    /// `-unseenReleaseFixture` (#219, DEBUG): the "New" badge whatever the remote manifest and app version say.
-    private static var forcesUnseenRelease: Bool {
-        #if DEBUG
-        ProcessInfo.processInfo.arguments.contains("-unseenReleaseFixture")
-        #else
-        false
-        #endif
     }
 
     func loadAndPrepare(appVersion: String) async {
+        #if DEBUG
+        // The fixture's release is built in, so skip the network instead of waiting on it.
+        if Self.usesUnseenReleaseFixture {
+            prepare(content: FeatureDiscoveryLoadedContent(manifest: .fallback, mediaBaseURL: nil), appVersion: appVersion)
+            return
+        }
+        #endif
         let content = await service.load()
         prepare(content: content, appVersion: appVersion)
     }
@@ -127,6 +123,12 @@ final class FeatureDiscoveryCoordinator {
     }
 
     private func unseenRelease(for appVersion: String) -> FeatureDiscoveryManifest.Release? {
+        #if DEBUG
+        if Self.usesUnseenReleaseFixture {
+            let release = FeatureDiscoveryManifest.fallback.releases.first { $0.id == "1.0-financial-pulse" }
+            return migratedSeenReleaseID() == release?.id ? nil : release
+        }
+        #endif
         guard let release = manifest.releases.last(where: { $0.version == appVersion }),
               migratedSeenReleaseID() != release.id else {
             return nil
@@ -134,11 +136,15 @@ final class FeatureDiscoveryCoordinator {
         return release
     }
 
+    #if DEBUG
+    /// `-unseenReleaseFixture` (#257): a built-in release counts as unseen whatever the remote
+    /// manifest and the app version say, so a scenario test always sees the gear's dot.
+    private static var usesUnseenReleaseFixture: Bool {
+        ProcessInfo.processInfo.arguments.contains("-unseenReleaseFixture")
+    }
+    #endif
+
     private func refreshUnseenBadge() {
-        if Self.forcesUnseenRelease {
-            hasUnseenRelease = true
-            return
-        }
         hasUnseenRelease = unseenRelease(for: appVersion) != nil
     }
 

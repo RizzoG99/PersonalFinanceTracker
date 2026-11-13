@@ -64,9 +64,27 @@ Lead with the recommended direction and explain why it best matches the user's s
 
 If none of the directions feels strong, return to exploration. Do not force convergence.
 
+## Cold Read of the Chosen Direction
+
+Once the user picks a direction, get one **cold read** before shaping it: a fresh, read-only subagent (Agent in Claude Code, `spawn_agent` in Codex) that never saw this conversation, so it cannot inherit the assumptions built up here. Give it only:
+
+- a 3–5 sentence summary of the problem, the chosen direction, and the directions set aside;
+- the rule to read files with its file-reading tool, use the shell only for `graphify query` and `rg`, and edit nothing.
+
+Ask it to argue against the direction through four lenses, citing a file:line or a fact from the summary for each finding, and to return the three strongest objections, strongest first:
+
+- **Contrarian**: does an existing app feature or an iOS capability already cover most of this?
+- **Trust**: exposure of financial data, destructive actions, notifications, Hide amounts, the PIN lock.
+- **Data**: SwiftData model changes, CSV/XLSX import and export, backup and restore.
+- **Maintenance**: coupling or state that will be costly to keep working.
+
+Present the objections in plain words and let the user answer each one: reshape the direction, narrow the MVP, record it as an open question, or set it aside with a reason. Done when every objection has the user's answer.
+
+Without a subagent tool, tell the user the cold read was skipped; a self-review in this conversation does not replace it.
+
 ## Shape the Chosen Concept
 
-After the user selects a direction, develop it in small, readable sections and check alignment after each consequential section. Cover only what the feature needs:
+After the cold read, develop the direction in small, readable sections and check alignment after each consequential section. Cover only what the feature needs:
 
 1. problem, target moment, and promised outcome;
 2. entry point and happy-path user journey;
@@ -100,6 +118,9 @@ Use the current local date and this structure, omitting sections that truly do n
 
 ## Decision summary
 What we chose and why this direction won.
+
+## Rejected directions
+- Each direction or variant set aside, and the reason (including cold-read objections that ruled it out)
 
 ## Problem and outcome
 Who has the problem, in what moment, and the outcome the feature should create.
