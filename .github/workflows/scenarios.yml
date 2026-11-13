@@ -47,6 +47,10 @@ jobs:
     env:
       PFT_SCENARIO_PASSES: ${{ matrix.pass }}
       SCENARIO_CLASS: ${{ inputs.class }}
+      # xcodebuild hands TEST_RUNNER_* to the tests minus the prefix. New Dynamic Type findings
+      # go to S*-dynamictype-*.txt instead of failing: that audit is noisy on these runners
+      # (see ScenarioTestCase.auditAccessibility).
+      TEST_RUNNER_SCENARIO_DYNAMIC_TYPE_REPORT_ONLY: 1
     steps:
       - uses: actions/checkout@v4
       - name: Scenarios

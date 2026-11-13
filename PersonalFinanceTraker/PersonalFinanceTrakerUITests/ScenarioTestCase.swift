@@ -223,24 +223,34 @@ class ScenarioTestCase: XCTestCase {
     /// Contrast is reported, not enforced: on the glass cards its findings change from
     /// run to run (and SampleData's dates change the rows on screen), so they go to a
     /// `<scenario>-contrast-…txt` report for the screenshot review instead. See #224.
+    ///
+    /// The `Scenarios` workflow sets `SCENARIO_DYNAMIC_TYPE_REPORT_ONLY`, which does the same
+    /// for new Dynamic Type findings (`<scenario>-dynamictype-…txt`): on the hosted runner that
+    /// audit now and then reports every element on a screen, on a different test each run.
+    /// Locally they still fail the scenario.
     @MainActor
     func auditAccessibility(_ app: XCUIApplication, _ scenario: String, screens: String...) throws {
+        let dynamicTypeReportOnly = ProcessInfo.processInfo.environment["SCENARIO_DYNAMIC_TYPE_REPORT_ONLY"] != nil
         var failures: [String] = []
-        var contrast: [String] = []
+        var reports: [String: [String]] = [:]
         try app.performAccessibilityAudit { issue in
             let label = issue.element?.label ?? "?"
             let line = "\(issue.compactDescription) — '\(label)'"
             if issue.auditType == .contrast {
-                contrast.append(line)
+                reports["contrast", default: []].append(line)
             } else if !Self.isKnown(screens, issue.compactDescription, label),
                       !Self.isKnown(screens, issue.compactDescription, "value=\(issue.element?.value as? String ?? "")") {
-                failures.append(line)
+                if issue.auditType == .dynamicType, dynamicTypeReportOnly {
+                    reports["dynamictype", default: []].append(line)
+                } else {
+                    failures.append(line)
+                }
             }
             return true
         }
-        if !contrast.isEmpty {
-            let report = XCTAttachment(string: contrast.joined(separator: "\n"))
-            report.name = "\(scenario)-\(topic)-contrast-\(idiom)-\(variant).txt"
+        for (kind, lines) in reports {
+            let report = XCTAttachment(string: lines.joined(separator: "\n"))
+            report.name = "\(scenario)-\(topic)-\(kind)-\(idiom)-\(variant).txt"
             report.lifetime = .keepAlways
             add(report)
         }
