@@ -169,6 +169,17 @@ class ScenarioTestCase: XCTestCase {
         ("AddTransaction", "Text clipped", ["New Transaction"], 273),
         ("AddTransaction", "Dynamic Type font sizes are partially unsupported", ["Group a trip's expenses*"], 274),
 
+        // Activity's Income / Expenses summary cards, found by #257's S2. Their totals are unsigned
+        // ("€2,900.00") and move with the month the relative sample dates fall in; row amounts
+        // carry a sign ("-€", "+€"), so "€*" doesn't reach them.
+        ("Activity", "Text clipped", ["Expenses"], 401),
+        ("Activity", "Label not human-readable", ["€*"], 402),
+        // The filter-chip strip, cut by the screen edge; "?" is the audit naming no element.
+        ("Activity", "Hit area is too small", ["Amount"], 403),
+        ("Activity", "Text clipped", ["?"], 403),
+        // Unattributed, like Home's and the Siri guide's.
+        ("Activity", "Potentially inaccessible text", ["?"], 269),
+
         ("Recurring", "Dynamic Type font sizes are partially unsupported", ["Close"], 273),
         ("Recurring", "Label not human-readable", ["-€*"], 349),
 
