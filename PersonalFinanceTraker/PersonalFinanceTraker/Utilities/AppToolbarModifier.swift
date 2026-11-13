@@ -61,6 +61,7 @@ struct AppToolbarModifier: ViewModifier {
                         }
                         .font(.headline)
                         .foregroundStyle(.textPrimary)
+                        .tint(Color.textPrimary)
                         .accessibilityLabel("Open profile")
                         .accessibilityValue(hasUnseenRelease ? Text("New") : Text(verbatim: ""))
                     }
@@ -70,7 +71,9 @@ struct AppToolbarModifier: ViewModifier {
                                 showingScanDialog = true
                             }
                             .font(.headline)
-                            .foregroundStyle(.textPrimary)
+                            // Tint, not foregroundStyle: iOS 26 draws a title+symbol toolbar button
+                            // as a bar item in the inherited tint and ignores its foreground (#257).
+                            .tint(Color.textPrimary)
                             .accessibilityHint("Fill a new transaction from a photo of a receipt")
                             // Attached directly to this button (not up at the shell/TabView level)
                             // so the confirmationDialog anchors to it — anchoring it further up
@@ -85,8 +88,8 @@ struct AppToolbarModifier: ViewModifier {
                             showingAddItemView = true
                         }
                         .font(.headline)
-                        .foregroundStyle(.primaryActionForeground)
-                        .glassEffect(.regular.tint(Color.accentIndigo).interactive())
+                        // The one prominent action: filled with the inherited indigo tint, white glyph.
+                        .buttonStyle(.glassProminent)
                     }
                 }
             }
