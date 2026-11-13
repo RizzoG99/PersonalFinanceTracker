@@ -133,13 +133,13 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
    - **Verified** and Parity **Matched**: every AC passed, every cell was reviewed, and every item of #75's Definition of Done that applies is ticked, including TalkBack where the AC depends on it. The verdict text says "Matched with approved deviations" when any `D-xx` was approved (the project field has no such option). A capability the owner approved as Android-only or postponed takes Parity Platform-specific or Deferred instead.
    - **Verifying**: everything that ran passed, but a required check was not run (for example a TalkBack state the AVD could not reach). Name it.
    - **Gap found**: an AC failed or an unapproved difference remains. Link the gap issue and say why.
-5. Read the PR's CI. When a check fails in code the task did not touch, do not fix it inside the task PR on a guess:
+5. Stay on the task until the PR's CI ends: wait for it in the background (`gh pr checks <n> --watch`, or the app's PR monitor when the session has one), then **triage** every failed check yourself, without asking the owner. A failure in the task's code: fix it, then rerun step 1. A failure in code the task did not touch is filed, never fixed inside the task PR on a guess:
    - compare with the base branch's recent runs (`gh run list --branch codex/android-native`), and check whether the failing tests ran before the task's own tests;
    - prove a toolchain or CI hypothesis on a separate branch before committing it (#287's emulator pin was committed to the task PR, failed, and had to be reverted);
-   - file it as `[Android][CI] <what happens>` (precedent: #372), and name it under the PR's Limitations.
+   - search the open issues first (`gh issue list --search`) and add the evidence to a match; otherwise file it as `[Android][CI] <what happens>` (precedent: #372). Name it under the PR's Limitations.
 6. After the merge: `Closes #<n>` fires only on merges into `main`, so a PR into `codex/android-native` leaves the issue open. Close it with `gh issue close <n> --comment` naming the PR and the verdict, and set Status and Evidence on project 3. If the gate changed what the task delivers, retitle the issue to match.
 
-Done when the commits are published as chosen and the issue's verdict names them; once merged, the issue is closed and its title matches what shipped.
+Done when the commits are published as chosen, the issue's verdict names them, and for a PR its CI has ended with every failed check fixed or filed; once merged, the issue is closed and its title matches what shipped.
 
 ## Report
 

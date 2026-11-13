@@ -99,15 +99,16 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 1. Run `scripts/xcb test` in the background and read the counts, not the exit code. Edit no code or test after this run and step 6's last one; if one changes, rerun both. Don't run `scripts/xcb scenarios` without a class here: that regression run over every scenario class takes over two hours on this Mac and blocks every other worktree, so it runs in the cloud (step 4).
 2. Add the `CHANGELOG.md` Unreleased bullet for a visible change.
 3. Commit, push, and open the PR by following `$pft-pr-lifecycle` (its publish reference), with `Closes #<n>`. The Evidence table lists each scenario: red before or not, green after, and which screenshots were reviewed.
-4. The PR starts the `Scenarios` workflow: the regression run, one job per pass, on the runner's older iOS (about an hour). When it ends, fetch each pass's summary and screenshots with `gh run download <run-id>` and read the counts and the `flaky` list. It is not a required check. For each failure:
-   - in the task's scenarios, or caused by the change: fix it, then rerun from step 6;
-   - the same on rerun (`gh run rerun <run-id> --failed`) and unrelated: file an issue, since it is a defect on that iOS version;
-   - gone on rerun: list it under the PR's Limitations with every `flaky` entry.
+4. Stay on the task until the PR's `Scenarios` run ends. It is the regression run, one job per pass, on the runner's older iOS: about an hour, and not a required check. Wait for it in the background (`gh run watch <run-id> --exit-status`, or the app's PR monitor when the session has one), then fetch each pass's summary, screenshots and reports with `gh run download <run-id>`. **Triage** every failure, every `flaky` entry and every `S*-dynamictype-*.txt` report yourself, without asking the owner:
+   - a failure in the task's scenarios, or caused by the change: fix it, then rerun from step 6;
+   - an unrelated failure that repeats on `gh run rerun <run-id> --failed`: a defect on that iOS version. File it (below);
+   - a failure gone on rerun, and every `flaky` entry: list it under the PR's Limitations;
+   - a Dynamic Type report: these findings don't fail on the runner, because that audit now and then reports every element on a screen. The same few labels on several passes are a defect: file it. Dozens of labels on one test in one pass are that noise: leave them.
 
-   New Dynamic Type findings don't fail there; they land in `S*-dynamictype-*.txt` beside the screenshots, because on the runner that audit now and then reports every element on a screen. Read them: the same few labels on several passes are a defect (file an issue per cause, then add the `knownAccessibilityIssues` entry); dozens of labels on one test in one pass are that noise.
+   To file a defect: search the open issues first (`gh issue list --search`) and add the evidence to a match instead of duplicating it. Otherwise create it from `.github/ISSUE_TEMPLATE/bug.md` with the run, the passes and the finding text, put it on the project as in step 0, and link it under Limitations. For an audit finding, also add its `knownAccessibilityIssues` entry to the PR: the one edit allowed after step 1's runs.
 5. Fill the issue's Evidence section (PR, commit, counts, what was not reproduced or not automated). Set project Evidence to Verified only when every scenario passed on all five passes without a retry (none of the task's scenarios in `flaky`) and its screenshots were reviewed. An unrelated flaky test doesn't block Verified; it goes under Limitations. Otherwise leave it at Fix in progress and say why.
 
-Done when the PR is open, the `Scenarios` run was read, and the issue's Evidence names both.
+Done when the `Scenarios` run has ended, each of its failures, `flaky` entries and Dynamic Type reports is fixed, filed or listed under Limitations, and the issue's Evidence names the PR and the run.
 
 ## Report
 
