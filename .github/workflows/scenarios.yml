@@ -31,7 +31,9 @@ jobs:
           xcodebuild -version
       - name: Scenarios
         # The script's exit code is the gate: it fails on a failed test, a pass that ran
-        # nothing, or a missing result bundle.
+        # nothing, or a missing result bundle. `shell: bash` turns on pipefail; without it
+        # tee's exit code hid a failed pass and the job went green.
+        shell: bash
         run: |
           mkdir -p .build
           scripts/xcb scenarios $SCENARIO_CLASS | tee .build/scenarios-summary.json
