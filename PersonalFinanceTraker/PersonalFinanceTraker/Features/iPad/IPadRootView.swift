@@ -248,6 +248,9 @@ struct IPadRootView: View {
                 Button("Scan receipt", systemImage: "doc.text.viewfinder") {
                     showingScanDialog = true
                 }
+                // Tint, not foregroundStyle: iOS 26 draws a title+symbol toolbar button as a bar
+                // item in the inherited tint and ignores its foreground (#257, #408).
+                .tint(Color.textPrimary)
                 .accessibilityHint("Fill a new transaction from a photo of a receipt")
                 // Attached directly to this button, not further up the shell — anchoring the
                 // confirmationDialog higher up floated it to a wrong, off-center position on
@@ -261,6 +264,8 @@ struct IPadRootView: View {
                 Button("Add transaction", systemImage: "plus") {
                     showingAddItemView = true
                 }
+                // The one prominent action: filled with the shell's indigo tint, white glyph.
+                .buttonStyle(.glassProminent)
                 .keyboardShortcut("n")
             }
         }
@@ -303,6 +308,7 @@ struct IPadRootView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 HideAmountsButton()
+                    .tint(Color.textPrimary) // neutral like the sidebar toggle (#408)
             }
         }
         // On the detail column, not on the NavigationSplitView (#358): attached to the split, a

@@ -8,6 +8,7 @@ number that shipped it.
 
 ## Unreleased
 
+- iPad top bar: Scan receipt and the Hide amounts eye now share one colour with the sidebar button, black in light mode and white in dark mode. Before, they were indigo. + is now a filled indigo circle with a white +, the same as on iPhone.
 - iPhone top bar on Home, Activity, Plan and Insights: the Settings gear, Travels and Scan receipt icons now share one colour, black in light mode and white in dark mode, like the tab bar icons. Before, the gear was black and the others were indigo. + is now a filled indigo circle with a white +, so the main action stands out.
 - Secondary buttons look the same everywhere and are easier to read, especially in dark mode: Copy in Siri & Widgets, the extra "Log …" and "New transaction" buttons and "Set" on Home's Financial Pulse, Back Up Now in Settings, What's New actions, the receipt "Which total is right?" amounts and Auto-Map in CSV import. They're now grey instead of faint indigo. Main buttons stay indigo.
 - Home: a new "What if I spend…" row under Safe to Spend. Type an amount to see what would be left until payday, and per day, if you spent it today. Nothing is saved.
