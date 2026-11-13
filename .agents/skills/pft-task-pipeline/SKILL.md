@@ -96,12 +96,16 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 
 ## 9. Full verification and PR
 
-1. Run `scripts/xcb scenarios`, which is the regression run over every scenario class, then `scripts/xcb test`. Run them in the background, one after the other, and read the counts and the `flaky` list, not the exit code. Check that the task's `S<k>-<Topic>-…` screenshots are in every pass. List every `flaky` entry under the PR's Limitations. Edit no code or test after these runs; if one changes, rerun them.
+1. Run `scripts/xcb test` in the background and read the counts, not the exit code. Edit no code or test after this run and step 6's last one; if one changes, rerun both. Don't run `scripts/xcb scenarios` without a class here: that regression run over every scenario class takes over two hours on this Mac and blocks every other worktree, so it runs in the cloud (step 4).
 2. Add the `CHANGELOG.md` Unreleased bullet for a visible change.
 3. Commit, push, and open the PR by following `$pft-pr-lifecycle` (its publish reference), with `Closes #<n>`. The Evidence table lists each scenario: red before or not, green after, and which screenshots were reviewed.
-4. Fill the issue's Evidence section (PR, commit, counts, what was not reproduced or not automated). Set project Evidence to Verified only when every scenario passed on all five passes without a retry (none of the task's scenarios in `flaky`) and its screenshots were reviewed. An unrelated flaky test doesn't block Verified; it goes under Limitations. Otherwise leave it at Fix in progress and say why.
+4. The PR starts the `Scenarios` workflow: the regression run, one job per pass, on the runner's older iOS (about an hour). When it ends, fetch each pass's summary and screenshots with `gh run download <run-id>` and read the counts and the `flaky` list. It is not a required check, and it has known noise: the Dynamic Type audit now and then reports every element on a screen, on a different test each run. For each failure:
+   - in the task's scenarios, or caused by the change: fix it, then rerun from step 6;
+   - the same on rerun (`gh run rerun <run-id> --failed`) and unrelated: file an issue, since it is a defect on that iOS version;
+   - gone on rerun: list it under the PR's Limitations with every `flaky` entry.
+5. Fill the issue's Evidence section (PR, commit, counts, what was not reproduced or not automated). Set project Evidence to Verified only when every scenario passed on all five passes without a retry (none of the task's scenarios in `flaky`) and its screenshots were reviewed. An unrelated flaky test doesn't block Verified; it goes under Limitations. Otherwise leave it at Fix in progress and say why.
 
-Done when the PR is open and the issue's Evidence names it.
+Done when the PR is open, the `Scenarios` run was read, and the issue's Evidence names both.
 
 ## Report
 

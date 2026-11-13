@@ -27,9 +27,6 @@ on:
       class:
         description: "One *ScenarioTests class; empty runs them all"
         default: ""
-  # Only because a workflow that is not on main yet cannot be started by hand; drop on merge.
-  push:
-    branches: [chore/scenarios-cloud-run]
 concurrency:
   group: scenarios-${{ github.ref }}
   cancel-in-progress: true

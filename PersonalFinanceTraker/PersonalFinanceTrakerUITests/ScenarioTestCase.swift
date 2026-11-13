@@ -143,6 +143,9 @@ class ScenarioTestCase: XCTestCase {
         ("Settings", "Dynamic Type font sizes are partially unsupported", ["Restore from Backup", "Delete All Data", "?"], 393),
         ("Settings", "Text clipped", ["Restore from Backup", "Delete All Data", "?"], 393),
         ("Settings", "Dynamic Type font sizes are unsupported", ["?"], 393),
+        // iOS 26.5 only (the cloud runner's simulator); iOS 27.0 reports neither.
+        ("Settings", "Dynamic Type font sizes are partially unsupported", ["Export Transactions", "CSV or Excel"], 412),
+        ("Settings", "Text clipped", ["Export Transactions", "DISCOVER"], 412),
 
         // Unattributed, and only on some runs (iPad dark, #215's S2), like Home's.
         ("SiriGuide", "Potentially inaccessible text", ["?"], 269),
