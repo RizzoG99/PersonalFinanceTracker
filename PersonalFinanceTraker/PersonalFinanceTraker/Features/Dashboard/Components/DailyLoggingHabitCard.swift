@@ -190,6 +190,7 @@ private struct DailyCheckInActionsView: View {
 
 private struct DailyRepeatButton: View {
     @Environment(AppSettings.self) private var settings: AppSettings?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let template: QuickTransactionTemplate
     let isPrimary: Bool
     let action: () -> Void
@@ -210,27 +211,36 @@ private struct DailyRepeatButton: View {
     }
 
     private var repeatButton: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: template.isExpense ? "minus.circle.fill" : "plus.circle.fill")
-                VStack(alignment: .leading, spacing: 1) {
+        // #219: at accessibility sizes the amount moves under the label (BalanceCardView.row's
+        // pattern); in a row it keeps its full width and the label takes the "…".
+        let stacked = dynamicTypeSize.isAccessibilitySize
+        let layout = stacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(spacing: 8))
+        return Button(action: action) {
+            layout {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: template.isExpense ? "minus.circle.fill" : "plus.circle.fill")
                     Text("Log \(template.displayLabel)")
                         .font(isPrimary ? .subheadline.bold() : .subheadline)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+                        .lineLimit(stacked ? nil : 1)
                 }
-                .layoutPriority(1)
-                Spacer(minLength: 8)
+                if !stacked { Spacer(minLength: 8) }
                 Text(template.signedDisplayAmount)
                     .font(.subheadline)
                     .bold()
                     .lineLimit(1)
-                    .minimumScaleFactor(0.85)
+                    // Stacked, a huge amount shrinks rather than truncates; in a row it never has to.
+                    .minimumScaleFactor(stacked ? 0.5 : 1)
+                    .fixedSize(horizontal: !stacked, vertical: false)
                     .privacyBlur()
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.leading)
         }
         .controlSize(.regular)
+        // Stacked, a capsule's round ends would cut into the amount's corner.
+        .buttonBorderShape(stacked ? .roundedRectangle(radius: 16) : .automatic)
         // Amount dropped from the label while hidden: this Button is a single
         // accessibility element, so its own label overrides whatever .privacyBlur()
         // does to the child Text — VoiceOver would otherwise still speak the real amount.

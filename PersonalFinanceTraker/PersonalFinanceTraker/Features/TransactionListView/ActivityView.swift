@@ -88,6 +88,8 @@ struct ActivityView: View {
                     // transaction form, never here.
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Travels", systemImage: "airplane") { showingTravelsView = true }
+                            .font(.headline)
+                            .tint(Color.textPrimary) // neutral like the gear beside it (#257)
                     }
                 }
             }

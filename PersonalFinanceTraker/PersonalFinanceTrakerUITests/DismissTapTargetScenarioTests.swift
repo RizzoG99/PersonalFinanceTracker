@@ -102,8 +102,9 @@ final class DismissTapTargetScenarioTests: ScenarioTestCase {
         // `launchApp` reopens a collapsed iPad sidebar, and it can close on its own while a tap is
         // in flight, moving Home's content from under it. Closing it first settles the layout.
         if UIDevice.current.userInterfaceIdiom == .pad {
-            // By bar: Home's bar can show a second "Hide Sidebar" button.
-            app.navigationBars["Finance"].buttons["Hide Sidebar"].tap()
+            // By bar: Home's bar can show a second "Hide Sidebar" button. The sidebar's bar has no
+            // title (#219), so it's the one holding "Scan receipt".
+            app.navigationBars.containing(.button, identifier: "Scan receipt").buttons["Hide Sidebar"].tap()
             XCTAssertTrue(app.collectionViews["Sidebar"].waitForNonExistence(timeout: 5), "sidebar stayed open")
         }
         return app

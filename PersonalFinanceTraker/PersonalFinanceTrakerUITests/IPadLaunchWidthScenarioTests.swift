@@ -38,8 +38,9 @@ final class IPadLaunchWidthScenarioTests: ScenarioTestCase {
         try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "iPad only: iPhone has no split view")
         let app = launchApp()
         XCTAssertTrue(app.scrollViews["homeDashboard"].waitForExistence(timeout: 30), "Home never appeared")
-        // By bar: Home's bar can show a second "Hide Sidebar" button.
-        app.navigationBars["Finance"].buttons["Hide Sidebar"].tap()
+        // By bar: Home's bar can show a second "Hide Sidebar" button. The sidebar's bar has no
+        // title (#219), so it's the one holding "Scan receipt".
+        app.navigationBars.containing(.button, identifier: "Scan receipt").buttons["Hide Sidebar"].tap()
         XCTAssertTrue(app.collectionViews["Sidebar"].waitForNonExistence(timeout: 5), "sidebar stayed open")
         assertHomeReachesTrailingEdge(app)
         shoot(app, "S2")
