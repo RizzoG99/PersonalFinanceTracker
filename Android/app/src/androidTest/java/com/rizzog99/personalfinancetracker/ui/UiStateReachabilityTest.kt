@@ -1,7 +1,9 @@
 package com.rizzog99.personalfinancetracker.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasTestTag
+import com.rizzog99.personalfinancetracker.features.activity.ACTIVITY_SEARCH_TAG
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -84,7 +86,8 @@ class UiStateReachabilityTest {
         composeRule.onNodeWithText(string(R.string.empty_state_title))
             .performScrollTo()
             .assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.add_transaction))
+        // The button, not the heading of the form pane the wide layout shows beside it.
+        composeRule.onNode(hasText(string(R.string.add_transaction)) and hasClickAction())
             .performScrollTo()
             .assertIsDisplayed()
 
@@ -116,7 +119,7 @@ class UiStateReachabilityTest {
         }
         composeRule.waitForIdle()
 
-        composeRule.onNode(hasSetTextAction()).performTextInput("zzzz-no-such-note")
+        composeRule.onNode(hasTestTag(ACTIVITY_SEARCH_TAG)).performTextInput("zzzz-no-such-note")
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText(string(R.string.no_matching_transactions))

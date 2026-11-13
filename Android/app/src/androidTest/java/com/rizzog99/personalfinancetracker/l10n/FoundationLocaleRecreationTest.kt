@@ -4,7 +4,8 @@ import android.app.LocaleManager
 import android.os.Build
 import android.os.LocaleList
 import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
+import com.rizzog99.personalfinancetracker.features.activity.ACTIVITY_SEARCH_TAG
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -116,7 +117,7 @@ class FoundationLocaleRecreationTest {
     @Test
     fun ac04_recreationFromANonRootDestinationKeepsTheDestinationAndItsState(): Unit = with(en) {
         rule.selectTab(activityTab)
-        rule.onNode(hasSetTextAction()).performTextInput("coffee")
+        rule.onNode(hasTestTag(ACTIVITY_SEARCH_TAG)).performTextInput("coffee")
         rule.waitForIdle()
 
         rule.activityRule.scenario.recreate()
@@ -124,7 +125,7 @@ class FoundationLocaleRecreationTest {
 
         rule.assertOnly(activityTab)
         rule.assertSingleShell()
-        rule.onNode(hasSetTextAction()).assert(hasText("coffee"))
+        rule.onNode(hasTestTag(ACTIVITY_SEARCH_TAG)).assert(hasText("coffee"))
     }
 
     /**

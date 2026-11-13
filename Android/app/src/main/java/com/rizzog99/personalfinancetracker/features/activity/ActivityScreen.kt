@@ -108,6 +108,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -555,7 +556,9 @@ internal fun ActivityContent(
             TextField(
                 value = state.searchText,
                 onValueChange = onSearchChange,
-                modifier = Modifier.fillMaxWidth(),
+                // Its only label is the placeholder, gone once a query is typed, and on the wide
+                // two-pane layout it is not the only text field on screen.
+                modifier = Modifier.fillMaxWidth().testTag(ACTIVITY_SEARCH_TAG),
                 placeholder = { Text(stringResource(R.string.search_transactions)) },
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 singleLine = true,
@@ -2021,6 +2024,8 @@ private fun RecurringEditDialog(
 
 /** Frozen iOS commits a delete 5 s after its Undo banner shows (`TransactionListViewModel.swift:548`). */
 internal const val UNDO_WINDOW_MILLIS = 5_000L
+
+internal const val ACTIVITY_SEARCH_TAG = "activitySearch"
 
 private class UndoVisuals(override val message: String, override val actionLabel: String) : SnackbarVisuals {
     override val withDismissAction = false
