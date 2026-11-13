@@ -15,6 +15,7 @@ import SwiftData
 struct IPadRootView: View {
     @Environment(FeatureDiscoveryCoordinator.self) private var featureDiscovery
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let models: AppShellModels
     let appSettings: AppSettings
@@ -222,7 +223,7 @@ struct IPadRootView: View {
             ForEach(IPadSection.Group.allCases) { group in
                 Section {
                     ForEach(group.sections) { item in
-                        Label(item.title, systemImage: item.systemImage)
+                        sidebarLabel(item)
                             .tag(item)
                     }
                 } header: {
@@ -230,18 +231,20 @@ struct IPadRootView: View {
                 }
             }
             Section {
-                HStack {
-                    Label(IPadSection.settings.title, systemImage: IPadSection.settings.systemImage)
-                    Spacer()
-                    if featureDiscovery.hasUnseenRelease {
-                        NewContentBadge()
-                    }
-                }
-                .tag(IPadSection.settings)
+                // A plain row like the others, so it scales and wraps with Dynamic Type (#219).
+                sidebarLabel(.settings)
+                    .badge(featureDiscovery.hasUnseenRelease ? Text("New") : nil)
+                    .tag(IPadSection.settings)
             }
         }
-        .navigationTitle("Finance")
-        .navigationSplitViewColumnWidth(min: 200, ideal: 260, max: 320)
+        // No navigation title (#219): the bar can't scale it, so once the column widens at
+        // accessibility sizes the audit flags it as clipped on every screen.
+        // At accessibility sizes a 320 pt column broke every row title mid-word ("Hom/e"), so it widens.
+        .navigationSplitViewColumnWidth(
+            min: 200,
+            ideal: dynamicTypeSize.isAccessibilitySize ? 420 : 260,
+            max: dynamicTypeSize.isAccessibilitySize ? 420 : 320
+        )
         .scrollContentBackground(.hidden)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -265,6 +268,18 @@ struct IPadRootView: View {
             }
         }
         .keyboardAction(",", title: "Settings") { section = .settings }
+    }
+
+    /// Title only at accessibility sizes, so the text gets the icon's width too (#219). Still a
+    /// `Label`: bare `Text` rows made the audit report clipped text it couldn't attribute.
+    @ViewBuilder
+    private func sidebarLabel(_ item: IPadSection) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            Label(item.title, systemImage: item.systemImage)
+                .labelStyle(.titleOnly)
+        } else {
+            Label(item.title, systemImage: item.systemImage)
+        }
     }
 
     // MARK: - Content
