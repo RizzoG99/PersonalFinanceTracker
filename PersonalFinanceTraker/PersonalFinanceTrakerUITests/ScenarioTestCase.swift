@@ -151,6 +151,9 @@ class ScenarioTestCase: XCTestCase {
         ("Settings", "Dynamic Type font sizes are partially unsupported", ["Restore from Backup", "Delete All Data", "?"], 393),
         ("Settings", "Text clipped", ["Restore from Backup", "Delete All Data", "?"], 393),
         ("Settings", "Dynamic Type font sizes are unsupported", ["?"], 393),
+        // iOS 26.5 only (the cloud runner's simulator); iOS 27.0 reports neither.
+        ("Settings", "Dynamic Type font sizes are partially unsupported", ["Export Transactions", "CSV or Excel"], 412),
+        ("Settings", "Text clipped", ["Export Transactions", "CSV or Excel", "DISCOVER"], 412),
 
         // Unattributed, and only on some runs (iPad dark, #215's S2), like Home's.
         ("SiriGuide", "Potentially inaccessible text", ["?"], 269),
@@ -181,7 +184,10 @@ class ScenarioTestCase: XCTestCase {
         // ("€2,900.00") and move with the month the relative sample dates fall in; row amounts
         // carry a sign ("-€", "+€"), so "€*" doesn't reach them.
         ("Activity", "Text clipped", ["Expenses"], 401),
-        ("Activity", "Label not human-readable", ["€*"], 402),
+        // The arrows are the cards' icons, reported by symbol name on iOS 26.5 only.
+        ("Activity", "Label not human-readable", ["€*", "arrow.down.left", "arrow.up.right"], 402),
+        // iOS 26.5 only (the cloud runner's simulator).
+        ("Activity", "Text clipped", ["Search transactions..."], 416),
         // The filter-chip strip, cut by the screen edge; "?" is the audit naming no element.
         ("Activity", "Hit area is too small", ["Amount"], 403),
         ("Activity", "Text clipped", ["?"], 403),
@@ -239,8 +245,14 @@ class ScenarioTestCase: XCTestCase {
     /// Contrast is reported, not enforced: on the glass cards its findings change from
     /// run to run (and SampleData's dates change the rows on screen), so they go to a
     /// `<scenario>-contrast-…txt` report for the screenshot review instead. See #224.
+    ///
+    /// The `Scenarios` workflow sets `SCENARIO_DYNAMIC_TYPE_REPORT_ONLY`, which does the same
+    /// for new Dynamic Type findings (`<scenario>-dynamictype-…txt`): on the hosted runner that
+    /// audit now and then reports every element on a screen, on a different test each run.
+    /// Locally they still fail the scenario.
     @MainActor
     func auditAccessibility(_ app: XCUIApplication, _ scenario: String, screens: String...) throws {
+        let dynamicTypeReportOnly = ProcessInfo.processInfo.environment["SCENARIO_DYNAMIC_TYPE_REPORT_ONLY"] != nil
         // Virtual screens for sidebar-only known issues (#400), so they can't hide a finding on
         // iPhone, with the sidebar hidden, or (for "?") at the default text size.
         // "IPadAX" (#409) is iPad Home's own AX layout, whether or not the sidebar shows.
@@ -254,23 +266,27 @@ class ScenarioTestCase: XCTestCase {
             }
         }
         var failures: [String] = []
-        var contrast: [String] = []
+        var reports: [String: [String]] = [:]
         try app.performAccessibilityAudit { issue in
             let label = issue.element?.label ?? "?"
             // Frame and identifier tell apart findings with no label ("?"), or one label on two elements.
             let detail = issue.element.map { "frame=\($0.frame) id='\($0.identifier)'" } ?? "no element: \(issue.detailedDescription)"
             let line = "\(issue.compactDescription) — '\(label)' [\(detail)]"
             if issue.auditType == .contrast {
-                contrast.append(line)
+                reports["contrast", default: []].append(line)
             } else if !Self.isKnown(screens, issue.compactDescription, label),
                       !Self.isKnown(screens, issue.compactDescription, "value=\(issue.element?.value as? String ?? "")") {
-                failures.append(line)
+                if issue.auditType == .dynamicType, dynamicTypeReportOnly {
+                    reports["dynamictype", default: []].append(line)
+                } else {
+                    failures.append(line)
+                }
             }
             return true
         }
-        if !contrast.isEmpty {
-            let report = XCTAttachment(string: contrast.joined(separator: "\n"))
-            report.name = "\(scenario)-\(topic)-contrast-\(idiom)-\(variant).txt"
+        for (kind, lines) in reports {
+            let report = XCTAttachment(string: lines.joined(separator: "\n"))
+            report.name = "\(scenario)-\(topic)-\(kind)-\(idiom)-\(variant).txt"
             report.lifetime = .keepAlways
             add(report)
         }

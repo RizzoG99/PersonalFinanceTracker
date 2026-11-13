@@ -193,6 +193,8 @@ case "${1:-}" in
     shift
     # One class, or every *ScenarioTests.swift in the UI test target (the regression run).
     only=()
+    passes="iphone:light:large iphone:dark:large iphone:light:accessibility-extra-extra-extra-large
+            ipad:light:large ipad:dark:large"
     if [ -n "${1:-}" ] && [ "${1#-}" = "$1" ]; then
       only=(-only-testing:"PersonalFinanceTrakerUITests/$1")
       shift
@@ -201,6 +203,9 @@ case "${1:-}" in
         only+=(-only-testing:"PersonalFinanceTrakerUITests/$(basename "$file" .swift)")
       done
     fi
+    # The cloud workflow runs one pass per job, in parallel (.github/workflows/scenarios.yml):
+    # all five in a row took 2h20 here, with every other worktree queued behind the lock.
+    passes="${PFT_SCENARIO_PASSES:-$passes}"
     warn_other_booted
     out=.build/scenarios
     rm -rf "$out"
@@ -229,8 +234,6 @@ case "${1:-}" in
     # passes (#278): iPad passes that started on a cold, just-shut-down simulator kept
     # timing out on their first UI query, both attempts, while the warm iPhone never did.
     status=0
-    passes="iphone:light:large iphone:dark:large iphone:light:accessibility-extra-extra-extra-large
-            ipad:light:large ipad:dark:large"
     prev=""
     for pass in $passes; do
       IFS=: read -r device appearance size <<<"$pass"
