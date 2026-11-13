@@ -1,0 +1,45 @@
+name: Scenarios
+# Trial: one scenario pass on a hosted runner, to measure how long it takes and how stable it
+# is before the regression run moves here. The push trigger exists only because a workflow
+# that is not on main yet cannot be started by hand; drop it when this merges.
+on:
+  workflow_dispatch:
+    inputs:
+      pass:
+        description: "<device>:<appearance>:<content size>, as in scripts/xcb"
+        default: "iphone:light:large"
+      class:
+        description: "One *ScenarioTests class; empty runs them all"
+        default: ""
+  push:
+    branches: [chore/scenarios-cloud-run]
+concurrency:
+  group: scenarios-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  scenarios:
+    runs-on: macos-26
+    timeout-minutes: 120
+    env:
+      PFT_SCENARIO_PASSES: ${{ inputs.pass || 'iphone:light:large' }}
+      SCENARIO_CLASS: ${{ inputs.class }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Runner
+        run: |
+          sysctl -n hw.ncpu hw.memsize
+          xcodebuild -version
+      - name: Scenarios
+        # The script's exit code is the gate: it fails on a failed test, a pass that ran
+        # nothing, or a missing result bundle.
+        run: |
+          mkdir -p .build
+          scripts/xcb scenarios $SCENARIO_CLASS | tee .build/scenarios-summary.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scenarios
+          path: |
+            .build/scenarios-summary.json
+            .build/scenarios/shots
+            .build/scenarios/*.log
