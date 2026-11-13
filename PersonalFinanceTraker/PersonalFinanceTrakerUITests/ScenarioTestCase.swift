@@ -118,20 +118,28 @@ class ScenarioTestCase: XCTestCase {
     /// what it holds). Keep labels exact: a broad pattern would hide a new finding on the same
     /// screen. Delete an entry when its issue is fixed.
     static let knownAccessibilityIssues: [(screen: String, description: String, labels: [String], issue: Int)] = [
-        ("*", "Text clipped", ["Home", "Settings"], 219),
-        ("*", "Dynamic Type font sizes are partially unsupported", ["Settings", "New"], 219),
-
         ("Home", "Text clipped", ["until *"], 268),
+        // Sidebar findings, scoped to `auditAccessibility`'s virtual "IPadSidebar"/"IPadSidebarAX" screens.
+        // Title-only rows at AX sizes (#219): findings with no element.
+        ("IPadSidebarAX", "Text clipped", ["?"], 400),
+        // The selected "Home" row, a system-drawn cell that the screenshots show whole.
+        ("IPadSidebar", "Text clipped", ["Home"], 400),
+        ("IPadSidebar", "Dynamic Type font sizes are partially unsupported", ["Home"], 400),
+        // iPad Home at AX sizes with the sidebar hidden: the two-column grid (#409), findings with no element.
+        ("IPadAX", "Text clipped", ["?"], 409),
+        ("IPadAX", "Dynamic Type font sizes are unsupported", ["?"], 409),
         ("Home", "Text clipped", ["Coffee & Drinks", "Streaming Services", "Financial Pulse", "Today's check-in is complete", "€* / €*"], 357),
-        // Financial Pulse quick-log buttons with `-seedPendingCheckIn`'s two habits (#215's S1).
-        ("Home", "Text clipped", ["Log Morning coffee", "Log Bus ticket", "-€3.50", "-€2.00"], 357),
         ("Home", "Potentially inaccessible text", ["?"], 269),
         // iPad Recent Transactions rows (SampleData names, their categories and amounts).
         ("Home", "Dynamic Type font sizes are partially unsupported", [
             "Recent Transactions", "-€*", "+€*",
             "Morning coffee", "Lunch at bistro", "Monthly salary", "Weekly groceries", "Gas station", "Netflix subscription",
             "Coffee & Drinks", "Restaurants", "Salary", "Groceries", "Streaming Services", "Gas",
+            // `-seedPendingCheckIn`'s transactions.
+            "Bus ticket", "Public Transport",
         ], 275),
+        // The same fixed-font category caption, in the Home column the wider AX sidebar narrows (#219).
+        ("Home", "Text clipped", ["Public Transport"], 275),
         // iPad near-limit budget bars: category name and "€spent / €budget" (#342's scenarios).
         ("Home", "Dynamic Type font sizes are partially unsupported", ["Clothing", "Streaming Services", "€* / €*"], 345),
 
@@ -222,11 +230,25 @@ class ScenarioTestCase: XCTestCase {
     /// `<scenario>-contrast-…txt` report for the screenshot review instead. See #224.
     @MainActor
     func auditAccessibility(_ app: XCUIApplication, _ scenario: String, screens: String...) throws {
+        // Virtual screens for sidebar-only known issues (#400), so they can't hide a finding on
+        // iPhone, with the sidebar hidden, or (for "?") at the default text size.
+        // "IPadAX" (#409) is iPad Home's own AX layout, whether or not the sidebar shows.
+        var screens = screens
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            let accessibilitySize = app.launchArguments.contains { $0.hasPrefix("UICTContentSizeCategoryAccessibility") }
+            if accessibilitySize { screens.append("IPadAX") }
+            if app.collectionViews["Sidebar"].exists {
+                screens.append("IPadSidebar")
+                if accessibilitySize { screens.append("IPadSidebarAX") }
+            }
+        }
         var failures: [String] = []
         var contrast: [String] = []
         try app.performAccessibilityAudit { issue in
             let label = issue.element?.label ?? "?"
-            let line = "\(issue.compactDescription) — '\(label)'"
+            // Frame and identifier tell apart findings with no label ("?"), or one label on two elements.
+            let detail = issue.element.map { "frame=\($0.frame) id='\($0.identifier)'" } ?? "no element: \(issue.detailedDescription)"
+            let line = "\(issue.compactDescription) — '\(label)' [\(detail)]"
             if issue.auditType == .contrast {
                 contrast.append(line)
             } else if !Self.isKnown(screens, issue.compactDescription, label),

@@ -8,6 +8,8 @@ number that shipped it.
 
 ## Unreleased
 
+- Larger text sizes: the "Log …" quick buttons on Home's Financial Pulse no longer cut off the amount. At the largest accessibility sizes the amount moves onto its own line under the label. On iPad at the largest accessibility text sizes, the sidebar gets wider and shows its entries without icons, so names like "Home" and "Settings" no longer break in the middle of the word. The Settings "New" badge now uses the standard system style, and the sidebar no longer shows the small "Finance" title at the top.
+
 - Secondary buttons look the same everywhere and are easier to read, especially in dark mode: Copy in Siri & Widgets, the extra "Log …" and "New transaction" buttons and "Set" on Home's Financial Pulse, Back Up Now in Settings, What's New actions, the receipt "Which total is right?" amounts and Auto-Map in CSV import. They're now grey instead of faint indigo. Main buttons stay indigo.
 - Home: a new "What if I spend…" row under Safe to Spend. Type an amount to see what would be left until payday, and per day, if you spent it today. Nothing is saved.
 - Categories and credit cards: the New/Edit Category sheets (including the one that opens during a CSV import) and the Add/Edit Card sheet now confirm with a checkmark at the top right, like the transaction, goal and travel sheets. Before, they showed "Add" or "Save" there. VoiceOver reads the checkmark by what it does, for example "Add Category" or "Update Card".

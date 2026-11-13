@@ -32,6 +32,17 @@ final class FeatureDiscoveryCoordinator {
     init(defaults: UserDefaults = .standard, service: FeatureDiscoveryService = FeatureDiscoveryService()) {
         self.defaults = defaults
         self.service = service
+        // Set before the remote manifest loads, so a scenario test needn't wait on the network.
+        hasUnseenRelease = Self.forcesUnseenRelease
+    }
+
+    /// `-unseenReleaseFixture` (#219, DEBUG): the "New" badge whatever the remote manifest and app version say.
+    private static var forcesUnseenRelease: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-unseenReleaseFixture")
+        #else
+        false
+        #endif
     }
 
     func loadAndPrepare(appVersion: String) async {
@@ -124,6 +135,10 @@ final class FeatureDiscoveryCoordinator {
     }
 
     private func refreshUnseenBadge() {
+        if Self.forcesUnseenRelease {
+            hasUnseenRelease = true
+            return
+        }
         hasUnseenRelease = unseenRelease(for: appVersion) != nil
     }
 
