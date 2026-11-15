@@ -268,6 +268,14 @@ class ScenarioTestCase: XCTestCase {
         var failures: [String] = []
         var reports: [String: [String]] = [:]
         try app.performAccessibilityAudit { issue in
+            // Every property read below is a round trip to the app, slow at the largest text
+            // sizes. Twenty report-only findings in one audit are already the runner's noise, so
+            // the rest are not read: the suspected reason HiddenSuggestions S4 ran past its
+            // 10-minute allowance inside this audit on the extra-large-text pass.
+            if issue.auditType == .dynamicType, dynamicTypeReportOnly,
+               reports["dynamictype", default: []].count >= Self.dynamicTypeReportCap {
+                return true
+            }
             let label = issue.element?.label ?? "?"
             // Frame and identifier tell apart findings with no label ("?"), or one label on two elements.
             let detail = issue.element.map { "frame=\($0.frame) id='\($0.identifier)'" } ?? "no element: \(issue.detailedDescription)"
@@ -292,6 +300,8 @@ class ScenarioTestCase: XCTestCase {
         }
         XCTAssert(failures.isEmpty, "New accessibility issues in \(scenario) on \(screens.joined(separator: "+")):\n" + failures.joined(separator: "\n"))
     }
+
+    private static let dynamicTypeReportCap = 20
 
     private static func isKnown(_ screens: [String], _ description: String, _ label: String) -> Bool {
         knownAccessibilityIssues.contains { known in

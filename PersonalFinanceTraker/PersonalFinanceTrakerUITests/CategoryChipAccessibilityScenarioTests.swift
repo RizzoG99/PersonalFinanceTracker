@@ -146,7 +146,14 @@ final class CategoryChipAccessibilityScenarioTests: ScenarioTestCase {
         let row = isPad
             ? app.staticTexts["Morning coffee"].firstMatch
             : app.buttons.matching(NSPredicate(format: "label CONTAINS 'Morning coffee'")).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 10), "no transaction row in Activity")
+        // At the largest text size on iOS 26 the summary cards fill the first screen (#413), and
+        // the list is lazy: the row exists only once it is scrolled to. The first wait keeps a
+        // slow launch from being taken for a row below the fold.
+        _ = row.waitForExistence(timeout: 10)
+        for _ in 0..<6 where !(row.exists && row.isHittable) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(row.waitForExistence(timeout: 10) && row.isHittable, "no transaction row in Activity")
         let onActivity = app.debugDescription
         row.press(forDuration: 1)
         // iPhone: enabled, because Activity's Category filter has the same name and stays
