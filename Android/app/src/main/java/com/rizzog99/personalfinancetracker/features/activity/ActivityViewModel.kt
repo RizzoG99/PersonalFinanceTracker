@@ -18,7 +18,9 @@ import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFil
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.ZoneId
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -284,25 +286,35 @@ class ActivityViewModel(
         filterSelection.value = filterSelection.value.clearSearchAndFilters()
     }
 
-    suspend fun save(transaction: FinanceTransaction): Boolean = runCatching {
+    suspend fun save(transaction: FinanceTransaction): Boolean = write {
         transactionRepository.upsert(transaction)
-    }.onFailure { showError() }.isSuccess
+    }
 
-    suspend fun createRecurringTransaction(rule: NewRecurrenceRule): Boolean = runCatching {
+    suspend fun createRecurringTransaction(rule: NewRecurrenceRule): Boolean = write {
         recurrenceRepository.createAndMaterialize(rule)
-    }.onFailure { showError() }.isSuccess
+    }
 
-    suspend fun updateThisAndFuture(transaction: FinanceTransaction): Boolean = runCatching {
+    suspend fun updateThisAndFuture(transaction: FinanceTransaction): Boolean = write {
         recurrenceRepository.updateThisAndFuture(transaction)
-    }.onFailure { showError() }.isSuccess
+    }
 
-    suspend fun delete(transaction: FinanceTransaction): Boolean = runCatching {
+    suspend fun delete(transaction: FinanceTransaction): Boolean = write {
         transactionRepository.delete(transaction.id)
-    }.onFailure { showError() }.isSuccess
+    }
 
-    suspend fun deleteThisAndFuture(transaction: FinanceTransaction): Boolean = runCatching {
+    suspend fun deleteThisAndFuture(transaction: FinanceTransaction): Boolean = write {
         transactionRepository.deleteThisAndFuture(requireNotNull(transaction.recurrenceRuleId), transaction.timestamp)
-    }.onFailure { showError() }.isSuccess
+    }
+
+    /**
+     * Returns on the main thread whatever dispatcher the caller came from. The screens close an editor
+     * and show a snackbar right after these calls, and only their scope's dispatcher brought them
+     * back to main. Under Compose UI test's unconfined dispatcher that code ran on Room's thread
+     * instead and raced the frame being drawn: the snackbar was set and never shown (#417).
+     */
+    private suspend fun write(block: suspend () -> Unit): Boolean = withContext(Dispatchers.Main.immediate) {
+        runCatching { block() }.onFailure { showError() }.isSuccess
+    }
 
     fun clearError() {
         _error.value = null

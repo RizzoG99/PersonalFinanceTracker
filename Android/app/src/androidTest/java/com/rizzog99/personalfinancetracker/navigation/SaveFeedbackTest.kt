@@ -6,6 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.Density
 import com.rizzog99.personalfinancetracker.ui.CaptureHarness
 import java.util.Locale
@@ -20,7 +23,9 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
@@ -160,8 +165,20 @@ class SaveFeedbackTest {
         host(widthDp = 411)
         openEditorWithAmount()
         val repeat = isToggleable() and hasAnySibling(hasText(string(R.string.repeat_transaction)))
-        rule.onNode(repeat).performScrollTo().assertIsOff().performClick()
-        rule.waitForIdle()
+        rule.onNode(repeat).assertIsOff()
+        // Typing the amount opens the keyboard in real time, outside the test clock. When it lands,
+        // the form scrolls its focused amount field back into view and undoes a scroll made a moment
+        // earlier: the switch is clipped again, and a tap aimed at it lands somewhere else (#391,
+        // #417). So press Done first, as a person does (it drops the focus, so nothing scrolls back),
+        // and tap only a switch that is on screen, until the switch itself says it is on.
+        rule.onAllNodes(hasSetTextAction())[0].performImeAction()
+        fun isOn() = rule.onNode(repeat).fetchSemanticsNode().config
+            .getOrNull(SemanticsProperties.ToggleableState) == ToggleableState.On
+        rule.waitUntil(timeoutMillis = 20_000) {
+            if (!isOn()) runCatching { rule.onNode(repeat).performScrollTo().assertIsDisplayed().performClick() }
+            rule.waitForIdle()
+            isOn()
+        }
         // The frequency controls only exist while Repeat is on.
         rule.onNodeWithText(string(R.string.repeats_every)).assertExists()
 
