@@ -145,12 +145,20 @@ class ActivityUndoTimeoutTest {
      */
     private fun deleteAndFreezeOnUndo(note: String, id: String, confirm: Int = R.string.delete_transaction) {
         rule.mainClock.autoAdvance = true
+        awaitRow(note)
         rule.onNodeWithText(note).performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
         rule.mainClock.autoAdvance = false
         rule.onNodeWithText(string(confirm)).performClick()
         stepUntil("$note deleted and Undo shown") { transactions().none { it.id == id } && undoShowing() }
     }
+
+    /**
+     * The list is read from Room in real time, which no idle sync waits for: right after the tab
+     * opens the row may not be composed yet (seen once on the API 34 CI emulator, #417).
+     */
+    private fun awaitRow(note: String) =
+        rule.waitUntil(timeoutMillis = 20_000) { rule.onAllNodes(hasText(note)).fetchSemanticsNodes().isNotEmpty() }
 
     private fun stepUntil(what: String, condition: () -> Boolean) {
         val deadline = System.currentTimeMillis() + 60_000
@@ -228,6 +236,7 @@ class ActivityUndoTimeoutTest {
         val coffeeUndo = undoNodeId()
         // Tea's delete queues behind coffee's Undo: one snackbar at a time.
         rule.mainClock.autoAdvance = true
+        awaitRow("tea")
         rule.onNodeWithText("tea").performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
         rule.mainClock.autoAdvance = false

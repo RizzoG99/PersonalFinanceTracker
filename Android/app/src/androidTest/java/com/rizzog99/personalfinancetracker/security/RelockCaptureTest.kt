@@ -121,6 +121,20 @@ class RelockCaptureTest {
             .applicationLocales = LocaleList(locale)
         shell("settings put system font_scale ${cell.fontScale}")
         runBlocking { app.preferencesRepository.setThemeMode(cell.theme) }
+        // A new font scale or locale replaces the activity, some time after the setting is written.
+        // Until the activity on screen is the one with this cell's configuration, a tap can go to
+        // the instance being replaced and open nothing in the new one (#417).
+        rule.waitUntil(DEADLINE) {
+            var applied = false
+            runCatching {
+                rule.activityRule.scenario.onActivity {
+                    val configuration = it.resources.configuration
+                    applied = configuration.fontScale == cell.fontScale &&
+                        configuration.locales[0].language == locale.language
+                }
+            }
+            applied && rule.activityRule.scenario.state == Lifecycle.State.RESUMED
+        }
         instrumentation.waitForIdleSync()
         rule.waitForIdle()
     }
@@ -157,7 +171,19 @@ class RelockCaptureTest {
         val add = hasContentDescription(string(R.string.add_transaction, locale)) and hasClickAction()
         rule.waitUntil(DEADLINE) { rule.onAllNodes(add).fetchSemanticsNodes().size == 1 }
         rule.onNode(add).performClick()
-        rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size == 2 }
+        runCatching {
+            rule.waitUntil(DEADLINE) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size == 2 }
+        }.onFailure {
+            val addNodes = rule.onAllNodes(add).fetchSemanticsNodes()
+            throw AssertionError(
+                "${cell.id}: the Add sheet did not open: text fields=" +
+                    "${rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size}, + buttons=" +
+                    "${addNodes.map { it.boundsInWindow }}, locked=${pinShown(locale)}, " +
+                    "activity=${rule.activityRule.scenario.state}, roots=" +
+                    "${rule.onAllNodes(isRoot()).fetchSemanticsNodes().map { it.boundsInWindow }}",
+                it,
+            )
+        }
         rule.onAllNodes(hasSetTextAction())[0].performTextInput("12,50")
         val note = hasSetTextAction() and hasText(string(R.string.note, locale))
         rule.onNode(note).performClick()

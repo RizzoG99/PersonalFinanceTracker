@@ -220,10 +220,21 @@ class ForegroundRelockTest {
         // One real key event before leaving, so the field's input session is the one key events reach.
         // In this harness `input text` lands only after `performTextInput` has started that session;
         // without this step the key events after unlock were not heard either (recorded on PR #399).
-        shell("input text X")
-        rule.waitUntil(DEADLINE) {
-            rule.onAllNodes(hasSetTextAction() and hasText("CoffeeX")).fetchSemanticsNodes().isNotEmpty()
+        //
+        // The key goes through the keyboard app, and while that app is still restarting its input
+        // session (on the CI emulator it rebuilt its view seconds after showing) it drops the key:
+        // the field then never changes, however long the wait (#417). So send it once the keyboard
+        // is quiet, and again if the field did not change. The draft is whatever the field then holds.
+        var draft = "Coffee"
+        rule.waitUntil(4 * DEADLINE) {
+            instrumentation.uiAutomation.runCatching { waitForIdle(500, 5_000) }
+            shell("input text X")
+            runCatching { rule.waitUntil(5_000) { editableText(1) != "Coffee" } }
+            instrumentation.uiAutomation.runCatching { waitForIdle(500, 5_000) } // a late key lands here
+            draft = editableText(1)
+            draft != "Coffee"
         }
+        assertTrue("precondition: real keys reach Note, got '$draft'", draft.matches(Regex("CoffeeX+")))
         val amountBefore = editableText(0)
         assertTrue("precondition: an amount was typed, got '$amountBefore'", amountBefore.isNotBlank())
         assertFalse("precondition: unlocked", pinShown())
@@ -249,7 +260,7 @@ class ForegroundRelockTest {
         enterPin()
         assertEquals(amountBefore, editableText(0))
         // Given back once the sheet's window has focus again, which is a frame or two after unlock.
-        val noteWithDraft = hasSetTextAction() and hasText("CoffeeX")
+        val noteWithDraft = hasSetTextAction() and hasText(draft)
         rule.waitUntil(DEADLINE) {
             rule.onAllNodes(noteWithDraft and SemanticsMatcher.expectValue(SemanticsProperties.Focused, true))
                 .fetchSemanticsNodes().isNotEmpty()
@@ -264,7 +275,7 @@ class ForegroundRelockTest {
         shell("input text More")
         runCatching {
             rule.waitUntil(DEADLINE) {
-                rule.onAllNodes(hasSetTextAction() and hasText("CoffeeXMore")).fetchSemanticsNodes().isNotEmpty()
+                rule.onAllNodes(hasSetTextAction() and hasText(draft + "More")).fetchSemanticsNodes().isNotEmpty()
             }
         }.onFailure {
             val fields = rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().map { node ->
