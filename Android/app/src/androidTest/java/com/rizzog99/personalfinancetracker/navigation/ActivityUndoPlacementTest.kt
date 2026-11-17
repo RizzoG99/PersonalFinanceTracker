@@ -133,7 +133,15 @@ class ActivityUndoPlacementTest {
 
     private fun swipeCoffeeLeft() = swipeLeftOn("coffee")
 
+    /**
+     * The list is read from Room in real time, which no idle sync waits for: right after the tab
+     * opens the row may not be composed yet (#417).
+     */
+    private fun awaitRow(note: String) =
+        rule.waitUntil(timeoutMillis = 20_000) { rule.onAllNodes(hasText(note)).fetchSemanticsNodes().isNotEmpty() }
+
     private fun swipeLeftOn(note: String) {
+        awaitRow(note)
         rule.onNodeWithText(note).performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
     }
@@ -203,6 +211,7 @@ class ActivityUndoPlacementTest {
         seedCoffee()
         host(widthDp = 411)
 
+        awaitRow("coffee")
         rule.onNodeWithText("coffee").performScrollTo().performClick()
         rule.waitForIdle()
         val save = hasContentDescription(string(R.string.save)) and hasClickAction()

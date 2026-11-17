@@ -129,10 +129,17 @@ class NavShellEvidenceTest {
         rule.assertOnly(homeTab)
         // pressBack() throws NoActivityResumedException here: leaving the app *is* the contract.
         Espresso.pressBackUnconditionally()
+        // Finishing takes PAUSED → STOPPED → DESTROYED over a second or more on the CI emulator. Reading
+        // `rule.activity` on the way raced the destroy and threw "Activity has been destroyed already"
+        // (#417), so wait on the scenario's state alone, which is always safe to read.
+        val deadline = System.currentTimeMillis() + 20_000
+        while (rule.activityRule.scenario.state != Lifecycle.State.DESTROYED && System.currentTimeMillis() < deadline) {
+            Thread.sleep(50)
+        }
         assertTrue(
-            "Back on the start destination must finish the activity, not blank the shell",
-            rule.activityRule.scenario.state == Lifecycle.State.DESTROYED ||
-                rule.activity.isFinishing,
+            "Back on the start destination must finish the activity, not blank the shell; " +
+                "state=${rule.activityRule.scenario.state}",
+            rule.activityRule.scenario.state == Lifecycle.State.DESTROYED,
         )
     }
 
