@@ -287,6 +287,8 @@ class SaveFeedbackTest {
         host(widthDp = 900)
         with(NavShellMarkers()) { rule.selectTab(activityTab) }
 
+        // Room delivers the list in real time, which no idle sync waits for (#417).
+        rule.waitUntil(timeoutMillis = 20_000) { rule.onAllNodes(hasText("coffee")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithText("coffee").performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
         val undo = hasText(string(R.string.undo)) and hasClickAction()
