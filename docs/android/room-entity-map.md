@@ -29,7 +29,7 @@ A database created fresh at version 3 during the credit-card exclusion window ha
 | `TransactionEntity` | generated UUID string | `TransactionModel` | Nullable `categoryId`, `goalId`, and `recurrenceRuleId`; preserve `categoryLabel` as the historical display snapshot. |
 | `CategoryEntity` | UUID string | `CategoryModel` | Name, normalized name, icon token, type, colour token, optional monthly budget, and currency. The normalized name plus type is unique, so Income and Expense can both have “Other”, while case or surrounding whitespace cannot create duplicates. |
 | `GoalEntity` | UUID string | `GoalModel` | Goal progress remains derived from linked transactions, not stored as a mutable balance. |
-| `CreditCardEntity` | UUID string | `CreditCardModel` | Name, last four digits, balance, limit, colour token, and currency. |
+| `CreditCardEntity` | UUID string | `CreditCardModel` | **Legacy only** (parity matrix D-01): name, last four digits, balance, limit, colour token, and currency. Kept so existing rows survive; no UI or new behaviour. |
 | `RecurrenceRuleEntity` | UUID string | `RecurrenceRule` | Frequency, interval, active dates, materialization cursor, transaction template, and nullable category/goal IDs. |
 | `HealthScoreSnapshotEntity` | generated UUID string | `HealthScoreSnapshot` | Timestamp and component scores; preserve history. |
 | `DailyForecastCacheEntity` | constant singleton key | `DailyForecastCache` | A derived cache. It may be cleared and recomputed without user-data loss. |
@@ -38,6 +38,17 @@ A database created fresh at version 3 during the credit-card exclusion window ha
 Room foreign keys use `SET NULL` for category and goal references. A deleted category or goal must not delete historical transactions or recurrence rules; their display snapshot remains available. Deleting a recurrence rule does not delete already materialized transactions.
 
 All multi-record writes, recurring-occurrence materialization, import batches, and delete-all operations run inside a Room transaction.
+
+### Pending changes for current iOS (`b649dff`)
+
+Specified in `docs/shared/android-v1-data-contract.md` (*Current iOS rules*); not migrated yet. Each lands with its owning issue, in a new schema version with an exported JSON and a `RoomMigrationTest` case:
+
+| Change | Rule | Owner |
+| --- | --- | --- |
+| `travels` table (`id`, `name`, `symbolName`, `createdAt`) and nullable `transactions.travelId` with `SET NULL` | Deleting a travel keeps its transactions. | #284 |
+| `recurrence_rules.autoRecord`, default `true` for existing rows | `false` = forecast-only; never materializes. | #294, #295 |
+| Transfer identity | `goalId != null && amount < 0`; an explicit type column, if added, must agree with it. | #300 |
+| Dismissed fixed-expense patterns | DataStore list, not Room; cleared by delete-all. | #295 |
 
 ## Value encoding
 
