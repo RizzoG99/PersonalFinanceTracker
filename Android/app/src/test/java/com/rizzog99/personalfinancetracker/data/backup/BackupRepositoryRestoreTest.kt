@@ -87,6 +87,8 @@ class BackupRepositoryRestoreTest {
             "numeric note" to validBackup().replace("\"note\":\"October rent\"", "\"note\":42"),
             "trailing garbage" to validBackup() + " garbage",
             "two objects" to validBackup() + validBackup(),
+            "trailing comment" to validBackup() + " /* garbage */",
+            "trailing NUL" to validBackup() + "\u0000garbage",
         )
         for ((case, json) in invalidFiles) {
             val failure = withContext(Dispatchers.IO) { runCatching { repository().import(json.byteInputStream()) } }

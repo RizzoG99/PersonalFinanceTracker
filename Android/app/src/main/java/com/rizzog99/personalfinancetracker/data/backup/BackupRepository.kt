@@ -136,8 +136,10 @@ class BackupRepository(
         // JSONObject(text) alone stops after the first object and ignores whatever follows.
         val tokener = JSONTokener(text)
         val root = tokener.nextValue() as? JSONObject ?: throw JSONException("Backup is not a JSON object")
-        // nextClean() skips whitespace and returns '\u0000' only at the end of the input.
-        if (tokener.nextClean() != '\u0000') throw JSONException("Unexpected content after the backup")
+        // Only JSON whitespace may follow (nextClean() would also skip comments and NUL).
+        while (tokener.more()) {
+            if (tokener.next() !in " \t\r\n") throw JSONException("Unexpected content after the backup")
+        }
         // Exact Integer 1: getInt() would coerce 1.9 or "1" to 1.
         require(root.opt("version") == 1) { "Unsupported backup version" }
         return Backup(
