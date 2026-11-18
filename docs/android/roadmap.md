@@ -16,6 +16,8 @@ Release a native Kotlin and Jetpack Compose Android version of Personal Finance 
 
 **Done when:** Android v1 scope and its data contract have no unrecorded assumptions.
 
+**Current iOS drift (October 2026):** iOS moved on from the `83bc9db` baseline. #281 tracks the drift against iOS `b649dff`; `docs/shared/ios-android-parity.md` maps every capability to its parity ID and issue, and the data contract's *Current iOS rules* section specifies travels, transfers, forecast-only rules, dismissed patterns, category repair, date boundaries and backup evolution (#282). The milestones below now also include the `DRIFT-2026-10-*` issues with the same roadmap phase.
+
 ### 1. Android foundation
 
 - Create the Android Studio project in `Android/` without moving the existing iOS project.
@@ -39,7 +41,7 @@ Release a native Kotlin and Jetpack Compose Android version of Personal Finance 
 
 - Insights, financial health, forecast, trends, charts, and goals.
 - Budgets, spending progress, and related alerts or states.
-- Credit-card workflows and utilization.
+- Credit cards are excluded from product scope (owner, 2026-10-31; parity matrix D-01). Legacy persistence stays.
 - Receipt capture and any current feature-discovery or supporting workflows in iOS.
 
 **Done when:** all current iOS analytical and advanced-finance workflows have Android acceptance coverage and parity status.
