@@ -180,7 +180,6 @@ fun SettingsSheet(
                                         context.contentResolver.openInputStream(uri)?.use { application.backupRepository.import(it) }
                                             ?: error("Could not open file")
                                     }
-                                    if (result.isSuccess) application.categoryRepository.seedDefaultsIfEmpty()
                                     snackbarHostState.showSnackbar(if (result.isSuccess) restoreCompleteMessage else restoreFailedMessage)
                                 }
                             }
