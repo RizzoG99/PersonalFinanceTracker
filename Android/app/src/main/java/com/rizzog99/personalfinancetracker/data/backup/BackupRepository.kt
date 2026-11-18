@@ -17,7 +17,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
+import org.json.JSONTokener
 
 /**
  * Whole-app backup/restore as a single JSON file, written through the system file picker
@@ -131,15 +133,19 @@ class BackupRepository(
 
     /** Throws on anything that is not a complete version-1 backup. */
     private fun parse(text: String): Backup {
-        val root = JSONObject(text)
+        // JSONObject(text) alone stops after the first object and ignores whatever follows.
+        val tokener = JSONTokener(text)
+        val root = tokener.nextValue() as? JSONObject ?: throw JSONException("Backup is not a JSON object")
+        // nextClean() skips whitespace and returns '\u0000' only at the end of the input.
+        if (tokener.nextClean() != '\u0000') throw JSONException("Unexpected content after the backup")
         // Exact Integer 1: getInt() would coerce 1.9 or "1" to 1.
         require(root.opt("version") == 1) { "Unsupported backup version" }
         return Backup(
             categories = root.getJSONArray("categories").objects().map { json ->
                 NewCategory(
-                    name = json.getString("name"),
-                    iconToken = json.getString("iconToken"),
-                    type = TransactionType.valueOf(json.getString("type")),
+                    name = json.text("name"),
+                    iconToken = json.text("iconToken"),
+                    type = TransactionType.valueOf(json.text("type")),
                     colorToken = json.optString("colorToken", "categoryIndigo"),
                     monthlyBudget = json.optString("monthlyBudget", null)?.let(::BigDecimal),
                     currencyCode = json.optString("currencyCode", "EUR"),
@@ -147,21 +153,21 @@ class BackupRepository(
             },
             transactions = root.getJSONArray("transactions").objects().map { json ->
                 FinanceTransaction(
-                    id = json.getString("id"),
-                    timestamp = Instant.parse(json.getString("timestamp")),
-                    amount = BigDecimal(json.getString("amount")),
-                    note = json.getString("note"),
-                    categoryLabel = json.getString("categoryLabel"),
+                    id = json.text("id"),
+                    timestamp = Instant.parse(json.text("timestamp")),
+                    amount = BigDecimal(json.text("amount")),
+                    note = json.text("note"),
+                    categoryLabel = json.text("categoryLabel"),
                     categoryId = null,
-                    currencyCode = json.getString("currencyCode"),
+                    currencyCode = json.text("currencyCode"),
                     goalId = null,
                     recurrenceRuleId = null,
                 )
             },
             goals = root.getJSONArray("goals").objects().map { json ->
                 NewGoal(
-                    name = json.getString("name"),
-                    targetAmount = BigDecimal(json.getString("targetAmount")),
+                    name = json.text("name"),
+                    targetAmount = BigDecimal(json.text("targetAmount")),
                     deadline = json.optString("deadline", null)?.let(Instant::parse),
                     colorToken = json.optString("colorToken", "categoryIndigo"),
                     iconToken = json.optString("iconToken", "star.fill"),
@@ -171,4 +177,8 @@ class BackupRepository(
     }
 
     private fun JSONArray.objects() = (0 until length()).map(::getJSONObject)
+
+    /** A required string field; getString() would turn JSON null or a number into text. */
+    private fun JSONObject.text(name: String): String =
+        get(name) as? String ?: throw JSONException("$name is not a string")
 }

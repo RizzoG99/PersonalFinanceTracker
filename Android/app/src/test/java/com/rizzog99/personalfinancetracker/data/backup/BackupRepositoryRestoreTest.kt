@@ -83,6 +83,10 @@ class BackupRepositoryRestoreTest {
             "bad amount" to validBackup(amount = "\"abc\""),
             "missing goals" to """{"version":1,"categories":[],"transactions":[]}""",
             "not json" to "not json",
+            "null transaction id" to validBackup().replace("\"id\":\"bk-1\"", "\"id\":null"),
+            "numeric note" to validBackup().replace("\"note\":\"October rent\"", "\"note\":42"),
+            "trailing garbage" to validBackup() + " garbage",
+            "two objects" to validBackup() + validBackup(),
         )
         for ((case, json) in invalidFiles) {
             val failure = withContext(Dispatchers.IO) { runCatching { repository().import(json.byteInputStream()) } }
@@ -133,7 +137,8 @@ class BackupRepositoryRestoreTest {
         }
         subscribed.await()
 
-        repository().import(validBackup().byteInputStream())
+        // Trailing whitespace (an editor's final newline) is still a valid file.
+        repository().import((validBackup() + "\n").byteInputStream())
 
         withTimeout(5_000) { refreshed.await() }
 
