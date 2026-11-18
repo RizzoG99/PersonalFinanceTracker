@@ -27,7 +27,7 @@ only source for that, so a skipped bullet means testers get no notes.
 
 ## Automation
 
-- CI (`.github/workflows`): `ci.yml` runs `scripts/xcb test` on PRs and fails unless tests actually ran; `changelog.yml` requires a `CHANGELOG.md` change on `feature/*`/`fix/*` PRs (`no-changelog` in the PR body opts out); `deps.yml` opens an issue when ZIPFoundation or CoreXLSX has a newer release.
+- CI (`.github/workflows`): `ci.yml` runs `scripts/xcb test` on PRs and fails unless tests actually ran; `scenarios.yml` runs the scenario regression on PRs that touch the app, one job per pass; `changelog.yml` requires a `CHANGELOG.md` change on `feature/*`/`fix/*` PRs (`no-changelog` in the PR body opts out); `deps.yml` opens an issue when ZIPFoundation or CoreXLSX has a newer release.
 - `.swiftformat` is whitespace-only on purpose (default rules would rewrite most files); keep it that way.
 - Shared scripts in `.claude/hooks`: `git-guard.sh` blocks commits on `main` in the primary checkout, bad branch names, `gh pr create` without a changelog change (`PFT_SKIP_CHANGELOG=1` to skip), and AI attribution in commits/PRs/comments; `graphify-update.sh` refreshes the graph on Stop. Claude Code wires these in `.claude/settings.json`; Codex enables them through `.codex/config.toml` and `.codex/hooks.json`, with user approval through `/hooks`. Claude Code also runs `swiftformat` on edited Swift files through a PostToolUse hook.
 
@@ -61,7 +61,7 @@ scripts/xcb delete-sim   # drop this worktree's dedicated simulators
 
 `scripts/xcb test` prints only a JSON summary (counts, failed test names, messages); the full log goes to `.build/test.log`. Read that file only when the summary is not enough.
 
-**Verify UI work with scenario tests.** `scripts/xcb scenarios [UITestClass]` runs `ScenarioTestCase` subclasses on iPhone and iPad. With no class it runs every `*ScenarioTests` class, which is the regression run. It prints a JSON summary, and screenshots land in `.build/scenarios/shots/` for review. The mechanics live in `ScenarioTestCase.swift` and the script.
+**Verify UI work with scenario tests.** `scripts/xcb scenarios [UITestClass]` runs `ScenarioTestCase` subclasses on iPhone and iPad. With no class it runs every `*ScenarioTests` class, which is the regression run: over two hours here, so leave it to the `Scenarios` workflow, which runs it on each PR as five parallel jobs on the runner's older iOS (not a required check). It prints a JSON summary, and screenshots land in `.build/scenarios/shots/` for review. The mechanics live in `ScenarioTestCase.swift` and the script.
 - Scenario tests are XCTest, because XCUITest requires it. The Swift Testing rule covers unit tests only.
 - They skip themselves under plain `scripts/xcb test` and in CI.
 - A failed test is retried once. One that passes on retry keeps `result` at `Passed`, but the summary lists it under `flaky` with its first failure. Report every `flaky` entry, for example in the PR's Limitations. `HarnessRetryProbe` checks this mechanism.

@@ -1,0 +1,71 @@
+name: Scenarios
+# The scenario regression run, one job per pass so the five run side by side: about 50 minutes
+# a pass on a hosted runner, against 2h20 for all five in a row on the one Mac. The runner's
+# simulator is whatever iOS its image ships (26.5 when this was written), older than the local
+# one on purpose: nothing else tests a 26.x release.
+#
+# Not a required check yet: watch how stable it is first.
+on:
+  pull_request:
+    # Path filter rather than ci.yml's gate job: fine while this is not a required check
+    # (a required one would stay pending forever on a PR the filter skips).
+    paths:
+      - "**.swift"
+      - "**.xcstrings"
+      - "**.plist"
+      - "**.entitlements"
+      - "**.xcconfig"
+      - "**.pbxproj"
+      - "**.xcscheme"
+      - "**.xctestplan"
+      - "**.resolved"
+      - "**/*.xcassets/**"
+      - scripts/xcb
+      - .github/workflows/scenarios.yml
+  workflow_dispatch:
+    inputs:
+      class:
+        description: "One *ScenarioTests class; empty runs them all"
+        default: ""
+concurrency:
+  group: scenarios-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  scenarios:
+    name: ${{ matrix.name }}
+    runs-on: macos-26
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:   # <device>:<appearance>:<content size>, as in scripts/xcb
+          - { name: iphone-light, pass: "iphone:light:large" }
+          - { name: iphone-dark, pass: "iphone:dark:large" }
+          - { name: iphone-light-axxxl, pass: "iphone:light:accessibility-extra-extra-extra-large" }
+          - { name: ipad-light, pass: "ipad:light:large" }
+          - { name: ipad-dark, pass: "ipad:dark:large" }
+    env:
+      PFT_SCENARIO_PASSES: ${{ matrix.pass }}
+      SCENARIO_CLASS: ${{ inputs.class }}
+      # xcodebuild hands TEST_RUNNER_* to the tests minus the prefix. New Dynamic Type findings
+      # go to S*-dynamictype-*.txt instead of failing: that audit is noisy on these runners
+      # (see ScenarioTestCase.auditAccessibility).
+      TEST_RUNNER_SCENARIO_DYNAMIC_TYPE_REPORT_ONLY: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scenarios
+        # The script's exit code is the gate: it fails on a failed test, a pass that ran
+        # nothing, or a missing result bundle. `shell: bash` turns on pipefail; without it
+        # tee's exit code hid a failed pass and the job went green.
+        shell: bash
+        run: |
+          mkdir -p .build
+          scripts/xcb scenarios $SCENARIO_CLASS | tee .build/scenarios-summary-${{ matrix.name }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scenarios-${{ matrix.name }}
+          path: |
+            .build/scenarios-summary-${{ matrix.name }}.json
+            .build/scenarios/shots
+            .build/scenarios/*.log
