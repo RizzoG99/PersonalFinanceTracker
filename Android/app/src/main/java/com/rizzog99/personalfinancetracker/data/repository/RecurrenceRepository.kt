@@ -111,13 +111,14 @@ private fun NewRecurrenceRule.toEntity() = RecurrenceRuleEntity(
     interval = interval,
     startDateEpochMillis = startDate.toEpochMilli(),
     endDateEpochMillis = null,
-    lastMaterializedDateEpochMillis = null,
+    lastMaterializedDateEpochMillis = lastMaterializedDate?.toEpochMilli(),
     amountDecimal = MoneyCodec.encode(amount),
     note = note,
     categoryLabel = categoryLabel,
     categoryId = categoryId,
     currencyCode = currencyCode,
     goalId = goalId,
+    autoRecord = autoRecord,
 )
 
 private fun RecurrenceRuleEntity.toDomain() = RecurrenceRule(
@@ -133,6 +134,7 @@ private fun RecurrenceRuleEntity.toDomain() = RecurrenceRule(
     categoryId = categoryId,
     currencyCode = currencyCode,
     goalId = goalId,
+    autoRecord = autoRecord,
 )
 
 private fun FinanceTransaction.toEntity() = TransactionEntity(

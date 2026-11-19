@@ -7,10 +7,16 @@ import androidx.room.testing.MigrationTestHelper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.rizzog99.personalfinancetracker.data.repository.RoomCategoryRepository
+import com.rizzog99.personalfinancetracker.data.repository.RoomRecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
+import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import java.math.BigDecimal
+import java.time.Instant
+import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -64,7 +70,7 @@ class RoomMigrationTest {
         // real upgrade path a v1 install takes.
         val database = openProductionDatabase()
         assertEverySeededRecordIsExact(database)
-        assertEquals(3, database.userVersion())
+        assertEquals(4, database.userVersion())
     }
 
     @Test
@@ -82,15 +88,57 @@ class RoomMigrationTest {
     }
 
     @Test
-    fun `AC-03_1 AC-04_2 the full 1 to 3 path yields the same records and constraints as the sequential path`() = runBlocking {
+    fun `AC-03_1 AC-04_2 the full 1 to 4 path yields the same records and constraints as the sequential path`() = runBlocking {
         helper.createDatabase(databaseName, 1).use(MigrationFixtures::seedVersion1)
 
-        helper.runMigrationsAndValidate(databaseName, 3, true, *PersonalFinanceDatabase.MIGRATIONS).close()
+        helper.runMigrationsAndValidate(databaseName, 4, true, *PersonalFinanceDatabase.MIGRATIONS).close()
 
         val database = openProductionDatabase()
         assertEverySeededRecordIsExact(database)
-        assertEquals(3, database.userVersion())
+        assertEquals(4, database.userVersion())
         assertSchemaContractHolds(database)
+    }
+
+    @Test
+    fun `295 ac03 the 3 to 4 path keeps every existing rule auto-recording and materializing`() = runBlocking {
+        // v3 is byte-identical to v2 (AC-07_1), so the v2 seed is a v3 seed.
+        helper.createDatabase(databaseName, 3).use(MigrationFixtures::seedVersion2)
+
+        helper.runMigrationsAndValidate(databaseName, 4, true, PersonalFinanceDatabase.MIGRATION_3_4).close()
+
+        val database = openProductionDatabase()
+        assertEverySeededRecordIsExact(database)
+        // Still auto-recording in behaviour, not only in the flag: the open-ended bare rule records
+        // its first occurrence once it falls due.
+        RoomRecurrenceRepository(database).materializeDue(
+            through = MigrationFixtures.RULE_START.plusSeconds(86_400),
+            zoneId = ZoneOffset.UTC,
+        )
+        val generated = RoomTransactionRepository(database).observeAll().first()
+            .filter { it.recurrenceRuleId == MigrationFixtures.BARE_RULE_ID }
+        assertEquals(listOf(MigrationFixtures.RULE_START), generated.map(FinanceTransaction::timestamp))
+    }
+
+    @Test
+    fun `295 ac04 a forecast-only rule survives close and reopen`() = runBlocking {
+        helper.createDatabase(databaseName, 3).use(MigrationFixtures::seedVersion2)
+        val rule = RoomRecurrenceRepository(openProductionDatabase()).create(
+            NewRecurrenceRule(
+                frequency = RecurrenceFrequency.MONTHLY,
+                interval = 1,
+                startDate = Instant.parse("2026-11-01T12:00:00Z"),
+                amount = BigDecimal("-750.00"),
+                note = "Affitto",
+                categoryLabel = "Rent",
+                categoryId = null,
+                currencyCode = "EUR",
+                autoRecord = false,
+                lastMaterializedDate = Instant.parse("2026-11-01T12:00:00Z"),
+            ),
+        )
+
+        val reopened = openProductionDatabase()
+        assertEquals(false, requireNotNull(reopened.recurrenceRuleDao().get(rule.id)).autoRecord)
     }
 
     @Test
@@ -101,7 +149,7 @@ class RoomMigrationTest {
 
         val reopened = openProductionDatabase()
         assertEverySeededRecordIsExact(reopened)
-        assertEquals(3, reopened.userVersion())
+        assertEquals(4, reopened.userVersion())
         assertSchemaContractHolds(reopened)
     }
 
@@ -159,8 +207,8 @@ class RoomMigrationTest {
         }
 
         assertEquals(
-            "the active database must match the exported schema 3",
-            exportedIdentityHash(3),
+            "the active database must match the exported schema 4",
+            exportedIdentityHash(4),
             runtimeIdentity,
         )
         // v2 and v3 are the same contract — the table set only ever diverged inside an unreleased
