@@ -94,6 +94,11 @@ class FakeTransactionRepository(
         writeFailure?.let { throw it }
     }
 
+    override suspend fun insertNew(transactions: List<FinanceTransaction>): List<FinanceTransaction> {
+        writeFailure?.let { throw it }
+        return transactions
+    }
+
     override suspend fun delete(id: String) {
         writeFailure?.let { throw it }
     }

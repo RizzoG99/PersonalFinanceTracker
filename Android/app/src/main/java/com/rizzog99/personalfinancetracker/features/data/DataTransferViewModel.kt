@@ -80,13 +80,9 @@ class DataTransferViewModel(
                     transaction.copy(categoryId = category.id, categoryLabel = category.name)
                 } ?: created[transaction.categoryLabel]?.let { category -> transaction.copy(categoryId = category.id, categoryLabel = category.name) } ?: transaction
             }
-            // The preview already split these, but against a snapshot: re-check against the ledger as
-            // it is now, so a repeated import or an auto-recorded payment is never saved twice (#314).
-            // ponytail: read-then-insert outside one transaction; the app is the only writer, add a
-            // DAO-level transaction if a concurrent writer ever appears.
-            val (fresh, _) = ImportReconciler.split(resolved, repository.observeAll().first())
-            repository.insertBatch(fresh)
-            fresh
+            // The preview split these against a snapshot; re-check against the ledger as it is now, so a
+            // repeated import or an auto-recorded payment is never saved twice (#314).
+            repository.insertNew(resolved)
         }
         onFinished(result)
     }
