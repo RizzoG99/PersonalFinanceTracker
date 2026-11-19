@@ -27,11 +27,13 @@ object ImportReconciler {
                 continue
             }
             // ponytail: keeps the generated row and drops the bank's, like iOS; replace it instead if the real booking date matters.
-            val match = generated.indexOfFirst {
-                it.amount.cents() == row.amount.cents() && Duration.between(it.timestamp, row.timestamp).abs() <= window
-            }
-            if (match >= 0) {
-                generated.removeAt(match)
+            // The closest payment, ties by id: independent of the order [existing] was read in, so the
+            // preview (newest first) and the commit (unordered) consume the same rows.
+            val match = generated
+                .filter { it.amount.cents() == row.amount.cents() && Duration.between(it.timestamp, row.timestamp).abs() <= window }
+                .minWithOrNull(compareBy<FinanceTransaction>({ Duration.between(it.timestamp, row.timestamp).abs() }, { it.id }))
+            if (match != null) {
+                generated.remove(match)
                 duplicates += row
             } else {
                 fresh += row

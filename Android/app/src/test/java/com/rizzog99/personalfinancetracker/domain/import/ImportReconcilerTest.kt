@@ -47,6 +47,17 @@ class ImportReconcilerTest {
         assertEquals(listOf("B"), fresh.map { it.note })
     }
 
+    @Test fun `the ledger's order does not change which bank rows are new`() {
+        val day = Duration.ofDays(1)
+        val ledger = listOf(generated, tx("-9.99", paidAt.plus(day.multipliedBy(4)), note = "Netflix", ruleId = "rule-1")) // 1 and 5 March
+        val bank = listOf(tx("-9.99", paidAt.plus(day.multipliedBy(2)), "A"), tx("-9.99", paidAt.plus(day.multipliedBy(6)), "B")) // 3 and 7 March
+        val newestFirst = ImportReconciler.split(bank, ledger.reversed())
+        val oldestFirst = ImportReconciler.split(bank, ledger)
+
+        assertEquals(newestFirst, oldestFirst)
+        assertEquals(emptyList<String>(), oldestFirst.first.map { it.note })
+    }
+
     @Test fun `an exact copy of any row is a duplicate even without a rule`() {
         val manual = tx("-750.00", paidAt, note = "Rent")
         assertEquals(true, matches(tx("-750.0", paidAt, note = "Rent"), listOf(manual)))
