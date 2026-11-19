@@ -65,6 +65,9 @@ import com.rizzog99.personalfinancetracker.domain.security.PinCodec
 import com.rizzog99.personalfinancetracker.features.security.PinSetupScreen
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import android.util.Log
+import com.rizzog99.personalfinancetracker.data.wipeAllData
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.launch
 
 private enum class SecurityFlow { SET_PIN, CHANGE_PIN }
@@ -187,8 +190,14 @@ fun SettingsSheet(
                         }
                         DataConfirmation.DELETE_ALL -> {
                             scope.launch {
-                                application.database.clearAllTables()
-                                application.categoryRepository.seedDefaultsIfEmpty()
+                                try {
+                                    wipeAllData(application.database, application.categoryRepository, application.dismissedRecurrencePatterns)
+                                } catch (cancelled: CancellationException) {
+                                    throw cancelled
+                                } catch (failure: Exception) {
+                                    // Escaping this scope would kill the process (#133).
+                                    Log.e("SettingsSheet", "Delete all data failed", failure)
+                                }
                             }
                         }
                     }

@@ -1,5 +1,6 @@
 package com.rizzog99.personalfinancetracker.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -45,6 +46,8 @@ data class RecurrenceRuleEntity(
     val categoryId: String?,
     val currencyCode: String,
     val goalId: String?,
+    /** Defaults to 1 so rules from before schema 4 keep auto-recording (iOS default `true`). */
+    @ColumnInfo(defaultValue = "1") val autoRecord: Boolean = true,
 )
 
 @Entity(

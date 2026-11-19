@@ -26,6 +26,8 @@ data class RecurrenceRule(
     val categoryId: String?,
     val currencyCode: String,
     val goalId: String?,
+    /** false = forecast-only fixed expense: never inserts transactions; its cursor follows real payments. */
+    val autoRecord: Boolean = true,
 )
 
 data class NewRecurrenceRule(
@@ -38,4 +40,7 @@ data class NewRecurrenceRule(
     val categoryId: String?,
     val currencyCode: String,
     val goalId: String? = null,
+    val autoRecord: Boolean = true,
+    /** Set for a rule anchored on a payment that already happened, so it isn't recorded again. */
+    val lastMaterializedDate: Instant? = null,
 )

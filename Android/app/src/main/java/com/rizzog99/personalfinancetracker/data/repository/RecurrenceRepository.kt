@@ -6,6 +6,7 @@ import com.rizzog99.personalfinancetracker.data.local.RecurrenceRuleEntity
 import com.rizzog99.personalfinancetracker.data.local.TransactionEntity
 import com.rizzog99.personalfinancetracker.domain.money.MoneyCodec
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceDetector
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceOccurrenceCalculator
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceRule
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
+import kotlinx.coroutines.flow.first
 
 interface RecurrenceRepository {
     suspend fun createAndMaterialize(rule: NewRecurrenceRule): RecurrenceRule
@@ -25,6 +27,9 @@ interface RecurrenceRepository {
      * up once that date actually arrives.
      */
     suspend fun create(rule: NewRecurrenceRule): RecurrenceRule
+
+    /** Rules not ended before [asOf] — what detection compares suggestions against. */
+    suspend fun activeRules(asOf: Instant = Instant.now()): List<RecurrenceRule>
     suspend fun materializeDue(through: Instant = Instant.now(), zoneId: ZoneId = ZoneId.systemDefault())
     suspend fun updateThisAndFuture(occurrence: FinanceTransaction)
 }
@@ -49,9 +54,22 @@ class RoomRecurrenceRepository(
         return entity.toDomain()
     }
 
+    override suspend fun activeRules(asOf: Instant): List<RecurrenceRule> =
+        database.recurrenceRuleDao().getActive(asOf.toEpochMilli()).map { it.toDomain() }
+
     override suspend fun materializeDue(through: Instant, zoneId: ZoneId) {
         val rules = database.recurrenceRuleDao().getActive(through.toEpochMilli())
-        rules.forEach { rule ->
+        // Forecast-only fixed expenses never insert: their cursor follows the real payments (#295,
+        // iOS RecurrenceMaterializationService.swift:33-41).
+        val forecastOnly = rules.filterNot { it.autoRecord }
+        if (forecastOnly.isNotEmpty()) {
+            val transactions = database.transactionDao().observeAll().first().map { it.toDomain() }
+            forecastOnly.forEach { rule ->
+                val paid = RecurrenceDetector.paidThrough(rule.toDomain(), transactions, through, zoneId) ?: return@forEach
+                database.recurrenceRuleDao().advance(rule.id, paid.cursor.toEpochMilli(), MoneyCodec.encode(paid.amount))
+            }
+        }
+        rules.filter { it.autoRecord }.forEach { rule ->
             database.withTransaction { materialize(rule, through, zoneId) }
         }
     }
@@ -78,6 +96,8 @@ class RoomRecurrenceRepository(
     }
 
     private suspend fun materialize(rule: RecurrenceRuleEntity, through: Instant, zoneId: ZoneId) {
+        // The one insertion point, so no caller can record rows for a forecast-only rule.
+        if (!rule.autoRecord) return
         val dates = RecurrenceOccurrenceCalculator.occurrences(
             frequency = RecurrenceFrequency.fromStorage(rule.frequency),
             interval = rule.interval,
@@ -111,13 +131,14 @@ private fun NewRecurrenceRule.toEntity() = RecurrenceRuleEntity(
     interval = interval,
     startDateEpochMillis = startDate.toEpochMilli(),
     endDateEpochMillis = null,
-    lastMaterializedDateEpochMillis = null,
+    lastMaterializedDateEpochMillis = lastMaterializedDate?.toEpochMilli(),
     amountDecimal = MoneyCodec.encode(amount),
     note = note,
     categoryLabel = categoryLabel,
     categoryId = categoryId,
     currencyCode = currencyCode,
     goalId = goalId,
+    autoRecord = autoRecord,
 )
 
 private fun RecurrenceRuleEntity.toDomain() = RecurrenceRule(
@@ -133,6 +154,7 @@ private fun RecurrenceRuleEntity.toDomain() = RecurrenceRule(
     categoryId = categoryId,
     currencyCode = currencyCode,
     goalId = goalId,
+    autoRecord = autoRecord,
 )
 
 private fun FinanceTransaction.toEntity() = TransactionEntity(

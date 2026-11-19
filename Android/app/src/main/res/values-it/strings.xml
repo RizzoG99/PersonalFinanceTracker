@@ -67,12 +67,31 @@
     <string name="import_cannot_undo">L’operazione non può essere annullata.</string>
     <string name="import_uncategorized">Senza categoria</string>
     <string name="import_recurring_title">Movimenti ricorrenti</string>
-    <string name="import_recurring_detail">Sembrano movimenti ricorrenti. Aggiungi regole di ricorrenza per tracciarli automaticamente.</string>
+    <string name="import_recurring_detail">Quelli selezionati vengono pianificati: non aggiungeremo movimenti senza il tuo permesso. Quelli che deselezioni non ti verranno più proposti.</string>
     <string name="import_recurring_none">Nessun movimento ricorrente trovato questa volta.</string>
+    <string name="import_recurring_loading">Cerco movimenti ricorrenti…</string>
+    <string name="import_recurring_error">Non è stato possibile cercare movimenti ricorrenti. I movimenti sono stati importati.</string>
+    <string name="import_recurring_save_failed">Non è stato possibile salvare i movimenti ricorrenti. Riprova.</string>
+    <plurals name="import_recurring_found">
+        <item quantity="one">%1$d movimento ricorrente trovato</item>
+        <item quantity="other">%1$d movimenti ricorrenti trovati</item>
+    </plurals>
+    <plurals name="import_payments_count">
+        <item quantity="one">%1$d pagamento</item>
+        <item quantity="other">%1$d pagamenti</item>
+    </plurals>
+    <plurals name="import_plan_button">
+        <item quantity="one">Pianifica %1$d</item>
+        <item quantity="other">Pianifica %1$d</item>
+    </plurals>
+    <string name="import_next">Prossimo il %1$s</string>
+    <string name="import_select_all">Seleziona tutto</string>
+    <string name="import_deselect_all">Deseleziona tutto</string>
+    <string name="import_amount_approx">≈ %1$s</string>
+    <string name="import_amount_about">circa %1$s</string>
+    <string name="import_recurring_row_description">%1$s, %2$s, %3$s, %4$s, %5$s</string>
+    <string name="import_recurring_row_hint">Quelli selezionati vengono pianificati</string>
     <string name="import_imported_count">Importati %1$d movimenti.</string>
-    <string name="import_seen_times">Visto %1$d volte</string>
-    <string name="import_starts">%1$s · inizia il %2$s</string>
-    <string name="import_rules_note">Le regole vengono aggiunte all’Attività e restano modificabili lì.</string>
     <string name="import_skip">Salta</string>
     <string name="import_done">Fatto</string>
     <string name="cadence_weekly">Ogni settimana</string>
@@ -80,10 +99,6 @@
     <string name="cadence_monthly">Ogni mese</string>
     <string name="cadence_monthly_n">Ogni %1$d mesi</string>
     <string name="cadence_yearly">Ogni anno</string>
-    <plurals name="import_add_rules_button">
-        <item quantity="one">Aggiungi %1$d regola</item>
-        <item quantity="other">Aggiungi %1$d regole</item>
-    </plurals>
     <string name="continue_label">Continua</string>
     <string name="import_choose_sheet">Scegli un foglio</string>
     <string name="import_choose_sheet_detail">Seleziona il foglio di lavoro con i movimenti da importare.</string>

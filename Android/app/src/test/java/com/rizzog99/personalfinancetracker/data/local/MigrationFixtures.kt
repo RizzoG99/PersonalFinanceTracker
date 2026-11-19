@@ -16,6 +16,7 @@ import java.time.Instant
 import kotlinx.coroutines.flow.first
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 
 /**
  * One representative row set covering every model a source schema can hold, shared by the migration
@@ -311,6 +312,7 @@ internal suspend fun assertEverySeededRecordIsExact(database: PersonalFinanceDat
     assertEquals("-49.99", linkedRule.amountDecimal)
     assertEquals(MigrationFixtures.EXPENSE_CATEGORY_ID, linkedRule.categoryId)
     assertEquals(MigrationFixtures.DEADLINE_GOAL_ID, linkedRule.goalId)
+    assertTrue("a rule from before schema 4 keeps auto-recording (#295)", linkedRule.autoRecord)
 
     val bareRule = requireNotNull(database.recurrenceRuleDao().get(MigrationFixtures.BARE_RULE_ID))
     assertEquals(2, bareRule.interval)
@@ -318,6 +320,7 @@ internal suspend fun assertEverySeededRecordIsExact(database: PersonalFinanceDat
     assertNull("an unmaterialized rule keeps a null cursor", bareRule.lastMaterializedDateEpochMillis)
     assertNull("an uncategorized rule keeps a null category", bareRule.categoryId)
     assertNull("an unlinked rule keeps a null goal", bareRule.goalId)
+    assertTrue("a rule from before schema 4 keeps auto-recording (#295)", bareRule.autoRecord)
 
     val cards = RoomCreditCardRepository(database).observeAll().first()
     assertEquals(listOf("Amex Gold", "Revolving Visa"), cards.map(CreditCard::name))

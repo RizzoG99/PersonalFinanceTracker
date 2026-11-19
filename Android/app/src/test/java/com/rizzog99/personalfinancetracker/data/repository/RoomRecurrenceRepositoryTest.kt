@@ -84,6 +84,58 @@ class RoomRecurrenceRepositoryTest {
         assertNotNull(database.recurrenceRuleDao().get(rule.id))
     }
 
+    /** A forecast-only fixed expense (#295 AC-03): planned from a payment that already happened. */
+    private fun forecastRent(start: Instant) = NewRecurrenceRule(
+        frequency = RecurrenceFrequency.MONTHLY,
+        interval = 1,
+        startDate = start,
+        amount = BigDecimal("-750.00"),
+        note = "Affitto",
+        categoryLabel = "Rent",
+        categoryId = null,
+        currencyCode = "EUR",
+        autoRecord = false,
+        lastMaterializedDate = start,
+    )
+
+    @Test
+    fun `ac03 a forecast-only rule never inserts and advances when a matching payment arrives`() = runBlocking {
+        val start = Instant.parse("2026-11-01T12:00:00Z")
+        val rule = recurrenceRepository.create(forecastRent(start))
+        // The real bank payment, two days early and with a month in its note.
+        transactionRepository.upsert(
+            com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction(
+                id = "paid-nov",
+                timestamp = Instant.parse("2026-11-29T09:00:00Z"),
+                amount = BigDecimal("-750.00"),
+                note = "Affitto dicembre",
+                categoryLabel = "Rent",
+                categoryId = null,
+                currencyCode = "EUR",
+                goalId = null,
+                recurrenceRuleId = null,
+            ),
+        )
+
+        recurrenceRepository.materializeDue(through = Instant.parse("2026-12-03T12:00:00Z"), zoneId = ZoneOffset.UTC)
+
+        val all = transactionRepository.observeAll().first()
+        assertEquals("a forecast-only rule must not insert rows", emptyList<String>(), all.mapNotNull { it.recurrenceRuleId })
+        assertEquals(listOf("paid-nov"), all.map { it.id })
+        assertEquals(
+            Instant.parse("2026-12-01T12:00:00Z").toEpochMilli(),
+            database.recurrenceRuleDao().get(rule.id)?.lastMaterializedDateEpochMillis,
+        )
+        assertEquals(false, database.recurrenceRuleDao().get(rule.id)?.autoRecord)
+    }
+
+    @Test
+    fun `ac03 a forecast-only rule created through createAndMaterialize inserts nothing`() = runBlocking {
+        recurrenceRepository.createAndMaterialize(forecastRent(Instant.parse("2026-11-01T12:00:00Z")).copy(lastMaterializedDate = null))
+
+        assertEquals(emptyList<Any>(), transactionRepository.observeAll().first())
+    }
+
     @Test
     fun `editing this and future preserves the edited occurrence and rebuilds later ones from the new template`() = runBlocking {
         val start = Instant.parse("2026-01-31T10:00:00Z")

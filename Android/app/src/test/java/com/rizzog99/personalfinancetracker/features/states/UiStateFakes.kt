@@ -178,6 +178,8 @@ class UnusedRecurrenceRepository : RecurrenceRepository {
 
     override suspend fun create(rule: NewRecurrenceRule): RecurrenceRule = error("unused")
 
+    override suspend fun activeRules(asOf: Instant): List<RecurrenceRule> = error("unused")
+
     override suspend fun materializeDue(through: Instant, zoneId: ZoneId) = Unit
 
     override suspend fun updateThisAndFuture(occurrence: FinanceTransaction) = error("unused")

@@ -17,7 +17,7 @@ import com.rizzog99.personalfinancetracker.domain.category.CategoryNameValidator
         DailyForecastCacheEntity::class,
         MerchantCategoryMappingEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class PersonalFinanceDatabase : RoomDatabase() {
@@ -55,10 +55,20 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
         }
 
         /**
+         * Forecast-only fixed expenses (#295). Every existing rule keeps auto-recording, like iOS's
+         * `autoRecord = true` default for rules saved before the flag existed.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE recurrence_rules ADD COLUMN autoRecord INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
+        /**
          * The one registration point. `PersonalFinanceApplication` and the migration tests both read
          * this, so a new migration cannot reach production without the suite covering it.
          */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 
         /**
          * Backfilled in Kotlin rather than with `lower(trim(name))`. SQLite's `trim()` strips only

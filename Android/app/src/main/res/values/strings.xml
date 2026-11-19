@@ -67,12 +67,31 @@
     <string name="import_cannot_undo">This can’t be undone.</string>
     <string name="import_uncategorized">Uncategorized</string>
     <string name="import_recurring_title">Recurring transactions</string>
-    <string name="import_recurring_detail">These look like repeating transactions. Add recurrence rules to track them automatically.</string>
+    <string name="import_recurring_detail">Checked ones are planned for — we won\'t add transactions without your permission. Ones you uncheck won\'t be suggested again.</string>
     <string name="import_recurring_none">No repeating transactions found this time.</string>
+    <string name="import_recurring_loading">Looking for recurring transactions…</string>
+    <string name="import_recurring_error">Couldn\'t check for recurring transactions. Your transactions were imported.</string>
+    <string name="import_recurring_save_failed">Couldn\'t save the recurring transactions. Please try again.</string>
+    <plurals name="import_recurring_found">
+        <item quantity="one">%1$d recurring transaction found</item>
+        <item quantity="other">%1$d recurring transactions found</item>
+    </plurals>
+    <plurals name="import_payments_count">
+        <item quantity="one">%1$d payment</item>
+        <item quantity="other">%1$d payments</item>
+    </plurals>
+    <plurals name="import_plan_button">
+        <item quantity="one">Plan %1$d</item>
+        <item quantity="other">Plan %1$d</item>
+    </plurals>
+    <string name="import_next">Next %1$s</string>
+    <string name="import_select_all">Select all</string>
+    <string name="import_deselect_all">Deselect all</string>
+    <string name="import_amount_approx">≈ %1$s</string>
+    <string name="import_amount_about">about %1$s</string>
+    <string name="import_recurring_row_description">%1$s, %2$s, %3$s, %4$s, %5$s</string>
+    <string name="import_recurring_row_hint">Checked ones are planned for</string>
     <string name="import_imported_count">Imported %1$d transactions.</string>
-    <string name="import_seen_times">Seen %1$d times</string>
-    <string name="import_starts">%1$s · starts %2$s</string>
-    <string name="import_rules_note">Rules are added to Activity and can be edited there.</string>
     <string name="import_skip">Skip</string>
     <string name="import_done">Done</string>
     <string name="cadence_weekly">Weekly</string>
@@ -80,10 +99,6 @@
     <string name="cadence_monthly">Monthly</string>
     <string name="cadence_monthly_n">Every %1$d months</string>
     <string name="cadence_yearly">Yearly</string>
-    <plurals name="import_add_rules_button">
-        <item quantity="one">Add %1$d rule</item>
-        <item quantity="other">Add %1$d rules</item>
-    </plurals>
     <string name="continue_label">Continue</string>
     <string name="import_choose_sheet">Choose a sheet</string>
     <string name="import_choose_sheet_detail">Select the worksheet containing the transactions to import.</string>
