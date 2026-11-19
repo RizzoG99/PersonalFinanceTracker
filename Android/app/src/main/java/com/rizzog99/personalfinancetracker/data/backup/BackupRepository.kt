@@ -96,6 +96,11 @@ class BackupRepository(
                         backup.transactions.map { it.copy(categoryId = idByKey[it.categoryLabel to it.amount.type]) },
                     )
                     backup.goals.forEach { goalRepository.add(it) }
+                    // Kept mappings whose category is gone (a renamed one comes back under a new id)
+                    // could never resolve again; drop them rather than keep dead preferences.
+                    database.openHelper.writableDatabase.execSQL(
+                        "DELETE FROM merchant_category_mappings WHERE categoryId NOT IN (SELECT id FROM categories)",
+                    )
                 }
             }
             // A backup without categories must not leave the app with none (as on a fresh install).
@@ -187,7 +192,11 @@ class BackupRepository(
             BACKED_UP_TABLES.map { table ->
                 val types = columnTypes(table)
                 table to tables.getJSONArray(table).objects().map { json ->
-                    json.keys().asSequence().associateWith { column ->
+                    // Every column, every row: an omitted one would silently take SQLite's default
+                    // (a missing goalId drops a contribution, a missing autoRecord records a forecast).
+                    val columns = json.keys().asSequence().toSet()
+                    if (columns != types.keys) throw JSONException("$table row columns ${columns.sorted()} != ${types.keys.sorted()}")
+                    columns.associateWith { column ->
                         val value = json.get(column)
                         val type = types[column] ?: throw JSONException("Unknown column $table.$column")
                         when {

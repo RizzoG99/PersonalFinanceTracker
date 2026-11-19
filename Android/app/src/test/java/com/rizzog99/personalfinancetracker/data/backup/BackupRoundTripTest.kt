@@ -102,18 +102,27 @@ class BackupRoundTripTest {
     @Test
     fun ac03_legacyV1RelinksByNameAndTypeAndKeepsUnbackedTables() = runBlocking {
         seedFixture()
-        val untouched = tables().filterKeys { it in setOf("credit_cards", "health_score_snapshots", "merchant_category_mappings") }
+        val bonusExpenseId = categories.observeAll().first().single { it.name == "Bonus" && it.type == TransactionType.EXPENSE }.id
+        database.merchantCategoryMappingDao().upsert(MerchantCategoryMappingEntity("bar", bonusExpenseId))
+        val untouched = tables().filterKeys { it in setOf("credit_cards", "health_score_snapshots") }
 
         val legacy = withContext(Dispatchers.IO) { repository().import(legacyV1.byteInputStream()) }
 
         assertTrue(legacy)
         val bonus = categories.observeAll().first().filter { it.name == "Bonus" }.associateBy { it.type }
         val restored = transactions.observeAll().first().associateBy { it.id }
+        assertEquals(setOf("v1-income", "v1-expense", "v1-goal"), restored.keys)
         assertEquals(bonus.getValue(TransactionType.INCOME).id, restored.getValue("v1-income").categoryId)
         assertEquals(bonus.getValue(TransactionType.EXPENSE).id, restored.getValue("v1-expense").categoryId)
-        assertEquals(emptyList<Any>(), goals.observeAll().first().map { it.id }.filter { id -> restored.values.any { it.goalId == id } })
+        assertEquals(listOf(null, null, null), restored.values.map { it.goalId })
         assertEquals(untouched, tables().filterKeys { it in untouched.keys })
         assertEquals(emptyList<Map<String, Any?>>(), tables().getValue("recurrence_rules"))
+        // "bar" still resolves; "esselunga" pointed at the renamed Food category, which v1 brings
+        // back under a name-derived id, so it could never resolve again and is dropped.
+        assertEquals(bonusExpenseId, bonus.getValue(TransactionType.EXPENSE).id)
+        assertEquals(bonusExpenseId, database.merchantCategoryMappingDao().categoryIdFor("bar"))
+        assertTrue(categories.observeAll().first().any { it.name == "Food" })
+        assertEquals(null, database.merchantCategoryMappingDao().categoryIdFor("esselunga"))
     }
 
     @Test
@@ -128,6 +137,9 @@ class BackupRoundTripTest {
             "bad decimal" to good.replace("\"targetAmountDecimal\":\"5000\"", "\"targetAmountDecimal\":\"abc\""),
             "number for text" to good.replace("\"targetAmountDecimal\":\"5000\"", "\"targetAmountDecimal\":5000"),
             "unknown table" to good.replaceFirst("\"goals\":", "\"ghosts\":"),
+            "omitted autoRecord" to org.json.JSONObject(good).apply {
+                getJSONObject("tables").getJSONArray("recurrence_rules").getJSONObject(0).remove("autoRecord")
+            }.toString(),
         )
         for ((case, json) in invalid) {
             assertTrue("$case fixture must differ from the valid file", json != good)
@@ -223,9 +235,12 @@ class BackupRoundTripTest {
     private val legacyV1 = """
         {"version":1,"exportedAt":"2026-09-01T10:00:00Z",
          "categories":[{"name":"Bonus","iconToken":"gift.fill","type":"INCOME"},
-                       {"name":"Bonus","iconToken":"gift","type":"EXPENSE"}],
+                       {"name":"Bonus","iconToken":"gift","type":"EXPENSE"},
+                       {"name":"Food","iconToken":"cart.fill","type":"EXPENSE"}],
          "transactions":[{"id":"v1-income","timestamp":"2026-08-31T08:00:00Z","amount":"300","note":"","categoryLabel":"Bonus","currencyCode":"EUR"},
-                         {"id":"v1-expense","timestamp":"2026-08-31T09:00:00Z","amount":"-40","note":"","categoryLabel":"Bonus","currencyCode":"EUR"}],
+                         {"id":"v1-expense","timestamp":"2026-08-31T09:00:00Z","amount":"-40","note":"","categoryLabel":"Bonus","currencyCode":"EUR"},
+                         {"id":"v1-goal","timestamp":"2026-08-31T10:00:00Z","amount":"-150","note":"","categoryLabel":"→ Car","currencyCode":"EUR",
+                          "goalId":"0f8fad5b-d9cb-469f-a165-70867728950e"}],
          "goals":[{"name":"Car","targetAmount":"5000"}]}
     """.trimIndent()
 }
