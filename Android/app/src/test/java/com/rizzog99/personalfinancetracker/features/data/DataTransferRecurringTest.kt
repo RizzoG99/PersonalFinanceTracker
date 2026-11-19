@@ -166,16 +166,6 @@ class DataTransferRecurringTest {
     }
 
     @Test
-    fun `ac04 Skip records nothing, so the next import asks again`() = runBlocking {
-        seedHistory()
-        val vm = viewModel()
-        val first = requireNotNull(vm.suggest())
-        // Skip never calls planRecurring.
-        assertEquals(first.size, requireNotNull(vm.suggest()).size)
-        assertEquals(emptyList<Any>(), dismissed.all())
-    }
-
-    @Test
     fun `a failing save reports false instead of crashing`() = runBlocking {
         seedHistory()
         val failing = object : RecurrenceRepository by recurrence {

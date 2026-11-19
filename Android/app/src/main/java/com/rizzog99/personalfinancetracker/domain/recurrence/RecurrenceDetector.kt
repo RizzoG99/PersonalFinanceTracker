@@ -3,6 +3,7 @@ package com.rizzog99.personalfinancetracker.domain.recurrence
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.Normalizer
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -232,7 +233,9 @@ object RecurrenceDetector {
 
     /** Lowercase, letters only, month names dropped ("Affitto Ottobre 2026" → "affitto"). */
     fun normalizeNote(note: String): String =
-        note.lowercase().map { if (it.isLetter()) it else ' ' }.joinToString("")
+        // NFC first: Swift compares strings by canonical equivalence, so "Più" typed and a bank's
+        // decomposed "Più" are one commitment on iOS; per-char filtering here would split them.
+        Normalizer.normalize(note, Normalizer.Form.NFC).lowercase().map { if (it.isLetter()) it else ' ' }.joinToString("")
             .split(' ').filter { it.isNotEmpty() && it !in monthNames }.joinToString(" ")
 
     // ponytail: hardcoded EN/IT full + short names (iOS derives them from DateFormatter); JVM CLDR

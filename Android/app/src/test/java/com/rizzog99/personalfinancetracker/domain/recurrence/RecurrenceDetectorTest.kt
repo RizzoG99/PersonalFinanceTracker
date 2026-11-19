@@ -116,6 +116,14 @@ class RecurrenceDetectorTest {
     }
 
     @Test
+    fun `composed and decomposed accents are the same commitment`() {
+        val rows = listOf(row("Palestra Più", "-40", day(2026, 9, 3)), row("Palestra Più", "-40", day(2026, 10, 3)))
+        assertEquals(1, detect(rows, day(2026, 10, 4)).size)
+        val rule = rule(day(2026, 1, 3), "-40", "Palestra Più", lastMaterializedDate = day(2026, 9, 3), autoRecord = false)
+        assertEquals(day(2026, 10, 3), RecurrenceDetector.paidThrough(rule, listOf(rows[1]), day(2026, 10, 4), utc)?.cursor)
+    }
+
+    @Test
     fun `two identical payments are enough`() {
         val results = detect(listOf(row("Affitto settembre", "-700", day(2026, 9, 1)), row("Affitto ottobre", "-700", day(2026, 10, 1))), day(2026, 10, 4))
         assertEquals(1, results.size)

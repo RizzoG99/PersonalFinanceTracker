@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -17,7 +19,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.and
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertWidthIsEqualTo
@@ -109,6 +110,8 @@ class RecurringSuggestionsCaptureTest {
         val state = mutableStateOf<RecurringStepState>(RecurringStepState.Found(fixture))
         val selected = mutableStateOf(initialRecurringSelection(fixture))
         val defaultLocale = Locale.getDefault()
+        var skips = 0
+        var confirms = 0
 
         rule.setContent {
             val current = cell.value
@@ -124,7 +127,7 @@ class RecurringSuggestionsCaptureTest {
             ) {
                 PersonalFinanceTheme(themeMode = current.theme) {
                     Surface(color = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.onSurface, modifier = Modifier.fillMaxSize()) {
-                        Column(Modifier.width(current.widthDp.dp).testTag(HOST)) {
+                        Column(Modifier.wrapContentWidth(Alignment.Start).width(current.widthDp.dp).testTag(HOST)) {
                             Column(
                                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -142,8 +145,8 @@ class RecurringSuggestionsCaptureTest {
                                 selectedCount = selected.value.size,
                                 saving = false,
                                 saveFailed = false,
-                                onSkip = {},
-                                onConfirm = {},
+                                onSkip = { skips++ },
+                                onConfirm = { confirms++ },
                                 onDone = {},
                             )
                         }
@@ -169,7 +172,7 @@ class RecurringSuggestionsCaptureTest {
                 rule.onNode(isToggleable() and hasContentDescription("Affitto", substring = true)).assertIsOn()
                 rule.onNode(isToggleable() and hasContentDescription("App,", substring = true)).assertIsOff()
                 rule.onNode(isToggleable() and hasContentDescription("Luce", substring = true) and hasContentDescription(text.about, substring = true)).assertExists()
-                rule.onNodeWithText("≈", substring = true).assertExists()
+                rule.onNodeWithText("≈", substring = true, useUnmergedTree = true).assertExists()
 
                 CaptureHarness.writePng(rule, dir, c.id)
                 CaptureHarness.writeSemantics(rule, dir, c.id)
@@ -191,7 +194,12 @@ class RecurringSuggestionsCaptureTest {
                 apply()
                 rule.waitForIdle()
                 when (id) {
-                    "state-zero-selected" -> rule.onNodeWithText(copy.getValue("en").done).assertExists()
+                    "state-zero-selected" -> {
+                        rule.onNodeWithText(copy.getValue("en").done).assertExists()
+                        // AC-04: Skip only leaves; it never reaches planning (which is what dismisses).
+                        rule.onNodeWithText("Skip").performClick()
+                        assertEquals(1 to 0, skips to confirms)
+                    }
                     "state-error" -> rule.onNodeWithText("Couldn't check for recurring transactions", substring = true).assertExists()
                     "state-empty" -> rule.onNodeWithText("No repeating transactions found", substring = true).assertExists()
                 }
