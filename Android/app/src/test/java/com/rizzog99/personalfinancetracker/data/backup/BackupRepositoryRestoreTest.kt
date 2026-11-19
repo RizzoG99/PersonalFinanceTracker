@@ -77,7 +77,7 @@ class BackupRepositoryRestoreTest {
         val before = seededLedger()
         val invalidFiles = mapOf(
             "empty object" to "{}",
-            "newer version" to validBackup(version = "2"),
+            "newer version" to validBackup(version = "3"),
             "fractional version" to validBackup(version = "1.9"),
             "string version" to validBackup(version = "\"1\""),
             "bad amount" to validBackup(amount = "\"abc\""),
