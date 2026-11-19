@@ -52,7 +52,7 @@ class RoomTransactionRepository(
     }
 }
 
-private fun TransactionEntity.toDomain() = FinanceTransaction(
+internal fun TransactionEntity.toDomain() = FinanceTransaction(
     id = id,
     timestamp = Instant.ofEpochMilli(timestampEpochMillis),
     amount = MoneyCodec.decode(amountDecimal),

@@ -69,6 +69,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -81,13 +88,11 @@ import com.rizzog99.personalfinancetracker.domain.export.XlsxExportService
 import com.rizzog99.personalfinancetracker.domain.import.CategoryAutoMapper
 import com.rizzog99.personalfinancetracker.domain.import.CsvImportParser
 import com.rizzog99.personalfinancetracker.domain.import.CsvColumnMapping
-import com.rizzog99.personalfinancetracker.domain.import.RecurringCandidate
-import com.rizzog99.personalfinancetracker.domain.import.RecurringImportDetector
 import com.rizzog99.personalfinancetracker.domain.import.TransactionImportMapper
 import com.rizzog99.personalfinancetracker.domain.import.SignConvention
 import com.rizzog99.personalfinancetracker.domain.import.XlsxImportService
 import com.rizzog99.personalfinancetracker.domain.import.removingLeadingEmoji
-import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceSuggestion
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
@@ -107,7 +112,12 @@ fun DataTransferScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val application = context.applicationContext as PersonalFinanceApplication
     val viewModel: DataTransferViewModel = viewModel(
-        factory = DataTransferViewModel.factory(application.transactionRepository, application.categoryRepository, application.recurrenceRepository),
+        factory = DataTransferViewModel.factory(
+            application.transactionRepository,
+            application.categoryRepository,
+            application.recurrenceRepository,
+            application.dismissedRecurrencePatterns,
+        ),
     )
     val state by viewModel.uiState.collectAsState()
     // The user's own concept -> category pairings, consulted by auto-match before it starts
@@ -180,7 +190,8 @@ fun DataTransferScreen(onBack: () -> Unit) {
                     finished(resolved)
                 }
             },
-            onAddRecurrenceRules = { rules, finished -> viewModel.addRecurrenceRules(rules, finished) },
+            onSuggestRecurring = { result -> viewModel.suggestRecurring(result) },
+            onPlanRecurring = { selected, rejected, finished -> viewModel.planRecurring(selected, rejected, finished) },
             onFinish = { importedFile = null },
         )
         return
@@ -251,7 +262,8 @@ private fun ImportWizardScreen(
     conceptPairings: Map<String, String>,
     onCancel: () -> Unit,
     onImport: (List<FinanceTransaction>, Map<String, String?>, (List<FinanceTransaction>?) -> Unit) -> Unit,
-    onAddRecurrenceRules: (List<NewRecurrenceRule>, (Boolean) -> Unit) -> Unit,
+    onSuggestRecurring: ((List<RecurrenceSuggestion>?) -> Unit) -> Unit,
+    onPlanRecurring: (selected: List<RecurrenceSuggestion>, rejected: List<RecurrenceSuggestion>, (Boolean) -> Unit) -> Unit,
     onFinish: () -> Unit,
 ) {
     var step by remember(file) { mutableStateOf(1) }
@@ -284,10 +296,20 @@ private fun ImportWizardScreen(
     var showHelp by remember { mutableStateOf(false) }
     val canContinue = dateColumn != null && amountColumn != null && validation != null
 
-    val recurringCandidates = remember(importedTransactions) { importedTransactions?.let(RecurringImportDetector::detect).orEmpty() }
-    var selectedRules by remember(recurringCandidates) { mutableStateOf(recurringCandidates.indices.toSet()) }
+    // Detection runs once the rows are saved, over the whole history.
+    var suggestions by remember(file) { mutableStateOf<RecurringStepState>(RecurringStepState.Loading) }
+    var selectedRules by remember(file) { mutableStateOf(emptySet<Int>()) }
     var addingRules by remember { mutableStateOf(false) }
     var addRulesFailed by remember { mutableStateOf(false) }
+    val found = (suggestions as? RecurringStepState.Found)?.suggestions.orEmpty()
+    fun planSelected() {
+        addingRules = true
+        addRulesFailed = false
+        onPlanRecurring(found.filterIndexed { i, _ -> i in selectedRules }, found.filterIndexed { i, _ -> i !in selectedRules }) { success ->
+            addingRules = false
+            if (success) onFinish() else addRulesFailed = true
+        }
+    }
 
     val stepTitles = arrayOf(
         R.string.import_map_columns,
@@ -357,6 +379,11 @@ private fun ImportWizardScreen(
                                         if (result != null) {
                                             importedTransactions = result
                                             step = 4
+                                            onSuggestRecurring { detected ->
+                                                suggestions = detected?.let(RecurringStepState::Found) ?: RecurringStepState.DetectionFailed
+                                                // Only strong evidence starts checked; a maybe needs the user's tap.
+                                                selectedRules = initialRecurringSelection(detected.orEmpty())
+                                            }
                                         } else {
                                             importFailed = true
                                         }
@@ -379,50 +406,15 @@ private fun ImportWizardScreen(
                         Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
                     }
                 } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        if (recurringCandidates.isNotEmpty()) {
-                            TextButton(onClick = onFinish, enabled = !addingRules) { Text(stringResource(R.string.import_skip)) }
-                            Button(
-                                onClick = {
-                                    addingRules = true
-                                    addRulesFailed = false
-                                    val rules = selectedRules.map { index ->
-                                        val candidate = recurringCandidates[index]
-                                        NewRecurrenceRule(
-                                            frequency = candidate.frequency,
-                                            interval = candidate.interval,
-                                            startDate = candidate.nextDate,
-                                            amount = candidate.amount,
-                                            note = candidate.note,
-                                            categoryLabel = candidate.categoryLabel,
-                                            categoryId = candidate.categoryId,
-                                            currencyCode = candidate.currencyCode,
-                                        )
-                                    }
-                                    onAddRecurrenceRules(rules) { success ->
-                                        addingRules = false
-                                        if (success) onFinish() else addRulesFailed = true
-                                    }
-                                },
-                                modifier = Modifier.height(56.dp),
-                                shape = RoundedCornerShape(50),
-                                enabled = !addingRules && selectedRules.isNotEmpty(),
-                            ) {
-                                Text(pluralStringResource(R.plurals.import_add_rules_button, selectedRules.size, selectedRules.size))
-                            }
-                        } else {
-                            Button(onClick = onFinish, modifier = Modifier.height(56.dp), shape = RoundedCornerShape(50)) {
-                                Text(stringResource(R.string.import_done))
-                            }
-                        }
-                    }
-                    if (addRulesFailed) {
-                        Text(stringResource(R.string.import_failed), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
-                    }
+                    RecurringSuggestionsActions(
+                        hasSuggestions = found.isNotEmpty(),
+                        selectedCount = selectedRules.size,
+                        saving = addingRules,
+                        saveFailed = addRulesFailed,
+                        onSkip = onFinish,
+                        onConfirm = ::planSelected,
+                        onDone = onFinish,
+                    )
                 }
             }
         },
@@ -666,25 +658,13 @@ private fun ImportWizardScreen(
                             fontWeight = FontWeight.Bold,
                         )
                     }
-                    if (recurringCandidates.isEmpty()) {
-                        Text(stringResource(R.string.import_recurring_none), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                        Text(stringResource(R.string.import_recurring_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        FinanceCard {
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                recurringCandidates.forEachIndexed { index, candidate ->
-                                    if (index > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
-                                    RecurringCandidateRow(
-                                        candidate = candidate,
-                                        category = categories.firstOrNull { it.id == candidate.categoryId },
-                                        checked = index in selectedRules,
-                                        onCheckedChange = { checked -> selectedRules = if (checked) selectedRules + index else selectedRules - index },
-                                    )
-                                }
-                            }
-                        }
-                        Text(stringResource(R.string.import_rules_note), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    RecurringSuggestionsContent(
+                        state = suggestions,
+                        categories = categories,
+                        selected = selectedRules,
+                        enabled = !addingRules,
+                        onSelectedChange = { selectedRules = it },
+                    )
                 }
             }
         }
@@ -785,40 +765,168 @@ private fun MappingTrailingValue(text: String) {
     }
 }
 
+/** The import's last step: detecting fixed expenses after the rows are saved. */
+internal sealed interface RecurringStepState {
+    data object Loading : RecurringStepState
+    data object DetectionFailed : RecurringStepState
+    data class Found(val suggestions: List<RecurrenceSuggestion>) : RecurringStepState
+}
+
+/** Only strong evidence starts checked (iOS `TransactionListViewModel.swift:1059`). */
+internal fun initialRecurringSelection(suggestions: List<RecurrenceSuggestion>): Set<Int> =
+    suggestions.indices.filter { suggestions[it].isHighConfidence }.toSet()
+
+/** Step 4's body (iOS `RecurrenceSuggestionsView`), below the "Imported N" banner. */
 @Composable
-private fun RecurringCandidateRow(candidate: RecurringCandidate, category: FinanceCategory?, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+internal fun RecurringSuggestionsContent(
+    state: RecurringStepState,
+    categories: List<FinanceCategory>,
+    selected: Set<Int>,
+    enabled: Boolean,
+    onSelectedChange: (Set<Int>) -> Unit,
+) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    when (state) {
+        RecurringStepState.Loading -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
+            Text(stringResource(R.string.import_recurring_loading), color = muted)
+        }
+        RecurringStepState.DetectionFailed -> Text(stringResource(R.string.import_recurring_error), color = MaterialTheme.colorScheme.error)
+        is RecurringStepState.Found -> if (state.suggestions.isEmpty()) {
+            Text(stringResource(R.string.import_recurring_none), color = muted)
+        } else {
+            val suggestions = state.suggestions
+            val allSelected = selected.size == suggestions.size
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    pluralStringResource(R.plurals.import_recurring_found, suggestions.size, suggestions.size),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.semantics { heading() },
+                )
+                Text(stringResource(R.string.import_recurring_detail), color = muted)
+                TextButton(
+                    onClick = { onSelectedChange(if (allSelected) emptySet() else suggestions.indices.toSet()) },
+                    enabled = enabled,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Text(stringResource(if (allSelected) R.string.import_deselect_all else R.string.import_select_all), fontWeight = FontWeight.Bold)
+                }
+            }
+            FinanceCard {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    suggestions.forEachIndexed { index, suggestion ->
+                        if (index > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceContainerHighest)
+                        RecurringSuggestionRow(
+                            suggestion = suggestion,
+                            category = categories.firstOrNull { it.id == suggestion.categoryId },
+                            checked = index in selected,
+                            enabled = enabled,
+                            onCheckedChange = { checked -> onSelectedChange(if (checked) selected + index else selected - index) },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Step 4's bottom bar. "Plan N" is always enabled while suggestions are shown: with nothing
+ * checked it reads "Done" and still records the unchecked ones as "Not fixed". Skip records nothing.
+ */
+@Composable
+internal fun RecurringSuggestionsActions(
+    hasSuggestions: Boolean,
+    selectedCount: Int,
+    saving: Boolean,
+    saveFailed: Boolean,
+    onSkip: () -> Unit,
+    onConfirm: () -> Unit,
+    onDone: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (hasSuggestions) {
+            TextButton(onClick = onSkip, enabled = !saving) { Text(stringResource(R.string.import_skip)) }
+            Button(onClick = onConfirm, modifier = Modifier.height(56.dp), shape = RoundedCornerShape(50), enabled = !saving) {
+                Text(
+                    if (selectedCount == 0) stringResource(R.string.import_done)
+                    else pluralStringResource(R.plurals.import_plan_button, selectedCount, selectedCount),
+                )
+            }
+        } else {
+            Button(onClick = onDone, modifier = Modifier.height(56.dp), shape = RoundedCornerShape(50)) {
+                Text(stringResource(R.string.import_done))
+            }
+        }
+    }
+    if (saveFailed) {
+        Text(stringResource(R.string.import_recurring_save_failed), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
+    }
+}
+
+@Composable
+private fun RecurringSuggestionRow(
+    suggestion: RecurrenceSuggestion,
+    category: FinanceCategory?,
+    checked: Boolean,
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
     val accent = categoryColor(category?.colorToken ?: "categoryGray")
-    val cadence = when (candidate.frequency) {
-        RecurrenceFrequency.WEEKLY -> if (candidate.interval == 1) stringResource(R.string.cadence_weekly) else stringResource(R.string.cadence_weekly_n, candidate.interval)
-        RecurrenceFrequency.MONTHLY -> if (candidate.interval == 1) stringResource(R.string.cadence_monthly) else stringResource(R.string.cadence_monthly_n, candidate.interval)
+    val cadence = when (suggestion.frequency) {
+        RecurrenceFrequency.WEEKLY -> if (suggestion.interval == 1) stringResource(R.string.cadence_weekly) else stringResource(R.string.cadence_weekly_n, suggestion.interval)
+        RecurrenceFrequency.MONTHLY -> if (suggestion.interval == 1) stringResource(R.string.cadence_monthly) else stringResource(R.string.cadence_monthly_n, suggestion.interval)
         RecurrenceFrequency.YEARLY -> stringResource(R.string.cadence_yearly)
     }
+    val title = suggestion.note.ifBlank { suggestion.categoryLabel.removingLeadingEmoji().trim() }
+    val money = formatCurrency(suggestion.amount, suggestion.currencyCode)
+    // "≈" marks a variable bill's typical (median) amount; every row is an expense, so no red.
+    val amount = if (suggestion.amountsIdentical) money else stringResource(R.string.import_amount_approx, money)
+    val payments = pluralStringResource(R.plurals.import_payments_count, suggestion.occurrenceCount, suggestion.occurrenceCount)
+    val next = stringResource(R.string.import_next, formatTransactionDate(suggestion.nextDate))
+    val spoken = stringResource(
+        R.string.import_recurring_row_description,
+        title,
+        cadence,
+        if (suggestion.amountsIdentical) money else stringResource(R.string.import_amount_about, money),
+        payments,
+        next,
+    )
+    val hint = stringResource(R.string.import_recurring_row_hint)
+    // At large text the amount drops under the texts instead of squeezing them (iOS accessibility sizes).
+    val stacked = LocalDensity.current.fontScale >= 1.5f
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            // One TalkBack stop per row: what it is, its checked state (from toggleable), and what
+            // checking it does. The visible texts below are cleared so they aren't read twice.
+            .toggleable(value = checked, enabled = enabled, role = Role.Checkbox, onValueChange = onCheckedChange)
+            .semantics { contentDescription = "$spoken. $hint" }
+            .padding(vertical = 12.dp, horizontal = 16.dp)
+            .clearAndSetSemantics {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Checkbox(checked = checked, onCheckedChange = onCheckedChange)
-        Box(
-            modifier = Modifier.size(36.dp).clip(CircleShape).background(accent.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(categoryIconFor(category?.iconToken ?: "tag"), contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+        Checkbox(checked = checked, onCheckedChange = null, enabled = enabled)
+        if (!stacked) {
+            Box(
+                modifier = Modifier.size(36.dp).clip(CircleShape).background(accent.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(categoryIconFor(category?.iconToken ?: "tag"), contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+            }
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(candidate.note.ifBlank { candidate.categoryLabel }, fontWeight = FontWeight.Bold, maxLines = 1)
-            Text(
-                stringResource(R.string.import_starts, cadence, formatTransactionDate(candidate.nextDate)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(stringResource(R.string.import_seen_times, candidate.occurrences), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(title, fontWeight = FontWeight.Bold)
+            Text("$cadence · $payments", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(next, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (stacked) Text(amount, fontWeight = FontWeight.Bold)
         }
-        Text(
-            formatCurrency(candidate.amount, candidate.currencyCode),
-            fontWeight = FontWeight.Bold,
-            color = if (candidate.amount.signum() < 0) MaterialTheme.colorScheme.error else LocalFinanceExtendedColors.current.positive,
-        )
+        if (!stacked) Text(amount, fontWeight = FontWeight.Bold)
     }
 }
 

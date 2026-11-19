@@ -48,6 +48,10 @@ interface RecurrenceRuleDao {
     @Query("UPDATE recurrence_rules SET lastMaterializedDateEpochMillis = :lastMaterializedDateEpochMillis WHERE id = :id")
     suspend fun updateLastMaterializedDate(id: String, lastMaterializedDateEpochMillis: Long)
 
+    /** A forecast-only rule's payment arrived: move its cursor, and follow a variable bill's amount. */
+    @Query("UPDATE recurrence_rules SET lastMaterializedDateEpochMillis = :cursorEpochMillis, amountDecimal = :amountDecimal WHERE id = :id")
+    suspend fun advance(id: String, cursorEpochMillis: Long, amountDecimal: String)
+
     @Update(onConflict = OnConflictStrategy.ABORT)
     suspend fun update(rule: RecurrenceRuleEntity)
 

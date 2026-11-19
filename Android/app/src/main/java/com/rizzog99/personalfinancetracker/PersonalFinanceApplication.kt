@@ -10,6 +10,7 @@ import com.rizzog99.personalfinancetracker.data.backup.BackupRepository
 import com.rizzog99.personalfinancetracker.data.local.NonDestructiveOpenHelperFactory
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.local.StartupFailure
+import com.rizzog99.personalfinancetracker.data.preferences.DismissedRecurrencePatternsRepository
 import com.rizzog99.personalfinancetracker.data.preferences.ImportProfileRepository
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
@@ -126,6 +127,10 @@ class PersonalFinanceApplication : Application() {
 
     val receiptCategoryMapRepository: ReceiptCategoryMapRepository by lazy {
         ReceiptCategoryMapRepository(this)
+    }
+
+    val dismissedRecurrencePatterns: DismissedRecurrencePatternsRepository by lazy {
+        DismissedRecurrencePatternsRepository(this)
     }
 
     val backupRepository: BackupRepository by lazy {

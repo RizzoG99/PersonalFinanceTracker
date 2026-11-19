@@ -11,8 +11,15 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.import.ImportCategoryPlanner
-import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
+import com.rizzog99.personalfinancetracker.data.preferences.DismissedRecurrencePatternsRepository
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceDetector
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceSuggestion
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import java.time.Instant
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -27,6 +34,8 @@ class DataTransferViewModel(
     private val repository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
     private val recurrenceRepository: RecurrenceRepository,
+    private val dismissedPatterns: DismissedRecurrencePatternsRepository,
+    private val clock: () -> Instant = Instant::now,
 ) : ViewModel() {
     val uiState: StateFlow<DataTransferUiState> = combine(repository.observeAll(), categoryRepository.observeAll(), ::DataTransferUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DataTransferUiState())
@@ -75,13 +84,56 @@ class DataTransferViewModel(
         onFinished(result.getOrNull())
     }
 
-    fun addRecurrenceRules(rules: List<NewRecurrenceRule>, onFinished: (Boolean) -> Unit) = viewModelScope.launch {
-        onFinished(runCatching { rules.forEach { recurrenceRepository.create(it) } }.isSuccess)
+    /**
+     * Fixed expenses in the whole history, which now includes the rows just imported (#295): a
+     * fixed expense shows up even when the file holds only one payment of it. Skips patterns that
+     * already have a rule or were answered "Not fixed". Null on failure.
+     */
+    fun suggestRecurring(onResult: (List<RecurrenceSuggestion>?) -> Unit) = viewModelScope.launch {
+        onResult(
+            guarded("Recurring detection failed") {
+                val today = clock()
+                val transactions = repository.observeAll().first()
+                val rules = recurrenceRepository.activeRules(today)
+                val dismissed = dismissedPatterns.all()
+                withContext(Dispatchers.Default) { RecurrenceDetector.detect(transactions, rules, dismissed, today) }
+            },
+        )
+    }
+
+    /**
+     * "Plan N" / "Done": checked suggestions become forecast-only rules anchored on their latest
+     * payment (auto-record is offered later, from Plan's card, #296); unchecked ones are
+     * remembered as "Not fixed". iOS `persistSelectedRecurrenceRules`.
+     */
+    fun planRecurring(selected: List<RecurrenceSuggestion>, rejected: List<RecurrenceSuggestion>, onFinished: (Boolean) -> Unit) = viewModelScope.launch {
+        // ponytail: one create per rule, like iOS; #314 makes the batch atomic.
+        onFinished(
+            guarded("Saving recurring rules failed") {
+                selected.forEach { recurrenceRepository.create(it.toNewRule(autoRecord = false)) }
+                dismissedPatterns.dismiss(rejected)
+            } != null,
+        )
+    }
+
+    /** Runs [block], logging a failure instead of letting it escape viewModelScope (#133); cancellation still propagates. */
+    private suspend fun <T> guarded(message: String, block: suspend () -> T): T? = try {
+        block()
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (failure: Exception) {
+        Log.e("DataTransferViewModel", message, failure)
+        null
     }
 
     companion object {
-        fun factory(repository: TransactionRepository, categoryRepository: CategoryRepository, recurrenceRepository: RecurrenceRepository) = viewModelFactory {
-            initializer { DataTransferViewModel(repository, categoryRepository, recurrenceRepository) }
+        fun factory(
+            repository: TransactionRepository,
+            categoryRepository: CategoryRepository,
+            recurrenceRepository: RecurrenceRepository,
+            dismissedPatterns: DismissedRecurrencePatternsRepository,
+        ) = viewModelFactory {
+            initializer { DataTransferViewModel(repository, categoryRepository, recurrenceRepository, dismissedPatterns) }
         }
     }
 }
