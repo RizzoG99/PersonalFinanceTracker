@@ -41,7 +41,9 @@ class DataTransferViewModel(
     val uiState: StateFlow<DataTransferUiState> = combine(repository.observeAll(), categoryRepository.observeAll(), ::DataTransferUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DataTransferUiState())
 
-    /** Imports [transactions], resolving each to its selected/created category. Reports the
+    /** Imports [transactions] — every mapped row of the file, duplicates included: rows already in the
+     * ledger are dropped here (#314), so a caller must not pre-filter them with [ImportReconciler] or a
+     * rule-generated row could match twice. Resolves each to its selected/created category. Reports the
      * resolved rows actually saved (with real category ids) on success, or null on failure —
      * the caller uses the resolved rows to detect recurring patterns for the next step. */
     fun import(transactions: List<FinanceTransaction>, categorySelections: Map<String, String?>, onFinished: (List<FinanceTransaction>?) -> Unit) = viewModelScope.launch {

@@ -375,7 +375,9 @@ private fun ImportWizardScreen(
                                 if (step < 3) step++ else {
                                     importing = true
                                     importFailed = false
-                                    onImport(candidates, categorySelections) { result ->
+                                    // The whole mapped file, not `candidates`: the commit re-splits it, and a
+                                    // pre-filtered list would let one generated row absorb two bank rows (#314).
+                                    onImport(resolved, categorySelections) { result ->
                                         importing = false
                                         if (result != null) {
                                             importedTransactions = result
