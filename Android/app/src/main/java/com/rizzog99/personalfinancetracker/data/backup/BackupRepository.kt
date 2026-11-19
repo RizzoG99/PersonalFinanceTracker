@@ -96,15 +96,18 @@ class BackupRepository(
                         backup.transactions.map { it.copy(categoryId = idByKey[it.categoryLabel to it.amount.type]) },
                     )
                     backup.goals.forEach { goalRepository.add(it) }
-                    // Kept mappings whose category is gone (a renamed one comes back under a new id)
-                    // could never resolve again; drop them rather than keep dead preferences.
-                    database.openHelper.writableDatabase.execSQL(
-                        "DELETE FROM merchant_category_mappings WHERE categoryId NOT IN (SELECT id FROM categories)",
-                    )
                 }
             }
             // A backup without categories must not leave the app with none (as on a fresh install).
             categoryRepository.seedDefaultsIfEmpty()
+            if (backup is LegacyBackup) {
+                // Kept mappings whose category is gone (a renamed one comes back under a new id)
+                // could never resolve again; drop them rather than keep dead preferences. After
+                // seeding, so a mapping to a default category survives an empty v1 file.
+                database.openHelper.writableDatabase.execSQL(
+                    "DELETE FROM merchant_category_mappings WHERE categoryId NOT IN (SELECT id FROM categories)",
+                )
+            }
         }
         return backup is LegacyBackup
     }
