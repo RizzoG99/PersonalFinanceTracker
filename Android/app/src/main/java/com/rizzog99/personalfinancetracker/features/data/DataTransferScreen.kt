@@ -88,6 +88,7 @@ import com.rizzog99.personalfinancetracker.domain.export.XlsxExportService
 import com.rizzog99.personalfinancetracker.domain.import.CategoryAutoMapper
 import com.rizzog99.personalfinancetracker.domain.import.CsvImportParser
 import com.rizzog99.personalfinancetracker.domain.import.CsvColumnMapping
+import com.rizzog99.personalfinancetracker.domain.import.ImportReconciler
 import com.rizzog99.personalfinancetracker.domain.import.TransactionImportMapper
 import com.rizzog99.personalfinancetracker.domain.import.SignConvention
 import com.rizzog99.personalfinancetracker.domain.import.XlsxImportService
@@ -288,8 +289,8 @@ private fun ImportWizardScreen(
     val resolved = validation?.transactions.orEmpty().map { transaction ->
         categorySelections[transaction.categoryLabel]?.let { id -> categories.firstOrNull { it.id == id } }?.let { category -> transaction.copy(categoryId = category.id, categoryLabel = category.name) } ?: transaction
     }
-    val duplicates = resolved.filter { candidate -> existing.any { it.timestamp == candidate.timestamp && it.amount.compareTo(candidate.amount) == 0 && it.note == candidate.note } }
-    val candidates = resolved - duplicates.toSet()
+    // Same split the commit re-runs: a bank row an auto-record rule already wrote counts as a duplicate (#314).
+    val (candidates, duplicates) = ImportReconciler.split(resolved, existing)
     var importing by remember(file) { mutableStateOf(false) }
     var importFailed by remember(file) { mutableStateOf(false) }
     var importedTransactions by remember(file) { mutableStateOf<List<FinanceTransaction>?>(null) }

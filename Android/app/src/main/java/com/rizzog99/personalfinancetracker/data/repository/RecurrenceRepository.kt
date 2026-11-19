@@ -28,6 +28,9 @@ interface RecurrenceRepository {
      */
     suspend fun create(rule: NewRecurrenceRule): RecurrenceRule
 
+    /** [create] for each rule, in one transaction: all of them are saved or none (#314). */
+    suspend fun createAll(rules: List<NewRecurrenceRule>): List<RecurrenceRule>
+
     /** Rules not ended before [asOf] — what detection compares suggestions against. */
     suspend fun activeRules(asOf: Instant = Instant.now()): List<RecurrenceRule>
     suspend fun materializeDue(through: Instant = Instant.now(), zoneId: ZoneId = ZoneId.systemDefault())
@@ -53,6 +56,9 @@ class RoomRecurrenceRepository(
         database.recurrenceRuleDao().insert(entity)
         return entity.toDomain()
     }
+
+    override suspend fun createAll(rules: List<NewRecurrenceRule>): List<RecurrenceRule> =
+        database.withTransaction { rules.map { create(it) } }
 
     override suspend fun activeRules(asOf: Instant): List<RecurrenceRule> =
         database.recurrenceRuleDao().getActive(asOf.toEpochMilli()).map { it.toDomain() }

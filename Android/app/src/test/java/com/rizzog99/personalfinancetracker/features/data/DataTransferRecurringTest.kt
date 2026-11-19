@@ -169,7 +169,7 @@ class DataTransferRecurringTest {
     fun `a failing save reports false instead of crashing`() = runBlocking {
         seedHistory()
         val failing = object : RecurrenceRepository by recurrence {
-            override suspend fun create(rule: NewRecurrenceRule): RecurrenceRule = error("disk full")
+            override suspend fun createAll(rules: List<NewRecurrenceRule>): List<RecurrenceRule> = error("disk full")
         }
         val vm = viewModel(failing)
         val suggestions = requireNotNull(vm.suggest())

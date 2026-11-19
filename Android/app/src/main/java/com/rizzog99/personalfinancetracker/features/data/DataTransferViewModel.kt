@@ -11,6 +11,7 @@ import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.import.ImportCategoryPlanner
+import com.rizzog99.personalfinancetracker.domain.import.ImportReconciler
 import com.rizzog99.personalfinancetracker.data.preferences.DismissedRecurrencePatternsRepository
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceDetector
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceSuggestion
@@ -44,7 +45,9 @@ class DataTransferViewModel(
      * resolved rows actually saved (with real category ids) on success, or null on failure —
      * the caller uses the resolved rows to detect recurring patterns for the next step. */
     fun import(transactions: List<FinanceTransaction>, categorySelections: Map<String, String?>, onFinished: (List<FinanceTransaction>?) -> Unit) = viewModelScope.launch {
-        val result = runCatching {
+        // The failure used to vanish here, leaving only "Couldn't import transactions" on screen and
+        // nothing in the log to work from. Whatever else happens, the cause reaches logcat.
+        val result = guarded("CSV import failed") {
             val known = uiState.value.categories.associateBy(FinanceCategory::id).toMutableMap()
             // One category per name the database would consider distinct, not one per CSV label.
             // Creating one each made a file containing both "Regali" and "🎁 Regali" abort on the
@@ -75,13 +78,15 @@ class DataTransferViewModel(
                     transaction.copy(categoryId = category.id, categoryLabel = category.name)
                 } ?: created[transaction.categoryLabel]?.let { category -> transaction.copy(categoryId = category.id, categoryLabel = category.name) } ?: transaction
             }
-            repository.insertBatch(resolved)
-            resolved
+            // The preview already split these, but against a snapshot: re-check against the ledger as
+            // it is now, so a repeated import or an auto-recorded payment is never saved twice (#314).
+            // ponytail: read-then-insert outside one transaction; the app is the only writer, add a
+            // DAO-level transaction if a concurrent writer ever appears.
+            val (fresh, _) = ImportReconciler.split(resolved, repository.observeAll().first())
+            repository.insertBatch(fresh)
+            fresh
         }
-        // The failure used to vanish here, leaving only "Couldn't import transactions" on screen and
-        // nothing in the log to work from. Whatever else happens, the cause reaches logcat.
-        result.exceptionOrNull()?.let { Log.e("DataTransferViewModel", "CSV import failed", it) }
-        onFinished(result.getOrNull())
+        onFinished(result)
     }
 
     /**
@@ -107,10 +112,10 @@ class DataTransferViewModel(
      * remembered as "Not fixed". iOS `persistSelectedRecurrenceRules`.
      */
     fun planRecurring(selected: List<RecurrenceSuggestion>, rejected: List<RecurrenceSuggestion>, onFinished: (Boolean) -> Unit) = viewModelScope.launch {
-        // ponytail: one create per rule, like iOS; #314 makes the batch atomic.
         onFinished(
             guarded("Saving recurring rules failed") {
-                selected.forEach { recurrenceRepository.create(it.toNewRule(autoRecord = false)) }
+                // All or none (#314): iOS saves one at a time and can stop half way.
+                recurrenceRepository.createAll(selected.map { it.toNewRule(autoRecord = false) })
                 dismissedPatterns.dismiss(rejected)
             } != null,
         )
