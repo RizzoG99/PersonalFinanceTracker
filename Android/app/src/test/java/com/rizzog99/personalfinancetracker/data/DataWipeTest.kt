@@ -24,7 +24,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -50,13 +50,15 @@ class DataWipeTest {
     private lateinit var patterns: DismissedRecurrencePatternsRepository
     private val storeScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private lateinit var file: File
+    private lateinit var store: DataStore<Preferences>
 
     @Before
     fun setUp() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = Room.inMemoryDatabaseBuilder(context, PersonalFinanceDatabase::class.java).allowMainThreadQueries().build()
         file = File(context.filesDir, "wipe-test.preferences_pb").apply { delete() }
-        patterns = DismissedRecurrencePatternsRepository(PreferenceDataStoreFactory.create(scope = storeScope) { file })
+        store = PreferenceDataStoreFactory.create(scope = storeScope) { file }
+        patterns = DismissedRecurrencePatternsRepository(store)
         patterns.dismiss(
             listOf(
                 RecurrenceSuggestion(
@@ -144,10 +146,21 @@ class DataWipeTest {
     @Test
     fun `ac05 cancelling the caller mid-wipe still finishes it as one unit`() = runBlocking {
         // Settings' scope is cancelled when the user leaves it; the erase must not stop between stores.
-        val caller = launch(Dispatchers.IO, start = CoroutineStart.UNDISPATCHED) {
-            wipeAllData(database, RoomCategoryRepository(database), patterns)
+        // Cancel exactly after the answers' clear is persisted, before the ledger transaction starts.
+        assertEquals("precondition: one answer", 1, patterns.all().size)
+        val persisted = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val gated = object : DataStore<Preferences> by store {
+            override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences =
+                store.updateData(transform).also { persisted.complete(Unit); release.await() }
         }
+        val caller = launch(Dispatchers.IO) {
+            wipeAllData(database, RoomCategoryRepository(database), DismissedRecurrencePatternsRepository(gated))
+        }
+        persisted.await()
+        assertEquals("barrier: the clear is on disk", 0, patterns.all().size)
         caller.cancel()
+        release.complete(Unit)
         caller.join()
 
         ledgerTables.forEach { assertEquals("$it after wipe", 0, count(it)) }
