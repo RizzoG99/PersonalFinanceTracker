@@ -60,17 +60,12 @@ class PinChangeResetCaptureTest {
     private val wideAvailable: Boolean
         get() = InstrumentationRegistry.getInstrumentation().targetContext.resources.configuration.screenWidthDp >= 900
 
+    /** Every language × theme × text size on compact; wide only where the device is (#376). */
     private val cells = buildList {
-        add(CaptureHarness.Cell("en-light-compact"))
-        add(CaptureHarness.Cell("it-light-compact", locale = Locale.ITALIAN))
-        add(CaptureHarness.Cell("en-dark-compact", theme = ThemeMode.DARK))
-        add(CaptureHarness.Cell("it-dark-compact", locale = Locale.ITALIAN, theme = ThemeMode.DARK))
-        add(CaptureHarness.Cell("en-light-compact-large-text", fontScale = 2.0f))
-        add(CaptureHarness.Cell("it-light-compact-large-text", locale = Locale.ITALIAN, fontScale = 2.0f))
-        // Only where the device really is that wide: a 900 dp host on a phone is squeezed (#376).
-        if (wideAvailable) {
-            add(CaptureHarness.Cell("en-light-wide", widthDp = 900))
-            add(CaptureHarness.Cell("it-dark-wide", locale = Locale.ITALIAN, widthDp = 900, theme = ThemeMode.DARK))
+        val widths = if (wideAvailable) listOf("compact" to 411, "wide" to 900) else listOf("compact" to 411)
+        for ((widthName, widthDp) in widths) for (lang in listOf("en", "it")) for (theme in listOf(ThemeMode.LIGHT, ThemeMode.DARK)) for (scale in listOf(1.0f, 2.0f)) {
+            val id = "$lang-${theme.name.lowercase()}-$widthName" + if (scale > 1f) "-large-text" else ""
+            add(CaptureHarness.Cell(id, locale = if (lang == "it") Locale.ITALIAN else null, widthDp = widthDp, theme = theme, fontScale = scale))
         }
     }
 

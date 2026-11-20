@@ -41,6 +41,12 @@ class DismissedRecurrencePatternsRepository(private val dataStore: DataStore<Pre
         dataStore.edit { it.remove(key) }
     }
 
+    /** Puts back what [all] returned before a [clear] whose wipe then rolled back (#320). */
+    suspend fun restore(patterns: List<DismissedRecurrencePattern>) {
+        if (patterns.isEmpty()) return
+        dataStore.edit { it[key] = encode(patterns) }
+    }
+
     private fun encode(patterns: List<DismissedRecurrencePattern>): String = JSONArray().apply {
         patterns.forEach { pattern ->
             put(

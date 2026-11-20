@@ -4,7 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.mutablePreferencesOf
+import androidx.datastore.preferences.core.stringPreferencesKey
 import java.io.IOException
 import kotlinx.coroutines.flow.flowOf
 import androidx.room.Room
@@ -139,17 +140,23 @@ class DataWipeTest {
     }
 
     @Test
-    fun `ac05 a failure clearing the answers after the commit still reports success`() = runBlocking {
-        val brokenStore = object : DataStore<Preferences> {
-            override val data = flowOf(emptyPreferences())
+    fun `ac05 answers that cannot be cleared stop the wipe before anything is erased`() = runBlocking {
+        // Holds a dismissal that would otherwise outlive the ledger and hide the next import's suggestion.
+        val stuck = mutablePreferencesOf(stringPreferencesKey("patterns") to """[{"note":"netflix","amount":"-12.99"}]""")
+        val readOnlyStore = object : DataStore<Preferences> {
+            override val data = flowOf<Preferences>(stuck)
             override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences =
                 throw IOException("read-only file system")
         }
 
-        // Returns normally: the ledger is gone, so "Nothing was changed" would be false.
-        wipeAllData(database, RoomCategoryRepository(database), DismissedRecurrencePatternsRepository(brokenStore))
+        try {
+            wipeAllData(database, RoomCategoryRepository(database), DismissedRecurrencePatternsRepository(readOnlyStore))
+            fail("the wipe must report the failure")
+        } catch (expected: IOException) {
+            // Shown as "Nothing was changed", which is true.
+        }
 
-        ledgerTables.forEach { assertEquals("$it after wipe", 0, count(it)) }
-        assertEquals(DefaultCategories.all.map { it.name }.sorted(), categoryNames())
+        ledgerTables.forEach { assertEquals("$it untouched", 1, count(it)) }
+        assertEquals(listOf("Pets"), categoryNames())
     }
 }

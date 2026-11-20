@@ -5,33 +5,43 @@ import androidx.room.withTransaction
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.preferences.DismissedRecurrencePatternsRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
-import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 /**
  * Settings > Delete all data, as frozen iOS `DataWipeService.swift:4-16` (#320).
  *
- * The ledger goes and the default categories come back in one Room transaction, so a failure leaves
- * everything as it was and the caller can truthfully say nothing changed. Deleting the rules is what
- * stops a recurrence from recreating erased transactions. Learned merchant mappings stay, as on iOS
- * (D-02). The "Not fixed" answers are cleared after the commit, as iOS does after `save()`; that
- * cannot be undone with the ledger, so its failure is logged, not reported: the data is already gone.
+ * The ledger goes and the default categories come back in one Room transaction. Deleting the rules
+ * is what stops a recurrence from recreating erased transactions. Learned merchant mappings stay, as
+ * on iOS (D-02).
+ *
+ * The "Not fixed" answers live in DataStore, outside that transaction, and must not outlive the
+ * ledger (they would hide suggestions on the next import). So they are cleared *first*, and put back
+ * if the transaction then rolls back. Every throw from here therefore means nothing was erased, and
+ * the caller can say so.
  */
 suspend fun wipeAllData(
     database: PersonalFinanceDatabase,
     categoryRepository: CategoryRepository,
     dismissedPatterns: DismissedRecurrencePatternsRepository,
 ) {
-    database.withTransaction {
-        // Not clearAllTables(): it commits on its own, outside this transaction.
-        WIPED_TABLES.forEach { database.openHelper.writableDatabase.execSQL("DELETE FROM `$it`") }
-        categoryRepository.seedDefaultsIfEmpty()
-    }
+    val answers = dismissedPatterns.all()
+    dismissedPatterns.clear()
     try {
-        dismissedPatterns.clear()
-    } catch (cancelled: CancellationException) {
-        throw cancelled
-    } catch (failure: Exception) {
-        Log.e("DataWipe", "Clearing dismissed recurrence answers failed", failure)
+        database.withTransaction {
+            // Not clearAllTables(): it commits on its own, outside this transaction.
+            WIPED_TABLES.forEach { database.openHelper.writableDatabase.execSQL("DELETE FROM `$it`") }
+            categoryRepository.seedDefaultsIfEmpty()
+        }
+    } catch (failure: Throwable) {
+        try {
+            // Also after a cancellation: the rolled-back ledger still needs its answers.
+            withContext(NonCancellable) { dismissedPatterns.restore(answers) }
+        } catch (restoreFailure: Exception) {
+            // ponytail: the ledger is intact; at worst a few suggestions are offered again.
+            Log.e("DataWipe", "Restoring dismissed recurrence answers failed", restoreFailure)
+        }
+        throw failure
     }
 }
 
