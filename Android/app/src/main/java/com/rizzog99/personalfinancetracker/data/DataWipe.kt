@@ -24,7 +24,8 @@ suspend fun wipeAllData(
     database: PersonalFinanceDatabase,
     categoryRepository: CategoryRepository,
     dismissedPatterns: DismissedRecurrencePatternsRepository,
-) {
+) = withContext(NonCancellable) {
+    // One unit: leaving Settings mid-erase (its scope cancels) must not stop between the two stores.
     val answers = dismissedPatterns.all()
     dismissedPatterns.clear()
     try {
@@ -33,12 +34,11 @@ suspend fun wipeAllData(
             WIPED_TABLES.forEach { database.openHelper.writableDatabase.execSQL("DELETE FROM `$it`") }
             categoryRepository.seedDefaultsIfEmpty()
         }
-    } catch (failure: Throwable) {
+    } catch (failure: Exception) {
         try {
-            // Also after a cancellation: the rolled-back ledger still needs its answers.
-            withContext(NonCancellable) { dismissedPatterns.restore(answers) }
+            dismissedPatterns.restore(answers)
         } catch (restoreFailure: Exception) {
-            // ponytail: the ledger is intact; at worst a few suggestions are offered again.
+            // ponytail: D-07 — the ledger is intact; at worst a few suggestions are offered again.
             Log.e("DataWipe", "Restoring dismissed recurrence answers failed", restoreFailure)
         }
         throw failure

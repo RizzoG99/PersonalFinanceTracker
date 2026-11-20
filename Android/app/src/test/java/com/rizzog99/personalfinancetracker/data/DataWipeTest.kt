@@ -24,6 +24,8 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -137,6 +139,20 @@ class DataWipeTest {
         ledgerTables.forEach { assertEquals("$it untouched", 1, count(it)) }
         assertEquals("categories exactly as before", listOf("Pets"), categoryNames())
         assertEquals("answers untouched", 1, patterns.all().size)
+    }
+
+    @Test
+    fun `ac05 cancelling the caller mid-wipe still finishes it as one unit`() = runBlocking {
+        // Settings' scope is cancelled when the user leaves it; the erase must not stop between stores.
+        val caller = launch(Dispatchers.IO, start = CoroutineStart.UNDISPATCHED) {
+            wipeAllData(database, RoomCategoryRepository(database), patterns)
+        }
+        caller.cancel()
+        caller.join()
+
+        ledgerTables.forEach { assertEquals("$it after wipe", 0, count(it)) }
+        assertEquals(DefaultCategories.all.map { it.name }.sorted(), categoryNames())
+        assertEquals(emptyList<DismissedRecurrencePattern>(), patterns.all())
     }
 
     @Test
