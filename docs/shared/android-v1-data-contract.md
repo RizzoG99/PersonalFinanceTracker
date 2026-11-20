@@ -100,7 +100,8 @@ Specified before any Room migration for these capabilities. Paths are relative t
 - iOS backup v1 → v2 added `travels` and `autoRecord`, both optional, so older backups still decode: a missing `travels` means none, a missing `autoRecord` means `true` (`Models/BackupModels.swift:11-46`).
 - On restore iOS relinks categories by `name#type`, with the type taken from the amount's sign, so a transfer looks up an expense category (`BackupModels.swift:49-66`).
 - Android's own backup format follows the same rule: add fields as optional with a documented default, and bump its version.
-- **Open decision, owned by #317:** whether Android backup also includes goals and categories, which iOS backup omits (so a restored `goalId` can point to a missing goal). This contract does not decide it.
+- **Decided in #317 (owner, 2026-11-19):** Android backup version 2 is a snapshot of every Android Room table except the derived forecast cache: categories, goals, recurrence rules (cursor, end date, `autoRecord`), transactions, legacy credit cards, health-score history and learned merchant mappings, each row with its original id. Restore replaces exactly those tables, so links never dangle; DataStore preferences are not in the file and are left unchanged. This deliberately differs from iOS, which backs up only transactions, rules and travels (parity D-01 of #317). A new table must join the backup with a version bump (`BackupRoundTripTest` fails until it does).
+- Android version-1 files (categories, transactions, goals without ids) still restore: categories relink by name and amount-sign type as on iOS, goal links and recurring rules are absent, credit cards, health history and mappings are kept, and the user is told the older backup lacked goal contributions and recurring transactions.
 
 ## Cross-platform invariants
 

@@ -96,7 +96,7 @@ Closed gap and CI issues #105, #106, #107, #108, #120–#147 and #368 keep their
 | DRIFT-2026-10-IMPORT-INTEGRITY | Atomic import and recurring reconciliation | #314 | Todo / Gap found |
 | DRIFT-2026-10-EXPORT | CSV/Excel sharing and round trip | #315 | Todo / Gap found |
 | DRIFT-2026-10-RESTORE-ATOMIC | Backup validation and atomic restore | #316 | Todo / Gap found |
-| DRIFT-2026-10-BACKUP-LINKS | Backup identities, category links, rules, goal contributions | #317 | Todo / Gap found |
+| DRIFT-2026-10-BACKUP-LINKS | Backup identities, category links, rules, goal contributions (backup v2 = whole Android snapshot, approved deviation D-01) | #317 | In Progress / Verifying |
 | DRIFT-2026-10-DRIVE | Encrypted Google Drive backup | #318 | Todo / Gap found |
 | DRIFT-2026-10-PRIVACY | Foreground relock and app-switcher privacy (implemented in `dd9c4f4`) | #319 | In Progress / Verifying |
 | DRIFT-2026-10-DESTRUCTIVE | Authenticated PIN change and data reset | #320 | Todo / Gap found |

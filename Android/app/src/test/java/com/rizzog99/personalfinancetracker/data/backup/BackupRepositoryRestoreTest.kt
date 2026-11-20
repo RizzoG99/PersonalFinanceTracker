@@ -3,6 +3,7 @@ package com.rizzog99.personalfinancetracker.data.backup
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.rizzog99.personalfinancetracker.data.local.MerchantCategoryMappingEntity
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
 import com.rizzog99.personalfinancetracker.data.repository.GoalRepository
 import com.rizzog99.personalfinancetracker.domain.category.DefaultCategories
@@ -77,7 +78,7 @@ class BackupRepositoryRestoreTest {
         val before = seededLedger()
         val invalidFiles = mapOf(
             "empty object" to "{}",
-            "newer version" to validBackup(version = "2"),
+            "newer version" to validBackup(version = "3"),
             "fractional version" to validBackup(version = "1.9"),
             "string version" to validBackup(version = "\"1\""),
             "bad amount" to validBackup(amount = "\"abc\""),
@@ -157,8 +158,13 @@ class BackupRepositoryRestoreTest {
 
     @Test
     fun ac03_validEmptyBackupLeavesDefaultCategoriesOnly() = runBlocking {
+        // #317: a learned mapping to a default category survives, since seeding brings the same id back.
+        val defaultId = categories.add(DefaultCategories.all.first { it.name !in setOf("Groceries", "Salary") }).id
+        database.merchantCategoryMappingDao().upsert(MerchantCategoryMappingEntity("bar", defaultId))
+
         repository().import("""{"version":1,"categories":[],"transactions":[],"goals":[]}""".byteInputStream())
 
+        assertEquals(defaultId, database.merchantCategoryMappingDao().categoryIdFor("bar"))
         assertEquals(emptyList<Any>(), transactions.observeAll().first())
         assertEquals(emptyList<Any>(), goals.observeAll().first())
         assertEquals(

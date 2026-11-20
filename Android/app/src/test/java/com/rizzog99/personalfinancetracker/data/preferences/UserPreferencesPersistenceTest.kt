@@ -437,9 +437,14 @@ class UserPreferencesPersistenceTest {
         database.close()
 
         val json = JSONObject(archive.toString(Charsets.UTF_8.name()))
+        assertEquals(setOf("version", "exportedAt", "tables"), json.keys().asSequence().toSet())
+        // #317 v2: Room tables only — no preference or secret store among them.
         assertEquals(
-            setOf("version", "exportedAt", "categories", "transactions", "goals"),
-            json.keys().asSequence().toSet(),
+            setOf(
+                "categories", "goals", "recurrence_rules", "transactions",
+                "credit_cards", "health_score_snapshots", "merchant_category_mappings",
+            ),
+            json.getJSONObject("tables").keys().asSequence().toSet(),
         )
         val text = archive.toString(Charsets.UTF_8.name())
         // The two PIN literals stay named explicitly: they left DOCUMENTED_KEYS with #128, and this

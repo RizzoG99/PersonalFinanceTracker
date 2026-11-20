@@ -107,6 +107,7 @@ fun SettingsSheet(
     val backupCompleteMessage = stringResource(R.string.backup_complete)
     val restoreFailedMessage = stringResource(R.string.restore_failed)
     val restoreCompleteMessage = stringResource(R.string.restore_complete)
+    val restoreLegacyCompleteMessage = stringResource(R.string.restore_complete_legacy)
     val pinSaveFailedMessage = stringResource(R.string.pin_save_failed)
 
     val createBackupDocument = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
@@ -183,7 +184,13 @@ fun SettingsSheet(
                                         context.contentResolver.openInputStream(uri)?.use { application.backupRepository.import(it) }
                                             ?: error("Could not open file")
                                     }
-                                    snackbarHostState.showSnackbar(if (result.isSuccess) restoreCompleteMessage else restoreFailedMessage)
+                                    snackbarHostState.showSnackbar(
+                                        when (result.getOrNull()) {
+                                            null -> restoreFailedMessage
+                                            true -> restoreLegacyCompleteMessage
+                                            false -> restoreCompleteMessage
+                                        },
+                                    )
                                 }
                             }
                         }
