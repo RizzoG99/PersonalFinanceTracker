@@ -61,6 +61,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
+        lockSession.noteResumed()
         (application as PersonalFinanceApplication).materializeRecurringTransactions()
     }
 
@@ -92,6 +93,8 @@ class MainActivity : FragmentActivity() {
     override fun onPause() {
         super.onPause()
         lockSession.privacyCover = false
+        // The departure's time, if a stop follows (#428): onStop itself can come seconds late.
+        lockSession.notePaused()
     }
 
     override fun onDestroy() {
