@@ -61,15 +61,29 @@ internal class AppLockSession(
         state = LockState.UNLOCKED
     }
 
-    /** The activity paused: possibly the start of a departure, confirmed by [noteLeft] (#428). */
-    fun notePaused() {}
+    /**
+     * Set on pause, promoted to [leftAt] only if a real stop follows (#428). Android may deliver
+     * `onStop` seconds after the user left — it waits for the next activity to go idle (7–17 s
+     * measured on the API 36 AVD) — and the grace must count from the departure, as iOS counts from
+     * `.background`. `away` still flips at the stop: the cover and the text-focus release keep
+     * their timing (D-14, #398).
+     */
+    private var pausedAt: Long? = null
 
-    /** The activity resumed: a pause that never became a departure is forgotten (#428). */
-    fun noteResumed() {}
+    /** The activity paused: possibly the start of a departure, confirmed by [noteLeft]. */
+    fun notePaused() {
+        pausedAt = clock()
+    }
+
+    /** The activity resumed: a pause that never became a departure is forgotten. */
+    fun noteResumed() {
+        pausedAt = null
+    }
 
     /** The app left the foreground. Does not lock: the return decides, by how long it lasted. */
     fun noteLeft() {
-        leftAt = clock()
+        leftAt = pausedAt ?: clock()
+        pausedAt = null
         away = true
     }
 
