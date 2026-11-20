@@ -94,6 +94,11 @@ class FakeTransactionRepository(
         writeFailure?.let { throw it }
     }
 
+    override suspend fun insertNew(transactions: List<FinanceTransaction>): List<FinanceTransaction> {
+        writeFailure?.let { throw it }
+        return transactions
+    }
+
     override suspend fun delete(id: String) {
         writeFailure?.let { throw it }
     }
@@ -177,6 +182,8 @@ class UnusedRecurrenceRepository : RecurrenceRepository {
     override suspend fun createAndMaterialize(rule: NewRecurrenceRule): RecurrenceRule = error("unused")
 
     override suspend fun create(rule: NewRecurrenceRule): RecurrenceRule = error("unused")
+
+    override suspend fun createAll(rules: List<NewRecurrenceRule>): List<RecurrenceRule> = error("unused")
 
     override suspend fun activeRules(asOf: Instant): List<RecurrenceRule> = error("unused")
 
