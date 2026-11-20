@@ -66,15 +66,25 @@ const val PIN_LENGTH = 6
 fun PinSetupScreen(
     onCancel: () -> Unit,
     onPinCreated: (pin: String) -> Unit,
+    /** Change PIN (#320): "Enter new PIN" / "Confirm new PIN", as frozen iOS `PINSetupView`. */
+    isChange: Boolean = false,
+    /** A first entry this rejects stays on step one with "must be different" (iOS `advanceToConfirm`). */
+    rejectNewPin: (String) -> Boolean = { false },
 ) {
     var firstEntry by remember { mutableStateOf<String?>(null) }
     var entered by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
+    var mustDiffer by remember { mutableStateOf(false) }
 
     LaunchedEffect(entered) {
         if (entered.length < PIN_LENGTH) return@LaunchedEffect
         val first = firstEntry
-        if (first == null) {
+        if (first == null && rejectNewPin(entered)) {
+            // Cleared at once (message kept): a delayed clear would swallow a quick retry's digits.
+            mustDiffer = true
+            entered = ""
+        } else if (first == null) {
+            mustDiffer = false
             firstEntry = entered
             entered = ""
         } else if (entered == first) {
@@ -89,12 +99,19 @@ fun PinSetupScreen(
     }
 
     PinScaffold(
-        title = if (firstEntry == null) stringResource(R.string.pin_create_title) else stringResource(R.string.pin_confirm_title),
+        title = stringResource(
+            when {
+                firstEntry == null && isChange -> R.string.pin_new_title
+                firstEntry == null -> R.string.pin_create_title
+                isChange -> R.string.pin_new_confirm_title
+                else -> R.string.pin_confirm_title
+            },
+        ),
         subtitle = stringResource(R.string.pin_digits_hint, PIN_LENGTH),
         pinLength = PIN_LENGTH,
         filledCount = entered.length,
         isError = error,
-        errorMessage = null,
+        errorMessage = if (mustDiffer) stringResource(R.string.pin_must_differ) else null,
         onDigit = { if (entered.length < PIN_LENGTH) entered += it },
         onBackspace = { if (entered.isNotEmpty()) entered = entered.dropLast(1) },
         onClose = onCancel,
@@ -214,7 +231,7 @@ private tailrec fun Context.findActivity(): ComponentActivity? = when (this) {
 }
 
 @Composable
-private fun PinScaffold(
+internal fun PinScaffold(
     title: String,
     subtitle: String?,
     pinLength: Int,

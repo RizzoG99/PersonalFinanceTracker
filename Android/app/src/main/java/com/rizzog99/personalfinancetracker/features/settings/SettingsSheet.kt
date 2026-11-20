@@ -63,6 +63,7 @@ import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.data.security.PinLock
 import com.rizzog99.personalfinancetracker.domain.security.PinCodec
 import com.rizzog99.personalfinancetracker.features.security.PinSetupScreen
+import com.rizzog99.personalfinancetracker.features.security.PinVerifyScreen
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import android.util.Log
@@ -70,7 +71,8 @@ import com.rizzog99.personalfinancetracker.data.wipeAllData
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.launch
 
-private enum class SecurityFlow { SET_PIN, CHANGE_PIN }
+/** `VERIFY_*` ask for the current PIN first (#320); a verified change continues as `CHANGE_PIN`. */
+private enum class SecurityFlow { SET_PIN, CHANGE_PIN, VERIFY_FOR_CHANGE, VERIFY_FOR_DELETE }
 private enum class DataConfirmation { RESTORE, DELETE_ALL }
 
 /** Full-screen settings, matching the design (not a bottom sheet). */
@@ -82,6 +84,8 @@ fun SettingsSheet(
     onOpenScanCategories: () -> Unit,
     onOpenBudgets: () -> Unit,
     onOpenDataTransfer: () -> Unit,
+    /** Test seam (#320 `AC-06`): replaces the production wipe; `null` is production. */
+    wipe: (suspend () -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as PersonalFinanceApplication
@@ -109,6 +113,25 @@ fun SettingsSheet(
     val restoreCompleteMessage = stringResource(R.string.restore_complete)
     val restoreLegacyCompleteMessage = stringResource(R.string.restore_complete_legacy)
     val pinSaveFailedMessage = stringResource(R.string.pin_save_failed)
+    val deleteDoneMessage = stringResource(R.string.delete_all_data_done)
+    val deleteFailedMessage = stringResource(R.string.delete_all_data_failed)
+
+    // A throw means the Room transaction rolled back (DataWipe.kt), so "nothing was changed" holds.
+    val deleteAllData: () -> Unit = {
+        scope.launch {
+            val done = try {
+                (wipe ?: { wipeAllData(application.database, application.categoryRepository, application.dismissedRecurrencePatterns) })()
+                true
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                // Escaping this scope would kill the process (#133); the raw message stays in the log (#135).
+                Log.e("SettingsSheet", "Delete all data failed", failure)
+                false
+            }
+            snackbarHostState.showSnackbar(if (done) deleteDoneMessage else deleteFailedMessage)
+        }
+    }
 
     val createBackupDocument = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -134,9 +157,43 @@ fun SettingsSheet(
 
     BackHandler(onBack = onDismiss)
 
-    if (securityFlow != null) {
+    val flow = securityFlow
+    val secret = (pinLock as? PinLock.Set)?.secret
+    if (flow != null) {
+        // Composed after the sheet's own BackHandler, so Back cancels the flow, not Settings.
+        BackHandler { securityFlow = null }
+    }
+    // A verify step with no stored PIN has nothing to check against: drop it rather than strand it.
+    androidx.compose.runtime.LaunchedEffect(flow, secret) {
+        if (secret == null && (flow == SecurityFlow.VERIFY_FOR_CHANGE || flow == SecurityFlow.VERIFY_FOR_DELETE)) securityFlow = null
+    }
+    if ((flow == SecurityFlow.VERIFY_FOR_CHANGE || flow == SecurityFlow.VERIFY_FOR_DELETE) && secret != null) {
+        val forDelete = flow == SecurityFlow.VERIFY_FOR_DELETE
+        // Keyed by purpose so a delete gate never inherits digits typed for a PIN change.
+        androidx.compose.runtime.key(flow) {
+            PinVerifyScreen(
+                title = stringResource(if (forDelete) R.string.pin_unlock_title else R.string.pin_current_title),
+                subtitle = if (forDelete) stringResource(R.string.delete_all_data_pin_subtitle) else null,
+                secret = secret,
+                onVerified = {
+                    if (forDelete) {
+                        securityFlow = null
+                        deleteAllData()
+                    } else {
+                        securityFlow = SecurityFlow.CHANGE_PIN
+                    }
+                },
+                onCancel = { securityFlow = null },
+            )
+        }
+        return
+    }
+    if (flow == SecurityFlow.SET_PIN || flow == SecurityFlow.CHANGE_PIN) {
+        val current = secret.takeIf { flow == SecurityFlow.CHANGE_PIN }
         PinSetupScreen(
             onCancel = { securityFlow = null },
+            isChange = current != null,
+            rejectNewPin = { pin -> current != null && PinCodec.matches(pin, current.salt, current.hash) },
             onPinCreated = { pin ->
                 val salt = PinCodec.randomSalt()
                 scope.launch {
@@ -194,18 +251,9 @@ fun SettingsSheet(
                                 }
                             }
                         }
-                        DataConfirmation.DELETE_ALL -> {
-                            scope.launch {
-                                try {
-                                    wipeAllData(application.database, application.categoryRepository, application.dismissedRecurrencePatterns)
-                                } catch (cancelled: CancellationException) {
-                                    throw cancelled
-                                } catch (failure: Exception) {
-                                    // Escaping this scope would kill the process (#133).
-                                    Log.e("SettingsSheet", "Delete all data failed", failure)
-                                }
-                            }
-                        }
+                        // With a PIN, frozen iOS asks for it before erasing (ProfileView.swift:452-456).
+                        DataConfirmation.DELETE_ALL ->
+                            if (pinSet) securityFlow = SecurityFlow.VERIFY_FOR_DELETE else deleteAllData()
                     }
                 }) {
                     Text(
@@ -414,7 +462,7 @@ fun SettingsSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(role = Role.Button) {
-                        securityFlow = if (pinSet) SecurityFlow.CHANGE_PIN else SecurityFlow.SET_PIN
+                        securityFlow = if (pinSet) SecurityFlow.VERIFY_FOR_CHANGE else SecurityFlow.SET_PIN
                     },
                 leadingContent = { Icon(Icons.Outlined.Pin, contentDescription = null) },
                 headlineContent = { Text(stringResource(if (pinSet) R.string.change_pin else R.string.set_pin)) },
