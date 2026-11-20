@@ -61,6 +61,12 @@ internal class AppLockSession(
         state = LockState.UNLOCKED
     }
 
+    /** The activity paused: possibly the start of a departure, confirmed by [noteLeft] (#428). */
+    fun notePaused() {}
+
+    /** The activity resumed: a pause that never became a departure is forgotten (#428). */
+    fun noteResumed() {}
+
     /** The app left the foreground. Does not lock: the return decides, by how long it lasted. */
     fun noteLeft() {
         leftAt = clock()
