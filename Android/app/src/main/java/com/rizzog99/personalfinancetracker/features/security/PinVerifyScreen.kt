@@ -11,7 +11,6 @@ import androidx.compose.ui.res.stringResource
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.data.security.PinSecret
 import com.rizzog99.personalfinancetracker.domain.security.PinCodec
-import kotlinx.coroutines.delay
 
 /**
  * Proves the user knows the current PIN before a sensitive action (#320): frozen iOS
@@ -36,8 +35,9 @@ fun PinVerifyScreen(
         if (PinCodec.matches(entered, secret.salt, secret.hash)) {
             onVerified()
         } else {
+            // Cleared at once, the message staying until the next digit: a delayed clear would
+            // swallow the digits of a quick retry.
             error = true
-            delay(400)
             entered = ""
         }
     }

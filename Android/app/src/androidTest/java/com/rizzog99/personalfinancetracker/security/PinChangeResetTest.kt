@@ -1,6 +1,8 @@
 package com.rizzog99.personalfinancetracker.security
 
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasAnyAncestor
@@ -171,7 +173,9 @@ class PinChangeResetTest {
         confirmDeleteAll()
         awaitShown(string(R.string.delete_all_data_pin_subtitle))
         assertTrue(shown(string(R.string.pin_unlock_title)))
-        rule.onNode(hasContentDescription(string(R.string.dismiss)) and hasClickAction()).performClick()
+        // The semantics action, as TalkBack would: a raw touch here was refused by the AVD once.
+        rule.onNode(hasContentDescription(string(R.string.dismiss)) and hasClickAction())
+            .performSemanticsAction(SemanticsActions.OnClick)
         awaitShown(string(R.string.security_section))
         assertEquals("closing erases nothing", 1, transactionCount())
 

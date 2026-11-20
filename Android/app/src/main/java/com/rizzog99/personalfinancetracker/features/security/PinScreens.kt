@@ -80,10 +80,8 @@ fun PinSetupScreen(
         if (entered.length < PIN_LENGTH) return@LaunchedEffect
         val first = firstEntry
         if (first == null && rejectNewPin(entered)) {
+            // Cleared at once (message kept): a delayed clear would swallow a quick retry's digits.
             mustDiffer = true
-            error = true
-            delay(400)
-            error = false
             entered = ""
         } else if (first == null) {
             mustDiffer = false

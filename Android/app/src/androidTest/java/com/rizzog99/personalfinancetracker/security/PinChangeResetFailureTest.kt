@@ -70,7 +70,9 @@ class PinChangeResetFailureTest {
         rule.mainClock.autoAdvance = true
         assertEquals(1, attempts)
 
-        // Still usable: the same row opens the confirmation again.
+        // Still usable: once the snackbar (which can sit over the row) is gone, the row opens the
+        // confirmation again.
+        rule.waitUntil(20_000) { !shown(string(R.string.delete_all_data_failed)) }
         rule.onNode(hasText(delete) and hasClickAction() and !hasAnyAncestor(isDialog())).performScrollTo().performClick()
         rule.waitUntil(20_000) {
             rule.onAllNodes(hasText(delete) and hasAnyAncestor(isDialog())).fetchSemanticsNodes().isNotEmpty()
