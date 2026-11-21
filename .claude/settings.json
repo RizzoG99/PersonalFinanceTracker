@@ -25,7 +25,6 @@
       "Bash(git check-ignore *)",
       "Bash(git ls-tree *)",
       "Bash(git fetch)",
-      "Bash(git fetch origin *)",
       "Bash(gh issue view *)",
       "Bash(gh issue list *)",
       "Bash(gh pr view *)",
@@ -46,7 +45,21 @@
       "Bash(emulator -avd *)",
       "Bash(git grep *)",
       "Bash(gh run view *)",
-      "Bash(gh run list *)"
+      "Bash(gh run list *)",
+      "Bash(git fetch *)",
+      "Bash(gh run download *)",
+      "Bash(gh run watch *)",
+      "Bash(gh run rerun *)",
+      "Bash(gh project item-edit *)",
+      "Bash(gh project item-add *)",
+      "Bash(git switch -c *)",
+      "Bash(git worktree add *)",
+      "Bash(gh pr create *)",
+      "Bash(PFT_SKIP_CHANGELOG=1 gh pr create *)"
+    ],
+    "additionalDirectories": [
+      "/Users/gabrielerizzo/Develop/PersonalFinanceTracker/.claude/skills",
+      "/Users/gabrielerizzo/Develop/PersonalFinanceTracker/.agents/skills"
     ]
   },
   "disabledMcpjsonServers": [
@@ -91,7 +104,6 @@
     "ralph-loop@claude-plugins-official": false,
     "security-guidance@claude-plugins-official": false,
     "ui-ux-pro-max@ui-ux-pro-max-skill": false,
-    "stitch": false,
     "vercel@claude-plugins-official": false
   },
   "hooks": {
