@@ -47,6 +47,49 @@ class AppLockSessionTest {
         assertEquals(LockState.RELOCKED, session.state)
     }
 
+    /**
+     * #428: Android may deliver `onStop` seconds after the user left (7–17 s measured on the AVD).
+     * The absence counts from the pause that led to it, as iOS counts from `.background`.
+     */
+    @Test
+    fun ac01_theGraceCountsFromThePauseNotTheLateStop() {
+        val session = unlockedSession()
+        session.notePaused()
+        away(15_000)
+        session.noteLeft()
+        away(15_000)
+        session.relockIfGraceExpired()
+
+        assertEquals(LockState.RELOCKED, session.state)
+    }
+
+    /** A pause that resumed (a translucent prompt) is not where a later departure starts. */
+    @Test
+    fun ac01_aPauseThatResumedIsForgotten() {
+        val session = unlockedSession()
+        session.notePaused()
+        away(60_000)
+        session.noteResumed()
+        session.notePaused()
+        session.noteLeft()
+        away(1_000)
+        session.relockIfGraceExpired()
+
+        assertEquals(LockState.UNLOCKED, session.state)
+    }
+
+    /** A pause with no stop (a configuration change skips [AppLockSession.noteLeft]) counts nothing. */
+    @Test
+    fun ac04_aPauseWithoutADepartureDoesNotRelock() {
+        val session = unlockedSession()
+        session.notePaused()
+        away(60_000)
+        session.noteResumed()
+        session.relockIfGraceExpired()
+
+        assertEquals(LockState.UNLOCKED, session.state)
+    }
+
     @Test
     fun ac01_leavingAloneLeavesTheSessionUnlocked() {
         val session = unlockedSession()
