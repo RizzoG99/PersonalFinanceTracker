@@ -4,12 +4,18 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
+import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
+import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFilter
+import com.rizzog99.personalfinancetracker.features.activity.ActivityFilterSelection
+import com.rizzog99.personalfinancetracker.features.activity.availableActivityCategoryLabels
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -146,4 +152,75 @@ class RoomCategoryRepositoryTest {
         assertEquals("Coffee snapshot", transaction.categoryLabel)
         assertNull(database.recurrenceRuleDao().get(rule.id)?.categoryId)
     }
+
+    /** #292 AC-01: a rename carries the new name onto its rows, so lists and filters show one category. */
+    @Test
+    fun ac01_renamePropagatesToTransactionsAndRules() = runBlocking {
+        val (streaming, groceries) = seedStreamingAndGroceries()
+        val transactions = RoomTransactionRepository(database)
+        val ruleId = database.recurrenceRuleDao().getActive(0).single().id
+
+        val renamed = repository.update(streaming.copy(name = "Abbonamenti"))
+
+        assertEquals(streaming.copy(name = "Abbonamenti"), renamed)
+        assertEquals(renamed, repository.observeAll().first().single { it.id == streaming.id })
+        val rows = transactions.observeAll().first()
+        val streamingRows = rows.filter { it.categoryId == streaming.id }
+        assertEquals(2, streamingRows.size)
+        assertEquals(setOf("Abbonamenti"), streamingRows.map { it.categoryLabel }.toSet())
+        assertEquals("Groceries", rows.single { it.categoryId == groceries.id }.categoryLabel)
+        val rule = database.recurrenceRuleDao().get(ruleId)!!
+        assertEquals(streaming.id to "Abbonamenti", rule.categoryId to rule.categoryLabel)
+        val expenseLabels = availableActivityCategoryLabels(
+            rows,
+            ActivityFilterSelection().withType(TransactionTypeFilter.EXPENSE),
+            ZoneOffset.UTC,
+        )
+        assertEquals(listOf("Abbonamenti", "Groceries"), expenseLabels)
+    }
+
+    /** #292 AC-01: a name that collides in its type fails as a whole, rows included. */
+    @Test
+    fun ac01_renameCollisionChangesNothing() = runBlocking {
+        val (streaming, _) = seedStreamingAndGroceries()
+        val before = RoomTransactionRepository(database).observeAll().first()
+
+        val failure = runCatching { repository.update(streaming.copy(name = "groceries")) }
+
+        assertTrue(failure.exceptionOrNull() is android.database.sqlite.SQLiteConstraintException)
+        assertEquals(streaming, repository.observeAll().first().single { it.id == streaming.id })
+        assertEquals(before, RoomTransactionRepository(database).observeAll().first())
+    }
+
+    /** Streaming (budget 30, own style) with two payments and a rule; Groceries with one payment. */
+    private suspend fun seedStreamingAndGroceries(): Pair<FinanceCategory, FinanceCategory> {
+        val streaming = repository.add(
+            NewCategory(
+                name = "Streaming", iconToken = "tv", type = TransactionType.EXPENSE,
+                colorToken = "categoryTeal", monthlyBudget = BigDecimal("30.00"),
+            ),
+        )
+        val groceries = repository.add(NewCategory(name = "Groceries", iconToken = "cart", type = TransactionType.EXPENSE))
+        RoomTransactionRepository(database).insertBatch(
+            listOf(
+                tx("s-1", "-9.99", "Streaming", streaming.id),
+                tx("s-2", "-12.99", "Streaming", streaming.id),
+                tx("g-1", "-5.00", "Groceries", groceries.id),
+            ),
+        )
+        RoomRecurrenceRepository(database).create(
+            NewRecurrenceRule(
+                frequency = RecurrenceFrequency.MONTHLY, interval = 1, startDate = Instant.parse("2026-09-01T10:00:00Z"),
+                amount = BigDecimal("-9.99"), note = "Netflix", categoryLabel = "Streaming", categoryId = streaming.id,
+                currencyCode = "EUR", autoRecord = false,
+            ),
+        )
+        assertEquals(3, RoomTransactionRepository(database).observeAll().first().size)
+        return streaming to groceries
+    }
+
+    private fun tx(id: String, amount: String, label: String, categoryId: String?) = FinanceTransaction(
+        id = id, timestamp = Instant.parse("2026-10-15T09:00:00Z"), amount = BigDecimal(amount), note = "",
+        categoryLabel = label, categoryId = categoryId, currencyCode = "EUR", goalId = null, recurrenceRuleId = null,
+    )
 }

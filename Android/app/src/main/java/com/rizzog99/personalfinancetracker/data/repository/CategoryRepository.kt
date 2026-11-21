@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.rizzog99.personalfinancetracker.data.local.CategoryDao
 import com.rizzog99.personalfinancetracker.data.local.CategoryEntity
 import com.rizzog99.personalfinancetracker.data.local.PersonalFinanceDatabase
+import com.rizzog99.personalfinancetracker.data.local.UnlinkedRow
 import com.rizzog99.personalfinancetracker.domain.category.CategoryNameValidator
 import com.rizzog99.personalfinancetracker.domain.category.DefaultCategories
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
@@ -13,6 +14,7 @@ import com.rizzog99.personalfinancetracker.domain.money.MoneyCodec
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 interface CategoryRepository {
@@ -21,6 +23,10 @@ interface CategoryRepository {
     suspend fun update(category: FinanceCategory): FinanceCategory
     suspend fun delete(id: String)
     suspend fun seedDefaultsIfEmpty()
+
+    /** Idempotent (#292): links unlinked rows whose label names a category of their type, then gives
+     * every linked transaction and rule its category's current name. Returns the rows changed. */
+    suspend fun repairLinks(): Int
 }
 
 class RoomCategoryRepository(
@@ -36,8 +42,43 @@ class RoomCategoryRepository(
         category.toEntity().also { entity -> dao.insert(entity) }.toDomain()
     }
 
+    /** A rename carries the new name onto its transactions and rules in the same transaction (#292, iOS
+     * `TransactionActor.renameCategory`), so lists, filters and charts never split it in two. */
     override suspend fun update(category: FinanceCategory): FinanceCategory = database.withTransaction {
-        category.toUpdatedEntity().also { entity -> dao.update(entity) }.toDomain()
+        category.toUpdatedEntity().also { entity ->
+            dao.update(entity)
+            dao.syncTransactionLabels()
+            dao.syncRuleLabels()
+        }.toDomain()
+    }
+
+    override suspend fun repairLinks(): Int = database.withTransaction {
+        val idByKey = dao.observeAll().first().associate { (it.normalizedName to it.type) to it.id }
+        link(dao.unlinkedTransactions(), idByKey, dao::linkTransactions) +
+            link(dao.unlinkedRules(), idByKey, dao::linkRules) +
+            dao.syncTransactionLabels() +
+            dao.syncRuleLabels()
+    }
+
+    /**
+     * Links each row only to the category with exactly its name (trimmed, case-insensitive) and its
+     * amount's type; a blank label means Other. Anything else is left as it is: never a guess across
+     * income and expense, never a fuzzy match (#292 D-01, D-02).
+     */
+    private suspend fun link(
+        rows: List<UnlinkedRow>,
+        idByKey: Map<Pair<String, String>, String>,
+        update: suspend (categoryId: String, ids: List<String>) -> Int,
+    ): Int {
+        var changed = 0
+        rows.groupBy { row ->
+            val name = CategoryNameValidator.normalized(row.categoryLabel).ifEmpty { "other" }
+            idByKey[name to if (row.amountDecimal.startsWith("-")) "expense" else "income"]
+        }.forEach { (categoryId, matched) ->
+            // ponytail: 500 ids per statement stays under SQLite's 999-variable limit (API 26).
+            if (categoryId != null) matched.map(UnlinkedRow::id).chunked(500).forEach { changed += update(categoryId, it) }
+        }
+        return changed
     }
 
     override suspend fun delete(id: String) {

@@ -9,6 +9,7 @@ import com.rizzog99.personalfinancetracker.data.preferences.DismissedRecurrenceP
 import com.rizzog99.personalfinancetracker.data.repository.RoomCategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomRecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
+import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.import.ImportReconciler
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
@@ -102,6 +103,27 @@ class DataTransferImportIntegrityTest {
             ),
         )
         assertEquals(1, all().size)
+    }
+
+    /** #292 AC-03: a row with no category lands on Other of its own type, never one shared Other. */
+    @Test
+    fun ac03_blankCsvCategoryMapsToOtherByType() {
+        runBlocking { RoomCategoryRepository(database).seedDefaultsIfEmpty() }
+        val others = runBlocking { RoomCategoryRepository(database).observeAll().first() }
+            .filter { it.name == "Other" }.associate { it.type to it.id }
+        assertEquals(2, others.size)
+
+        val saved = importRows(
+            listOf(
+                row("Bakery", "-20.00", day(3, 4)).copy(categoryLabel = ""),
+                row("Refund", "50.00", day(3, 5)).copy(categoryLabel = ""),
+            ),
+        )!!
+
+        val byNote = all().associateBy { it.note }
+        assertEquals(others[TransactionType.EXPENSE] to "Other", byNote.getValue("Bakery").let { it.categoryId to it.categoryLabel })
+        assertEquals(others[TransactionType.INCOME] to "Other", byNote.getValue("Refund").let { it.categoryId to it.categoryLabel })
+        assertEquals(byNote.values.map { it.categoryId }.toSet(), saved.map { it.categoryId }.toSet())
     }
 
     @Test

@@ -41,7 +41,7 @@ Current non-SwiftData state was also audited:
 | Safe to Spend buffer (`safeToSpendBufferPercent`, 0–20, default 5 when unset; `b649dff`) | Required in transfer | It changes the Safe to Spend figure (#298). A missing key means 5, not 0. |
 | Monthly recap notification (`recapNotificationEnabled`, default on) and `recapPermissionAsked` (`b649dff`) | Transfer the preference; exclude the permission flag | Android asks for its own notification permission (#302). |
 | Dismissed fixed-expense suggestions (`dismissedRecurrencePatterns`, `b649dff`) | Required in transfer | User decision ("Not fixed"); losing it brings rejected suggestions back. See *Dismissed patterns* below. |
-| One-time category-name repair flag (`didRepairImportedCategoryNamesV2`, `b649dff`) | Exclude | Migration bookkeeping; Android runs its own repair once (#292). |
+| One-time category-name repair flag (`didRepairImportedCategoryNamesV2`, `b649dff`) | Exclude | Migration bookkeeping; Android's repair is idempotent and runs on every launch, with no flag (#292). |
 | What's New last-seen release (`feature_discovery_last_seen_release_*`, `b649dff`) | Exclude | Device-specific discovery state, like the tour flag above (#309). |
 
 ## Existing backup is not a migration archive
@@ -87,8 +87,9 @@ Specified before any Room migration for these capabilities. Paths are relative t
 
 - A category is identified by UUID. Transactions and rules also keep a `category` name copy for display.
 - Renaming a category rewrites the name copy on its linked transactions and rules in the same save (`Models/TransactionActor.swift:382-411`). Unlinked rows are left alone.
-- A one-time, idempotent repair runs the same sync for every category, so rows imported with the CSV's name while linked to an app category show the app category (`TransactionActor.swift:365-380`). Android runs its own equivalent once, guarded by its own flag.
+- A one-time, idempotent repair runs the same sync for every category, so rows imported with the CSV's name while linked to an app category show the app category (`TransactionActor.swift:365-380`). Android runs its equivalent on every launch and after every backup restore (idempotent, no flag; #292 D-04).
 - Android keeps its `categoryId` foreign key as the identity and its `categoryLabel` as the snapshot; a rename updates both in one transaction.
+- **Decided in #292 (owner, 2026-11-21):** Android's repair also links an unlinked row that is not a goal transfer when its label equals a category name (trimmed, case-insensitive) of the row's own type; anything else stays as it is (D-01). A CSV/XLSX row with an empty category lands on `Other` of its own type (D-02). Android has no automatic backup, so a rename triggers none; the repair after restore heals older v2 files, but a v1 file older than a rename cannot relink those rows (D-03).
 
 ### Date boundaries (#297, #298, #299, #302)
 
