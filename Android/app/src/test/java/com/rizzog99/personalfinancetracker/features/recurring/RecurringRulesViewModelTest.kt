@@ -134,12 +134,10 @@ class RecurringRulesViewModelTest {
         assertTrue(vm.saveRule(rule, edited(rule, "-780.00", "Rent", null, "Bills")))
         recurrence.materializeDue(at("2026-12-02"), zone)
 
-        val byDate = transactions.observeAll().first().associate { it.timestamp.atZone(zone).toLocalDate().toString() to it.amount }
+        // MoneyCodec stores without trailing zeros, so compare values, not scales.
+        val byDate = transactions.observeAll().first().associate { it.timestamp.atZone(zone).toLocalDate().toString() to it.amount.toDouble() }
         assertEquals(
-            mapOf(
-                "2026-09-01" to BigDecimal("-750.00"), "2026-10-01" to BigDecimal("-750.00"),
-                "2026-11-01" to BigDecimal("-750.00"), "2026-12-01" to BigDecimal("-780.00"),
-            ),
+            mapOf("2026-09-01" to -750.0, "2026-10-01" to -750.0, "2026-11-01" to -750.0, "2026-12-01" to -780.0),
             byDate,
         )
     }
@@ -220,6 +218,21 @@ class RecurringRulesViewModelTest {
         assertTrue(vm.add(first, newRule("Music", "-9.99", "2026-11-21")))
 
         assertEquals(1, vm.await { it.rows.size == 1 }.rows.size)
+        assertEquals(1, transactions.observeAll().first().size)
+    }
+
+    @Test
+    fun ac04_receiptLearningFailureStillSaves() = runBlocking {
+        val failingMapping = object : com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository {
+            override suspend fun categoryIdFor(merchant: String): String? = null
+            override suspend fun remember(merchant: String, categoryId: String) = error("disk full")
+        }
+        val vm = RecurringRulesViewModel(recurrence, transactions, categories, clock, failingMapping)
+        val first = FinanceTransaction("t1", at("2026-11-21"), BigDecimal("-9.99"), "Music", "Bills", "bills", "EUR", null, null)
+
+        assertTrue(vm.add(first, newRule("Music", "-9.99", "2026-11-21"), receiptMerchant = "Spotify"))
+
+        assertNull(vm.error.value)
         assertEquals(1, transactions.observeAll().first().size)
     }
 

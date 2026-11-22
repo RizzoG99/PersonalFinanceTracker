@@ -117,12 +117,18 @@ class RoomRecurrenceRepository(
         }
     }
 
-    // #294 red baseline (D-08): no-op stubs.
-    override fun observeAll(): Flow<List<RecurrenceRule>> = emptyFlow()
+    override fun observeAll(): Flow<List<RecurrenceRule>> =
+        database.recurrenceRuleDao().observeAll().map { rules -> rules.map { it.toDomain() } }
 
-    override suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String) = Unit
+    override suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String) {
+        // One statement: a concurrent materialize, advance or stop is never overwritten by a stale copy.
+        val updated = database.recurrenceRuleDao().updateTemplate(id, MoneyCodec.encode(amount), note, categoryLabel, categoryId, currencyCode)
+        check(updated == 1) { "Recurrence rule $id not found." }
+    }
 
-    override suspend fun stop(id: String, at: Instant) = Unit
+    override suspend fun stop(id: String, at: Instant) {
+        database.recurrenceRuleDao().close(id, at.toEpochMilli())
+    }
 
     private suspend fun materialize(rule: RecurrenceRuleEntity, through: Instant, zoneId: ZoneId) {
         // The one insertion point, so no caller can record rows for a forecast-only rule.

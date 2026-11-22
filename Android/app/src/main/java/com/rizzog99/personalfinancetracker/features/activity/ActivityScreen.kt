@@ -1182,6 +1182,8 @@ fun TransactionEditorSheet(
     receiptMappingRepository: com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository,
     onDismiss: () -> Unit,
     onSave: (FinanceTransaction, NewRecurrenceRule?, String?) -> Unit,
+    ruleCadence: String? = null,
+    presetRepeats: Boolean = false,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1194,22 +1196,30 @@ fun TransactionEditorSheet(
             onDismiss = onDismiss,
             onSave = onSave,
             modifier = Modifier.fillMaxHeight(0.9f).coverWhenObscured(),
+            ruleCadence = ruleCadence,
+            presetRepeats = presetRepeats,
         )
     }
 }
 
 /** The editor itself, with no sheet/dialog chrome — for embedding directly in a layout (the
  * tablet two-pane layout's always-visible right pane). Use [TransactionEditorSheet] for the
- * modal phone presentation. */
+ * modal phone presentation.
+ *
+ * [ruleCadence] non-null = rule-edit mode (#294, iOS `TransactionFormView.swift:180-190, 253-259`):
+ * [editingTransaction] holds the rule's template, and cadence and start date are read-only —
+ * changing the start would shift every future occurrence. Internal for the capture matrix. */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun TransactionEditorContent(
+internal fun TransactionEditorContent(
     editingTransaction: FinanceTransaction?,
     categories: List<FinanceCategory>,
     receiptMappingRepository: com.rizzog99.personalfinancetracker.data.repository.ReceiptMappingRepository,
     onDismiss: () -> Unit,
     onSave: (FinanceTransaction, NewRecurrenceRule?, String?) -> Unit,
     modifier: Modifier = Modifier,
+    ruleCadence: String? = null,
+    presetRepeats: Boolean = false,
 ) {
     // Collected here rather than threaded through TransactionEditorSheet: only the receipt path
     // needs it, and every caller of the sheet would otherwise have to carry it.
@@ -1221,7 +1231,10 @@ private fun TransactionEditorContent(
     var note by remember(editingTransaction) { mutableStateOf(editingTransaction?.note.orEmpty()) }
     var selectedType by remember(editingTransaction, categories) {
         mutableStateOf(
-            categories.firstOrNull { it.id == editingTransaction?.categoryId }?.type ?: TransactionType.EXPENSE,
+            categories.firstOrNull { it.id == editingTransaction?.categoryId }?.type
+                // An unknown category (deleted, or a rule planned from an import) must not turn an
+                // income into an expense on save (#294).
+                ?: if ((editingTransaction?.amount?.signum() ?: 0) > 0) TransactionType.INCOME else TransactionType.EXPENSE,
         )
     }
     var selectedCategoryId by remember(editingTransaction, categories, selectedType) {
@@ -1231,7 +1244,7 @@ private fun TransactionEditorContent(
         )
     }
     var categoryPickerVisible by remember { mutableStateOf(false) }
-    var repeats by remember { mutableStateOf(false) }
+    var repeats by remember { mutableStateOf(presetRepeats) }
     var recurrenceFrequency by remember { mutableStateOf(RecurrenceFrequency.MONTHLY) }
     var recurrenceInterval by remember { mutableStateOf(1) }
     var categoryTouched by remember { mutableStateOf(false) }
@@ -1369,7 +1382,13 @@ private fun TransactionEditorContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.edit_transaction),
+                        text = stringResource(
+                            when {
+                                ruleCadence != null -> R.string.edit_recurring
+                                editingTransaction == null -> R.string.add_transaction
+                                else -> R.string.edit_transaction
+                            },
+                        ),
                         modifier = Modifier.semantics { heading() },
                     )
                 },
@@ -1564,14 +1583,20 @@ private fun TransactionEditorContent(
                 label = { Text(stringResource(R.string.note)) },
                 supportingText = { Text(stringResource(R.string.note_optional)) },
             )
-            OutlinedButton(
-                onClick = {
-                    focusManager.clearFocus()
-                    datePickerVisible = true
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("${stringResource(R.string.transaction_date)}: ${formatTransactionDate(timestamp)}")
+            if (ruleCadence != null) {
+                // Plain text, not a disabled control: TalkBack would announce it as unavailable.
+                Text(stringResource(R.string.recurring_frequency, ruleCadence), style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.recurring_starts, formatTransactionDate(timestamp)), style = MaterialTheme.typography.bodyLarge)
+            } else {
+                OutlinedButton(
+                    onClick = {
+                        focusManager.clearFocus()
+                        datePickerVisible = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("${stringResource(R.string.transaction_date)}: ${formatTransactionDate(timestamp)}")
+                }
             }
             if (editingTransaction == null) {
                 Row(
