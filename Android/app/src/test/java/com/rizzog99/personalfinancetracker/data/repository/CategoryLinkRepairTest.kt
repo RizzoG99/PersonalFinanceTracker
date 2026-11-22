@@ -54,7 +54,8 @@ class CategoryLinkRepairTest {
                 tx("b", "-3.00", "groceries ", null),
                 tx("c", "4.00", "Groceries", null),
                 tx("d", "-5.00", "Sconosciuta", null),
-                tx("e", "-6.00", "→ Holiday", null, goalId = holiday.id),
+                // A goal transfer whose label would otherwise match: only the goal guard keeps it out.
+                tx("e", "-6.00", "Groceries", null, goalId = holiday.id),
                 tx("f", "-7.00", "", null),
                 tx("g", "-9.00", "CAFFÈ\t", null),
             ),
@@ -66,6 +67,13 @@ class CategoryLinkRepairTest {
                 currencyCode = "EUR", autoRecord = false,
             ),
         )
+        val goalRule = RoomRecurrenceRepository(database).create(
+            NewRecurrenceRule(
+                frequency = RecurrenceFrequency.MONTHLY, interval = 1, startDate = Instant.parse("2026-09-01T10:00:00Z"),
+                amount = BigDecimal("-8.50"), note = "Save", categoryLabel = "groceries", categoryId = null,
+                currencyCode = "EUR", goalId = holiday.id, autoRecord = false,
+            ),
+        )
 
         // Links: b, f, g and the rule (4); labels: a, b, f, g and the rule (5).
         assertEquals(9, categories.repairLinks())
@@ -75,7 +83,8 @@ class CategoryLinkRepairTest {
         assertEquals(groceries.id to "Groceries", byId["b"])
         assertEquals(null to "Groceries", byId["c"])
         assertEquals(null to "Sconosciuta", byId["d"])
-        assertEquals(null to "→ Holiday", byId["e"])
+        assertEquals(null to "Groceries", byId["e"])
+        assertEquals(null, database.recurrenceRuleDao().get(goalRule.id)!!.categoryId)
         assertEquals(otherExpense.id to "Other", byId["f"])
         assertEquals(caffe.id to "Caffè", byId["g"])
         val repairedRule = database.recurrenceRuleDao().get(rule.id)!!
