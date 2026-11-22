@@ -63,7 +63,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -132,12 +134,6 @@ fun InsightsScreen(
         ),
     )
     val state by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    var creatingGoal by remember { mutableStateOf(false) }
-    var editingGoal by remember { mutableStateOf<FinanceGoal?>(null) }
-    var selectedGoal by remember { mutableStateOf<GoalProgress?>(null) }
-    var deletingGoal by remember { mutableStateOf<FinanceGoal?>(null) }
 
     Scaffold(
         topBar = {
@@ -148,7 +144,6 @@ fun InsightsScreen(
                 onOpenSettings = onOpenSettings,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) { padding ->
@@ -166,30 +161,74 @@ fun InsightsScreen(
             )
             else -> InsightsContent(
                 state = state,
-                onAddGoal = { creatingGoal = true },
-                onSelectGoal = { selectedGoal = it },
                 modifier = Modifier.padding(padding),
             )
         }
     }
+}
 
-    if (creatingGoal) {
+/**
+ * Which goal sheet is open, by goal id so it survives recreation (#283 AC-02); Goals moved from
+ * Insights to Plan (iOS #187), and the wide layout's Goals destination shares this.
+ */
+internal class GoalSheets(
+    creating: MutableState<Boolean>,
+    editingId: MutableState<String?>,
+    selectedId: MutableState<String?>,
+    deletingId: MutableState<String?>,
+) {
+    var creating by creating
+    var editingId by editingId
+    var selectedId by selectedId
+    var deletingId by deletingId
+}
+
+@Composable
+internal fun rememberGoalSheets() = GoalSheets(
+    rememberSaveable { mutableStateOf(false) },
+    rememberSaveable { mutableStateOf<String?>(null) },
+    rememberSaveable { mutableStateOf<String?>(null) },
+    rememberSaveable { mutableStateOf<String?>(null) },
+)
+
+/** The goals block Insights used to show: header, New goal, cards (or the first-goal card). */
+@Composable
+internal fun GoalsBlock(state: InsightsUiState, sheets: GoalSheets) {
+    GoalsSection(
+        goals = state.goals,
+        currencyCode = state.currencyCode,
+        onAddGoal = { sheets.creating = true },
+        onSelectGoal = { sheets.selectedId = it.goal.id },
+    )
+}
+
+@Composable
+internal fun GoalSheetsHost(
+    sheets: GoalSheets,
+    state: InsightsUiState,
+    viewModel: InsightsViewModel,
+    snackbarHostState: SnackbarHostState,
+) {
+    val application = LocalContext.current.applicationContext as PersonalFinanceApplication
+    val scope = rememberCoroutineScope()
+    val goal: (String?) -> GoalProgress? = { id -> state.goals.firstOrNull { it.goal.id == id } }
+    if (sheets.creating) {
         GoalEditorSheet(
             goal = null,
-            onDismiss = { creatingGoal = false },
+            onDismiss = { sheets.creating = false },
             onSave = { newGoal ->
                 viewModel.addGoal(newGoal) { saved ->
-                    if (saved) creatingGoal = false else scope.launch {
+                    if (saved) sheets.creating = false else scope.launch {
                         snackbarHostState.showSnackbar(application.getString(R.string.goal_save_error))
                     }
                 }
             },
         )
     }
-    editingGoal?.let { goal ->
+    goal(sheets.editingId)?.goal?.let { goal ->
         GoalEditorSheet(
             goal = goal,
-            onDismiss = { editingGoal = null },
+            onDismiss = { sheets.editingId = null },
             onSave = { newGoal ->
                 viewModel.updateGoal(
                     goal.copy(
@@ -200,38 +239,38 @@ fun InsightsScreen(
                         iconToken = newGoal.iconToken,
                     ),
                 ) { saved ->
-                    if (saved) editingGoal = null else scope.launch {
+                    if (saved) sheets.editingId = null else scope.launch {
                         snackbarHostState.showSnackbar(application.getString(R.string.goal_save_error))
                     }
                 }
             },
         )
     }
-    selectedGoal?.let { progress ->
+    goal(sheets.selectedId)?.let { progress ->
         GoalDetailSheet(
             progress = progress,
             currencyCode = state.currencyCode,
-            onDismiss = { selectedGoal = null },
+            onDismiss = { sheets.selectedId = null },
             onEdit = {
-                selectedGoal = null
-                editingGoal = progress.goal
+                sheets.selectedId = null
+                sheets.editingId = progress.goal.id
             },
             onDelete = {
-                selectedGoal = null
-                deletingGoal = progress.goal
+                sheets.selectedId = null
+                sheets.deletingId = progress.goal.id
             },
             onAddFunds = { amount, onFinished ->
                 viewModel.addFunds(progress.goal, amount, state.currencyCode, onFinished)
             },
         )
     }
-    deletingGoal?.let { goal ->
+    goal(sheets.deletingId)?.goal?.let { goal ->
         DeleteGoalDialog(
             goal = goal,
-            onDismiss = { deletingGoal = null },
+            onDismiss = { sheets.deletingId = null },
             onConfirm = {
                 viewModel.deleteGoal(goal) { deleted ->
-                    deletingGoal = null
+                    sheets.deletingId = null
                     if (!deleted) scope.launch {
                         snackbarHostState.showSnackbar(application.getString(R.string.goal_save_error))
                     }
@@ -244,8 +283,6 @@ fun InsightsScreen(
 @Composable
 private fun InsightsContent(
     state: InsightsUiState,
-    onAddGoal: () -> Unit,
-    onSelectGoal: (GoalProgress) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -253,14 +290,6 @@ private fun InsightsContent(
         contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item {
-            GoalsSection(
-                goals = state.goals,
-                currencyCode = state.currencyCode,
-                onAddGoal = onAddGoal,
-                onSelectGoal = onSelectGoal,
-            )
-        }
         item {
             PaceCard(state.paceInsight)
         }

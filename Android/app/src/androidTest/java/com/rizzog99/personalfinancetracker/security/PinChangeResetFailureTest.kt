@@ -50,7 +50,7 @@ class PinChangeResetFailureTest {
         rule.setContent {
             PersonalFinanceTheme {
                 SettingsSheet(
-                    onDismiss = {}, onOpenCategories = {}, onOpenScanCategories = {}, onOpenBudgets = {}, onOpenDataTransfer = {},
+                    onDismiss = {}, onOpenCategories = {}, onOpenScanCategories = {}, onOpenDataTransfer = {},
                     wipe = { attempts++; throw SQLiteException("/data/data/app/databases/finance.db: disk I/O error (code 4874)") },
                 )
             }

@@ -66,7 +66,7 @@ import androidx.lifecycle.viewModelScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BudgetsScreen(onBack: () -> Unit) {
+fun BudgetsScreen(onBack: (() -> Unit)?) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: BudgetsViewModel = viewModel(
         factory = BudgetsViewModel.factory(application.categoryRepository),
@@ -83,8 +83,11 @@ fun BudgetsScreen(onBack: () -> Unit) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                    // A drawer root on the wide layout: no back arrow (#283 D-05).
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

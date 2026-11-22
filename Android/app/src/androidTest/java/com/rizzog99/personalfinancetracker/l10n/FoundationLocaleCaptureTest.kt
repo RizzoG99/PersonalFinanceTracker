@@ -76,13 +76,14 @@ class FoundationLocaleCaptureTest {
 
     /** Destination labels, per locale, exactly as `AC-02`/`AC-03` pinned them. */
     private val destinationLabels = mapOf(
-        "en" to listOf("Home", "Activity", "Insights"),
-        "it" to listOf("Home", "Attività", "Analisi"),
+        // #283: Plan tab (compact) and the wide drawer's group items.
+        "en" to listOf("Home", "Activity", "Plan", "Insights", "Recurring", "Budgets", "Goals", "Settings"),
+        "it" to listOf("Home", "Attività", "Pianifica", "Analisi", "Ricorrenti", "Budget", "Obiettivi", "Impostazioni"),
     )
 
     private val otherLanguageLabels = mapOf(
-        "en" to listOf("Attività", "Analisi"),
-        "it" to listOf("Activity", "Insights"),
+        "en" to listOf("Attività", "Pianifica", "Analisi", "Ricorrenti", "Obiettivi", "Impostazioni"),
+        "it" to listOf("Activity", "Plan", "Insights", "Recurring", "Goals", "Settings"),
     )
 
     /** The shell's only label-less action; its description is all a screen reader gets. */
