@@ -54,12 +54,7 @@
       "Bash(gh project item-add *)",
       "Bash(git switch -c *)",
       "Bash(git worktree add *)",
-      "Bash(gh pr create *)",
-      "Bash(PFT_SKIP_CHANGELOG=1 gh pr create *)"
-    ],
-    "additionalDirectories": [
-      "/Users/gabrielerizzo/Develop/PersonalFinanceTracker/.claude/skills",
-      "/Users/gabrielerizzo/Develop/PersonalFinanceTracker/.agents/skills"
+      "Bash(gh pr create *)"
     ]
   },
   "disabledMcpjsonServers": [
