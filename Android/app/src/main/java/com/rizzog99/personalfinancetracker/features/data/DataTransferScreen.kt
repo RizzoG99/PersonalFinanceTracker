@@ -94,7 +94,6 @@ import com.rizzog99.personalfinancetracker.domain.import.SignConvention
 import com.rizzog99.personalfinancetracker.domain.import.XlsxImportService
 import com.rizzog99.personalfinancetracker.domain.import.removingLeadingEmoji
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceSuggestion
-import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
@@ -880,11 +879,7 @@ private fun RecurringSuggestionRow(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     val accent = categoryColor(category?.colorToken ?: "categoryGray")
-    val cadence = when (suggestion.frequency) {
-        RecurrenceFrequency.WEEKLY -> if (suggestion.interval == 1) stringResource(R.string.cadence_weekly) else stringResource(R.string.cadence_weekly_n, suggestion.interval)
-        RecurrenceFrequency.MONTHLY -> if (suggestion.interval == 1) stringResource(R.string.cadence_monthly) else stringResource(R.string.cadence_monthly_n, suggestion.interval)
-        RecurrenceFrequency.YEARLY -> stringResource(R.string.cadence_yearly)
-    }
+    val cadence = com.rizzog99.personalfinancetracker.features.recurring.cadenceLabel(suggestion.frequency, suggestion.interval)
     val title = suggestion.note.ifBlank { suggestion.categoryLabel.removingLeadingEmoji().trim() }
     val money = formatCurrency(suggestion.amount, suggestion.currencyCode)
     // "≈" marks a variable bill's typical (median) amount; every row is an expense, so no red.

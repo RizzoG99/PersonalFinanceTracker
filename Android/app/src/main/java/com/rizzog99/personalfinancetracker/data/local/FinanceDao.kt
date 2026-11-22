@@ -58,6 +58,16 @@ interface RecurrenceRuleDao {
     @Update(onConflict = OnConflictStrategy.ABORT)
     suspend fun update(rule: RecurrenceRuleEntity)
 
+    @Query("SELECT * FROM recurrence_rules")
+    fun observeAll(): Flow<List<RecurrenceRuleEntity>>
+
+    /** Rule-edit save (#294): the template fields only. Returns the rows changed. */
+    @Query(
+        "UPDATE recurrence_rules SET amountDecimal = :amountDecimal, note = :note, categoryLabel = :categoryLabel, " +
+            "categoryId = :categoryId, currencyCode = :currencyCode WHERE id = :id",
+    )
+    suspend fun updateTemplate(id: String, amountDecimal: String, note: String, categoryLabel: String, categoryId: String?, currencyCode: String): Int
+
     @Query("UPDATE recurrence_rules SET categoryId = NULL WHERE categoryId = :categoryId")
     suspend fun clearCategoryReference(categoryId: String)
 }

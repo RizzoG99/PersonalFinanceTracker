@@ -11,11 +11,15 @@ import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceOccurrenceCalculator
 import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 interface RecurrenceRepository {
     suspend fun createAndMaterialize(rule: NewRecurrenceRule): RecurrenceRule
@@ -35,6 +39,18 @@ interface RecurrenceRepository {
     suspend fun activeRules(asOf: Instant = Instant.now()): List<RecurrenceRule>
     suspend fun materializeDue(through: Instant = Instant.now(), zoneId: ZoneId = ZoneId.systemDefault())
     suspend fun updateThisAndFuture(occurrence: FinanceTransaction)
+
+    /** Every rule, stopped ones included — the Recurring screen filters (#294). */
+    fun observeAll(): Flow<List<RecurrenceRule>>
+
+    /**
+     * Rule-edit save (#294, iOS `buildRecurrenceRuleInput(preserving:)`): the template only.
+     * Cadence, start date, end date, cursor, goal and auto-record stay; no transaction is written.
+     */
+    suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String)
+
+    /** Ends the rule at [at] (iOS `closeRecurrenceRule`). Its transactions stay. */
+    suspend fun stop(id: String, at: Instant)
 }
 
 class RoomRecurrenceRepository(
@@ -99,6 +115,19 @@ class RoomRecurrenceRepository(
                 ),
             )
         }
+    }
+
+    override fun observeAll(): Flow<List<RecurrenceRule>> =
+        database.recurrenceRuleDao().observeAll().map { rules -> rules.map { it.toDomain() } }
+
+    override suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String) {
+        // One statement: a concurrent materialize, advance or stop is never overwritten by a stale copy.
+        val updated = database.recurrenceRuleDao().updateTemplate(id, MoneyCodec.encode(amount), note, categoryLabel, categoryId, currencyCode)
+        check(updated == 1) { "Recurrence rule $id not found." }
+    }
+
+    override suspend fun stop(id: String, at: Instant) {
+        database.recurrenceRuleDao().close(id, at.toEpochMilli())
     }
 
     private suspend fun materialize(rule: RecurrenceRuleEntity, through: Instant, zoneId: ZoneId) {

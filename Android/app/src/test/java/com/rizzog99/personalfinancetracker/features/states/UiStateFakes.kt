@@ -190,4 +190,10 @@ class UnusedRecurrenceRepository : RecurrenceRepository {
     override suspend fun materializeDue(through: Instant, zoneId: ZoneId) = Unit
 
     override suspend fun updateThisAndFuture(occurrence: FinanceTransaction) = error("unused")
+
+    override fun observeAll(): kotlinx.coroutines.flow.Flow<List<RecurrenceRule>> = error("unused")
+
+    override suspend fun updateTemplate(id: String, amount: java.math.BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String) = error("unused")
+
+    override suspend fun stop(id: String, at: Instant) = error("unused")
 }
