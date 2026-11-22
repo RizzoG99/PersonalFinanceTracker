@@ -670,7 +670,7 @@ private fun healthScoreBand(score: Int): String = stringResource(
 
 /** One category's spend and its share of this period's total — the design's "Category Trends" row. */
 @Composable
-private fun CategoryTrendRow(
+internal fun CategoryTrendRow(
     category: CategorySpending,
     share: Int,
     currencyCode: String,
