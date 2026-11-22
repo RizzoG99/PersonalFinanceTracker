@@ -5,7 +5,9 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -131,20 +133,32 @@ class CategoryLocalizationFlowTest {
         rule.waitForIdle()
         assertEquals("Groceries", runBlocking { groceries() }.name)
 
+        // The sheet must be gone before the row is tapped again, or the tap lands on its scrim.
+        rule.waitUntil(20_000) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isEmpty() }
         rule.onNodeWithText("Spesa").performClick()
+        rule.waitUntil(20_000) { rule.onAllNodes(hasSetTextAction() and hasText("Spesa")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(hasSetTextAction() and hasText("Spesa")).performTextReplacement("Alimentari")
+        rule.waitForIdle()
         rule.onNodeWithText(italian(R.string.save)).performClick()
         rule.waitUntil(20_000) {
             runBlocking { app.categoryRepository.observeAll().first() }.any { it.name == "Alimentari" }
         }
+        // A renamed category is the user's own name: English shows it unchanged.
         setAppLocale(Locale.ENGLISH)
-        waitForText("Alimentari")
+        rule.waitUntil(20_000) { rule.onAllNodes(hasScrollToNodeAction()).fetchSemanticsNodes().isNotEmpty() }
+        rule.onAllNodes(hasScrollToNodeAction())[0].performScrollToNode(hasText("Alimentari"))
     }
 
     private fun openGroceriesEditor() {
-        rule.onNode(hasContentDescription(italian(R.string.settings_title))).performClick()
+        // The icon's description sits on an unmerged child of the top-bar button; wait for the
+        // recreated activity to compose it before tapping.
+        val settings = hasContentDescription(italian(R.string.settings_title))
+        rule.waitUntil(20_000) { rule.onAllNodes(settings, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+        rule.onAllNodes(settings, useUnmergedTree = true)[0].performClick()
         rule.onNodeWithText(italian(R.string.categories)).performClick()
-        waitForText("Spesa")
+        // 38 categories: Groceries is below the fold of the lazy list until scrolled to.
+        rule.waitUntil(20_000) { rule.onAllNodes(hasScrollToNodeAction()).fetchSemanticsNodes().isNotEmpty() }
+        rule.onAllNodes(hasScrollToNodeAction())[0].performScrollToNode(hasText("Spesa"))
         rule.onNodeWithText("Spesa").performClick()
         rule.waitForIdle()
     }
