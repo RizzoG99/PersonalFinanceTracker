@@ -111,11 +111,16 @@ class RecurringRulesScreenTest {
 
     @Test
     fun ac02_editRuleIdOpensThatRulesEditor() {
+        create("Gym", "-30.00", "2026-09-10")
         val rent = create("Rent", "-750.00", "2026-09-01")
         show(editRuleId = rent.id)
 
         waitFor { rule.onAllNodes(hasText("Edit recurring")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithText("Frequency: Monthly").assertExists()
+        // The requested rule, not the first one: its name and amount fill the form.
+        rule.onNode(hasSetTextAction() and hasText("Rent")).assertExists()
+        rule.onNode(hasSetTextAction() and hasText("750", substring = true)).assertExists()
+        rule.onNode(hasSetTextAction() and hasText("Gym")).assertDoesNotExist()
     }
 
     @Test

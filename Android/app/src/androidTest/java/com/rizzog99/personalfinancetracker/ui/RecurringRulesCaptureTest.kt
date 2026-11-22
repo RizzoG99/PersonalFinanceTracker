@@ -121,11 +121,16 @@ class RecurringRulesCaptureTest {
         }
     }
 
-    private data class Copy(val active: String, val monthly: String, val duplicate: String, val stop: String, val frequency: String, val empty: String)
+    private data class Copy(
+        val active: String, val monthly: String, val duplicate: String, val stop: String, val frequency: String, val empty: String,
+        val monthlyLabel: String, val everyTwoWeeks: String, val everyTwoYears: String, val noNextMarker: String,
+    )
 
     private val copy = mapOf(
-        "en" to Copy("Active", "Monthly spend", "Possible duplicate", "Stop", "Frequency: Monthly", "No recurring transactions yet"),
-        "it" to Copy("Attivi", "Spesa mensile", "Possibile doppione", "Interrompi", "Frequenza: Ogni mese", "Ancora nessun movimento ricorrente"),
+        "en" to Copy("Active", "Monthly spend", "Possible duplicate", "Stop", "Frequency: Monthly", "No recurring transactions yet",
+            "Monthly", "Every 2 weeks", "Every 2 years", "next "),
+        "it" to Copy("Attivi", "Spesa mensile", "Possibile doppione", "Interrompi", "Frequenza: Ogni mese", "Ancora nessun movimento ricorrente",
+            "Ogni mese", "Ogni 2 settimane", "Ogni 2 anni", "prossimo "),
     )
 
     private fun host(cell: CaptureHarness.Cell, content: @Composable () -> Unit) {
@@ -202,6 +207,13 @@ class RecurringRulesCaptureTest {
                     rule.onAllNodes(hasTestTag(tag) and hasClickAction() and hasText(row.title, substring = true) and
                         hasText(formatSignedCurrency(row.rule.amount, "EUR"), substring = true)).assertCountEquals(1)
                     rule.onAllNodes(hasTestTag(tag) and hasText(text.duplicate, substring = true)).assertCountEquals(if (row.isDuplicate) 1 else 0)
+                    // Cadence, and the next date when one falls within a year.
+                    val cadence = if (row.rule.frequency == RecurrenceFrequency.WEEKLY) text.everyTwoWeeks else if (row.rule.frequency == RecurrenceFrequency.YEARLY) text.everyTwoYears else text.monthlyLabel
+                    rule.onAllNodes(hasTestTag(tag) and hasText(cadence, substring = true)).assertCountEquals(1)
+                    val next = row.nextDate?.let {
+                        java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(Locale.getDefault()).withZone(zone).format(it)
+                    }
+                    rule.onAllNodes(hasTestTag(tag) and hasText(next ?: text.noNextMarker, substring = true)).assertCountEquals(if (next != null) 1 else 0)
                     val actions = rule.onNodeWithTag(tag).fetchSemanticsNode().config[SemanticsActions.CustomActions]
                     assertEquals(listOf(text.stop), actions.map { it.label })
                 }
