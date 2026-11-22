@@ -36,6 +36,10 @@ fun duplicateRuleIds(active: List<RecurrenceRule>): Set<String> =
 /** The name, or the category without its emoji (`FixedExpensesSection.swift:10-12`). */
 fun RecurrenceRule.title(): String = note.ifBlank { categoryLabel.removingLeadingEmoji().trim() }
 
+/** [title] as shown: a built-in category fallback in the app language, a user's note verbatim (#291). */
+fun RecurrenceRule.displayTitle(categoryNames: Map<String, String>): String =
+    if (note.isBlank()) title().let { categoryNames[it] ?: it } else note
+
 /** The first occurrence after [now] within a year (`RecurringView.swift:298-306`). */
 fun RecurrenceRule.nextOccurrence(now: Instant, zoneId: ZoneId): Instant? =
     RecurrenceOccurrenceCalculator.occurrences(

@@ -297,8 +297,11 @@ private fun CategoryEditorSheet(
     var colorToken by remember(category) { mutableStateOf(category?.colorToken ?: "categoryIndigo") }
     var iconToken by remember(category) { mutableStateOf(category?.iconToken ?: "creditcard.fill") }
     val trimmedName = name.trim()
+    // What would be stored: validated rather than the shown text, so an untouched "Spesa" is checked
+    // as "Groceries" and cannot collide with a custom "Spesa" (#291).
+    val storedName = editorStoredName(category, trimmedName, shownName)
     val nameError = categoryNameError(
-        name = trimmedName,
+        name = storedName,
         type = type,
         categoryId = category?.id,
         categories = existingCategories,
@@ -370,7 +373,7 @@ private fun CategoryEditorSheet(
                         } else {
                             onSaveExisting(
                                 category.copy(
-                                    name = CategoryNameValidator.renamedName(category.name, trimmedName, shownName) ?: category.name,
+                                    name = storedName,
                                     iconToken = iconToken,
                                     colorToken = colorToken,
                                 ),
@@ -488,7 +491,11 @@ private fun DeleteCategoryDialog(category: FinanceCategory, onDismiss: () -> Uni
     )
 }
 
-private fun categoryNameError(
+/** The name an editor save stores: the key when a built-in was left as shown, else the edit (#291). */
+internal fun editorStoredName(category: FinanceCategory?, edited: String, shown: String): String =
+    category?.let { CategoryNameValidator.renamedName(it.name, edited, shown) ?: it.name } ?: edited
+
+internal fun categoryNameError(
     name: String,
     type: TransactionType,
     categoryId: String?,
@@ -511,7 +518,7 @@ private fun categoryNameErrorText(error: CategoryNameError?): Int? = when (error
     null -> null
 }
 
-private enum class CategoryNameError { BLANK, INVALID, DUPLICATE }
+internal enum class CategoryNameError { BLANK, INVALID, DUPLICATE }
 
 @Composable
 fun categoryColor(token: String): androidx.compose.ui.graphics.Color {
