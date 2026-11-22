@@ -19,6 +19,9 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasScrollToKeyAction
+import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
@@ -189,16 +192,20 @@ class RecurringRulesCaptureTest {
                 rule.onNodeWithText(text.active).assertExists()
                 rule.onNodeWithText(text.monthly).assertExists()
                 rule.onNodeWithText(formatSignedCurrency(state.monthlySpend, "EUR")).assertExists()
-                rule.onAllNodes(hasText(text.duplicate, substring = true)).assertCountEquals(2)
+                assertEquals(2, state.rows.count { it.isDuplicate })
                 state.rows.forEach { row ->
                     val tag = "recurringRule-${row.rule.id}"
+                    // A lazy list composes only what is on screen.
+                    rule.onNode(hasScrollToKeyAction()).performScrollToKey(row.rule.id)
                     // One TalkBack element per rule: title, cadence/next date and amount, Edit and Stop.
                     rule.onAllNodesWithTag(tag).assertCountEquals(1)
                     rule.onAllNodes(hasTestTag(tag) and hasClickAction() and hasText(row.title, substring = true) and
                         hasText(formatSignedCurrency(row.rule.amount, "EUR"), substring = true)).assertCountEquals(1)
+                    rule.onAllNodes(hasTestTag(tag) and hasText(text.duplicate, substring = true)).assertCountEquals(if (row.isDuplicate) 1 else 0)
                     val actions = rule.onNodeWithTag(tag).fetchSemanticsNode().config[SemanticsActions.CustomActions]
                     assertEquals(listOf(text.stop), actions.map { it.label })
                 }
+                rule.onNode(hasScrollToKeyAction()).performScrollToIndex(0)
             },
         ) {
             RecurringRulesContent(state = state, zoneId = zone, onSelect = {}, onStop = {})
