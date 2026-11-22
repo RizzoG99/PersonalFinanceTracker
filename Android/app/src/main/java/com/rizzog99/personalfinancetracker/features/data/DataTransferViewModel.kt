@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
+import com.rizzog99.personalfinancetracker.domain.category.CategoryNameValidator
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.NewCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
@@ -50,7 +51,10 @@ class DataTransferViewModel(
         // The failure used to vanish here, leaving only "Couldn't import transactions" on screen and
         // nothing in the log to work from. Whatever else happens, the cause reaches logcat.
         val result = guarded("CSV import failed") {
-            val known = uiState.value.categories.associateBy(FinanceCategory::id).toMutableMap()
+            // The store, not uiState: that is empty until its first emission reaches a subscriber.
+            val known = categoryRepository.observeAll().first().associateBy(FinanceCategory::id).toMutableMap()
+            // A row with no category goes to Other of its own type, never one Other for both (#292 D-02).
+            val otherByType = known.values.filter { CategoryNameValidator.normalized(it.name) == "other" }.associateBy { it.type }
             // One category per name the database would consider distinct, not one per CSV label.
             // Creating one each made a file containing both "Regali" and "🎁 Regali" abort on the
             // unique (normalizedName, type) index and fail the entire import. See ImportCategoryPlanner.
@@ -76,9 +80,10 @@ class DataTransferViewModel(
                 planned.labels.forEach { created[it] = category }
             }
             val resolved = transactions.map { transaction ->
-                categorySelections[transaction.categoryLabel]?.let(known::get)?.let { category ->
-                    transaction.copy(categoryId = category.id, categoryLabel = category.name)
-                } ?: created[transaction.categoryLabel]?.let { category -> transaction.copy(categoryId = category.id, categoryLabel = category.name) } ?: transaction
+                val category = categorySelections[transaction.categoryLabel]?.let(known::get)
+                    ?: created[transaction.categoryLabel]
+                    ?: otherByType[if (transaction.amount.signum() < 0) TransactionType.EXPENSE else TransactionType.INCOME].takeIf { transaction.categoryLabel.isBlank() }
+                category?.let { transaction.copy(categoryId = it.id, categoryLabel = it.name) } ?: transaction
             }
             // The preview split these against a snapshot; re-check against the ledger as it is now, so a
             // repeated import or an auto-recorded payment is never saved twice (#314).

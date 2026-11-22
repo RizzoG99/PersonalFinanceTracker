@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import android.util.Log
 import androidx.room.Room
 import androidx.work.WorkManager
 import com.rizzog99.personalfinancetracker.data.backup.BackupRepository
@@ -155,6 +156,11 @@ class PersonalFinanceApplication : Application() {
             runCatching { categoryRepository.seedDefaultsIfEmpty() }
                 .onFailure { reportStartupFailure(StartupFailure.DATABASE) }
             _databaseProbed.value = true
+            // After seeding, so blank-labelled rows find their Other (#292). Every launch: it is
+            // idempotent and also heals a row a rename raced with. A failure only leaves labels stale.
+            runCatching { categoryRepository.repairLinks() }
+                .onSuccess { if (it > 0) Log.i("PersonalFinanceApp", "Category repair changed $it rows") }
+                .onFailure { Log.w("PersonalFinanceApp", "Category repair failed", it) }
         }
         // Before anything can read the lock state: migrates a pre-#128 PIN out of the preferences
         // DataStore, then resolves PinLock.Unknown into the real state.

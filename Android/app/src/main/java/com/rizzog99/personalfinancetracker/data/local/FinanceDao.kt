@@ -149,7 +149,37 @@ interface CategoryDao {
 
     @Query("DELETE FROM categories WHERE id = :id")
     suspend fun delete(id: String)
+
+    // #292: `categoryId` is the identity, `categoryLabel` the display copy. These keep the copy in step.
+
+    @Query(
+        """UPDATE transactions SET categoryLabel = (SELECT c.name FROM categories c WHERE c.id = transactions.categoryId)
+           WHERE transactions.categoryLabel != (SELECT c.name FROM categories c WHERE c.id = transactions.categoryId)""",
+    )
+    suspend fun syncTransactionLabels(): Int
+
+    /** Rules have no foreign key: a dangling id makes the subquery NULL, so `!=` is false and the row is skipped. */
+    @Query(
+        """UPDATE recurrence_rules SET categoryLabel = (SELECT c.name FROM categories c WHERE c.id = recurrence_rules.categoryId)
+           WHERE recurrence_rules.categoryLabel != (SELECT c.name FROM categories c WHERE c.id = recurrence_rules.categoryId)""",
+    )
+    suspend fun syncRuleLabels(): Int
+
+    /** Unlinked rows that are not goal transfers (a transfer has a goal and never a category). */
+    @Query("SELECT id, categoryLabel, amountDecimal FROM transactions WHERE categoryId IS NULL AND goalId IS NULL")
+    suspend fun unlinkedTransactions(): List<UnlinkedRow>
+
+    @Query("SELECT id, categoryLabel, amountDecimal FROM recurrence_rules WHERE categoryId IS NULL AND goalId IS NULL")
+    suspend fun unlinkedRules(): List<UnlinkedRow>
+
+    @Query("UPDATE transactions SET categoryId = :categoryId WHERE categoryId IS NULL AND id IN (:ids)")
+    suspend fun linkTransactions(categoryId: String, ids: List<String>): Int
+
+    @Query("UPDATE recurrence_rules SET categoryId = :categoryId WHERE categoryId IS NULL AND id IN (:ids)")
+    suspend fun linkRules(categoryId: String, ids: List<String>): Int
 }
+
+data class UnlinkedRow(val id: String, val categoryLabel: String, val amountDecimal: String)
 
 @Dao
 interface GoalDao {

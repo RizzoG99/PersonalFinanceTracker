@@ -100,6 +100,9 @@ class BackupRepository(
             }
             // A backup without categories must not leave the app with none (as on a fresh install).
             categoryRepository.seedDefaultsIfEmpty()
+            // A backup taken before a rename carries the old name on linked rows, and a v1 row whose
+            // label missed the relink stays unlinked: repair both before anyone sees them (#292).
+            categoryRepository.repairLinks()
             if (backup is LegacyBackup) {
                 // Kept mappings whose category is gone (a renamed one comes back under a new id)
                 // could never resolve again; drop them rather than keep dead preferences. After

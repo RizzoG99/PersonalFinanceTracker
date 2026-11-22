@@ -92,7 +92,9 @@ class RoomRecurrenceRepository(
             }
         }
         rules.filter { it.autoRecord }.forEach { rule ->
-            database.withTransaction { materialize(rule, through, zoneId) }
+            // Reread inside the transaction: a rename that committed since the read above must be
+            // the label its new rows copy (#292).
+            database.withTransaction { database.recurrenceRuleDao().get(rule.id)?.let { materialize(it, through, zoneId) } }
         }
     }
 

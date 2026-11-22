@@ -173,6 +173,19 @@ class BackupRepositoryRestoreTest {
         )
     }
 
+    /** #292 AC-03: a v2 backup taken before a rename comes back showing the category's current name. */
+    @Test
+    fun ac03_restoreHealsLabelsOfAnOlderBackup() = runBlocking {
+        val groceries = categories.observeAll().first().single { it.name == "Groceries" }
+        transactions.insertBatch(listOf(transaction("stale-1", "-4.20", "Old groceries", groceries.id)))
+        val file = java.io.ByteArrayOutputStream().also { repository().export(it) }.toByteArray()
+
+        withContext(Dispatchers.IO) { repository().import(file.inputStream()) }
+
+        val restored = transactions.observeAll().first().single { it.id == "stale-1" }
+        assertEquals(groceries.id to "Groceries", restored.categoryId to restored.categoryLabel)
+    }
+
     private fun repository(goalRepository: GoalRepository = goals) =
         BackupRepository(database, transactions, categories, goalRepository)
 

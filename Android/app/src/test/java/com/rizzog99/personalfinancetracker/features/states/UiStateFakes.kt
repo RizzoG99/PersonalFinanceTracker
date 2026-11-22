@@ -125,6 +125,8 @@ class FakeCategoryRepository(
     override suspend fun seedDefaultsIfEmpty() {
         seedFailure?.let { throw it }
     }
+
+    override suspend fun repairLinks() = 0
 }
 
 class FakeGoalRepository(goals: List<FinanceGoal>? = emptyList()) : GoalRepository {
