@@ -104,6 +104,7 @@ import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatTransactionDate
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -628,7 +629,7 @@ private fun ImportWizardScreen(
                                         Icon(categoryIconFor(category?.iconToken ?: "tag"), contentDescription = null, tint = categoryColor(category?.colorToken ?: "categoryGray"), modifier = Modifier.size(20.dp))
                                     }
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(transaction.categoryLabel.ifBlank { stringResource(R.string.import_uncategorized) }, fontWeight = FontWeight.Bold)
+                                        Text(categoryDisplayName(transaction.categoryLabel).ifBlank { stringResource(R.string.import_uncategorized) }, fontWeight = FontWeight.Bold)
                                         Text(transaction.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                                     }
                                     Column(horizontalAlignment = Alignment.End) {
@@ -707,13 +708,13 @@ private fun CategorySelectorListItem(label: String, selection: String?, categori
     Box {
         ListItem(
             headlineContent = { Text(label) },
-            trailingContent = { MappingTrailingValue(categories.firstOrNull { it.id == selection }?.name ?: stringResource(R.string.import_create_category, createName)) },
+            trailingContent = { MappingTrailingValue(categories.firstOrNull { it.id == selection }?.name?.let { categoryDisplayName(it) } ?: stringResource(R.string.import_create_category, createName)) },
             colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.coverWhenObscured()) {
             DropdownMenuItem(text = { Text(stringResource(R.string.import_create_category, createName)) }, onClick = { onSelected(null); expanded = false })
-            categories.forEach { category -> DropdownMenuItem(text = { Text(category.name) }, onClick = { onSelected(category.id); expanded = false }) }
+            categories.forEach { category -> DropdownMenuItem(text = { Text(categoryDisplayName(category.name)) }, onClick = { onSelected(category.id); expanded = false }) }
         }
     }
 }
@@ -880,7 +881,7 @@ private fun RecurringSuggestionRow(
 ) {
     val accent = categoryColor(category?.colorToken ?: "categoryGray")
     val cadence = com.rizzog99.personalfinancetracker.features.recurring.cadenceLabel(suggestion.frequency, suggestion.interval)
-    val title = suggestion.note.ifBlank { suggestion.categoryLabel.removingLeadingEmoji().trim() }
+    val title = suggestion.note.ifBlank { categoryDisplayName(suggestion.categoryLabel).removingLeadingEmoji().trim() }
     val money = formatCurrency(suggestion.amount, suggestion.currencyCode)
     // "≈" marks a variable bill's typical (median) amount; every row is an expense, so no red.
     val amount = if (suggestion.amountsIdentical) money else stringResource(R.string.import_amount_approx, money)

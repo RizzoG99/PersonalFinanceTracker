@@ -69,6 +69,7 @@ import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileOb
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -247,7 +248,7 @@ private fun CategoryRow(category: FinanceCategory, onEdit: () -> Unit) {
                     tint = categoryColor(category.colorToken),
                 )
             },
-            headlineContent = { Text(category.name) },
+            headlineContent = { Text(categoryDisplayName(category.name)) },
             supportingContent = {
                 Text(
                     text = stringResource(
@@ -289,7 +290,9 @@ private fun CategoryEditorSheet(
     onSaveExisting: (FinanceCategory) -> Unit,
     onDelete: () -> Unit,
 ) {
-    var name by remember(category) { mutableStateOf(category?.name.orEmpty()) }
+    // A built-in shows its translation; [CategoryNameValidator.renamedName] keeps the key when unchanged (#291).
+    val shownName = category?.let { categoryDisplayName(it.name) }.orEmpty()
+    var name by remember(category, shownName) { mutableStateOf(shownName) }
     var type by remember(category) { mutableStateOf(category?.type ?: TransactionType.EXPENSE) }
     var colorToken by remember(category) { mutableStateOf(category?.colorToken ?: "categoryIndigo") }
     var iconToken by remember(category) { mutableStateOf(category?.iconToken ?: "creditcard.fill") }
@@ -367,7 +370,7 @@ private fun CategoryEditorSheet(
                         } else {
                             onSaveExisting(
                                 category.copy(
-                                    name = trimmedName,
+                                    name = CategoryNameValidator.renamedName(category.name, trimmedName, shownName) ?: category.name,
                                     iconToken = iconToken,
                                     colorToken = colorToken,
                                 ),
@@ -475,7 +478,7 @@ private fun DeleteCategoryDialog(category: FinanceCategory, onDismiss: () -> Uni
         onDismissRequest = onDismiss,
         modifier = Modifier.coverWhenObscured(),
         title = { Text(stringResource(R.string.delete_category_confirmation_title)) },
-        text = { Text(stringResource(R.string.delete_category_confirmation_message, category.name)) },
+        text = { Text(stringResource(R.string.delete_category_confirmation_message, categoryDisplayName(category.name))) },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
         confirmButton = {
             TextButton(onClick = onConfirm) {

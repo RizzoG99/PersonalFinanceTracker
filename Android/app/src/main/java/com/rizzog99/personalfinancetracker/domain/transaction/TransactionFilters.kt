@@ -1,11 +1,14 @@
 package com.rizzog99.personalfinancetracker.domain.transaction
 
+import com.rizzog99.personalfinancetracker.domain.import.removingLeadingEmoji
 import com.rizzog99.personalfinancetracker.domain.money.MoneyCodec
 import java.math.BigDecimal
+import java.text.Normalizer
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.Locale
 
 enum class TransactionTypeFilter {
     ALL,
@@ -48,20 +51,38 @@ object TransactionSearch {
         filters: TransactionFilters,
         zoneId: ZoneId,
         clock: Clock = Clock.system(zoneId),
+        categoryNames: Map<String, String> = emptyMap(),
     ): List<FinanceTransaction> {
         val dateBounds = filters.dateRange?.bounds(zoneId, clock)
         return transactions.filter { transaction ->
-            transaction.matchesSearch(searchText) && transaction.matchesFilters(filters, dateBounds)
+            transaction.matchesSearch(searchText, categoryNames) && transaction.matchesFilters(filters, dateBounds)
         }
     }
 }
 
-private fun FinanceTransaction.matchesSearch(searchText: String): Boolean {
+private fun FinanceTransaction.matchesSearch(searchText: String, categoryNames: Map<String, String>): Boolean {
     if (searchText.isBlank()) return true
     return note.contains(searchText, ignoreCase = true) ||
-        categoryLabel.contains(searchText, ignoreCase = true) ||
+        categoryLabel.matchesCategorySearch(searchText, categoryNames) ||
         MoneyCodec.encode(amount).contains(searchText, ignoreCase = true)
 }
+
+/**
+ * A category matches by its stored name or by the translation on screen, ignoring case and accents
+ * ("sanita" finds "Sanità"), like iOS `matchesCategorySearch` (#291). [categoryNames] maps a
+ * built-in's stored key to its name in the current language.
+ */
+fun String.matchesCategorySearch(query: String, categoryNames: Map<String, String>): Boolean {
+    val folded = query.trim().foldedForSearch()
+    if (folded.isEmpty()) return true
+    val translated = categoryNames[removingLeadingEmoji().trim()]
+    return foldedForSearch().contains(folded) || translated?.foldedForSearch()?.contains(folded) == true
+}
+
+private fun String.foldedForSearch(): String =
+    Normalizer.normalize(this, Normalizer.Form.NFD).replace(COMBINING_MARKS, "").lowercase(Locale.ROOT)
+
+private val COMBINING_MARKS = Regex("\\p{Mn}+")
 
 private fun FinanceTransaction.matchesFilters(
     filters: TransactionFilters,

@@ -96,6 +96,7 @@ class UiStateTransitionTest {
             transactionRepository = FakeTransactionRepository(listOf(transaction("t1", "-10.00"))),
             goalRepository = FakeGoalRepository(),
             preferencesRepository = preferences(),
+            categoryRepository = FakeCategoryRepository(),
         )
         assertTrue(viewModel.uiState.value.isLoading)
 
@@ -112,6 +113,7 @@ class UiStateTransitionTest {
             transactionRepository = FakeTransactionRepository(transactions = null),
             goalRepository = FakeGoalRepository(),
             preferencesRepository = preferences(),
+            categoryRepository = FakeCategoryRepository(),
         )
         keepSubscribed(viewModel.uiState)
         advanceUntilIdle()

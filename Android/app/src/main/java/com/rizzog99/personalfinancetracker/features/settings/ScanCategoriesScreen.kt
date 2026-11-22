@@ -52,6 +52,7 @@ import com.rizzog99.personalfinancetracker.domain.receipt.ReceiptCategoryConcept
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
 
 /**
  * Lets the user state, once, which of their own categories each kind of purchase belongs to.
@@ -144,6 +145,8 @@ private fun ConceptRow(
     val accent = categoryColor(paired?.colorToken ?: "categoryGray")
     val title = stringResource(concept.titleRes)
     val automatic = stringResource(R.string.scan_categories_automatic)
+    // One name for both what is shown and what is spoken (#291).
+    val pairedName = paired?.let { categoryDisplayName(it.name) } ?: automatic
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -179,11 +182,11 @@ private fun ConceptRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 // One spoken phrase instead of "Fuel" then a loose "Automatic" with no subject.
                 modifier = Modifier.semantics {
-                    contentDescription = "$title: ${paired?.name ?: automatic}"
+                    contentDescription = "$title: $pairedName"
                 },
             ) {
                 Text(
-                    text = paired?.name ?: automatic,
+                    text = pairedName,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (paired != null) {
                         MaterialTheme.colorScheme.primary
@@ -209,7 +212,7 @@ private fun ConceptRow(
                 )
                 categories.forEach { category ->
                     DropdownMenuItem(
-                        text = { Text(category.name) },
+                        text = { Text(categoryDisplayName(category.name)) },
                         leadingIcon = {
                             Icon(
                                 categoryIconFor(category.iconToken),
