@@ -7,6 +7,9 @@ block() { echo "git-guard: $1" >&2; exit 2; }
 # The hook can start in the primary checkout; the git checks below must see where the command runs.
 CWD=$(printf '%s' "$INPUT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null)
 [ -d "$CWD" ] && cd "$CWD"
+# A leading `cd <dir> &&` (or `;`) runs the rest elsewhere, e.g. in a worktree; check git state there.
+DIR=$(printf '%s' "$CMD" | sed -nE '1s/^[[:space:]]*cd +"?([^"&;|]+[^"&;| ])"? *(&&|;).*/\1/p')
+[ -n "$DIR" ] && [ -d "$DIR" ] && cd "$DIR"
 
 # No AI attribution in commit messages, PR/issue bodies or comments.
 if printf '%s' "$CMD" | grep -qE 'git commit|gh (pr|issue) (create|edit|comment|review)' &&
