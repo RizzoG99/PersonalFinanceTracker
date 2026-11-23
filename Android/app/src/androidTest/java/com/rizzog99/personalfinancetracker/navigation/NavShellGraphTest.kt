@@ -66,9 +66,11 @@ class NavShellGraphTest {
                 LocalContext provides context,
                 LocalConfiguration provides configuration,
             ) {
-                PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
-                    navController = rememberNavController()
-                    PersonalFinanceNavHost(navController = navController)
+                ForcedWidth(width.value) {
+                    PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
+                        navController = rememberNavController()
+                        PersonalFinanceNavHost(navController = navController)
+                    }
                 }
             }
         }

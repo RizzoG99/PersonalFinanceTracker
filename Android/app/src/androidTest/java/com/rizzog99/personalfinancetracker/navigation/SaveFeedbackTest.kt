@@ -91,8 +91,10 @@ class SaveFeedbackTest {
             val configuration = Configuration(LocalContext.current.resources.configuration)
                 .apply { screenWidthDp = widthDp }
             CompositionLocalProvider(LocalConfiguration provides configuration) {
-                PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
-                    PersonalFinanceNavHost()
+                ForcedWidth(widthDp) {
+                    PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
+                        PersonalFinanceNavHost()
+                    }
                 }
             }
         }
