@@ -36,38 +36,42 @@ import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.ui.graphics.vector.ImageVector
 
-fun categoryIconFor(token: String): ImageVector = when {
-    token.contains("cart") -> Icons.Outlined.ShoppingCart
-    token.contains("fork") || token.contains("cup") || token.contains("takeout") -> Icons.Outlined.Restaurant
-    token.contains("house") -> Icons.Outlined.Home
-    token.contains("briefcase") -> Icons.Outlined.BusinessCenter
-    token.contains("banknote") -> Icons.Outlined.AccountBalanceWallet
-    token.contains("chart") -> Icons.AutoMirrored.Outlined.ShowChart
-    token.contains("gift") -> Icons.Outlined.CardGiftcard
-    token.contains("airplane") -> Icons.Outlined.Flight
-    token.contains("fuel") -> Icons.Outlined.LocalGasStation
-    token.contains("wrench") || token.contains("bolt") -> Icons.Outlined.Build
-    token.contains("bus") -> Icons.Outlined.DirectionsBus
-    token.contains("taxi") -> Icons.Outlined.LocalTaxi
-    token.contains("car") -> Icons.Outlined.DirectionsCar
-    token.contains("star") -> Icons.Outlined.Star
-    token.contains("trophy") -> Icons.Outlined.EmojiEvents
-    token.contains("iphone") -> Icons.Outlined.PhoneIphone
-    token.contains("globe") -> Icons.Outlined.Public
-    token.contains("tv") -> Icons.Outlined.Tv
-    token.contains("tshirt") -> Icons.Outlined.Checkroom
-    token.contains("bag") -> Icons.Outlined.ShoppingBag
-    token.contains("gamecontroller") -> Icons.Outlined.SportsEsports
-    token.contains("book") -> Icons.AutoMirrored.Outlined.MenuBook
-    token.contains("cross") || token.contains("pills") || token.contains("dumbbell") -> Icons.Outlined.LocalHospital
-    token.contains("film") -> Icons.Outlined.Movie
-    token.contains("music") -> Icons.Outlined.MusicNote
-    token.contains("graduationcap") -> Icons.Outlined.School
-    token.contains("pawprint") -> Icons.Outlined.Pets
-    token.contains("arrow.uturn") -> Icons.AutoMirrored.Outlined.Undo
-    token.contains("creditcard") -> Icons.Outlined.CreditCard
-    token.contains("ellipsis") -> Icons.Outlined.MoreHoriz
-    token.contains("dining") -> Icons.Outlined.LocalDining
-    token.contains("work") -> Icons.Outlined.Work
+/**
+ * Picks by the symbol's first component ("creditcard" in "creditcard.fill"), exactly: matching
+ * substrings gave `creditcard.fill` the car icon because "car" was checked first (#291).
+ */
+fun categoryIconFor(token: String): ImageVector = when (token.substringBefore('.')) {
+    "cart" -> Icons.Outlined.ShoppingCart
+    "fork", "cup", "takeoutbag" -> Icons.Outlined.Restaurant
+    "house" -> Icons.Outlined.Home
+    "briefcase" -> Icons.Outlined.BusinessCenter
+    "banknote" -> Icons.Outlined.AccountBalanceWallet
+    "chart" -> Icons.AutoMirrored.Outlined.ShowChart
+    "gift" -> Icons.Outlined.CardGiftcard
+    "airplane" -> Icons.Outlined.Flight
+    "fuelpump" -> Icons.Outlined.LocalGasStation
+    "wrench", "bolt" -> Icons.Outlined.Build
+    "bus" -> Icons.Outlined.DirectionsBus
+    "taxi" -> Icons.Outlined.LocalTaxi
+    "car" -> Icons.Outlined.DirectionsCar
+    "star" -> Icons.Outlined.Star
+    "trophy" -> Icons.Outlined.EmojiEvents
+    "iphone" -> Icons.Outlined.PhoneIphone
+    "globe" -> Icons.Outlined.Public
+    "tv" -> Icons.Outlined.Tv
+    "tshirt" -> Icons.Outlined.Checkroom
+    "bag" -> Icons.Outlined.ShoppingBag
+    "gamecontroller" -> Icons.Outlined.SportsEsports
+    "book" -> Icons.AutoMirrored.Outlined.MenuBook
+    "cross", "pills", "dumbbell" -> Icons.Outlined.LocalHospital
+    "film" -> Icons.Outlined.Movie
+    "music" -> Icons.Outlined.MusicNote
+    "graduationcap" -> Icons.Outlined.School
+    "pawprint" -> Icons.Outlined.Pets
+    "arrow" -> Icons.AutoMirrored.Outlined.Undo
+    "creditcard" -> Icons.Outlined.CreditCard
+    "ellipsis" -> Icons.Outlined.MoreHoriz
+    "dining" -> Icons.Outlined.LocalDining
+    "work" -> Icons.Outlined.Work
     else -> Icons.Outlined.Category
 }

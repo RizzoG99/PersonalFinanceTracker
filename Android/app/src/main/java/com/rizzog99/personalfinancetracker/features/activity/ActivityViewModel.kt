@@ -95,6 +95,7 @@ internal fun availableActivityCategoryLabels(
     selection: ActivityFilterSelection,
     zoneId: ZoneId,
     clock: Clock = Clock.system(zoneId),
+    categoryNames: Map<String, String> = emptyMap(),
 ): List<String> {
     if (selection.filters.type == TransactionTypeFilter.ALL) return emptyList()
 
@@ -104,6 +105,7 @@ internal fun availableActivityCategoryLabels(
         filters = selection.filters.copy(category = null),
         zoneId = zoneId,
         clock = clock,
+        categoryNames = categoryNames,
     )
     return matchingTransactions
         .groupingBy(FinanceTransaction::categoryLabel)
@@ -162,6 +164,7 @@ internal fun resolveActivityFilterDraft(
     recurringOnly: Boolean,
     zoneId: ZoneId,
     clock: Clock = Clock.system(zoneId),
+    categoryNames: Map<String, String> = emptyMap(),
 ): ActivityFilterDraft? {
     if (!amountRange.isValid) return null
 
@@ -177,6 +180,7 @@ internal fun resolveActivityFilterDraft(
         selection = ActivityFilterSelection(searchText = searchText, filters = stagedFilters),
         zoneId = zoneId,
         clock = clock,
+        categoryNames = categoryNames,
     )
     val effectiveCategory = selectedCategory?.takeIf(categoryLabels::contains)
     return ActivityFilterDraft(
@@ -236,14 +240,24 @@ class ActivityViewModel(
             .catch { emit(ActivityLedger(isLoading = false, isError = true)) }
     }
 
+    /** Built-in category names in the app's language, pushed by the screen (#291). */
+    private val categoryNames = MutableStateFlow<Map<String, String>>(emptyMap())
+
+    /** Called by the screen on every composition language, so a locale switch re-runs search. */
+    fun setCategoryNames(names: Map<String, String>) {
+        categoryNames.value = names
+    }
+
     val uiState: StateFlow<ActivityUiState> = combine(
         ledger,
         filterSelection,
-    ) { ledger, selection ->
+        categoryNames,
+    ) { ledger, selection, names ->
         val filterCategoryLabels = availableActivityCategoryLabels(
             transactions = ledger.transactions,
             selection = selection,
             zoneId = zoneId,
+            categoryNames = names,
         )
         ActivityUiState(
             isLoading = ledger.isLoading,
@@ -254,6 +268,7 @@ class ActivityViewModel(
                 searchText = selection.searchText,
                 filters = selection.filters,
                 zoneId = zoneId,
+                categoryNames = names,
             ),
             categories = ledger.categories,
             filterCategoryLabels = filterCategoryLabels,

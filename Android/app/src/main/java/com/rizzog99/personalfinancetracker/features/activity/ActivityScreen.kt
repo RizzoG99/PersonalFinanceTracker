@@ -138,6 +138,9 @@ import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.EmptyState
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayNames
+import com.rizzog99.personalfinancetracker.domain.transaction.matchesCategorySearch
 import com.rizzog99.personalfinancetracker.ui.components.ErrorState
 import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.LoadingState
@@ -183,6 +186,8 @@ fun ActivityScreen(
         ),
     )
     val state by viewModel.uiState.collectAsState()
+    val categoryNames = categoryDisplayNames()
+    LaunchedEffect(categoryNames) { viewModel.setCategoryNames(categoryNames) }
     val error by viewModel.error.collectAsState()
     val snackbarHostState = shellSnackbarHostState ?: remember { SnackbarHostState() }
     val accessibilityManager = LocalAccessibilityManager.current
@@ -360,6 +365,8 @@ fun ActivityTwoPaneScreen(
         ),
     )
     val state by viewModel.uiState.collectAsState()
+    val categoryNames = categoryDisplayNames()
+    LaunchedEffect(categoryNames) { viewModel.setCategoryNames(categoryNames) }
     val error by viewModel.error.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val accessibilityManager = LocalAccessibilityManager.current
@@ -804,6 +811,7 @@ private fun ActivityFiltersSheet(
         amountRange = amountRange,
         recurringOnly = recurringOnly,
         zoneId = zoneId,
+        categoryNames = categoryDisplayNames(),
     )
     val stagedCategoryLabels = draft?.categoryLabels ?: categoryLabels
     val categoryWasInvalidated = draft?.categoryWasInvalidated == true
@@ -889,7 +897,7 @@ private fun ActivityFiltersSheet(
                 }
                 listOf<String?>(null).plus(stagedCategoryLabels).forEach { categoryLabel ->
                     val selected = selectedCategory == categoryLabel
-                    val label = categoryLabel ?: stringResource(R.string.filter_any_category)
+                    val label = categoryLabel?.let { categoryDisplayName(it) } ?: stringResource(R.string.filter_any_category)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1064,7 +1072,7 @@ private fun TransactionRow(
                     }
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(transaction.note.ifBlank { transaction.categoryLabel })
+                            Text(transaction.note.ifBlank { categoryDisplayName(transaction.categoryLabel) })
                             if (isRecurring) {
                                 Icon(
                                     Icons.Outlined.Repeat,
@@ -1075,7 +1083,7 @@ private fun TransactionRow(
                             }
                         }
                         Text(
-                            text = "${transaction.categoryLabel} · ${formatTransactionTime(transaction.timestamp)}",
+                            text = "${categoryDisplayName(transaction.categoryLabel)} · ${formatTransactionTime(transaction.timestamp)}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -1113,7 +1121,7 @@ private fun TransactionRow(
                 },
                 headlineContent = {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(transaction.note.ifBlank { transaction.categoryLabel })
+                        Text(transaction.note.ifBlank { categoryDisplayName(transaction.categoryLabel) })
                         if (isRecurring) {
                             Icon(
                                 Icons.Outlined.Repeat,
@@ -1125,7 +1133,7 @@ private fun TransactionRow(
                     }
                 },
                 supportingContent = {
-                    Text("${transaction.categoryLabel} · ${formatTransactionTime(transaction.timestamp)}")
+                    Text("${categoryDisplayName(transaction.categoryLabel)} · ${formatTransactionTime(transaction.timestamp)}")
                 },
                 trailingContent = {
                     Text(
@@ -1755,7 +1763,7 @@ private fun CategoryPickerTile(
             tint = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = category.name,
+            text = categoryDisplayName(category.name),
             style = MaterialTheme.typography.labelMedium,
             textAlign = TextAlign.Center,
             maxLines = 2,
@@ -1814,8 +1822,9 @@ private fun CategoryPickerSheet(
     onCategorySelected: (FinanceCategory) -> Unit,
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    val categoryNames = categoryDisplayNames()
     val filteredCategories = categories.filter { category ->
-        searchQuery.isBlank() || category.name.contains(searchQuery.trim(), ignoreCase = true)
+        category.name.matchesCategorySearch(searchQuery, categoryNames)
     }
 
     ModalBottomSheet(

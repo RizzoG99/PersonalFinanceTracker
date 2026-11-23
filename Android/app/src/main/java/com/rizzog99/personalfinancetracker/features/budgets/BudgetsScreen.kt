@@ -56,6 +56,7 @@ import com.rizzog99.personalfinancetracker.ui.components.FinanceCard
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
 import java.math.BigDecimal
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -185,7 +186,7 @@ private fun BudgetRow(
                 contentDescription = null,
                 tint = categoryColor(category.colorToken),
             )
-            Text(category.name, modifier = Modifier.padding(start = 12.dp).weight(1f))
+            Text(categoryDisplayName(category.name), modifier = Modifier.padding(start = 12.dp).weight(1f))
             TextField(
                 value = if (focused) text else category.monthlyBudget?.takeIf { it > BigDecimal.ZERO }?.let { formatCurrency(it, category.currencyCode) }.orEmpty(),
                 onValueChange = { text = AmountInput.sanitize(it) },

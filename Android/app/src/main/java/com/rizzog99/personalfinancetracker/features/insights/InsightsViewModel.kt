@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
+import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.GoalRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
+import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.goal.FinanceGoal
 import com.rizzog99.personalfinancetracker.domain.goal.NewGoal
 import com.rizzog99.personalfinancetracker.domain.paycycle.FinancialPeriod
@@ -30,7 +32,8 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-data class CategorySpending(val label: String, val amount: BigDecimal)
+/** [category] supplies the row's own icon and colour (#291); null for rows no category owns. */
+data class CategorySpending(val label: String, val amount: BigDecimal, val category: FinanceCategory? = null)
 
 data class GoalProgress(val goal: FinanceGoal, val currentAmount: BigDecimal)
 data class PaceInsight(val direction: PaceDirection, val percent: Int? = null)
@@ -57,6 +60,7 @@ class InsightsViewModel(
     private val transactionRepository: TransactionRepository,
     private val goalRepository: GoalRepository,
     private val preferencesRepository: UserPreferencesRepository,
+    private val categoryRepository: CategoryRepository,
     private val clock: Clock = Clock.systemDefaultZone(),
     private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
@@ -75,7 +79,9 @@ class InsightsViewModel(
         goalRepository.observeAll(),
         preferencesRepository.payCycleStartDay,
         preferencesRepository.baseCurrency,
-    ) { transactions, goals, payCycleStartDay, currencyCode ->
+        categoryRepository.observeAll(),
+    ) { transactions, goals, payCycleStartDay, currencyCode, categories ->
+        val categoryById = categories.associateBy(FinanceCategory::id)
         val period = PayCycleService.currentFinancialMonth(payCycleStartDay, clock)
         val periodTransactions = transactions.filter { it.timestamp.atZone(zoneId).toLocalDate() in period }
         val expenseTransactions = transactions.filter { it.amount < BigDecimal.ZERO && it.goalId == null }
@@ -105,7 +111,13 @@ class InsightsViewModel(
             health = recentTransactions.takeIf { it.isNotEmpty() }?.let { health(it, expenseTransactions, financialMonths, zoneId) },
             categorySpending = expenseTransactions.filter { it.timestamp.atZone(zoneId).toLocalDate() in period }
                 .groupBy { it.categoryLabel }
-                .map { (label, items) -> CategorySpending(label, items.fold(BigDecimal.ZERO) { total, item -> total + item.amount.abs() }) }
+                .map { (label, items) ->
+                    CategorySpending(
+                        label = label,
+                        amount = items.fold(BigDecimal.ZERO) { total, item -> total + item.amount.abs() },
+                        category = items.firstNotNullOfOrNull { it.categoryId }?.let(categoryById::get),
+                    )
+                }
                 .sortedByDescending(CategorySpending::amount),
         )
     }
@@ -117,8 +129,9 @@ class InsightsViewModel(
             transactionRepository: TransactionRepository,
             goalRepository: GoalRepository,
             preferencesRepository: UserPreferencesRepository,
+            categoryRepository: CategoryRepository,
         ) = viewModelFactory {
-            initializer { InsightsViewModel(transactionRepository, goalRepository, preferencesRepository) }
+            initializer { InsightsViewModel(transactionRepository, goalRepository, preferencesRepository, categoryRepository) }
         }
     }
 
