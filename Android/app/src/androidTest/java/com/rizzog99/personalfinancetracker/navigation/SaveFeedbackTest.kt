@@ -128,7 +128,7 @@ class SaveFeedbackTest {
         // the snackbar's whole 4 s lifetime and the message is never observed. One frame at a
         // time, it is on screen for ~250 frames.
         rule.mainClock.autoAdvance = false
-        rule.onNode(save).performScrollTo().assertIsEnabled().performClick()
+        rule.onNode(save).assertIsEnabled().performClick()
         var undoCount = -1
         val deadline = System.currentTimeMillis() + 20_000
         while (undoCount < 0 && System.currentTimeMillis() < deadline) {
@@ -241,10 +241,8 @@ class SaveFeedbackTest {
             // The sheet is its own window, whose ComposeView re-provides LocalContext, so the locale
             // override stops at it: its save button keeps the device-language label. The snackbar
             // under review lives in the main window and is localized.
-            // On the tablet Save can sit below the sheet's fold, and a bare tap then hits the scrim
-            // and dismisses the sheet unsaved (same cause as #291's 2c55ba3b).
             rule.onNode(hasContentDescription(base.getString(R.string.add_transaction)) and hasClickAction())
-                .performScrollTo().performClick()
+                .performClick()
             val saved = hasText(localized.getString(R.string.transaction_saved))
             val deadline = System.currentTimeMillis() + 20_000
             while (rule.onAllNodes(saved).fetchSemanticsNodes().isEmpty() && System.currentTimeMillis() < deadline) {
