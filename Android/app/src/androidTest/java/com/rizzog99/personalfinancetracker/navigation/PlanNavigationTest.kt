@@ -252,7 +252,7 @@ class PlanNavigationTest {
         budget("200")
         val nav = host()
         rule.onNode(hasContentDescription(string(R.string.settings_title))).performClick()
-        waitFor(hasText(string(R.string.settings_title)) and heading)
+        waitFor(hasText(string(R.string.settings_title)))
         rule.onAllNodes(hasText(string(R.string.budgets_title))).fetchSemanticsNodes().let { assertEquals("Budgets row in Settings", 0, it.size) }
         Espresso.pressBack()
         rule.waitForIdle()

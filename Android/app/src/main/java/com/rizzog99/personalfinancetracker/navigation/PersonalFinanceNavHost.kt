@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -46,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -235,7 +237,7 @@ fun PersonalFinanceNavHost(
                                     contentDescription = null,
                                 )
                             },
-                            label = { Text(stringResource(destination.labelRes)) },
+                            label = { TabLabel(stringResource(destination.labelRes)) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -452,7 +454,7 @@ fun PersonalFinanceNavHost(
 @Composable
 private fun DrawerItem(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, selected: Boolean, onClick: () -> Unit) {
     NavigationDrawerItem(
-        label = { Text(label) },
+        label = { TabLabel(label) },
         icon = { Icon(icon, contentDescription = null) },
         selected = selected,
         onClick = onClick,
@@ -483,4 +485,23 @@ private fun MainDestination.icon() = when (this) {
     MainDestination.ScanCategories -> Icons.Outlined.DocumentScanner
     MainDestination.Budgets -> Icons.Outlined.Savings
     MainDestination.DataTransfer -> Icons.Outlined.SwapVert
+}
+
+/**
+ * At 200% text, "Pianifica" overflows a quarter of a 411dp phone and "Impostazioni" the 240dp
+ * drawer: shrink tab and drawer labels to fit on one line instead of wrapping.
+ * ponytail: hand-rolled shrink-to-fit; replace with `Text(autoSize = TextAutoSize.StepBased())`
+ * once the Compose BOM is ≥ 2025.04.
+ */
+@Composable
+private fun TabLabel(text: String) {
+    val base = LocalTextStyle.current
+    var scale by remember(text, base) { mutableFloatStateOf(1f) }
+    Text(
+        text = text,
+        maxLines = 1,
+        softWrap = false,
+        style = base.copy(fontSize = base.fontSize * scale),
+        onTextLayout = { if (it.didOverflowWidth && scale > 0.5f) scale -= 0.05f },
+    )
 }
