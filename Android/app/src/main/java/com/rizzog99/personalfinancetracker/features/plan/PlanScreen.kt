@@ -140,13 +140,14 @@ class PlanViewModel(
 @Composable
 private fun insightsViewModel(): InsightsViewModel {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
-    // ponytail: goals and their actions still live on InsightsViewModel (D-06); split it out once #291's
-    // factory change has landed, if Insights' extra work here ever shows up in a profile.
+    // ponytail: goals and their actions still live on InsightsViewModel (D-06); split them out if
+    // Insights' extra work here ever shows up in a profile.
     return viewModel(
         factory = InsightsViewModel.factory(
             application.transactionRepository,
             application.goalRepository,
             application.preferencesRepository,
+            application.categoryRepository,
         ),
     )
 }
