@@ -157,7 +157,7 @@ fun PersonalFinanceNavHost(
     // back the shell's "Transaction saved" for its whole 5 s window (#376).
     val activitySnackbarHostState = remember { SnackbarHostState() }
     // Activity selection mode (#285): its own action bar takes the bottom, so the tabs and the + step
-    // aside, as on iOS (D-04) — a stray tab tap would otherwise drop the selection. The wide rail stays,
+    // aside, as on iOS (D-04) — a stray tab tap would otherwise drop the selection. The wide drawer stays,
     // like iPad's sidebar; only its + goes.
     var activitySelecting by remember { mutableStateOf(false) }
     var activitySelectionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }

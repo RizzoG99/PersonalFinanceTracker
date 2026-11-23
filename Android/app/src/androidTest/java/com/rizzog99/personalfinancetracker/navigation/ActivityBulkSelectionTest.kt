@@ -99,7 +99,7 @@ class ActivityBulkSelectionTest {
         rule.setContent {
             val configuration = Configuration(LocalContext.current.resources.configuration).apply { screenWidthDp = widthDp }
             CompositionLocalProvider(LocalConfiguration provides configuration) {
-                PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) { PersonalFinanceNavHost() }
+                PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) { ForcedWidth(widthDp) { PersonalFinanceNavHost() } }
             }
         }
         rule.waitForIdle()
