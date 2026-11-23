@@ -273,18 +273,21 @@ class FoundationLocalizationEvidenceTest {
 
     private fun hostShell(locale: Locale) {
         lateinit var navController: NavHostController
-        hostLocalized(locale) {
+        // Phone width: the asserted labels are the four bottom tabs (#283's wide drawer differs).
+        hostLocalized(locale, widthDp = 411) {
             navController = rememberNavController()
             PersonalFinanceNavHost(navController = navController)
         }
     }
 
-    private fun hostLocalized(locale: Locale, content: @Composable () -> Unit) {
+    private fun hostLocalized(locale: Locale, widthDp: Int? = null, content: @Composable () -> Unit) {
         rule.setContent {
             val context = localeContext(LocalContext.current, locale)
             CompositionLocalProvider(
                 LocalContext provides context,
-                LocalConfiguration provides Configuration(context.resources.configuration),
+                LocalConfiguration provides Configuration(context.resources.configuration).apply {
+                    if (widthDp != null) screenWidthDp = widthDp
+                },
             ) {
                 PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
                     Surface(
