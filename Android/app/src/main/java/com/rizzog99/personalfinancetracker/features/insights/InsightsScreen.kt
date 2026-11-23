@@ -763,12 +763,16 @@ private fun categoryPaletteColor(index: Int): Color {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (NewGoal) -> Unit) {
-    var name by remember(goal) { mutableStateOf(goal?.name.orEmpty()) }
-    var amountText by remember(goal) { mutableStateOf(goal?.targetAmount?.toPlainString().orEmpty()) }
-    var colorToken by remember(goal) { mutableStateOf(goal?.colorToken ?: "categoryIndigo") }
-    var iconToken by remember(goal) { mutableStateOf(goal?.iconToken ?: "star.fill") }
-    var hasDeadline by remember(goal) { mutableStateOf(goal?.deadline != null) }
-    var deadline by remember(goal) { mutableStateOf(goal?.deadline ?: Instant.now().plus(180, ChronoUnit.DAYS)) }
+    // Saveable, keyed by goal id: the draft survives recreation like the open sheet does (#283 AC-02).
+    var name by rememberSaveable(goal?.id) { mutableStateOf(goal?.name.orEmpty()) }
+    var amountText by rememberSaveable(goal?.id) { mutableStateOf(goal?.targetAmount?.toPlainString().orEmpty()) }
+    var colorToken by rememberSaveable(goal?.id) { mutableStateOf(goal?.colorToken ?: "categoryIndigo") }
+    var iconToken by rememberSaveable(goal?.id) { mutableStateOf(goal?.iconToken ?: "star.fill") }
+    var hasDeadline by rememberSaveable(goal?.id) { mutableStateOf(goal?.deadline != null) }
+    var deadlineMillis by rememberSaveable(goal?.id) {
+        mutableStateOf((goal?.deadline ?: Instant.now().plus(180, ChronoUnit.DAYS)).toEpochMilli())
+    }
+    val deadline = Instant.ofEpochMilli(deadlineMillis)
     var choosingDeadline by remember { mutableStateOf(false) }
     var choosingIcon by remember { mutableStateOf(false) }
     val parsedAmount = AmountInput.parse(amountText)
@@ -981,7 +985,7 @@ private fun GoalEditorSheet(goal: FinanceGoal?, onDismiss: () -> Unit, onSave: (
             initial = deadline,
             onDismiss = { choosingDeadline = false },
             onConfirm = {
-                deadline = it
+                deadlineMillis = it.toEpochMilli()
                 choosingDeadline = false
             },
         )

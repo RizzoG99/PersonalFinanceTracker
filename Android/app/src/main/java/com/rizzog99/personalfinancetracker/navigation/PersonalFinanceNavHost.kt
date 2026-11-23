@@ -199,8 +199,11 @@ fun PersonalFinanceNavHost(
             snackbarHostState.showSnackbar(message = savedMessage)
         }
     }
-    // Plan stays a shell destination on wide too, so crossing the breakpoint on it keeps the drawer.
-    val shellRoutes = (if (isExpandedWidth) drawerDestinations + MainDestination.Plan else phoneTabs).map { it.route }
+    // Crossing the breakpoint never strands a screen without navigation: Plan keeps the drawer on
+    // wide, and the wide-only Goals keeps the bottom bar on compact, under the Plan tab it belongs
+    // to. (Recurring and Budgets get their back arrow back on compact instead.)
+    val shellRoutes = (if (isExpandedWidth) drawerDestinations + MainDestination.Plan else phoneTabs + MainDestination.Goals).map { it.route }
+    val selectedTab = if (currentRoute == MainDestination.Goals.route) MainDestination.Plan.route else currentRoute
     val onMainDestination = currentRoute in shellRoutes && !settingsVisible && !dashboardTransactionEditorVisible
     // Recurring and Budgets are drawer roots on wide (no back arrow, D-05) and pushed screens on phones.
     val secondaryBack: (() -> Unit)? = if (isExpandedWidth) null else navigateBackFromSecondary
@@ -224,7 +227,7 @@ fun PersonalFinanceNavHost(
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                     phoneTabs.forEach { destination ->
                         NavigationBarItem(
-                            selected = currentRoute == destination.route,
+                            selected = selectedTab == destination.route,
                             onClick = { navigateToMainDestination(destination) },
                             icon = {
                                 Icon(

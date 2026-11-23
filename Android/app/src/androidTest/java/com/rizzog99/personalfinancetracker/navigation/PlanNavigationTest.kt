@@ -74,12 +74,16 @@ class PlanNavigationTest {
             .getString(id)
     }
 
+    /** Drives the shell's breakpoint inside one composition (`width.value = …`). */
+    private val width = androidx.compose.runtime.mutableStateOf(411)
+
     private fun host(widthDp: Int = 411, locale: Locale? = null): NavHostController {
         lateinit var navController: NavHostController
+        width.value = widthDp
         rule.setContent {
             val base = LocalContext.current
             val context = locale?.let { localized(base, it) } ?: base
-            val configuration = Configuration(context.resources.configuration).apply { screenWidthDp = widthDp }
+            val configuration = Configuration(context.resources.configuration).apply { screenWidthDp = width.value }
             CompositionLocalProvider(LocalContext provides context, LocalConfiguration provides configuration) {
                 PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
                     navController = rememberNavController()
@@ -295,6 +299,30 @@ class PlanNavigationTest {
         rule.onNode(hasText("Holiday")).assertDoesNotExist()
         rule.onNode(tab(string(R.string.goals_title))).performClick()
         waitFor(hasText("Holiday"))
+    }
+
+    @Test
+    fun ac05_crossingTheBreakpointOnPlanFamilyScreensKeepsNavigation() {
+        goal("Holiday")
+        val nav = host(widthDp = 1280)
+        rule.onNode(tab(string(R.string.goals_title))).performClick()
+        waitFor(hasText("Holiday"))
+
+        // Wide-only Goals on a narrowed window: still the bottom bar, under Plan.
+        width.value = 411
+        rule.waitForIdle()
+        assertEquals("goals", baseRoute(nav))
+        rule.onNode(tab(string(R.string.tab_plan))).assertIsSelected()
+        rule.onNode(tab(string(R.string.tab_plan))).performClick()
+        waitFor(hasTestTag(NavShellMarkers.PLAN_CONTENT_TAG))
+
+        // Plan on a widened window keeps the drawer, every item still reachable (D-10).
+        width.value = 1280
+        rule.waitForIdle()
+        rule.onNode(hasTestTag("nav-drawer")).assertExists()
+        rule.onNode(tab(string(R.string.budgets_title))).performClick()
+        rule.waitForIdle()
+        assertEquals("budgets", baseRoute(nav))
     }
 
     // --- AC-06 Insights no longer shows goals ---------------------------------------------

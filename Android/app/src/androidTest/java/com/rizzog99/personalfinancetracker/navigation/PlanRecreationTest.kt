@@ -3,6 +3,7 @@ package com.rizzog99.personalfinancetracker.navigation
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
@@ -12,6 +13,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -86,10 +88,13 @@ class PlanRecreationTest {
         rule.onNode(hasText(string(R.string.add_goal)) and hasClickAction()).performScrollTo().performClick()
         val editorSave = hasContentDescription(string(R.string.add_goal))
         waitFor(editorSave)
+        rule.onAllNodes(hasSetTextAction())[0].performTextInput("Holiday")
 
         recreate()
 
         waitFor(editorSave)
+        // The draft survives, not just the open sheet.
+        rule.onNode(hasSetTextAction() and hasText("Holiday")).assertExists()
         Espresso.pressBack()
         waitGone(editorSave)
         waitFor(hasTestTag(NavShellMarkers.PLAN_CONTENT_TAG))
@@ -111,8 +116,8 @@ class PlanRecreationTest {
     }
 
     @Test
-    fun ac05_wideRecurringEditorSurvivesRecreationAndStaysDismissed() {
-        assumeTrue("needs a wide device (Pixel_Tablet)", isWide)
+    fun ac02_aRowOpenedRuleEditorSurvivesRecreationAndStaysDismissed() {
+        assumeTrue("compact layout", !isWide)
         val zone = ZoneId.systemDefault()
         runBlocking {
             val expense = app.categoryRepository.observeAll().first().first { it.type == TransactionType.EXPENSE }
@@ -125,11 +130,11 @@ class PlanRecreationTest {
                 ),
             )
         }
-        // Wide has no Plan item; the Recurring destination is where rules are edited.
-        waitFor(tab(string(R.string.recurring_title)))
-        rule.onNode(tab(string(R.string.recurring_title))).performClick()
-        waitFor(hasText("Netflix"))
-        rule.onNode(hasText("Netflix") and hasClickAction()).performClick()
+        // Plan's Coming-up row opens `recurring?editRuleId=<id>`: the route itself seeds the editor.
+        waitFor(tab(string(R.string.tab_plan)))
+        rule.onNode(tab(string(R.string.tab_plan))).performClick()
+        waitFor(hasText("Netflix") and hasClickAction())
+        rule.onNode(hasText("Netflix") and hasClickAction()).performScrollTo().performClick()
         val editor = hasSetTextAction() and hasText("Netflix")
         waitFor(editor)
 
@@ -138,9 +143,10 @@ class PlanRecreationTest {
 
         Espresso.pressBack()
         waitGone(editor)
+        // Same back-stack entry, same editRuleId argument: a recreation must not replay it.
         recreate()
+        waitFor(hasText(string(R.string.recurring_title)) and SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
         rule.waitForIdle()
-        waitFor(hasText("Netflix"))
-        rule.onAllNodes(editor).fetchSemanticsNodes().let { assert(it.isEmpty()) { "dismissed editor came back" } }
+        rule.onAllNodes(editor).assertCountEquals(0)
     }
 }
