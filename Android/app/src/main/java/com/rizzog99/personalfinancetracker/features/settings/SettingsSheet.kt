@@ -82,7 +82,6 @@ fun SettingsSheet(
     onDismiss: () -> Unit,
     onOpenCategories: () -> Unit,
     onOpenScanCategories: () -> Unit,
-    onOpenBudgets: () -> Unit,
     onOpenDataTransfer: () -> Unit,
     /** Test seam (#320 `AC-06`): replaces the production wipe; `null` is production. */
     wipe: (suspend () -> Unit)? = null,
@@ -351,19 +350,6 @@ fun SettingsSheet(
                     .clickable(role = Role.Button, onClick = onOpenScanCategories),
                 headlineContent = { Text(stringResource(R.string.scan_categories_entry)) },
                 supportingContent = { Text(stringResource(R.string.scan_categories_description)) },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
-                        contentDescription = null,
-                    )
-                },
-            )
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(role = Role.Button, onClick = onOpenBudgets),
-                headlineContent = { Text(stringResource(R.string.budgets_title)) },
-                supportingContent = { Text(stringResource(R.string.budgets_settings_detail)) },
                 trailingContent = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowForward,

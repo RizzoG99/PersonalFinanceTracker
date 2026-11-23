@@ -22,6 +22,7 @@ import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.data.security.PinLock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -70,6 +71,10 @@ class NavShellEvidenceTest {
         assertEquals(PinLock.NotSet, app.pinLockRepository.state.value)
     }
 
+    /** The four phone tabs exist only below 840dp; the wide drawer is covered by PlanNavigationTest ac05. */
+    private fun assumeCompact() =
+        assumeTrue("compact layout", rule.activity.resources.configuration.screenWidthDp < 840)
+
     private fun typeInActivitySearch(text: String) {
         rule.onAllNodes(hasTestTag(ACTIVITY_SEARCH_TAG)).assertCountEquals(1)
         rule.onNode(hasTestTag(ACTIVITY_SEARCH_TAG)).performTextInput(text)
@@ -90,6 +95,7 @@ class NavShellEvidenceTest {
 
     @Test
     fun ac02_everyDirectedTransitionShowsExactlyTheRequestedDestination(): Unit = with(m) {
+        assumeCompact()
         for (from in tabs) {
             for (to in tabs) {
                 if (from == to) continue
@@ -170,6 +176,7 @@ class NavShellEvidenceTest {
 
     @Test
     fun ac06_compactBottomNavigationLabelsAndSelectedSemantics(): Unit = with(m) {
+        assumeCompact()
         tabs.forEach { rule.onNode(tab(it)).assertIsDisplayed() }
         rule.selectTab(activityTab)
         rule.onNode(tab(activityTab)).assertIsSelected()

@@ -90,9 +90,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecurringRulesScreen(
-    onBack: () -> Unit,
+    /** `null` on the wide layout, where Recurring is a drawer root with no back arrow (#283 D-05). */
+    onBack: (() -> Unit)?,
     editRuleId: String? = null,
     clock: Clock = Clock.systemDefaultZone(),
+    /** Plan's "Add recurring payment" opens the add editor on entry (#283, iOS `presetRecurring`). */
+    startAdding: Boolean = false,
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: RecurringRulesViewModel = viewModel(
@@ -107,7 +110,7 @@ fun RecurringRulesScreen(
     val state by viewModel.uiState.collectAsState()
     val error by viewModel.error.collectAsState()
     var editingRuleId by rememberSaveable { mutableStateOf(editRuleId) }
-    var adding by rememberSaveable { mutableStateOf(false) }
+    var adding by rememberSaveable { mutableStateOf(startAdding) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = error?.let { stringResource(it) }
@@ -123,8 +126,10 @@ fun RecurringRulesScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.recurring_title), modifier = Modifier.semantics { heading() }) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                        }
                     }
                 },
                 actions = {

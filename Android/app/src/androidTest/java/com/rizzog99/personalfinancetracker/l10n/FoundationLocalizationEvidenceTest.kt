@@ -77,6 +77,7 @@ class FoundationLocalizationEvidenceTest {
     private val tabHome = Copy(en = "Home", it = "Home")
     private val tabActivity = Copy(en = "Activity", it = "Attività")
     private val tabInsights = Copy(en = "Insights", it = "Analisi")
+    private val tabPlan = Copy(en = "Plan", it = "Pianifica")
     private val addTransaction = Copy(en = "Add transaction", it = "Aggiungi transazione")
 
     private val loading = Copy(
@@ -143,7 +144,7 @@ class FoundationLocalizationEvidenceTest {
 
     private fun assertShell(locale: Locale) {
         hostShell(locale)
-        listOf(tabHome, tabActivity, tabInsights).forEach {
+        listOf(tabHome, tabActivity, tabPlan, tabInsights).forEach {
             rule.onNode(hasText(it.forLocale(locale))).assertIsDisplayed()
         }
         // The FAB carries no visible label, so its content description is the only thing a screen
@@ -272,18 +273,21 @@ class FoundationLocalizationEvidenceTest {
 
     private fun hostShell(locale: Locale) {
         lateinit var navController: NavHostController
-        hostLocalized(locale) {
+        // Phone width: the asserted labels are the four bottom tabs (#283's wide drawer differs).
+        hostLocalized(locale, widthDp = 411) {
             navController = rememberNavController()
             PersonalFinanceNavHost(navController = navController)
         }
     }
 
-    private fun hostLocalized(locale: Locale, content: @Composable () -> Unit) {
+    private fun hostLocalized(locale: Locale, widthDp: Int? = null, content: @Composable () -> Unit) {
         rule.setContent {
             val context = localeContext(LocalContext.current, locale)
             CompositionLocalProvider(
                 LocalContext provides context,
-                LocalConfiguration provides Configuration(context.resources.configuration),
+                LocalConfiguration provides Configuration(context.resources.configuration).apply {
+                    if (widthDp != null) screenWidthDp = widthDp
+                },
             ) {
                 PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
                     Surface(

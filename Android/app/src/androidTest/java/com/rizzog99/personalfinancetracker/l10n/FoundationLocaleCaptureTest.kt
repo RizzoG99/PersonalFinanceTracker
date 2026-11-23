@@ -75,14 +75,21 @@ class FoundationLocaleCaptureTest {
     )
 
     /** Destination labels, per locale, exactly as `AC-02`/`AC-03` pinned them. */
-    private val destinationLabels = mapOf(
-        "en" to listOf("Home", "Activity", "Insights"),
-        "it" to listOf("Home", "Attività", "Analisi"),
+    // #283: four compact tabs; on wide, the drawer's grouped items instead.
+    private val compactLabels = mapOf(
+        "en" to listOf("Home", "Activity", "Plan", "Insights"),
+        "it" to listOf("Home", "Attività", "Pianifica", "Analisi"),
     )
+    private val wideLabels = mapOf(
+        "en" to listOf("Home", "Activity", "Recurring", "Budgets", "Goals", "Insights", "Settings"),
+        "it" to listOf("Home", "Attività", "Ricorrenti", "Budget", "Obiettivi", "Analisi", "Impostazioni"),
+    )
+    private fun destinationLabels(c: CaptureHarness.Cell) =
+        (if (c.widthDp >= 840) wideLabels else compactLabels).getValue(c.locale?.language ?: "en")
 
     private val otherLanguageLabels = mapOf(
-        "en" to listOf("Attività", "Analisi"),
-        "it" to listOf("Activity", "Insights"),
+        "en" to listOf("Attività", "Pianifica", "Analisi", "Ricorrenti", "Obiettivi", "Impostazioni"),
+        "it" to listOf("Activity", "Plan", "Insights", "Recurring", "Goals", "Settings"),
     )
 
     /** The shell's only label-less action; its description is all a screen reader gets. */
@@ -202,7 +209,7 @@ class FoundationLocaleCaptureTest {
                 val text = node.config.getOrNull(SemanticsProperties.Text)?.joinToString { it.text }
                 val description = node.config
                     .getOrNull(SemanticsProperties.ContentDescription)?.joinToString()
-                text in destinationLabels.getValue(language) ||
+                text in destinationLabels(c) ||
                     description in addActionDescriptions.values
             }
         } else {
@@ -241,7 +248,7 @@ class FoundationLocaleCaptureTest {
                     // the bar gets, and a matrix relying on it alone would have reported a clean
                     // bill of health for a visibly broken bar.
                     if (hostId == SHELL &&
-                        source in destinationLabels.getValue(language) &&
+                        source in destinationLabels(c) &&
                         layout.lineCount > 1
                     ) {
                         problems += "$name: destination label \"$source\" wrapped onto " +
@@ -265,7 +272,7 @@ class FoundationLocaleCaptureTest {
             .forEach { problems += "$name: stale $it from the other language" }
 
         if (hostId == SHELL) {
-            val expected = destinationLabels.getValue(language)
+            val expected = destinationLabels(c)
             // Every primary destination is present and still tells itself apart from its peers.
             expected.forEach { label ->
                 if (label !in texts) problems += "$name: destination label \"$label\" missing"

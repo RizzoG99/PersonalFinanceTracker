@@ -8,11 +8,13 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import com.rizzog99.personalfinancetracker.R
+import org.junit.Assert.assertTrue
 
 /**
  * Shared vocabulary for the #110 (`M1-NAV-SHELL`) navigation-shell evidence suites.
@@ -43,15 +45,27 @@ class NavShellMarkers(
     val homeTab: String get() = string(R.string.tab_home)
     val activityTab: String get() = string(R.string.tab_activity)
     val insightsTab: String get() = string(R.string.tab_insights)
+    val planTab: String get() = string(R.string.tab_plan)
 
-    val tabs: List<String> get() = listOf(homeTab, activityTab, insightsTab)
+    // #283 wide drawer items (iPad sidebar groups).
+    val recurringItem: String get() = string(R.string.recurring_title)
+    val budgetsItem: String get() = string(R.string.budgets_title)
+    val goalsItem: String get() = string(R.string.goals_title)
+
+    /** Compact bottom-bar tabs (#283: Home · Activity · Plan · Insights). */
+    val tabs: List<String> get() = listOf(homeTab, activityTab, planTab, insightsTab)
+
+    /** In both shells; Plan is a compact tab only (wide splits it into drawer items). */
+    private val sharedItems: List<String> get() = listOf(homeTab, activityTab, insightsTab)
 
     /** Content unique to one destination and independent of anything the user typed there. */
     private val markers: Map<String, SemanticsMatcher>
         get() = mapOf(
             homeTab to hasText(string(R.string.home_title)),
             activityTab to hasContentDescription(string(R.string.filters)),
-            insightsTab to hasText(string(R.string.goals_title)),
+            // Goals moved to Plan (#283); the spending heading is Insights-only.
+            insightsTab to hasText(string(R.string.insights_spending)),
+            planTab to hasTestTag(PLAN_CONTENT_TAG),
         )
 
     /** Any bottom-navigation item or rail item — both report `Role.Tab`. */
@@ -77,7 +91,9 @@ class NavShellMarkers(
                 onNode(tab(label)).assertIsSelected()
             } else {
                 onAllNodes(marker).assertCountEquals(0)
-                onNode(tab(label)).assertIsNotSelected()
+                // An item may be absent (Plan on wide); it must never be the selected one.
+                onAllNodes(tab(label) and SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+                    .assertCountEquals(0)
             }
         }
         // Scoped to tab items on purpose: `Selected` is also how a Material filter chip reports
@@ -89,6 +105,12 @@ class NavShellMarkers(
 
     /** One shell, not two: a bottom bar and a rail rendering together would double every tab. */
     fun ComposeTestRule.assertSingleShell() {
-        tabs.forEach { onAllNodes(tab(it)).assertCountEquals(1) }
+        sharedItems.forEach { onAllNodes(tab(it)).assertCountEquals(1) }
+        assertTrue("Plan tab doubled", onAllNodes(tab(planTab)).fetchSemanticsNodes().size <= 1)
+    }
+
+    companion object {
+        /** Mirrors `PLAN_CONTENT_TAG` in production (`features/plan/PlanScreen.kt`). */
+        const val PLAN_CONTENT_TAG = "plan-content"
     }
 }

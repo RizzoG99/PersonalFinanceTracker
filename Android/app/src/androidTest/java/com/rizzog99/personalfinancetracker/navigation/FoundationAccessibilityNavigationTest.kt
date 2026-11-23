@@ -144,14 +144,21 @@ class FoundationAccessibilityNavigationTest {
         node.assertIsFocused()
     }
 
-    private fun assertNavigationSemantics(locale: Locale, selectedLabel: String) {
-        val labels = listOf(
-            string(R.string.tab_home, locale),
-            string(R.string.tab_activity, locale),
-            string(R.string.tab_insights, locale),
-        )
+    /** #283: four tabs on compact; on wide, the drawer's iPad-like groups (D-03: no Health Score item). */
+    private fun primaryLabels(locale: Locale, wide: Boolean): List<String> =
+        (if (wide) {
+            listOf(
+                R.string.tab_home, R.string.tab_activity, R.string.recurring_title, R.string.budgets_title,
+                R.string.goals_title, R.string.tab_insights, R.string.settings_title,
+            )
+        } else {
+            listOf(R.string.tab_home, R.string.tab_activity, R.string.tab_plan, R.string.tab_insights)
+        }).map { string(it, locale) }
+
+    private fun assertNavigationSemantics(locale: Locale, selectedLabel: String, wide: Boolean = false) {
+        val labels = primaryLabels(locale, wide)
         val nodes = rule.onAllNodes(anyTab).fetchSemanticsNodes()
-        assertEquals("exactly three primary navigation nodes", 3, nodes.size)
+        assertEquals("exactly one navigation node per primary destination", labels.size, nodes.size)
         assertEquals(
             "exactly one selected destination",
             1,
@@ -197,7 +204,7 @@ class FoundationAccessibilityNavigationTest {
 
         controls.widthDp.value = 900
         rule.waitForIdle()
-        assertNavigationSemantics(Locale.ITALIAN, itActivity)
+        assertNavigationSemantics(Locale.ITALIAN, itActivity, wide = true)
         assertEquals("activity", controls.navController.currentDestination?.route)
     }
 
@@ -207,6 +214,7 @@ class FoundationAccessibilityNavigationTest {
         val destinations = listOf(
             R.string.tab_home to R.string.home_title,
             R.string.tab_activity to R.string.tab_activity,
+            R.string.tab_plan to R.string.tab_plan,
             R.string.tab_insights to R.string.tab_insights,
         )
         destinations.forEachIndexed { index, (tabRes, titleRes) ->
@@ -256,6 +264,8 @@ class FoundationAccessibilityNavigationTest {
         rule.onRoot().performKeyInput { pressKey(Key.DirectionRight) }
         rule.onNode(tab(markers.activityTab)).assertIsFocused()
         rule.onRoot().performKeyInput { pressKey(Key.DirectionRight) }
+        rule.onNode(tab(markers.planTab)).assertIsFocused()
+        rule.onRoot().performKeyInput { pressKey(Key.DirectionRight) }
         rule.onNode(tab(markers.insightsTab)).assertIsFocused()
 
         controls.widthDp.value = 900
@@ -263,8 +273,9 @@ class FoundationAccessibilityNavigationTest {
         requestKeyboardFocus(tab(markers.homeTab))
         rule.onRoot().performKeyInput { pressKey(Key.DirectionDown) }
         rule.onNode(tab(markers.activityTab)).assertIsFocused()
+        // Down crosses the "Plan" group heading (not focusable) to its first item.
         rule.onRoot().performKeyInput { pressKey(Key.DirectionDown) }
-        rule.onNode(tab(markers.insightsTab)).assertIsFocused()
+        rule.onNode(tab(markers.recurringItem)).assertIsFocused()
     }
 
     @Test
@@ -279,7 +290,7 @@ class FoundationAccessibilityNavigationTest {
 
         controls.widthDp.value = 900
         rule.waitForIdle()
-        assertNavigationSemantics(Locale.ENGLISH, string(R.string.tab_home, Locale.ENGLISH))
+        assertNavigationSemantics(Locale.ENGLISH, string(R.string.tab_home, Locale.ENGLISH), wide = true)
         assertMinimumTarget(
             rule.onNode(hasContentDescription(string(R.string.add_transaction, Locale.ENGLISH)))
                 .fetchSemanticsNode(),
@@ -300,11 +311,7 @@ class FoundationAccessibilityNavigationTest {
             controls.locale.value = locale
             controls.widthDp.value = width
             rule.waitForIdle()
-            val labels = listOf(
-                string(R.string.tab_home, locale),
-                string(R.string.tab_activity, locale),
-                string(R.string.tab_insights, locale),
-            )
+            val labels = primaryLabels(locale, wide = width >= 840)
             val tabNodes = labels.map { rule.onNode(tab(it)).fetchSemanticsNode() }
             labels.zip(tabNodes).forEach { (label, tabNode) ->
                 val candidates = flattenedSemantics().filter { node ->

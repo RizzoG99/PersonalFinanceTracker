@@ -66,9 +66,11 @@ class NavShellGraphTest {
                 LocalContext provides context,
                 LocalConfiguration provides configuration,
             ) {
-                PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
-                    navController = rememberNavController()
-                    PersonalFinanceNavHost(navController = navController)
+                ForcedWidth(width.value) {
+                    PersonalFinanceTheme(themeMode = ThemeMode.LIGHT) {
+                        navController = rememberNavController()
+                        PersonalFinanceNavHost(navController = navController)
+                    }
                 }
             }
         }
@@ -116,7 +118,7 @@ class NavShellGraphTest {
     @Test
     fun ac02_selectionMapsOntoTheRouteItClaims(): Unit = with(NavShellMarkers()) {
         val (nav, _) = host()
-        listOf(activityTab to "activity", insightsTab to "insights", homeTab to "home")
+        listOf(activityTab to "activity", planTab to "plan", insightsTab to "insights", homeTab to "home")
             .forEach { (label, route) ->
                 rule.selectTab(label)
                 assertEquals(route, nav.currentDestination?.route)
@@ -204,11 +206,11 @@ class NavShellGraphTest {
     // --- AC-06 localized labels ----------------------------------------------------------
 
     @Test
-    fun ac06_italianLabelsIdentifyAllThreeDestinations() {
+    fun ac06_italianLabelsIdentifyAllFourDestinations() {
         val italian = NavShellMarkers(Locale.ITALIAN)
         host(locale = Locale.ITALIAN)
         with(italian) {
-            assertEquals(listOf("Home", "Attività", "Analisi"), tabs)
+            assertEquals(listOf("Home", "Attività", "Pianifica", "Analisi"), tabs)
             tabs.forEach { rule.onNode(tab(it)).assertIsDisplayed() }
             rule.selectTab(activityTab)
             rule.assertOnly(activityTab)
