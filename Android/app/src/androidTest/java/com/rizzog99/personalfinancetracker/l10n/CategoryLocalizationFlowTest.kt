@@ -13,7 +13,9 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -129,7 +131,7 @@ class CategoryLocalizationFlowTest {
         setAppLocale(Locale.ITALIAN)
         openGroceriesEditor()
         rule.onNode(hasSetTextAction() and hasText("Spesa")).assertExists()
-        rule.onNodeWithText(italian(R.string.save)).performClick()
+        tapSave()
         rule.waitForIdle()
         assertEquals("Groceries", runBlocking { groceries() }.name)
 
@@ -139,7 +141,7 @@ class CategoryLocalizationFlowTest {
         rule.waitUntil(20_000) { rule.onAllNodes(hasSetTextAction() and hasText("Spesa")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(hasSetTextAction() and hasText("Spesa")).performTextReplacement("Alimentari")
         rule.waitForIdle()
-        rule.onNodeWithText(italian(R.string.save)).performClick()
+        tapSave()
         rule.waitUntil(20_000) {
             runBlocking { app.categoryRepository.observeAll().first() }.any { it.name == "Alimentari" }
         }
@@ -147,6 +149,11 @@ class CategoryLocalizationFlowTest {
         setAppLocale(Locale.ENGLISH)
         rule.waitUntil(20_000) { rule.onAllNodes(hasScrollToNodeAction()).fetchSemanticsNodes().isNotEmpty() }
         rule.onAllNodes(hasScrollToNodeAction())[0].performScrollToNode(hasText("Alimentari"))
+    }
+
+    /** Save sits at the bottom of the sheet's scroll; on a tablet it is below the fold, so a bare tap hits the scrim. */
+    private fun tapSave() {
+        rule.onNodeWithText(italian(R.string.save)).performScrollTo().assertIsEnabled().performClick()
     }
 
     private fun openGroceriesEditor() {
