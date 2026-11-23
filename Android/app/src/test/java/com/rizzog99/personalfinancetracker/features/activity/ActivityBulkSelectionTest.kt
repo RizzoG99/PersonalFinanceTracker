@@ -10,6 +10,7 @@ import com.rizzog99.personalfinancetracker.data.repository.RoomCategoryRepositor
 import com.rizzog99.personalfinancetracker.data.repository.RoomGoalRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomRecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.RoomTransactionRepository
+import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.goal.NewGoal
@@ -20,7 +21,9 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Collections
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -256,6 +259,47 @@ class ActivityBulkSelectionTest {
         assertTrue(vm.restore(note.prior))
         val restored = stored()
         fixture.forEach { restored.getValue(it.id).assertSameAs(it) }
+        keep.cancel()
+    }
+
+    /** Code review r1: a second bulk edit started while the first is still writing keeps both. */
+    @Test
+    fun ac04_overlappingBulkEditsKeepBothChanges() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        var held = true
+        val slow = object : TransactionRepository by transactions {
+            override suspend fun upsertAll(transactions: List<FinanceTransaction>) {
+                if (held) {
+                    held = false
+                    gate.await()
+                }
+                this@ActivityBulkSelectionTest.transactions.upsertAll(transactions)
+            }
+        }
+        val vm = ActivityViewModel(slow, categories, RoomRecurrenceRepository(database), zone)
+        val keep = launch { vm.uiState.collect {} }
+        vm.await("loaded") { it.allTransactions.size == 4 }
+
+        vm.startSelection("t1")
+        vm.toggleSelection("t4")
+        vm.await("t1 t4") { it.checkedIds == setOf("t1", "t4") }
+        val amount = async(Dispatchers.Default) { vm.bulkSetAmount(BigDecimal("20")) }
+        withTimeout(5_000) { while (held) delay(10) } // the first write is in flight
+
+        vm.startSelection("t1")
+        vm.toggleSelection("t2")
+        vm.await("t1 t2") { it.checkedIds == setOf("t1", "t2") }
+        val note = async(Dispatchers.Default) { vm.bulkSetNote("Spesa") }
+        delay(200)
+        gate.complete(Unit)
+        assertNotNull(amount.await())
+        assertNotNull(note.await())
+
+        val s = stored()
+        assertEquals(0, BigDecimal("-20").compareTo(s.getValue("t1").amount))
+        assertEquals("Spesa", s.getValue("t1").note)
+        assertEquals(0, BigDecimal("20").compareTo(s.getValue("t4").amount))
+        assertEquals("Spesa", s.getValue("t2").note)
         keep.cancel()
     }
 

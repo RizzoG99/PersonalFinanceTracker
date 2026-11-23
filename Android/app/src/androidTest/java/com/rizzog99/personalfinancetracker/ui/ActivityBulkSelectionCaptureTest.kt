@@ -25,6 +25,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasScrollToNodeAction
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
@@ -121,7 +124,10 @@ class ActivityBulkSelectionCaptureTest(private val cell: CaptureHarness.Cell) {
         rule.waitUntil(20_000) { rule.onAllNodes(hasText("Caffè bar")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithText("Caffè bar").performScrollTo().performTouchInput { longClick() }
         rule.waitForIdle()
-        rule.onNode(isToggleable() and hasText("Caffè casa", substring = true)).performScrollTo().performClick()
+        // Lazy list: at 200 % on a landscape tablet the row is not composed until scrolled to.
+        val casa = isToggleable() and hasText("Caffè casa", substring = true)
+        rule.onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(casa)
+        rule.onNode(casa).performClick()
         rule.waitUntil(20_000) { rule.onAllNodes(hasText(plural(R.plurals.selection_count, 2))).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(hasText(string(R.string.bulk_amount)) and hasAnyAncestor(hasTestTag(BULK_ACTION_BAR_TAG))).assertExists()
 

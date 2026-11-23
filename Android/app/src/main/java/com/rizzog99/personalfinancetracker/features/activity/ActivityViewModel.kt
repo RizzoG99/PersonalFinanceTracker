@@ -32,6 +32,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class ActivityUiState(
     val isLoading: Boolean = true,
@@ -393,18 +396,36 @@ class ActivityViewModel(
     suspend fun bulkSetNote(note: String): BulkResult? = bulkEdit { it.withBulkNote(note) }
 
     /** Undo of any bulk action: the captured rows go back in one write. */
-    suspend fun restore(prior: List<FinanceTransaction>): Boolean = write { transactionRepository.upsertAll(prior) }
+    suspend fun restore(prior: List<FinanceTransaction>): Boolean =
+        bulkWrites.withLock { write { transactionRepository.upsertAll(prior) } }
 
     private suspend fun bulkEdit(edit: (FinanceTransaction) -> FinanceTransaction): BulkResult? =
         bulk { targets -> transactionRepository.upsertAll(targets.map(edit)) }
 
+    /**
+     * Bulk writes and their Undo run one at a time, each on the rows as stored when its turn comes.
+     * A bulk edit rewrites whole rows, so one built from a snapshot taken while an earlier write was
+     * still in flight would silently put that write's fields back.
+     *
+     * ponytail: serialises bulk writes only. The editor's single-row saves can still interleave; they
+     * drop any pending bulk Undo first (`BulkUndoSlot`), which is what made a stale whole-row write
+     * reachable. Widen the lock to every write if a single save ever races a bulk one in practice.
+     */
+    private val bulkWrites = Mutex()
+
     /** Leaves selection mode first, as iOS does, then writes every target in one transaction (D-02). */
     private suspend fun bulk(apply: suspend (List<FinanceTransaction>) -> Unit): BulkResult? {
-        val selected = checkedIds.value.orEmpty()
-        val targets = uiState.value.allTransactions.filter { it.id in selected }
+        val ids = checkedIds.value.orEmpty()
         exitSelection()
-        if (targets.isEmpty()) return null
-        return if (write { apply(targets) }) BulkResult(targets.size, targets) else null
+        if (ids.isEmpty()) return null
+        return bulkWrites.withLock {
+            var targets = emptyList<FinanceTransaction>()
+            val written = write {
+                targets = transactionRepository.observeAll().first().filter { it.id in ids }
+                if (targets.isNotEmpty()) apply(targets)
+            }
+            if (written && targets.isNotEmpty()) BulkResult(targets.size, targets) else null
+        }
     }
 
     suspend fun deleteThisAndFuture(transaction: FinanceTransaction): Boolean = write {

@@ -4,6 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -238,7 +241,9 @@ internal fun SelectionActionBar(enabled: Boolean, onDelete: () -> Unit, onSheet:
     val twoRows = LocalDensity.current.fontScale >= 1.3f
     val primary = MaterialTheme.colorScheme.primary
     Surface(color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth().testTag(BULK_ACTION_BAR_TAG)) {
-        Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)) {
+        // Its own navigation-bar inset: on compact this bar stands in for the shell's NavigationBar,
+        // which pads itself the same way under edge-to-edge (`MainActivity`).
+        Column(modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(horizontal = 4.dp, vertical = 4.dp)) {
             val first: @Composable RowScope.() -> Unit = {
                 BulkActionButton(Icons.Outlined.Delete, R.string.bulk_delete, enabled, MaterialTheme.colorScheme.error, onDelete)
                 BulkActionButton(Icons.Outlined.Sell, R.string.bulk_category, enabled, primary) { onSheet(BulkSheet.Category) }

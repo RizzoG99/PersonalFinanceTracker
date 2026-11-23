@@ -386,6 +386,13 @@ class ActivityBulkSelectionTest {
     fun ac06_tapAndSwipeUnchangedOutsideSelection_compact() {
         host()
         rule.onAllNodes(isToggleable() and hasText("Caffè bar", substring = true)).assertCountEquals(0)
+        // A tap still opens the editor on that row, with no selection mode.
+        rule.onNodeWithText("Caffè bar").performScrollTo().performClick()
+        awaitText(string(R.string.edit_transaction))
+        rule.onAllNodes(hasText(plural(R.plurals.selection_count, 1))).assertCountEquals(0)
+        Espresso.closeSoftKeyboard()
+        Espresso.pressBack()
+        rule.waitUntil(timeoutMillis = 20_000) { rule.onAllNodes(hasText(string(R.string.edit_transaction))).fetchSemanticsNodes().isEmpty() }
         rule.onNodeWithText("Caffè bar").performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
         rule.onNodeWithText(string(R.string.delete_transaction_confirmation_title)).assertExists()
