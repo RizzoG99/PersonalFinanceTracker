@@ -235,6 +235,33 @@
     <string name="transaction_deleted">Transaction deleted</string>
     <string name="transaction_saved">Transaction saved</string>
     <string name="undo">Undo</string>
+    <!-- Activity multi-select (#285), copy from frozen iOS ActivityView.swift -->
+    <plurals name="selection_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    <string name="select_transaction">Select</string>
+    <string name="bulk_delete">Delete</string>
+    <string name="bulk_category">Category</string>
+    <string name="bulk_amount">Amount</string>
+    <string name="bulk_description">Description</string>
+    <string name="bulk_new_amount">New amount</string>
+    <string name="bulk_set">Set</string>
+    <plurals name="bulk_applies_to">
+        <item quantity="one">Applies to %1$d transaction</item>
+        <item quantity="other">Applies to %1$d transactions</item>
+    </plurals>
+    <plurals name="transactions_deleted">
+        <item quantity="one">%1$d transaction deleted</item>
+        <item quantity="other">%1$d transactions deleted</item>
+    </plurals>
+    <plurals name="transactions_updated">
+        <item quantity="one">%1$d transaction updated</item>
+        <item quantity="other">%1$d transactions updated</item>
+    </plurals>
+    <string name="recurring_badge">Recurring</string>
     <string name="toggle_theme">Toggle light/dark theme</string>
     <string name="hide_balance">Hide balance</string>
     <string name="show_balance">Show balance</string>

@@ -22,6 +22,12 @@ interface TransactionRepository {
     suspend fun insertNew(transactions: List<FinanceTransaction>): List<FinanceTransaction>
     suspend fun delete(id: String)
     suspend fun deleteThisAndFuture(recurrenceRuleId: String, cutoff: Instant)
+
+    /** Bulk edit and its Undo (#285): every row or none, in one write, so the ledger refreshes once. */
+    suspend fun upsertAll(transactions: List<FinanceTransaction>)
+
+    /** Bulk delete (#285): every row or none, in one write. */
+    suspend fun deleteAll(ids: List<String>)
 }
 
 class RoomTransactionRepository(
@@ -52,6 +58,15 @@ class RoomTransactionRepository(
 
     override suspend fun delete(id: String) {
         dao.delete(id)
+    }
+
+    override suspend fun upsertAll(transactions: List<FinanceTransaction>) {
+        database.withTransaction { dao.upsertAll(transactions.map(FinanceTransaction::toEntity)) }
+    }
+
+    override suspend fun deleteAll(ids: List<String>) {
+        // ponytail: chunked for SQLite's 999-bound-variable limit on older Android versions.
+        database.withTransaction { ids.chunked(500).forEach { dao.deleteByIds(it) } }
     }
 
     override suspend fun deleteThisAndFuture(recurrenceRuleId: String, cutoff: Instant) {

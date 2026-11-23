@@ -86,7 +86,20 @@ class FakeTransactionRepository(
 
     override fun observeAll(): Flow<List<FinanceTransaction>> = source.flow()
 
+    /** Single-row writes; a bulk action (#285) must never fall back to them. */
+    var singleWrites = 0
+        private set
+
     override suspend fun upsert(transaction: FinanceTransaction) {
+        singleWrites++
+        writeFailure?.let { throw it }
+    }
+
+    override suspend fun upsertAll(transactions: List<FinanceTransaction>) {
+        writeFailure?.let { throw it }
+    }
+
+    override suspend fun deleteAll(ids: List<String>) {
         writeFailure?.let { throw it }
     }
 
@@ -100,6 +113,7 @@ class FakeTransactionRepository(
     }
 
     override suspend fun delete(id: String) {
+        singleWrites++
         writeFailure?.let { throw it }
     }
 

@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onRoot
@@ -66,10 +67,24 @@ object CaptureHarness {
     }
 
     /**
+     * The whole screen as the device shows it, every window composed (#285). A modal sheet is a window
+     * of its own, and capturing its root alone came out without the sheet on it.
+     */
+    fun writeScreenPng(dir: File, name: String) {
+        val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /**
      * The hierarchy half: every readable string with its bounds, so a reviewer can check for
      * zero-size actions and clipped copy without eyeballing a PNG.
      */
-    fun writeSemantics(rule: ComposeTestRule, dir: File, name: String) {
+    fun writeSemantics(
+        rule: ComposeTestRule,
+        dir: File,
+        name: String,
+        root: SemanticsNodeInteraction = rule.onRoot(useUnmergedTree = true),
+    ) {
         val out = StringBuilder()
         fun walk(node: SemanticsNode, depth: Int) {
             val text = node.config.getOrNull(SemanticsProperties.Text)?.joinToString { it.text }
@@ -107,7 +122,7 @@ object CaptureHarness {
             }
             node.children.forEach { walk(it, depth + 1) }
         }
-        walk(rule.onRoot(useUnmergedTree = true).fetchSemanticsNode(), 0)
+        walk(root.fetchSemanticsNode(), 0)
         File(dir, "$name.txt").writeText(out.toString())
     }
 
