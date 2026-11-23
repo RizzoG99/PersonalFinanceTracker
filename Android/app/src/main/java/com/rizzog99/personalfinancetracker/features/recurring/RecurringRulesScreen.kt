@@ -69,6 +69,8 @@ import com.rizzog99.personalfinancetracker.ui.components.LoadingState
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayNames
+import com.rizzog99.personalfinancetracker.domain.recurrence.displayTitle
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
@@ -307,7 +309,7 @@ private fun RuleRow(row: RecurringRuleRow, zoneId: ZoneId, onSelect: () -> Unit,
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(row.title, style = MaterialTheme.typography.titleMedium)
+                    Text(row.rule.displayTitle(categoryDisplayNames()), style = MaterialTheme.typography.titleMedium)
                     if (row.isDuplicate) {
                         Text(
                             stringResource(R.string.recurring_possible_duplicate),

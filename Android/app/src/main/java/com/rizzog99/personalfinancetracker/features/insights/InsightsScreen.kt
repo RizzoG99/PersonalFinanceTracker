@@ -103,6 +103,8 @@ import com.rizzog99.personalfinancetracker.ui.components.MainTopBar
 import com.rizzog99.personalfinancetracker.ui.components.ReleaseTextFocusWhileObscured
 import com.rizzog99.personalfinancetracker.ui.components.SheetDragHandle
 import com.rizzog99.personalfinancetracker.ui.components.categoryIconFor
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
+import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.ui.components.coverWhenObscured
 import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
@@ -129,6 +131,7 @@ fun InsightsScreen(
             application.transactionRepository,
             application.goalRepository,
             application.preferencesRepository,
+            application.categoryRepository,
         ),
     )
     val state by viewModel.uiState.collectAsState()
@@ -290,12 +293,11 @@ private fun InsightsContent(
         } else {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    state.categorySpending.take(5).forEachIndexed { index, category ->
+                    state.categorySpending.take(5).forEach { category ->
                         CategoryTrendRow(
                             category = category,
                             share = category.amount.shareOf(state.categorySpending),
                             currencyCode = state.currencyCode,
-                            accent = categoryPaletteColor(index),
                         )
                     }
                 }
@@ -668,11 +670,10 @@ private fun healthScoreBand(score: Int): String = stringResource(
 
 /** One category's spend and its share of this period's total — the design's "Category Trends" row. */
 @Composable
-private fun CategoryTrendRow(
+internal fun CategoryTrendRow(
     category: CategorySpending,
     share: Int,
     currencyCode: String,
-    accent: Color,
 ) {
     FinanceCard {
         Row(
@@ -680,14 +681,15 @@ private fun CategoryTrendRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(10.dp)
-                    .clip(CircleShape)
-                    .background(accent),
+            // The category's own icon and colour, like the Activity rows (#291, iOS CategoryTrendRow).
+            Icon(
+                categoryIconFor(category.category?.iconToken.orEmpty()),
+                contentDescription = null,
+                tint = categoryColor(category.category?.colorToken ?: "categoryGray"),
+                modifier = Modifier.size(20.dp),
             )
             Text(
-                category.label,
+                categoryDisplayName(category.label),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
@@ -714,21 +716,6 @@ private fun BigDecimal.shareOf(categories: List<CategorySpending>): Int {
     val total = categories.fold(BigDecimal.ZERO) { acc, item -> acc + item.amount }
     if (total <= BigDecimal.ZERO) return 0
     return divide(total, 4, RoundingMode.DOWN).multiply(BigDecimal(100)).toInt()
-}
-
-@Composable
-private fun categoryPaletteColor(index: Int): Color {
-    val extended = LocalFinanceExtendedColors.current
-    val palette = listOf(
-        extended.categoryIndigo,
-        extended.categoryGreen,
-        extended.categoryAmber,
-        extended.categoryPink,
-        extended.categoryPurple,
-        extended.categoryTeal,
-        extended.categoryGray,
-    )
-    return palette[index.coerceAtLeast(0) % palette.size]
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)

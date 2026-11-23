@@ -57,6 +57,7 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatCurrency
 import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.formatters.formatSignedCurrency
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
+import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
 import androidx.compose.ui.text.font.FontWeight
 import java.math.BigDecimal
 import java.time.LocalTime
@@ -369,9 +370,9 @@ private fun RecentTransactionRow(transaction: FinanceTransaction, category: Fina
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(transaction.note.ifBlank { transaction.categoryLabel }, style = MaterialTheme.typography.bodyLarge)
+            Text(transaction.note.ifBlank { categoryDisplayName(transaction.categoryLabel) }, style = MaterialTheme.typography.bodyLarge)
             Text(
-                text = transaction.categoryLabel,
+                text = categoryDisplayName(transaction.categoryLabel),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
