@@ -305,7 +305,7 @@ class ActivityBulkSelectionTest {
 
     /** R8: a bulk Undo still queued behind another snackbar is dropped by a later mutation. */
     @Test
-    fun ac04_queuedBulkUndoIsDroppedByALaterMutation_compact() {
+    fun ac04_queuedBulkUndoIsDroppedByALaterMutation_compact() = withUndoWindowOf(seconds = 15) {
         host()
         rule.onNodeWithText("Netflix").performScrollTo().performTouchInput { swipeLeft() }
         rule.waitForIdle()
@@ -334,7 +334,9 @@ class ActivityBulkSelectionTest {
         )
 
         // t3's single Undo runs out; the description's Undo is the only bulk one left.
-        awaitText(plural(R.plurals.transactions_updated, 2))
+        rule.waitUntil(timeoutMillis = 40_000) {
+            rule.onAllNodes(hasText(plural(R.plurals.transactions_updated, 2))).fetchSemanticsNodes().isNotEmpty()
+        }
         undo()
         awaitStored("only the description undone") { s ->
             s.getValue("t1").note == "Caffè bar" && s.getValue("t2").note == "Caffè casa" &&
@@ -343,6 +345,29 @@ class ActivityBulkSelectionTest {
         Thread.sleep(6_000)
         rule.onAllNodes(hasText(string(R.string.undo)) and hasClickAction()).assertCountEquals(0)
         assertEquals(0, stored().getValue("t4").amount.compareTo(BigDecimal("20")))
+    }
+
+    /**
+     * Runs [block] with Android's "Time to take action" set to [seconds], which every Activity Undo honours
+     * (#376 D-01), so a multi-step setup cannot outlive the first Undo on a loaded emulator. Always
+     * restored: the #376 timing tests assert the setting is off.
+     */
+    private fun withUndoWindowOf(seconds: Int, block: () -> Unit) {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        fun shell(command: String) = automation.executeShellCommand(command).use { pfd ->
+            android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd).bufferedReader().readText().trim()
+        }
+        val before = shell("settings get secure accessibility_interactive_ui_timeout_ms")
+        shell("settings put secure accessibility_interactive_ui_timeout_ms ${seconds * 1_000}")
+        try {
+            block()
+        } finally {
+            if (before == "null" || before.isEmpty()) {
+                shell("settings delete secure accessibility_interactive_ui_timeout_ms")
+            } else {
+                shell("settings put secure accessibility_interactive_ui_timeout_ms $before")
+            }
+        }
     }
 
     @Test
