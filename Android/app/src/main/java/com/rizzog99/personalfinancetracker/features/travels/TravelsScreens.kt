@@ -481,6 +481,8 @@ fun TravelDetailScreen(travelId: String, onBack: () -> Unit, onAddExpense: (Stri
     var renaming by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<FinanceTransaction?>(null) }
+    // A failed member save is reported above the editor: the page's snackbar is hidden under the sheet.
+    var saveFailed by remember { mutableStateOf(false) }
     ErrorSnackbar(error, snackbar, viewModel::clearError)
     // Deleted (here or elsewhere): nothing left to show. The one place that leaves, and only once:
     // the page stays composed through the exit transition, where a second Back would pop the list too.
@@ -585,8 +587,16 @@ fun TravelDetailScreen(travelId: String, onBack: () -> Unit, onAddExpense: (Stri
             receiptMappingRepository = application.receiptMappingRepository,
             onDismiss = { editing = null },
             // The editor stays open, draft and all, until the save holds: a failure keeps it for a retry.
-            onSave = { transaction, _, _ -> scope.launch { if (viewModel.save(transaction)) editing = null } },
+            onSave = { transaction, _, _ -> scope.launch { if (viewModel.save(transaction)) editing = null else saveFailed = true } },
             travelChoice = TravelChoice(state.travels, onCreate = viewModel::add),
+        )
+    }
+    if (saveFailed) {
+        AlertDialog(
+            onDismissRequest = { saveFailed = false },
+            modifier = Modifier.coverWhenObscured(),
+            text = { Text(stringResource(R.string.activity_update_failed)) },
+            confirmButton = { TextButton(onClick = { saveFailed = false }) { Text(stringResource(R.string.dismiss)) } },
         )
     }
 }

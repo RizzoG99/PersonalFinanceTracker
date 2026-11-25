@@ -326,7 +326,7 @@ class TravelsFlowTest {
 
     /** R2': a Travel move drops a showing bulk Undo at once, so it can never put the old rows back. */
     @Test
-    fun ac04_aMoveDropsAPendingBulkUndo_compact() {
+    fun ac04_aMoveDropsAPendingBulkUndo_compact() = withUndoWindowOf(seconds = 15) {
         host()
         rowText("Caffè").performScrollTo().performTouchInput { longClick() }
         awaitText(plural(R.plurals.selection_count, 1))

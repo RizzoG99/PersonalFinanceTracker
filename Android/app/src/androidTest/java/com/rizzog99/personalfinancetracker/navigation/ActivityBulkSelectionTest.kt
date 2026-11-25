@@ -347,28 +347,7 @@ class ActivityBulkSelectionTest {
         assertEquals(0, stored().getValue("t4").amount.compareTo(BigDecimal("20")))
     }
 
-    /**
-     * Runs [block] with Android's "Time to take action" set to [seconds], which every Activity Undo honours
-     * (#376 D-01), so a multi-step setup cannot outlive the first Undo on a loaded emulator. Always
-     * restored: the #376 timing tests assert the setting is off.
-     */
-    private fun withUndoWindowOf(seconds: Int, block: () -> Unit) {
-        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
-        fun shell(command: String) = automation.executeShellCommand(command).use { pfd ->
-            android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd).bufferedReader().readText().trim()
-        }
-        val before = shell("settings get secure accessibility_interactive_ui_timeout_ms")
-        shell("settings put secure accessibility_interactive_ui_timeout_ms ${seconds * 1_000}")
-        try {
-            block()
-        } finally {
-            if (before == "null" || before.isEmpty()) {
-                shell("settings delete secure accessibility_interactive_ui_timeout_ms")
-            } else {
-                shell("settings put secure accessibility_interactive_ui_timeout_ms $before")
-            }
-        }
-    }
+
 
     @Test
     fun ac05_selectionSemantics_compact() {
@@ -460,4 +439,27 @@ internal suspend fun seedBulkFixture(app: PersonalFinanceApplication): List<Fina
     )
     app.transactionRepository.upsertAll(fixture)
     return fixture
+}
+
+/**
+ * Runs [block] with Android's "Time to take action" set to [seconds], which every Activity Undo honours
+ * (#376 D-01), so a multi-step setup cannot outlive the first Undo on a loaded emulator. Always
+ * restored: the #376 timing tests assert the setting is off. Shared with `TravelsFlowTest`.
+ */
+internal fun withUndoWindowOf(seconds: Int, block: () -> Unit) {
+    val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+    fun shell(command: String) = automation.executeShellCommand(command).use { pfd ->
+        android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd).bufferedReader().readText().trim()
+    }
+    val before = shell("settings get secure accessibility_interactive_ui_timeout_ms")
+    shell("settings put secure accessibility_interactive_ui_timeout_ms ${seconds * 1_000}")
+    try {
+        block()
+    } finally {
+        if (before == "null" || before.isEmpty()) {
+            shell("settings delete secure accessibility_interactive_ui_timeout_ms")
+        } else {
+            shell("settings put secure accessibility_interactive_ui_timeout_ms $before")
+        }
+    }
 }
