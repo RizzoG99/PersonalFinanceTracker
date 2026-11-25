@@ -128,7 +128,8 @@ class TravelsFlowTest {
 
     /** A travel chip in the editor: it carries a selected state, unlike the list row behind the sheet. */
     private fun tapChip(name: String) {
-        rule.onNode(hasText(name) and SemanticsMatcher.keyIsDefined(SemanticsProperties.Selected)).performClick()
+        // The section is last in the editor: on a tall pane it can sit below the fold.
+        rule.onNode(hasText(name) and SemanticsMatcher.keyIsDefined(SemanticsProperties.Selected)).performScrollTo().performClick()
         rule.waitForIdle()
     }
 

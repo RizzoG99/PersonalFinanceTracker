@@ -63,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -172,11 +173,15 @@ fun TravelRow(summary: TravelSummary, onClick: () -> Unit, modifier: Modifier = 
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         TravelTile(summary.symbolName)
+        // At large text the total moves under the subtitle, like Activity's own rows: side by side, a
+        // narrow pane broke the name letter by letter.
+        val largeText = LocalDensity.current.fontScale >= 1.3f
         Column(modifier = Modifier.weight(1f)) {
             Text(summary.name, style = MaterialTheme.typography.bodyLarge)
             Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (largeText) Text(signedTotal(summary.total), style = MaterialTheme.typography.titleMedium, color = signedTotalColor(summary.total))
         }
-        Text(signedTotal(summary.total), style = MaterialTheme.typography.titleMedium, color = signedTotalColor(summary.total))
+        if (!largeText) Text(signedTotal(summary.total), style = MaterialTheme.typography.titleMedium, color = signedTotalColor(summary.total))
         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
