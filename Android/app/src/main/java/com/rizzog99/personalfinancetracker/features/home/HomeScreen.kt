@@ -33,6 +33,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +47,9 @@ import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
 import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import com.rizzog99.personalfinancetracker.domain.travel.FinanceTravel
+import com.rizzog99.personalfinancetracker.features.travels.TravelBadge
+import kotlinx.coroutines.flow.catch
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
 import com.rizzog99.personalfinancetracker.features.settings.rememberDailyReminderEnabler
 import com.rizzog99.personalfinancetracker.ui.components.ErrorState
@@ -335,19 +339,25 @@ private fun RecentTransactionsCard(
     transactions: List<FinanceTransaction>,
     categories: List<FinanceCategory>,
 ) {
+    // Travel badges (#284) only need names: a failed read shows rows without them, never crashes (#133).
+    val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as PersonalFinanceApplication
+    val travels by remember(application) {
+        application.travelRepository.observeAll().catch { emit(emptyList()) }
+    }.collectAsState(initial = emptyList())
+    val travelsById = travels.associateBy { it.id }
     FinanceCard {
         Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
             transactions.forEachIndexed { index, transaction ->
                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 val category = categories.firstOrNull { it.id == transaction.categoryId }
-                RecentTransactionRow(transaction, category)
+                RecentTransactionRow(transaction, category, transaction.travelId?.let(travelsById::get))
             }
         }
     }
 }
 
 @Composable
-private fun RecentTransactionRow(transaction: FinanceTransaction, category: FinanceCategory?) {
+private fun RecentTransactionRow(transaction: FinanceTransaction, category: FinanceCategory?, travel: FinanceTravel? = null) {
     val isIncome = transaction.amount >= java.math.BigDecimal.ZERO
     val categoryColor = categoryColor(category?.colorToken ?: "categoryGray")
     val categoryIcon = categoryIconFor(category?.iconToken ?: "")
@@ -376,6 +386,7 @@ private fun RecentTransactionRow(transaction: FinanceTransaction, category: Fina
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            travel?.let { TravelBadge(it) }
         }
         Spacer(Modifier.width(12.dp))
         Text(

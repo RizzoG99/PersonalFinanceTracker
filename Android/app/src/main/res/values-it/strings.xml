@@ -261,6 +261,55 @@
         <item quantity="other">%1$d transazioni aggiornate</item>
     </plurals>
     <string name="recurring_badge">Ricorrente</string>
+    <string name="travels_title">Viaggi</string>
+    <string name="add_travel">Aggiungi viaggio</string>
+    <string name="new_travel">Nuovo viaggio</string>
+    <string name="edit_travel">Modifica viaggio</string>
+    <string name="travel_name">Nome del viaggio</string>
+    <string name="travel_icon">Icona</string>
+    <string name="travel_icon_airplane">Aereo</string>
+    <string name="travel_icon_beach">Spiaggia</string>
+    <string name="travel_icon_mountain">Montagna</string>
+    <string name="travel_icon_city">Città</string>
+    <string name="travel_icon_car">Auto</string>
+    <string name="travel_icon_tram">Tram</string>
+    <string name="travel_icon_sailboat">Barca a vela</string>
+    <string name="travel_icon_backpack">Zaino</string>
+    <plurals name="travel_expenses">
+        <item quantity="one">%1$d spesa</item>
+        <item quantity="other">%1$d spese</item>
+    </plurals>
+    <plurals name="travel_days">
+        <item quantity="one">%1$d giorno</item>
+        <item quantity="other">%1$d giorni</item>
+    </plurals>
+    <string name="no_travels_title">Ancora nessun viaggio</string>
+    <string name="no_travels_message">Raggruppa le spese di un viaggio per vedere quanto è costato in tutto.</string>
+    <string name="travel_total">Totale</string>
+    <string name="travel_dates">Date</string>
+    <string name="travel_duration">Durata</string>
+    <string name="travel_per_day">Al giorno</string>
+    <string name="travel_refunded">Rimborsato</string>
+    <string name="travel_where_it_went">Dove sono andati</string>
+    <string name="travel_add_expense">Aggiungi spesa</string>
+    <string name="travel_expenses_heading">Spese</string>
+    <string name="travel_no_expenses">Ancora nessuna spesa</string>
+    <string name="travel_no_expenses_message">Aggiungi la prima spesa di questo viaggio, oppure assegna una spesa esistente dalla sua schermata di modifica.</string>
+    <string name="remove_from_travel">Rimuovi dal viaggio</string>
+    <string name="move_to_travel">Sposta nel viaggio</string>
+    <string name="delete_travel">Elimina viaggio</string>
+    <string name="delete_travel_title">Eliminare %1$s?</string>
+    <plurals name="delete_travel_message">
+        <item quantity="one">La %1$d spesa contenuta resta tra le tue transazioni: viene rimosso solo il viaggio.</item>
+        <item quantity="other">Le %1$d spese contenute restano tra le tue transazioni: viene rimosso solo il viaggio.</item>
+    </plurals>
+    <string name="part_of_a_trip">Fa parte di un viaggio?</string>
+    <string name="travel_none">Nessuno</string>
+    <string name="in_travel">Nel viaggio %1$s</string>
+    <string name="bulk_travel">Viaggio</string>
+    <string name="travel_options">Opzioni viaggio</string>
+    <string name="rename">Rinomina</string>
+    <string name="travel_open_hint">Mostra le spese di questo viaggio</string>
     <string name="toggle_theme">Cambia tema chiaro/scuro</string>
     <string name="hide_balance">Nascondi saldo</string>
     <string name="show_balance">Mostra saldo</string>

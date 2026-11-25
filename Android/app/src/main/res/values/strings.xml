@@ -262,6 +262,56 @@
         <item quantity="other">%1$d transactions updated</item>
     </plurals>
     <string name="recurring_badge">Recurring</string>
+    <!-- Travels (#284), copy from frozen iOS TravelsView / TravelDetailSheet / TravelFormSheet / TransactionFormView -->
+    <string name="travels_title">Travels</string>
+    <string name="add_travel">Add Travel</string>
+    <string name="new_travel">New Travel</string>
+    <string name="edit_travel">Edit Travel</string>
+    <string name="travel_name">Travel name</string>
+    <string name="travel_icon">Icon</string>
+    <string name="travel_icon_airplane">Plane</string>
+    <string name="travel_icon_beach">Beach</string>
+    <string name="travel_icon_mountain">Mountains</string>
+    <string name="travel_icon_city">City</string>
+    <string name="travel_icon_car">Car</string>
+    <string name="travel_icon_tram">Tram</string>
+    <string name="travel_icon_sailboat">Sailboat</string>
+    <string name="travel_icon_backpack">Backpack</string>
+    <plurals name="travel_expenses">
+        <item quantity="one">%1$d expense</item>
+        <item quantity="other">%1$d expenses</item>
+    </plurals>
+    <plurals name="travel_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="no_travels_title">No travels yet</string>
+    <string name="no_travels_message">Group a trip\'s expenses to see what the whole trip cost.</string>
+    <string name="travel_total">Total</string>
+    <string name="travel_dates">Dates</string>
+    <string name="travel_duration">Duration</string>
+    <string name="travel_per_day">Per day</string>
+    <string name="travel_refunded">Refunded</string>
+    <string name="travel_where_it_went">Where it went</string>
+    <string name="travel_add_expense">Add expense</string>
+    <string name="travel_expenses_heading">Expenses</string>
+    <string name="travel_no_expenses">No expenses yet</string>
+    <string name="travel_no_expenses_message">Add the first expense of this travel, or tag an existing one from its edit screen.</string>
+    <string name="remove_from_travel">Remove from travel</string>
+    <string name="move_to_travel">Move to Travel</string>
+    <string name="delete_travel">Delete Travel</string>
+    <string name="delete_travel_title">Delete %1$s?</string>
+    <plurals name="delete_travel_message">
+        <item quantity="one">The %1$d expense inside stays in your transactions — only the travel is removed.</item>
+        <item quantity="other">The %1$d expenses inside stay in your transactions — only the travel is removed.</item>
+    </plurals>
+    <string name="part_of_a_trip">Part of a trip?</string>
+    <string name="travel_none">None</string>
+    <string name="in_travel">In travel %1$s</string>
+    <string name="bulk_travel">Travel</string>
+    <string name="travel_options">Travel options</string>
+    <string name="rename">Rename</string>
+    <string name="travel_open_hint">Shows the expenses in this travel</string>
     <string name="toggle_theme">Toggle light/dark theme</string>
     <string name="hide_balance">Hide balance</string>
     <string name="show_balance">Show balance</string>

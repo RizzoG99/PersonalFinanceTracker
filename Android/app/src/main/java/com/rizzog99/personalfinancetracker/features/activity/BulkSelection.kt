@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.Euro
+import androidx.compose.material.icons.outlined.Flight
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material3.Button
@@ -74,6 +75,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.rizzog99.personalfinancetracker.domain.travel.travelSummaries
+import com.rizzog99.personalfinancetracker.features.travels.MoveToTravelSheet
+import java.time.ZoneId
 
 /**
  * The one pending bulk Undo (#285).
@@ -103,7 +107,7 @@ internal fun rememberBulkUndoSlot(): BulkUndoSlot {
     return remember(scope) { BulkUndoSlot(scope) }
 }
 
-internal enum class BulkSheet { Category, Amount, Description }
+internal enum class BulkSheet { Category, Amount, Description, Travel }
 
 /**
  * Everything selection mode needs besides its two bars: Back leaves it, the shell hears about it
@@ -125,10 +129,21 @@ internal fun BulkSelectionEffects(
     val count = state.checkedIds?.size ?: 0
     val accessibilityManager = LocalAccessibilityManager.current
     val reportSelectionMode by rememberUpdatedState(onSelectionModeChange)
+    // The screen's scope, not the sheet's: a Move write must outlive the sheet it was picked in (D-11).
+    val scope = rememberCoroutineScope()
 
     BackHandler(enabled = selecting) { viewModel.exitSelection() }
     LaunchedEffect(selecting) { reportSelectionMode(selecting) }
     DisposableEffect(Unit) { onDispose { reportSelectionMode(false) } }
+
+    /** Travel moves (#284): no Undo, as on iOS, but they still end any pending bulk Undo, which would put the old tag back. */
+    fun move(write: suspend (Set<String>) -> Boolean) {
+        val ids = state.checkedIds.orEmpty()
+        onSheetChange(null)
+        viewModel.exitSelection()
+        undoSlot.drop()
+        if (ids.isNotEmpty()) scope.launch { withContext(NonCancellable) { write(ids) } }
+    }
 
     fun run(@PluralsRes message: Int, action: suspend () -> ActivityViewModel.BulkResult?) {
         onSheetChange(null)
@@ -170,6 +185,13 @@ internal fun BulkSelectionEffects(
             isValid = { true },
             onDismiss = { onSheetChange(null) },
             onSet = { text -> run(R.plurals.transactions_updated) { viewModel.bulkSetNote(text) } },
+        )
+        BulkSheet.Travel -> MoveToTravelSheet(
+            summaries = travelSummaries(state.allTransactions, state.travels, ZoneId.systemDefault()),
+            showRemove = state.selectionHasTravel,
+            onPick = { travelId -> move { ids -> viewModel.bulkSetTravel(ids, travelId) } },
+            onCreate = { name, symbol -> move { ids -> viewModel.addTravelAndAssign(ids, name, symbol) } },
+            onDismiss = { onSheetChange(null) },
         )
         null -> Unit
     }
@@ -233,11 +255,11 @@ internal fun SelectionTopBar(state: ActivityUiState, onCancel: () -> Unit, onSel
     )
 }
 
-/** iOS's floating action bar (`ActivityView.swift:176-195`), without Travel until #284 (D-01). */
+/** iOS's floating action bar (`ActivityView.swift:176-195`), Travel included (#284). */
 @Composable
 internal fun SelectionActionBar(enabled: Boolean, onDelete: () -> Unit, onSheet: (BulkSheet) -> Unit) {
-    // Four across fit only at normal sizes: at large text a word like "Descrizione" would break
-    // mid-word, so the actions go two by two.
+    // Five across fit only at normal sizes: at large text a word like "Descrizione" would break
+    // mid-word, so the actions go three and two, the longest labels on the row of two.
     val twoRows = LocalDensity.current.fontScale >= 1.3f
     val primary = MaterialTheme.colorScheme.primary
     Surface(color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth().testTag(BULK_ACTION_BAR_TAG)) {
@@ -247,6 +269,7 @@ internal fun SelectionActionBar(enabled: Boolean, onDelete: () -> Unit, onSheet:
             val first: @Composable RowScope.() -> Unit = {
                 BulkActionButton(Icons.Outlined.Delete, R.string.bulk_delete, enabled, MaterialTheme.colorScheme.error, onDelete)
                 BulkActionButton(Icons.Outlined.Sell, R.string.bulk_category, enabled, primary) { onSheet(BulkSheet.Category) }
+                BulkActionButton(Icons.Outlined.Flight, R.string.bulk_travel, enabled, primary) { onSheet(BulkSheet.Travel) }
             }
             val second: @Composable RowScope.() -> Unit = {
                 BulkActionButton(Icons.Outlined.Euro, R.string.bulk_amount, enabled, primary) { onSheet(BulkSheet.Amount) }
