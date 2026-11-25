@@ -9,6 +9,7 @@ import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
+import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
@@ -31,6 +32,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class ActivityUiState(
     val isLoading: Boolean = true,
@@ -48,6 +52,8 @@ data class ActivityUiState(
     val filterCategoryLabels: List<String> = emptyList(),
     val searchText: String = "",
     val filters: TransactionFilters = TransactionFilters(),
+    /** Multi-select (#285): `null` while not selecting; otherwise the selected ids, always visible ones. */
+    val checkedIds: Set<String>? = null,
 )
 
 internal data class ActivitySummaryTotals(
@@ -190,6 +196,29 @@ internal fun resolveActivityFilterDraft(
     )
 }
 
+/**
+ * Bulk Category (#285), frozen iOS `TransactionListViewModel.swift:900-919`: the row takes the
+ * category, its sign follows the category's type, and a categorised row is not a goal transfer, so
+ * `goalId` is cleared (D-09). Everything else stays.
+ */
+internal fun FinanceTransaction.withBulkCategory(category: FinanceCategory): FinanceTransaction = copy(
+    amount = if (category.type == TransactionType.INCOME) amount.abs() else amount.abs().negate(),
+    categoryLabel = category.name,
+    categoryId = category.id,
+    goalId = null,
+)
+
+/** Bulk Amount (iOS `:921-927`): the magnitude, with each row's own sign. */
+internal fun FinanceTransaction.withBulkAmount(magnitude: BigDecimal): FinanceTransaction =
+    copy(amount = if (amount < BigDecimal.ZERO) magnitude.abs().negate() else magnitude.abs())
+
+internal fun FinanceTransaction.withBulkNote(note: String): FinanceTransaction = copy(note = note)
+
+internal fun parseBulkAmount(text: String): BigDecimal? = text.trim().replace(',', '.').toBigDecimalOrNull()
+
+/** iOS disables Set while the amount is ≤ 0 (`ActivityView.swift:286-291`). */
+internal fun isValidBulkAmount(text: String): Boolean = (parseBulkAmount(text) ?: BigDecimal.ZERO) > BigDecimal.ZERO
+
 /** What the repositories answered, before any search or filter is applied. */
 private data class ActivityLedger(
     val transactions: List<FinanceTransaction> = emptyList(),
@@ -248,32 +277,48 @@ class ActivityViewModel(
         categoryNames.value = names
     }
 
+    /** Multi-select (#285): `null` while not selecting. */
+    private val checkedIds = MutableStateFlow<Set<String>?>(null)
+
     val uiState: StateFlow<ActivityUiState> = combine(
         ledger,
         filterSelection,
         categoryNames,
-    ) { ledger, selection, names ->
+        checkedIds,
+    ) { ledger, selection, names, selected ->
         val filterCategoryLabels = availableActivityCategoryLabels(
             transactions = ledger.transactions,
             selection = selection,
             zoneId = zoneId,
             categoryNames = names,
         )
+        val visible = TransactionSearch.filter(
+            transactions = ledger.transactions,
+            searchText = selection.searchText,
+            filters = selection.filters,
+            zoneId = zoneId,
+            categoryNames = names,
+        )
+        // Only what is on screen stays selected: a filter change or a row deleted elsewhere drops
+        // the rest for good, as frozen iOS's `intersectSelectionWithVisible` does (`:269-273`), so
+        // no destructive action ever reaches a hidden row. Skipped while loading, when the ledger
+        // is momentarily empty. Writing back re-runs this once with a stable set.
+        val pruned = if (selected == null || ledger.isLoading) {
+            selected
+        } else {
+            visible.mapTo(HashSet()) { it.id }.let { ids -> selected.filterTo(HashSet()) { it in ids } }
+        }
+        if (pruned != selected) checkedIds.compareAndSet(selected, pruned)
         ActivityUiState(
             isLoading = ledger.isLoading,
             isError = ledger.isError,
             allTransactions = ledger.transactions,
-            visibleTransactions = TransactionSearch.filter(
-                transactions = ledger.transactions,
-                searchText = selection.searchText,
-                filters = selection.filters,
-                zoneId = zoneId,
-                categoryNames = names,
-            ),
+            visibleTransactions = visible,
             categories = ledger.categories,
             filterCategoryLabels = filterCategoryLabels,
             searchText = selection.searchText,
             filters = selection.filters,
+            checkedIds = pruned,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActivityUiState())
 
@@ -315,6 +360,72 @@ class ActivityViewModel(
 
     suspend fun delete(transaction: FinanceTransaction): Boolean = write {
         transactionRepository.delete(transaction.id)
+    }
+
+    fun startSelection(id: String) {
+        checkedIds.value = setOf(id)
+    }
+
+    fun toggleSelection(id: String) {
+        checkedIds.update { selected -> selected?.let { if (id in it) it - id else it + id } }
+    }
+
+    /** Exactly the rows on screen (iOS `selectAllVisible`, `:256-258`). */
+    fun selectAllVisible() {
+        checkedIds.value = uiState.value.visibleTransactions.mapTo(HashSet()) { it.id }
+    }
+
+    fun deselectAll() {
+        checkedIds.update { it?.let { emptySet() } }
+    }
+
+    fun exitSelection() {
+        checkedIds.value = null
+    }
+
+    /** What a bulk action changed: [prior] is every touched row as it was, for Undo. */
+    data class BulkResult(val count: Int, val prior: List<FinanceTransaction>)
+
+    /** Plain delete, no recurrence prompt: the rule keeps running (iPhone, D-03). */
+    suspend fun bulkDelete(): BulkResult? = bulk { targets -> transactionRepository.deleteAll(targets.map { it.id }) }
+
+    suspend fun bulkSetCategory(category: FinanceCategory): BulkResult? = bulkEdit { it.withBulkCategory(category) }
+
+    suspend fun bulkSetAmount(magnitude: BigDecimal): BulkResult? = bulkEdit { it.withBulkAmount(magnitude) }
+
+    suspend fun bulkSetNote(note: String): BulkResult? = bulkEdit { it.withBulkNote(note) }
+
+    /** Undo of any bulk action: the captured rows go back in one write. */
+    suspend fun restore(prior: List<FinanceTransaction>): Boolean =
+        bulkWrites.withLock { write { transactionRepository.upsertAll(prior) } }
+
+    private suspend fun bulkEdit(edit: (FinanceTransaction) -> FinanceTransaction): BulkResult? =
+        bulk { targets -> transactionRepository.upsertAll(targets.map(edit)) }
+
+    /**
+     * Bulk writes and their Undo run one at a time, each on the rows as stored when its turn comes.
+     * A bulk edit rewrites whole rows, so one built from a snapshot taken while an earlier write was
+     * still in flight would silently put that write's fields back.
+     *
+     * ponytail: serialises bulk writes only. The editor's single-row saves can still interleave; they
+     * drop any pending bulk Undo first (`BulkUndoSlot`), which is what made a stale whole-row write
+     * reachable. Widen the lock to every write if a single save ever races a bulk one in practice.
+     */
+    private val bulkWrites = Mutex()
+
+    /** Leaves selection mode first, as iOS does, then writes every target in one transaction (D-02). */
+    private suspend fun bulk(apply: suspend (List<FinanceTransaction>) -> Unit): BulkResult? {
+        val ids = checkedIds.value.orEmpty()
+        exitSelection()
+        if (ids.isEmpty()) return null
+        return bulkWrites.withLock {
+            var targets = emptyList<FinanceTransaction>()
+            val written = write {
+                targets = transactionRepository.observeAll().first().filter { it.id in ids }
+                if (targets.isNotEmpty()) apply(targets)
+            }
+            if (written && targets.isNotEmpty()) BulkResult(targets.size, targets) else null
+        }
     }
 
     suspend fun deleteThisAndFuture(transaction: FinanceTransaction): Boolean = write {

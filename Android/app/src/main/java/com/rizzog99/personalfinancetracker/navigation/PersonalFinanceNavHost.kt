@@ -156,6 +156,11 @@ fun PersonalFinanceNavHost(
     // A separate state, not the shell's: on one shared queue, each pending Activity Undo would hold
     // back the shell's "Transaction saved" for its whole 5 s window (#376).
     val activitySnackbarHostState = remember { SnackbarHostState() }
+    // Activity selection mode (#285): its own action bar takes the bottom, so the tabs and the + step
+    // aside, as on iOS (D-04) — a stray tab tap would otherwise drop the selection. The wide drawer stays,
+    // like iPad's sidebar; only its + goes.
+    var activitySelecting by remember { mutableStateOf(false) }
+    var activitySelectionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
 
     val systemDark = isSystemInDarkTheme()
     val themeMode by application.preferencesRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
@@ -218,14 +223,17 @@ fun PersonalFinanceNavHost(
             }
         },
         floatingActionButton = {
-            if (onMainDestination && !isExpandedWidth) {
+            if (onMainDestination && !isExpandedWidth && !activitySelecting) {
                 FloatingActionButton(onClick = { dashboardTransactionEditorVisible = true }) {
                     Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_transaction))
                 }
             }
         },
         bottomBar = {
-            if (onMainDestination && !isExpandedWidth) {
+            val selectionBar = activitySelectionBar
+            if (onMainDestination && !isExpandedWidth && selectionBar != null) {
+                selectionBar()
+            } else if (onMainDestination && !isExpandedWidth && !activitySelecting) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                     phoneTabs.forEach { destination ->
                         NavigationBarItem(
@@ -263,11 +271,13 @@ fun PersonalFinanceNavHost(
                     Column(
                         modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 16.dp),
                     ) {
-                        FloatingActionButton(
-                            onClick = { dashboardTransactionEditorVisible = true },
-                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp),
-                        ) {
-                            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_transaction))
+                        if (!activitySelecting) {
+                            FloatingActionButton(
+                                onClick = { dashboardTransactionEditorVisible = true },
+                                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp),
+                            ) {
+                                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_transaction))
+                            }
                         }
                         drawerGroups.forEach { (titleRes, destinations) ->
                             titleRes?.let {
@@ -345,6 +355,7 @@ fun PersonalFinanceNavHost(
                         isDarkTheme = isDarkTheme,
                         onToggleTheme = onToggleTheme,
                         onOpenSettings = { settingsVisible = true },
+                        onSelectionModeChange = { activitySelecting = it },
                     )
                 } else {
                     ActivityScreen(
@@ -352,6 +363,8 @@ fun PersonalFinanceNavHost(
                         onToggleTheme = onToggleTheme,
                         onOpenSettings = { settingsVisible = true },
                         shellSnackbarHostState = activitySnackbarHostState,
+                        onSelectionModeChange = { activitySelecting = it },
+                        onSelectionBarChange = { activitySelectionBar = it },
                     )
                 }
             }

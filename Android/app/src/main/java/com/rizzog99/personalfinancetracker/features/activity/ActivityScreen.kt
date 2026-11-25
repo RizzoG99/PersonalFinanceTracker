@@ -6,7 +6,10 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -86,7 +89,9 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -176,6 +181,14 @@ fun ActivityScreen(
     // A state the shell draws in its own Scaffold, when the shell has a floating +: Material lifts a
     // snackbar above a FAB only within one Scaffold, so a host of our own would put Undo under the + (#368).
     shellSnackbarHostState: SnackbarHostState? = null,
+    /** Selection mode on or off (#285): the shell hides its bottom navigation and + meanwhile (D-04). */
+    onSelectionModeChange: (Boolean) -> Unit = {},
+    /**
+     * The selection action bar, for the shell to draw in its own bottom-bar slot while selecting, or
+     * `null` (#285). Same reason as [shellSnackbarHostState]: the shell's Undo snackbar is lifted above
+     * a bottom bar only within one Scaffold, so a bar of our own would sit under it and lose its taps.
+     */
+    onSelectionBarChange: ((@Composable () -> Unit)?) -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: ActivityViewModel = viewModel(
@@ -192,6 +205,24 @@ fun ActivityScreen(
     val snackbarHostState = shellSnackbarHostState ?: remember { SnackbarHostState() }
     val accessibilityManager = LocalAccessibilityManager.current
     val scope = rememberCoroutineScope()
+    val bulkUndo = rememberBulkUndoSlot()
+    val bulkSheetState = remember { mutableStateOf<BulkSheet?>(null) }
+    var bulkSheet by bulkSheetState
+    val selectionBar: @Composable () -> Unit = remember(viewModel, snackbarHostState, bulkUndo) {
+        {
+            val current by viewModel.uiState.collectAsState()
+            SelectionActionBar(
+                enabled = current.checkedIds.orEmpty().isNotEmpty(),
+                onDelete = { runBulkDelete(viewModel, snackbarHostState, bulkUndo, application, accessibilityManager) },
+                onSheet = { bulkSheetState.value = it },
+            )
+        }
+    }
+    val barInShell = shellSnackbarHostState != null
+    val selecting = state.checkedIds != null
+    val publishBar by rememberUpdatedState(onSelectionBarChange)
+    LaunchedEffect(selecting, barInShell) { if (barInShell) publishBar(if (selecting) selectionBar else null) }
+    DisposableEffect(Unit) { onDispose { publishBar(null) } }
     var editingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var isCreating by remember { mutableStateOf(false) }
     var deletingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
@@ -200,18 +231,23 @@ fun ActivityScreen(
     var filtersVisible by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
-            MainTopBar(
-                title = stringResource(R.string.tab_activity),
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme,
-                onOpenSettings = onOpenSettings,
-                screenActions = {
-                    IconButton(onClick = { filtersVisible = true }) {
-                        Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
-                    }
-                },
-            )
+            if (state.checkedIds != null) {
+                SelectionTopBar(state, viewModel::exitSelection, viewModel::selectAllVisible, viewModel::deselectAll)
+            } else {
+                MainTopBar(
+                    title = stringResource(R.string.tab_activity),
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    onOpenSettings = onOpenSettings,
+                    screenActions = {
+                        IconButton(onClick = { filtersVisible = true }) {
+                            Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
+                        }
+                    },
+                )
+            }
         },
+        bottomBar = { if (selecting && !barInShell) selectionBar() },
         // Two hosts on one state would draw every snackbar twice.
         snackbarHost = { if (shellSnackbarHostState == null) SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.surface,
@@ -230,9 +266,22 @@ fun ActivityScreen(
             onDelete = {
                 if (it.recurrenceRuleId == null) deletingTransaction = it else recurringDeletionTransaction = it
             },
+            onStartSelection = { viewModel.startSelection(it.id) },
+            onToggleSelection = { viewModel.toggleSelection(it.id) },
             modifier = Modifier.padding(innerPadding),
         )
     }
+
+    BulkSelectionEffects(
+        state = state,
+        viewModel = viewModel,
+        snackbarHostState = snackbarHostState,
+        undoSlot = bulkUndo,
+        sheet = bulkSheet,
+        onSheetChange = { bulkSheet = it },
+        onSelectionModeChange = onSelectionModeChange,
+        application = application,
+    )
 
     if (filtersVisible) {
         ActivityFiltersSheet(
@@ -267,6 +316,7 @@ fun ActivityScreen(
                 } else {
                     val wasEditing = editingTransaction != null
                     scope.launch {
+                        bulkUndo.drop()
                         val saved = recurrenceRule?.let { viewModel.createRecurringTransaction(it) } ?: viewModel.save(transaction)
                         if (saved) {
                             if (receiptMerchant != null && transaction.categoryId != null) {
@@ -294,6 +344,7 @@ fun ActivityScreen(
             onEditThisOnly = {
                 recurringEditTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.save(transaction)) {
                         isCreating = false
                         editingTransaction = null
@@ -306,6 +357,7 @@ fun ActivityScreen(
             onEditThisAndFuture = {
                 recurringEditTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.updateThisAndFuture(transaction)) {
                         isCreating = false
                         editingTransaction = null
@@ -322,6 +374,7 @@ fun ActivityScreen(
             onConfirm = {
                 deletingTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.delete(transaction)) {
                         showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
                     }
@@ -336,6 +389,7 @@ fun ActivityScreen(
             onDeleteThisOnly = {
                 recurringDeletionTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.delete(transaction)) {
                         showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
                     }
@@ -343,7 +397,10 @@ fun ActivityScreen(
             },
             onDeleteThisAndFuture = {
                 recurringDeletionTransaction = null
-                scope.launch { viewModel.deleteThisAndFuture(transaction) }
+                scope.launch {
+                    bulkUndo.drop()
+                    viewModel.deleteThisAndFuture(transaction)
+                }
             },
         )
     }
@@ -355,6 +412,7 @@ fun ActivityTwoPaneScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onOpenSettings: () -> Unit = {},
+    onSelectionModeChange: (Boolean) -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: ActivityViewModel = viewModel(
@@ -377,23 +435,38 @@ fun ActivityTwoPaneScreen(
     var recurringDeletionTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var recurringEditTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var filtersVisible by remember { mutableStateOf(false) }
+    val bulkUndo = rememberBulkUndoSlot()
+    var bulkSheet by remember { mutableStateOf<BulkSheet?>(null) }
     val savedMessage = stringResource(R.string.transaction_saved)
     val updatedMessage = stringResource(R.string.transaction_updated)
     val addedMessage = stringResource(R.string.transaction_added)
 
     Scaffold(
         topBar = {
-            MainTopBar(
-                title = stringResource(R.string.tab_activity),
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme,
-                onOpenSettings = onOpenSettings,
-                screenActions = {
-                    IconButton(onClick = { filtersVisible = true }) {
-                        Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
-                    }
-                },
-            )
+            if (state.checkedIds != null) {
+                SelectionTopBar(state, viewModel::exitSelection, viewModel::selectAllVisible, viewModel::deselectAll)
+            } else {
+                MainTopBar(
+                    title = stringResource(R.string.tab_activity),
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    onOpenSettings = onOpenSettings,
+                    screenActions = {
+                        IconButton(onClick = { filtersVisible = true }) {
+                            Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
+                        }
+                    },
+                )
+            }
+        },
+        bottomBar = {
+            if (state.checkedIds != null) {
+                SelectionActionBar(
+                    enabled = state.checkedIds.orEmpty().isNotEmpty(),
+                    onDelete = { runBulkDelete(viewModel, snackbarHostState, bulkUndo, application, accessibilityManager) },
+                    onSheet = { bulkSheet = it },
+                )
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.surface,
@@ -414,6 +487,8 @@ fun ActivityTwoPaneScreen(
                 onDelete = {
                     if (it.recurrenceRuleId == null) deletingTransaction = it else recurringDeletionTransaction = it
                 },
+                onStartSelection = { viewModel.startSelection(it.id) },
+                onToggleSelection = { viewModel.toggleSelection(it.id) },
                 modifier = Modifier.weight(1f),
             )
 
@@ -435,6 +510,7 @@ fun ActivityTwoPaneScreen(
                         } else {
                             val wasEditing = selected != null
                             scope.launch {
+                                bulkUndo.drop()
                                 val saved = recurrenceRule?.let { viewModel.createRecurringTransaction(it) } ?: viewModel.save(transaction)
                                 if (saved) {
                                     if (receiptMerchant != null && transaction.categoryId != null) {
@@ -477,6 +553,7 @@ fun ActivityTwoPaneScreen(
             onEditThisOnly = {
                 recurringEditTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.save(transaction)) {
                         selectedId = null
                         snackbarHostState.showSnackbar(message = updatedMessage)
@@ -486,6 +563,7 @@ fun ActivityTwoPaneScreen(
             onEditThisAndFuture = {
                 recurringEditTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.updateThisAndFuture(transaction)) {
                         selectedId = null
                         snackbarHostState.showSnackbar(updatedMessage)
@@ -501,6 +579,7 @@ fun ActivityTwoPaneScreen(
             onConfirm = {
                 deletingTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.delete(transaction)) {
                         selectedId = null
                         showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
@@ -516,6 +595,7 @@ fun ActivityTwoPaneScreen(
             onDeleteThisOnly = {
                 recurringDeletionTransaction = null
                 scope.launch {
+                    bulkUndo.drop()
                     if (viewModel.delete(transaction)) {
                         selectedId = null
                         showUndoDeletion(snackbarHostState, viewModel, transaction, application, accessibilityManager)
@@ -524,10 +604,24 @@ fun ActivityTwoPaneScreen(
             },
             onDeleteThisAndFuture = {
                 recurringDeletionTransaction = null
-                scope.launch { viewModel.deleteThisAndFuture(transaction) }
+                scope.launch {
+                    bulkUndo.drop()
+                    viewModel.deleteThisAndFuture(transaction)
+                }
             },
         )
     }
+
+    BulkSelectionEffects(
+        state = state,
+        viewModel = viewModel,
+        snackbarHostState = snackbarHostState,
+        undoSlot = bulkUndo,
+        sheet = bulkSheet,
+        onSheetChange = { bulkSheet = it },
+        onSelectionModeChange = onSelectionModeChange,
+        application = application,
+    )
 }
 
 /**
@@ -552,6 +646,8 @@ internal fun ActivityContent(
     onEdit: (FinanceTransaction) -> Unit,
     onDelete: (FinanceTransaction) -> Unit,
     modifier: Modifier = Modifier,
+    onStartSelection: (FinanceTransaction) -> Unit = {},
+    onToggleSelection: (FinanceTransaction) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier,
@@ -659,6 +755,9 @@ internal fun ActivityContent(
                                     categories = state.categories,
                                     onEdit = { onEdit(transaction) },
                                     onDelete = { onDelete(transaction) },
+                                    checked = state.checkedIds?.let { transaction.id in it },
+                                    onStartSelection = { onStartSelection(transaction) },
+                                    onToggle = { onToggleSelection(transaction) },
                                 )
                             }
                         }
@@ -990,14 +1089,34 @@ private fun LocalDate.toUtcStartOfDayMillis(): Long = atStartOfDay(ZoneOffset.UT
 
 private fun Long.toUtcLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun TransactionRow(
     transaction: FinanceTransaction,
     categories: List<FinanceCategory>,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    /** `null` outside selection mode (#285); otherwise whether this row is selected. */
+    checked: Boolean? = null,
+    onStartSelection: () -> Unit = {},
+    onToggle: () -> Unit = {},
 ) {
+    // Outside selection a tap edits and a long press starts selecting (iOS 0.4 s long press,
+    // `ActivityListSections.swift:216-222`). Inside it the whole row is one checkbox, so TalkBack
+    // reads its state with the rest of the row; iOS adds `isSelected` for the same reason (`:206-209`).
+    val interaction = if (checked == null) {
+        Modifier.combinedClickable(
+            role = Role.Button,
+            onClick = onEdit,
+            onLongClick = onStartSelection,
+            onLongClickLabel = stringResource(R.string.select_transaction),
+        )
+    } else {
+        Modifier.toggleable(value = checked, role = Role.Checkbox, onValueChange = { onToggle() })
+    }
+    val selectionBox: @Composable () -> Unit = {
+        if (checked != null) Checkbox(checked = checked, onCheckedChange = null)
+    }
     val amountColor = if (transaction.amount < BigDecimal.ZERO) {
         LocalFinanceExtendedColors.current.negative
     } else {
@@ -1029,6 +1148,8 @@ private fun TransactionRow(
     SwipeToDismissBox(
         state = dismissState,
         enableDismissFromStartToEnd = false,
+        // No swipe-to-delete while selecting, as on iOS: the action bar's Delete is the only one.
+        enableDismissFromEndToStart = checked == null,
         backgroundContent = {
             Box(
                 modifier = Modifier
@@ -1052,11 +1173,12 @@ private fun TransactionRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
-                    .clickable(role = Role.Button, onClick = onEdit)
+                    .then(interaction)
                     .padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    selectionBox()
                     Box(
                         modifier = Modifier
                             .size(40.dp)
@@ -1076,7 +1198,7 @@ private fun TransactionRow(
                             if (isRecurring) {
                                 Icon(
                                     Icons.Outlined.Repeat,
-                                    contentDescription = stringResource(R.string.repeat_transaction),
+                                    contentDescription = stringResource(R.string.recurring_badge),
                                     modifier = Modifier.size(14.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -1100,23 +1222,26 @@ private fun TransactionRow(
             ListItem(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(role = Role.Button, onClick = onEdit),
+                    .then(interaction),
                 // Opaque, not transparent: this sits directly above the swipe-reveal's red
                 // delete background in the same Box, so it must fully occlude it when settled.
                 colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 leadingContent = {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(categoryColor.copy(alpha = 0.14f), CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            imageVector = categoryIcon,
-                            contentDescription = null,
-                            tint = categoryColor,
-                            modifier = Modifier.size(24.dp),
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        selectionBox()
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(categoryColor.copy(alpha = 0.14f), CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = categoryIcon,
+                                contentDescription = null,
+                                tint = categoryColor,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
                     }
                 },
                 headlineContent = {
@@ -1125,7 +1250,7 @@ private fun TransactionRow(
                         if (isRecurring) {
                             Icon(
                                 Icons.Outlined.Repeat,
-                                contentDescription = stringResource(R.string.repeat_transaction),
+                                contentDescription = stringResource(R.string.recurring_badge),
                                 modifier = Modifier.size(14.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -1813,6 +1938,11 @@ private fun MoreCategoriesTile(onClick: () -> Unit) {
     }
 }
 
+/** Bulk Category (#285) reuses the Add flow's picker, as iOS's `BulkCategoryPickerSheet` does. */
+@Composable
+internal fun BulkCategoryPicker(categories: List<FinanceCategory>, onDismiss: () -> Unit, onSelected: (FinanceCategory) -> Unit) =
+    CategoryPickerSheet(categories = categories, selectedCategoryId = null, onDismiss = onDismiss, onCategorySelected = onSelected)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CategoryPickerSheet(
@@ -2061,6 +2191,10 @@ internal const val UNDO_WINDOW_MILLIS = 5_000L
 
 internal const val ACTIVITY_SEARCH_TAG = "activitySearch"
 
+internal const val BULK_ACTION_BAR_TAG = "bulkActionBar"
+
+internal const val BULK_INPUT_TAG = "bulkInput"
+
 private class UndoVisuals(override val message: String, override val actionLabel: String) : SnackbarVisuals {
     override val withDismissAction = false
     override val duration = SnackbarDuration.Indefinite
@@ -2078,9 +2212,20 @@ private suspend fun showUndoDeletion(
     transaction: FinanceTransaction,
     application: PersonalFinanceApplication,
     accessibilityManager: AccessibilityManager?,
+) = showUndo(snackbarHostState, application.getString(R.string.transaction_deleted), application, accessibilityManager) {
+    viewModel.save(transaction)
+}
+
+/** The same 5 s Undo for any Activity change; [onUndo] runs only if Undo was tapped in time (#285 reuses it). */
+internal suspend fun showUndo(
+    snackbarHostState: SnackbarHostState,
+    message: String,
+    application: PersonalFinanceApplication,
+    accessibilityManager: AccessibilityManager?,
+    onUndo: suspend () -> Unit,
 ) {
     val visuals = UndoVisuals(
-        message = application.getString(R.string.transaction_deleted),
+        message = message,
         actionLabel = application.getString(R.string.undo),
     )
     val result = coroutineScope {
@@ -2098,5 +2243,5 @@ private suspend fun showUndoDeletion(
         }
         snackbarHostState.showSnackbar(visuals).also { timer.cancel() }
     }
-    if (result == SnackbarResult.ActionPerformed) viewModel.save(transaction)
+    if (result == SnackbarResult.ActionPerformed) onUndo()
 }

@@ -21,8 +21,15 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertAll(transactions: List<TransactionEntity>)
 
+    /** REPLACE is safe: no table has a foreign key into `transactions`. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAll(transactions: List<TransactionEntity>)
+
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("DELETE FROM transactions WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 
     @Query("DELETE FROM transactions WHERE recurrenceRuleId = :recurrenceRuleId AND timestampEpochMillis >= :cutoffEpochMillis")
     suspend fun deleteOccurrencesFrom(recurrenceRuleId: String, cutoffEpochMillis: Long)

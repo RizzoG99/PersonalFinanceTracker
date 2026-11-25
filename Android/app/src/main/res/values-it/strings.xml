@@ -235,6 +235,32 @@
     <string name="transaction_deleted">Transazione eliminata</string>
     <string name="transaction_saved">Transazione salvata</string>
     <string name="undo">Annulla</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d selezionata</item>
+        <item quantity="other">%1$d selezionate</item>
+    </plurals>
+    <string name="select_all">Seleziona tutto</string>
+    <string name="deselect_all">Deseleziona tutto</string>
+    <string name="select_transaction">Seleziona</string>
+    <string name="bulk_delete">Elimina</string>
+    <string name="bulk_category">Categoria</string>
+    <string name="bulk_amount">Importo</string>
+    <string name="bulk_description">Descrizione</string>
+    <string name="bulk_new_amount">Nuovo importo</string>
+    <string name="bulk_set">Imposta</string>
+    <plurals name="bulk_applies_to">
+        <item quantity="one">Si applica a %1$d transazione</item>
+        <item quantity="other">Si applica a %1$d transazioni</item>
+    </plurals>
+    <plurals name="transactions_deleted">
+        <item quantity="one">%1$d transazione eliminata</item>
+        <item quantity="other">%1$d transazioni eliminate</item>
+    </plurals>
+    <plurals name="transactions_updated">
+        <item quantity="one">%1$d transazione aggiornata</item>
+        <item quantity="other">%1$d transazioni aggiornate</item>
+    </plurals>
+    <string name="recurring_badge">Ricorrente</string>
     <string name="toggle_theme">Cambia tema chiaro/scuro</string>
     <string name="hide_balance">Nascondi saldo</string>
     <string name="show_balance">Mostra saldo</string>

@@ -151,6 +151,30 @@ class RoomTransactionRepositoryTest {
         )
     }
 
+    @Test
+    fun `285 AC-03 upsertAll is all or nothing`() = runBlocking {
+        repository.insertBatch(listOf(transaction(id = "a", timestamp = "2026-03-14T10:00:00Z", amount = "-3.00")))
+        val valid = transaction(id = "a", timestamp = "2026-03-14T10:00:00Z", amount = "3.00")
+        val brokenLink = transaction(id = "b", timestamp = "2026-03-13T10:00:00Z", amount = "-1.00").copy(goalId = "missing")
+        try {
+            repository.upsertAll(listOf(valid, brokenLink))
+            fail("a missing goal must fail the batch")
+        } catch (expected: Exception) {
+            // SQLiteConstraintException: FOREIGN KEY constraint failed.
+        }
+        val stored = repository.observeAll().first()
+        assertEquals(listOf("a"), stored.map(FinanceTransaction::id))
+        assertEquals(0, BigDecimal("-3.00").compareTo(stored.single().amount))
+    }
+
+    @Test
+    fun `285 AC-03 deleteAll removes more ids than SQLite binds at once`() = runBlocking {
+        val many = (1..1200).map { transaction(id = "t$it", timestamp = "2026-03-14T10:00:00Z", amount = "-1.00") }
+        repository.insertBatch(many + transaction(id = "keep", timestamp = "2026-03-15T10:00:00Z", amount = "5.00"))
+        repository.deleteAll(many.map(FinanceTransaction::id))
+        assertEquals(listOf("keep"), repository.observeAll().first().map(FinanceTransaction::id))
+    }
+
     private fun transaction(id: String, timestamp: String, amount: String, recurrenceRuleId: String? = null) = FinanceTransaction(
         id = id,
         timestamp = Instant.parse(timestamp),
