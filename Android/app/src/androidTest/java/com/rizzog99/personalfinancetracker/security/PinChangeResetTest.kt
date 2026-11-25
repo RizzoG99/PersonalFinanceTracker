@@ -85,7 +85,7 @@ class PinChangeResetTest {
 
     private fun insertTransaction() {
         app.database.openHelper.writableDatabase.execSQL(
-            "INSERT INTO transactions VALUES ('tx-320',0,'-12.99','Netflix','Bills',NULL,'EUR',NULL,NULL)",
+            "INSERT INTO transactions VALUES ('tx-320',0,'-12.99','Netflix','Bills',NULL,'EUR',NULL,NULL,NULL)",
         )
     }
 
