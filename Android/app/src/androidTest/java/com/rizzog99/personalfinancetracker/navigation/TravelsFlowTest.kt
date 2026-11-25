@@ -128,7 +128,19 @@ class TravelsFlowTest {
     /** The collapsed travel row: one merged node described as "name, subtitle". */
     private fun travelRow(name: String) = hasContentDescription("$name, ", substring = true) and hasClickAction()
 
+    /**
+     * Settles the screen before a tap: the editor focuses its amount field, and on a slow emulator the
+     * keyboard slides the sheet up after the tap's position was computed, so the tap landed on the scrim
+     * and dismissed the sheet (CI, API 34 tablet). Closing the keyboard first keeps the layout still.
+     */
+    private fun settle() {
+        // With a dialog in front the main window has no focus, so there is no keyboard of ours to close.
+        runCatching { Espresso.closeSoftKeyboard() }
+        rule.waitForIdle()
+    }
+
     private fun tapDescribed(description: Int) {
+        settle()
         rule.onNode(hasContentDescription(string(description)) and hasClickAction()).performClick()
         rule.waitForIdle()
     }
@@ -137,12 +149,14 @@ class TravelsFlowTest {
     private fun tappable(text: String) = hasText(text) and hasClickAction() and !hasSetTextAction()
 
     private fun tapText(text: String) {
+        settle()
         rule.onNode(tappable(text)).performClick()
         rule.waitForIdle()
     }
 
     /** A travel chip in the editor: it carries a selected state, unlike the list row behind the sheet. */
     private fun tapChip(name: String) {
+        settle()
         // The section is last in the editor: on a tall pane it can sit below the fold.
         rule.onNode(hasText(name) and SemanticsMatcher.keyIsDefined(SemanticsProperties.Selected)).performScrollTo().performClick()
         rule.waitForIdle()
@@ -186,7 +200,8 @@ class TravelsFlowTest {
     fun ac02_detailStatsAndAddExpense_compact() {
         host()
         waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
-        rule.onNode(travelRow("Barcellona")).performClick()
+        settle()
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performClick()
         awaitText(string(R.string.travel_per_day))
         listOf(
             signedTotal,
@@ -211,7 +226,7 @@ class TravelsFlowTest {
         host()
         // A long press enters selection with the trip expanded, and does not open the detail.
         waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
-        rule.onNode(travelRow("Barcellona")).performTouchInput { longClick() }
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performTouchInput { longClick() }
         waitOrDump { rule.onAllNodes(isToggleable() and hasText("Hotel", substring = true)).fetchSemanticsNodes().isNotEmpty() }
         rule.onAllNodes(hasText(string(R.string.travel_per_day))).assertCountEquals(0)
         Espresso.pressBack()
@@ -225,7 +240,8 @@ class TravelsFlowTest {
         typeTravelName("Lisbona")
         waitOrDump { "Lisbona" in travelNames() }
 
-        rule.onNode(travelRow("Lisbona")).performClick()
+        settle()
+        rule.onNode(travelRow("Lisbona")).performScrollTo().performClick()
         tapDescribed(R.string.travel_options)
         tapText(string(R.string.rename))
         typeTravelName("Lisboa")
@@ -233,12 +249,12 @@ class TravelsFlowTest {
         Espresso.pressBack()
 
         waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
-        rule.onNode(travelRow("Barcellona")).performTouchInput { swipeLeft() }
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performTouchInput { swipeLeft() }
         awaitText(string(R.string.delete_travel_title, "Barcellona"))
         tapText(string(R.string.cancel))
         assertTrue("cancel keeps it", "Barcellona" in travelNames())
 
-        rule.onNode(travelRow("Barcellona")).performTouchInput { swipeLeft() }
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performTouchInput { swipeLeft() }
         awaitText(string(R.string.delete_travel_title, "Barcellona"))
         tapText(string(R.string.delete_travel))
         waitOrDump { "Barcellona" !in travelNames() }
@@ -247,7 +263,8 @@ class TravelsFlowTest {
         assertEquals(listOf(null, null, null), listOf("Hotel", "Taxi", "Rimborso").map { after.getValue(it).travelId })
 
         // Deleting from a travel's page lands back on the list, once (code review r1).
-        rule.onNode(travelRow("Lisboa")).performClick()
+        settle()
+        rule.onNode(travelRow("Lisboa")).performScrollTo().performClick()
         awaitText(string(R.string.travel_add_expense))
         tapDescribed(R.string.travel_options)
         tapText(string(R.string.delete_travel))
@@ -301,7 +318,8 @@ class TravelsFlowTest {
         bulkAction(R.string.bulk_travel)
         awaitText(string(R.string.move_to_travel))
         rule.onAllNodes(hasText(string(R.string.remove_from_travel))).assertCountEquals(0)
-        rule.onNode(travelRow("Barcellona")).performClick()
+        settle()
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performClick()
         awaitStored { it.getValue("Caffè").travelId == barcellona }
         awaitGone(hasText(string(R.string.move_to_travel)))
 
@@ -317,7 +335,8 @@ class TravelsFlowTest {
         // From the detail: a long press on a member offers Remove from travel.
         rule.onNodeWithTag(ACTIVITY_SEARCH_TAG).performTextReplacement("")
         waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
-        rule.onNode(travelRow("Barcellona")).performClick()
+        settle()
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performClick()
         awaitText("Hotel")
         rule.onNode(hasText("Hotel") and hasClickAction()).performScrollTo().performTouchInput { longClick() }
         tapText(string(R.string.remove_from_travel))
@@ -355,7 +374,8 @@ class TravelsFlowTest {
         bulkAction(R.string.bulk_travel)
         // Still showing right before the move, or the drop below proves nothing.
         rule.onNode(hasText(plural(R.plurals.transactions_updated, 1))).assertExists()
-        rule.onNode(travelRow("Barcellona")).performClick()
+        settle()
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performClick()
         // Gone at once: well inside its own 5 s window.
         rule.waitUntil(2_000) { rule.onAllNodes(hasText(plural(R.plurals.transactions_updated, 1))).fetchSemanticsNodes().isEmpty() }
         awaitStored { it.getValue("Caffè").travelId == barcellona }
@@ -368,7 +388,8 @@ class TravelsFlowTest {
         waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         val description = rule.onNode(travelRow("Barcellona")).fetchSemanticsNode().config[SemanticsProperties.ContentDescription].joinToString()
         assertTrue(description, description.startsWith("Barcellona, ${plural(R.plurals.travel_expenses, 3)}"))
-        rule.onNode(travelRow("Barcellona")).performClick()
+        settle()
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performClick()
         awaitText(string(R.string.travel_where_it_went))
         rule.onNode(hasText("Travel") and SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "89%")).assertExists()
         rule.onNode(hasText("Taxi & Rideshare") and SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "11%")).assertExists()
@@ -383,7 +404,8 @@ class TravelsFlowTest {
         tapChip("Barcellona")
         tapDescribed(R.string.save)
         awaitStored { it.getValue("Caffè").travelId == barcellona }
-        rule.onNode(travelRow("Barcellona")).performClick()
+        settle()
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performClick()
         awaitText(string(R.string.travel_per_day))
     }
 

@@ -21,6 +21,7 @@ import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import com.rizzog99.personalfinancetracker.PersonalFinanceApplication
@@ -132,7 +133,9 @@ class TravelsCaptureTest(private val cell: CaptureHarness.Cell) {
         CaptureHarness.writePng(rule, dir, "list-${cell.id}")
         CaptureHarness.writeSemantics(rule, dir, "list-${cell.id}")
 
-        rule.onNode(row).performClick()
+        // The lazy list also keeps an unplaced copy of a row at (0,0): scroll the real one into view, then tap.
+        rule.waitForIdle()
+        rule.onNode(row).performScrollTo().performClick()
         rule.waitUntil(20_000) { rule.onAllNodes(hasText(string(R.string.travel_per_day))).fetchSemanticsNodes().isNotEmpty() }
         CaptureHarness.writePng(rule, dir, "detail-${cell.id}")
         CaptureHarness.writeSemantics(rule, dir, "detail-${cell.id}")
