@@ -48,5 +48,5 @@ suspend fun wipeAllData(
 /** Children before parents; `merchant_category_mappings` is deliberately absent (D-02). */
 private val WIPED_TABLES = listOf(
     "transactions", "recurrence_rules", "goals", "credit_cards",
-    "health_score_snapshots", "daily_forecast_cache", "categories",
+    "health_score_snapshots", "daily_forecast_cache", "categories", "travels",
 )

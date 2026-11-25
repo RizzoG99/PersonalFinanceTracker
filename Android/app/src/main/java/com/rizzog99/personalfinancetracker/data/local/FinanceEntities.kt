@@ -57,7 +57,7 @@ data class RecurrenceRuleEntity(
         ForeignKey(entity = GoalEntity::class, parentColumns = ["id"], childColumns = ["goalId"], onDelete = ForeignKey.SET_NULL),
         ForeignKey(entity = RecurrenceRuleEntity::class, parentColumns = ["id"], childColumns = ["recurrenceRuleId"], onDelete = ForeignKey.SET_NULL),
     ],
-    indices = [Index("timestampEpochMillis"), Index("categoryId"), Index("goalId"), Index("recurrenceRuleId")],
+    indices = [Index("timestampEpochMillis"), Index("categoryId"), Index("goalId"), Index("recurrenceRuleId"), Index("travelId")],
 )
 data class TransactionEntity(
     @PrimaryKey val id: String,
@@ -69,6 +69,17 @@ data class TransactionEntity(
     val currencyCode: String,
     val goalId: String?,
     val recurrenceRuleId: String?,
+    /** The travel tag (#284). No foreign key, like iOS's raw UUID: an orphan shows as a plain row (D-08). */
+    val travelId: String? = null,
+)
+
+/** A trip folder (#284), frozen iOS `TravelModel`. Members point here through `transactions.travelId`. */
+@Entity(tableName = "travels")
+data class TravelEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val symbolName: String,
+    val createdAtEpochMillis: Long,
 )
 
 /**

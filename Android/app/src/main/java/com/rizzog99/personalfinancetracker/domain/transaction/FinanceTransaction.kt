@@ -13,4 +13,6 @@ data class FinanceTransaction(
     val currencyCode: String,
     val goalId: String?,
     val recurrenceRuleId: String?,
+    /** The travel this expense belongs to (#284), or none. Defaulted so existing call sites are unchanged. */
+    val travelId: String? = null,
 )

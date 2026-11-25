@@ -63,7 +63,7 @@ class RoomMigrationFailureTest {
         val sizeBefore = context.getDatabasePath(sourceName).length()
 
         // The production builder never calls fallbackToDestructiveMigration. Without a registered
-        // path from 1 to 4 that is the difference between "refuses to open" and "silently wipes".
+        // path from 1 to 5 that is the difference between "refuses to open" and "silently wipes".
         val withoutMigrations = Room
             .databaseBuilder(context, PersonalFinanceDatabase::class.java, sourceName)
             .allowMainThreadQueries()
@@ -78,7 +78,7 @@ class RoomMigrationFailureTest {
         assertTrue(
             "the message must name the missing migration: ${failure?.message}",
             failure?.message?.contains("Migration didn't properly handle") == true ||
-                failure?.message?.contains("A migration from 1 to 4 was required") == true,
+                failure?.message?.contains("A migration from 1 to 5 was required") == true,
         )
 
         // Measured, not inferred from the exception type: nothing was dropped or recreated.

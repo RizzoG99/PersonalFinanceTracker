@@ -99,6 +99,41 @@ class BackupRoundTripTest {
         assertEquals(before, tables())
     }
 
+    /** #284 AC-04 / D-06: travels and tags round-trip with their ids. */
+    @Test
+    fun travelsRoundTripWithTheirIds() = runBlocking {
+        seedFixture()
+        val travels = com.rizzog99.personalfinancetracker.data.repository.RoomTravelRepository(database)
+        val someId = transactions.observeAll().first().first().id
+        val trip = travels.addAndAssign("Barcellona", "airplane", listOf(someId))
+        val before = tables()
+        val backup = export()
+
+        travels.delete(trip.id)
+        assertFalse(withContext(Dispatchers.IO) { repository().import(backup.inputStream()) })
+
+        assertEquals(before, tables())
+        assertEquals(listOf(trip), travels.observeAll().first())
+        assertEquals(trip.id, transactions.observeAll().first().single { it.id == someId }.travelId)
+    }
+
+    /** #284 D-06: a v2 file written before travels existed still restores, every row in no travel. */
+    @Test
+    fun aV2FileFromBeforeTravelsStillRestores() = runBlocking {
+        seedFixture()
+        val root = org.json.JSONObject(export().decodeToString())
+        val tablesJson = root.getJSONObject("tables")
+        tablesJson.remove("travels")
+        val rows = tablesJson.getJSONArray("transactions")
+        for (i in 0 until rows.length()) rows.getJSONObject(i).remove("travelId")
+        val expected = tables()
+
+        assertFalse(withContext(Dispatchers.IO) { repository().import(root.toString().byteInputStream()) })
+
+        assertEquals(expected, tables())
+        assertEquals(emptyList<String?>(), transactions.observeAll().first().mapNotNull { it.travelId })
+    }
+
     @Test
     fun ac03_legacyV1RelinksByNameAndTypeAndKeepsUnbackedTables() = runBlocking {
         seedFixture()
@@ -203,7 +238,7 @@ class BackupRoundTripTest {
     private suspend fun tables(): Map<String, List<Map<String, Any?>>> = withContext(Dispatchers.IO) {
         database.withTransaction {
             listOf(
-                "categories", "goals", "recurrence_rules", "transactions",
+                "categories", "goals", "recurrence_rules", "travels", "transactions",
                 "credit_cards", "health_score_snapshots", "merchant_category_mappings",
             ).associateWith { table ->
                 database.query("SELECT * FROM `$table`", null).use { c ->

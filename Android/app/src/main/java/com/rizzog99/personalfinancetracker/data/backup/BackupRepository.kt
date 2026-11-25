@@ -41,11 +41,19 @@ class BackupRepository(
     companion object {
         /** In restore order, so every foreign key finds its parent. The forecast cache is derived, hence absent. */
         val BACKED_UP_TABLES = listOf(
-            "categories", "goals", "recurrence_rules", "transactions",
+            "categories", "goals", "recurrence_rules", "travels", "transactions",
             "credit_cards", "health_score_snapshots", "merchant_category_mappings",
         )
         private const val VERSION = 2
         private const val FORECAST_CACHE = "daily_forecast_cache"
+
+        /**
+         * Added after v2 shipped (#284, D-06): a v2 file written before travels existed has neither,
+         * restores with no travels, and every transaction in none. Every other table and column stays
+         * required.
+         */
+        private const val TRAVELS = "travels"
+        private const val TRAVEL_TAG = "transactions.travelId"
 
         /** What a v1 file replaces; legacy cards, health history and learned mappings are kept. */
         private val V1_TABLES = listOf("categories", "goals", "recurrence_rules", "transactions")
@@ -197,11 +205,13 @@ class BackupRepository(
         return Snapshot(
             BACKED_UP_TABLES.map { table ->
                 val types = columnTypes(table)
-                table to tables.getJSONArray(table).objects().map { json ->
+                val rows = if (table == TRAVELS && !tables.has(TRAVELS)) JSONArray() else tables.getJSONArray(table)
+                table to rows.objects().map { json ->
                     // Every column, every row: an omitted one would silently take SQLite's default
                     // (a missing goalId drops a contribution, a missing autoRecord records a forecast).
                     val columns = json.keys().asSequence().toSet()
-                    if (columns != types.keys) throw JSONException("$table row columns ${columns.sorted()} != ${types.keys.sorted()}")
+                    val required = types.keys - setOf(TRAVEL_TAG.substringAfter('.')).takeIf { table == "transactions" }.orEmpty()
+                    if (!columns.containsAll(required) || !types.keys.containsAll(columns)) throw JSONException("$table row columns ${columns.sorted()} != ${types.keys.sorted()}")
                     columns.associateWith { column ->
                         val value = json.get(column)
                         val type = types[column] ?: throw JSONException("Unknown column $table.$column")
