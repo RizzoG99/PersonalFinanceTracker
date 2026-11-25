@@ -181,13 +181,35 @@ class ActivityTravelTest {
         keep2.cancel()
     }
 
+    /** Code review r1: "This and future" on a tagged occurrence keeps its travel. */
+    @Test
+    fun ac04_thisAndFutureKeepsTheTravel() = runBlocking {
+        val recurrence = RoomRecurrenceRepository(database)
+        recurrence.createAndMaterialize(
+            com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule(
+                frequency = com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceFrequency.MONTHLY, interval = 1,
+                startDate = Instant.parse("2026-09-13T10:00:00Z"), amount = BigDecimal("-15.00"), note = "Hostel",
+                categoryLabel = "Travel", categoryId = null, currencyCode = "EUR",
+            ),
+        )
+        val occurrence = transactions.observeAll().first().first { it.note == "Hostel" }
+        travels.assign(listOf(occurrence.id), trip.id)
+        val vm = viewModel()
+        assertTrue(vm.updateThisAndFuture(occurrence.copy(note = "Ostello", travelId = trip.id)))
+        assertEquals(trip.id, transactions.observeAll().first().single { it.id == occurrence.id }.travelId)
+    }
+
     @Test
     fun ac06_insightsAreUnchangedByTagging() = runBlocking {
         val clock = Clock.fixed(Instant.parse("2026-09-20T10:00:00Z"), zone)
         fun insights() = InsightsViewModel(
             transactions, RoomGoalRepository(database), UserPreferencesRepository(FakePreferencesDataStore()), categories, clock, zone,
         )
-        suspend fun snapshot(vm: InsightsViewModel) = withTimeout(5_000) { vm.uiState.first { !it.isLoading } }
+        suspend fun snapshot(vm: InsightsViewModel) = withTimeout(5_000) { vm.uiState.first { !it.isLoading } }.also {
+            assertFalse("Insights loaded", it.isError)
+            assertEquals(0, BigDecimal("50.00").compareTo(it.income))
+            assertEquals(0, BigDecimal("283.00").compareTo(it.expenses))
+        }
 
         val tagged = insights()
         val keep = launch { tagged.uiState.collect {} }

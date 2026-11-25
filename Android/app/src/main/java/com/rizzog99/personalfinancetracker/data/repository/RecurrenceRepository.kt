@@ -204,6 +204,8 @@ private fun FinanceTransaction.toEntity() = TransactionEntity(
     currencyCode = currencyCode,
     goalId = goalId,
     recurrenceRuleId = recurrenceRuleId,
+    // An edited occurrence keeps its travel (#284); the rule itself has none.
+    travelId = travelId,
 )
 
 private val RecurrenceFrequency.storageValue: String get() = name.lowercase()

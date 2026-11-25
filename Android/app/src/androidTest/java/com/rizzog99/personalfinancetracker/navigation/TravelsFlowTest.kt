@@ -230,6 +230,17 @@ class TravelsFlowTest {
         val after = stored()
         assertEquals(5, after.size)
         assertEquals(listOf(null, null, null), listOf("Hotel", "Taxi", "Rimborso").map { after.getValue(it).travelId })
+
+        // Deleting from a travel's page lands back on the list, once (code review r1).
+        rule.onNode(travelRow("Lisboa")).performClick()
+        awaitText(string(R.string.travel_add_expense))
+        tapDescribed(R.string.travel_options)
+        tapText(string(R.string.delete_travel))
+        awaitText(string(R.string.delete_travel_title, "Lisboa"))
+        rule.onAllNodes(tappable(string(R.string.delete_travel))).onFirst().performClick()
+        rule.waitUntil(20_000) { "Lisboa" !in travelNames() }
+        awaitText("Montagna", substring = true)
+        rule.onNode(hasContentDescription(string(R.string.add_travel)) and hasClickAction()).assertExists()
     }
 
     @Test
@@ -327,9 +338,12 @@ class TravelsFlowTest {
 
         rowText("Caffè").performScrollTo().performTouchInput { longClick() }
         bulkAction(R.string.bulk_travel)
+        // Still showing right before the move, or the drop below proves nothing.
+        rule.onNode(hasText(plural(R.plurals.transactions_updated, 1))).assertExists()
         rule.onNode(travelRow("Barcellona")).performClick()
+        // Gone at once: well inside its own 5 s window.
+        rule.waitUntil(2_000) { rule.onAllNodes(hasText(plural(R.plurals.transactions_updated, 1))).fetchSemanticsNodes().isEmpty() }
         awaitStored { it.getValue("Caffè").travelId == barcellona }
-        awaitGone(hasText(plural(R.plurals.transactions_updated, 1)))
         assertEquals(0, BigDecimal("-4").compareTo(stored().getValue("Caffè").amount))
     }
 

@@ -127,10 +127,15 @@ class BackupRoundTripTest {
         val rows = tablesJson.getJSONArray("transactions")
         for (i in 0 until rows.length()) rows.getJSONObject(i).remove("travelId")
         val expected = tables()
+        // The device has moved on since: a travel and a tag the old file knows nothing about.
+        val travels = com.rizzog99.personalfinancetracker.data.repository.RoomTravelRepository(database)
+        travels.addAndAssign("Since", "car", listOf(transactions.observeAll().first().first().id))
+        transactions.delete(transactions.observeAll().first().last().id)
 
         assertFalse(withContext(Dispatchers.IO) { repository().import(root.toString().byteInputStream()) })
 
         assertEquals(expected, tables())
+        assertEquals(emptyList<Any>(), travels.observeAll().first())
         assertEquals(emptyList<String?>(), transactions.observeAll().first().mapNotNull { it.travelId })
     }
 

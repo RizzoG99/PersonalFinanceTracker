@@ -318,7 +318,8 @@ fun MoveToTravelSheet(
 ) {
     var creating by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        Column(modifier = Modifier.fillMaxWidth().coverWhenObscured().padding(bottom = 16.dp)) {
+        // Scrolls: many travels, or large text, would otherwise push the last ones and Remove out of reach.
+        Column(modifier = Modifier.fillMaxWidth().coverWhenObscured().verticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
             Row(modifier = Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
                 Text(
@@ -481,8 +482,15 @@ fun TravelDetailScreen(travelId: String, onBack: () -> Unit, onAddExpense: (Stri
     var deleting by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<FinanceTransaction?>(null) }
     ErrorSnackbar(error, snackbar, viewModel::clearError)
-    // Deleted (here or elsewhere): nothing left to show.
-    LaunchedEffect(state.isLoading, travel) { if (!state.isLoading && !state.isError && travel == null) onBack() }
+    // Deleted (here or elsewhere): nothing left to show. The one place that leaves, and only once:
+    // the page stays composed through the exit transition, where a second Back would pop the list too.
+    var left by remember { mutableStateOf(false) }
+    LaunchedEffect(state.isLoading, travel) {
+        if (!left && !state.isLoading && !state.isError && travel == null) {
+            left = true
+            onBack()
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -565,7 +573,7 @@ fun TravelDetailScreen(travelId: String, onBack: () -> Unit, onAddExpense: (Stri
     if (deleting && travel != null) {
         DeleteTravelDialog(travel.name, members.size, onDismiss = { deleting = false }) {
             deleting = false
-            scope.launch { if (viewModel.delete(travel.id)) onBack() }
+            scope.launch { viewModel.delete(travel.id) }
         }
     }
     editing?.let { member ->
@@ -576,7 +584,8 @@ fun TravelDetailScreen(travelId: String, onBack: () -> Unit, onAddExpense: (Stri
             categories = state.categories,
             receiptMappingRepository = application.receiptMappingRepository,
             onDismiss = { editing = null },
-            onSave = { transaction, _, _ -> editing = null; scope.launch { viewModel.save(transaction) } },
+            // The editor stays open, draft and all, until the save holds: a failure keeps it for a retry.
+            onSave = { transaction, _, _ -> scope.launch { if (viewModel.save(transaction)) editing = null } },
             travelChoice = TravelChoice(state.travels, onCreate = viewModel::add),
         )
     }
