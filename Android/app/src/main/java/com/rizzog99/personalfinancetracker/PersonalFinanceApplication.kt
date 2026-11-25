@@ -17,6 +17,8 @@ import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepos
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.CreditCardRepository
 import com.rizzog99.personalfinancetracker.data.repository.GoalRepository
+import com.rizzog99.personalfinancetracker.data.repository.RoomTravelRepository
+import com.rizzog99.personalfinancetracker.data.repository.TravelRepository
 import com.rizzog99.personalfinancetracker.data.repository.InsightRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.preferences.ReceiptCategoryMapRepository
@@ -108,6 +110,10 @@ class PersonalFinanceApplication : Application() {
 
     val goalRepository: GoalRepository by lazy {
         RoomGoalRepository(database)
+    }
+
+    val travelRepository: TravelRepository by lazy {
+        RoomTravelRepository(database)
     }
 
     val recurrenceRepository: RecurrenceRepository by lazy {

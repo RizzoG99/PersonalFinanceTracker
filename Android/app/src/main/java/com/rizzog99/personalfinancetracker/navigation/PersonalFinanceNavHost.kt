@@ -83,6 +83,9 @@ import com.rizzog99.personalfinancetracker.features.insights.InsightsScreen
 import com.rizzog99.personalfinancetracker.features.plan.GoalsScreen
 import com.rizzog99.personalfinancetracker.features.plan.PlanScreen
 import com.rizzog99.personalfinancetracker.features.recurring.RecurringRulesScreen
+import com.rizzog99.personalfinancetracker.features.travels.TravelChoice
+import com.rizzog99.personalfinancetracker.features.travels.TravelDetailScreen
+import com.rizzog99.personalfinancetracker.features.travels.TravelsScreen
 import com.rizzog99.personalfinancetracker.features.settings.ScanCategoriesRoute
 import com.rizzog99.personalfinancetracker.features.settings.SettingsSheet
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
@@ -126,6 +129,10 @@ private val drawerDestinations = drawerGroups.flatMap { it.second }
 /** Optional args: "See all" passes none, a Coming-up row an id, "Add recurring payment" add=true. */
 private const val RECURRING_ROUTE = "recurring?editRuleId={editRuleId}&add={add}"
 
+/** Travels (#284): the list, and one travel's page. Secondary destinations, with no tab. */
+private const val TRAVELS_ROUTE = "travels"
+private const val TRAVEL_ROUTE = "travels/{travelId}"
+
 /** A destination's route without its query arguments. */
 private val String.baseRoute get() = substringBefore('?')
 
@@ -144,11 +151,14 @@ fun PersonalFinanceNavHost(
             transactionRepository = application.transactionRepository,
             categoryRepository = application.categoryRepository,
             recurrenceRepository = application.recurrenceRepository,
+            travelRepository = application.travelRepository,
         ),
     )
     val transactionEditorState by transactionEditorViewModel.uiState.collectAsState()
     val transactionEditorScope = rememberCoroutineScope()
     var dashboardTransactionEditorVisible by rememberSaveable { mutableStateOf(false) }
+    // A travel's Add expense (#284): the editor opens already tagged with it.
+    var editorTravelId by rememberSaveable { mutableStateOf<String?>(null) }
     var settingsVisible by rememberSaveable { mutableStateOf(false) }
     var tabTransitionDirection by rememberSaveable { mutableStateOf(1) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -199,6 +209,7 @@ fun PersonalFinanceNavHost(
         navController.popBackStack()
     }
     val savedMessage = stringResource(R.string.transaction_saved)
+    val updateFailedMessage = stringResource(R.string.activity_update_failed)
     // A confirmation only: frozen iOS offers no Undo after a save, and this one never reversed it (#287).
     val onTransactionSaved: () -> Unit = {
         transactionEditorScope.launch {
@@ -356,6 +367,8 @@ fun PersonalFinanceNavHost(
                         onToggleTheme = onToggleTheme,
                         onOpenSettings = { settingsVisible = true },
                         onSelectionModeChange = { activitySelecting = it },
+                        onOpenTravels = { navigateToSecondaryRoute(TRAVELS_ROUTE) },
+                        onOpenTravel = { navigateToSecondaryRoute("travels/$it") },
                     )
                 } else {
                     ActivityScreen(
@@ -364,6 +377,8 @@ fun PersonalFinanceNavHost(
                         onOpenSettings = { settingsVisible = true },
                         shellSnackbarHostState = activitySnackbarHostState,
                         onSelectionModeChange = { activitySelecting = it },
+                        onOpenTravels = { navigateToSecondaryRoute(TRAVELS_ROUTE) },
+                        onOpenTravel = { navigateToSecondaryRoute("travels/$it") },
                         onSelectionBarChange = { activitySelectionBar = it },
                     )
                 }
@@ -406,6 +421,19 @@ fun PersonalFinanceNavHost(
                     onOpenSettings = { settingsVisible = true },
                 )
             }
+            composable(TRAVELS_ROUTE) {
+                TravelsScreen(onBack = navigateBackFromSecondary, onOpenTravel = { navigateToSecondaryRoute("travels/$it") })
+            }
+            composable(TRAVEL_ROUTE) { entry ->
+                TravelDetailScreen(
+                    travelId = entry.arguments?.getString("travelId").orEmpty(),
+                    onBack = navigateBackFromSecondary,
+                    onAddExpense = { travelId ->
+                        editorTravelId = travelId
+                        dashboardTransactionEditorVisible = true
+                    },
+                )
+            }
             composable(MainDestination.Categories.route) {
                 CategorySettingsScreen(onBack = navigateBackFromSecondary)
             }
@@ -444,7 +472,19 @@ fun PersonalFinanceNavHost(
                 editingTransaction = null,
                 categories = transactionEditorState.categories,
                 receiptMappingRepository = application.receiptMappingRepository,
-                onDismiss = { dashboardTransactionEditorVisible = false },
+                travelChoice = TravelChoice(
+                    travels = transactionEditorState.travels,
+                    presetId = editorTravelId,
+                    // The shell has no error banner of its own: a failed create says so in its snackbar (#135).
+                    onCreate = { name, symbol ->
+                        transactionEditorViewModel.addTravel(name, symbol)
+                            ?: null.also { snackbarHostState.showSnackbar(updateFailedMessage) }
+                    },
+                ),
+                onDismiss = {
+                    dashboardTransactionEditorVisible = false
+                    editorTravelId = null
+                },
                 onSave = { transaction, recurrenceRule, receiptMerchant ->
                     transactionEditorScope.launch {
                         val saved = recurrenceRule?.let {
@@ -455,6 +495,7 @@ fun PersonalFinanceNavHost(
                                 application.receiptMappingRepository.remember(receiptMerchant, transaction.categoryId)
                             }
                             dashboardTransactionEditorVisible = false
+                            editorTravelId = null
                             onTransactionSaved()
                         }
                     }

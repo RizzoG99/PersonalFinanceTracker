@@ -93,7 +93,7 @@ class DataWipeTest {
             "INSERT INTO recurrence_rules VALUES ('rule-1','monthly',1,${Instant.parse("2026-01-01T09:00:00Z").toEpochMilli()}," +
                 "NULL,NULL,'-12.99','Netflix','Bills','cat-custom','EUR',NULL,1)",
         )
-        exec("INSERT INTO transactions VALUES ('tx-1',0,'-12.99','Netflix','Pets','cat-custom','EUR','goal-1','rule-1')")
+        exec("INSERT INTO transactions VALUES ('tx-1',0,'-12.99','Netflix','Pets','cat-custom','EUR','goal-1','rule-1',NULL)")
         exec("INSERT INTO credit_cards VALUES ('card-1','Visa','4242','-100','1000','red','EUR')")
         exec("INSERT INTO health_score_snapshots VALUES ('hs-1',0,70,70,70,70,70)")
         exec("INSERT INTO daily_forecast_cache VALUES (1,'2026-11',20,'[]')")

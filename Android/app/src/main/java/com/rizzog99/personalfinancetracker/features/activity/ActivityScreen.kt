@@ -48,6 +48,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.outlined.Flight
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Repeat
@@ -142,6 +143,13 @@ import com.rizzog99.personalfinancetracker.domain.transaction.TransactionTypeFil
 import com.rizzog99.personalfinancetracker.domain.transaction.SearchDateRange
 import com.rizzog99.personalfinancetracker.domain.transaction.TransactionFilters
 import com.rizzog99.personalfinancetracker.features.categories.categoryColor
+import com.rizzog99.personalfinancetracker.features.travels.TravelBadge
+import com.rizzog99.personalfinancetracker.features.travels.TravelChoice
+import com.rizzog99.personalfinancetracker.features.travels.TravelRow
+import com.rizzog99.personalfinancetracker.features.travels.TravelSection
+import com.rizzog99.personalfinancetracker.domain.travel.ActivityRow
+import com.rizzog99.personalfinancetracker.domain.travel.FinanceTravel
+import com.rizzog99.personalfinancetracker.domain.travel.groupActivityRows
 import com.rizzog99.personalfinancetracker.ui.components.EmptyState
 import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayName
 import com.rizzog99.personalfinancetracker.ui.components.categoryDisplayNames
@@ -189,6 +197,9 @@ fun ActivityScreen(
      * a bottom bar only within one Scaffold, so a bar of our own would sit under it and lose its taps.
      */
     onSelectionBarChange: ((@Composable () -> Unit)?) -> Unit = {},
+    /** Travels (#284): the ✈ action and a travel row. */
+    onOpenTravels: () -> Unit = {},
+    onOpenTravel: (String) -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: ActivityViewModel = viewModel(
@@ -196,6 +207,7 @@ fun ActivityScreen(
             transactionRepository = application.transactionRepository,
             categoryRepository = application.categoryRepository,
             recurrenceRepository = application.recurrenceRepository,
+            travelRepository = application.travelRepository,
         ),
     )
     val state by viewModel.uiState.collectAsState()
@@ -240,6 +252,10 @@ fun ActivityScreen(
                     onToggleTheme = onToggleTheme,
                     onOpenSettings = onOpenSettings,
                     screenActions = {
+                        // iOS's Travels button in the Activity toolbar (`ActivityView.swift:83-90`, #284).
+                        IconButton(onClick = onOpenTravels) {
+                            Icon(Icons.Outlined.Flight, contentDescription = stringResource(R.string.travels_title))
+                        }
                         IconButton(onClick = { filtersVisible = true }) {
                             Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
                         }
@@ -268,6 +284,8 @@ fun ActivityScreen(
             },
             onStartSelection = { viewModel.startSelection(it.id) },
             onToggleSelection = { viewModel.toggleSelection(it.id) },
+            onOpenTravel = onOpenTravel,
+            onEnterSelection = viewModel::enterSelection,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -306,6 +324,7 @@ fun ActivityScreen(
             editingTransaction = editingTransaction,
             categories = state.categories,
             receiptMappingRepository = application.receiptMappingRepository,
+            travelChoice = TravelChoice(state.travels, onCreate = viewModel::addTravel),
             onDismiss = {
                 isCreating = false
                 editingTransaction = null
@@ -413,6 +432,8 @@ fun ActivityTwoPaneScreen(
     onToggleTheme: () -> Unit,
     onOpenSettings: () -> Unit = {},
     onSelectionModeChange: (Boolean) -> Unit = {},
+    onOpenTravels: () -> Unit = {},
+    onOpenTravel: (String) -> Unit = {},
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: ActivityViewModel = viewModel(
@@ -420,6 +441,7 @@ fun ActivityTwoPaneScreen(
             transactionRepository = application.transactionRepository,
             categoryRepository = application.categoryRepository,
             recurrenceRepository = application.recurrenceRepository,
+            travelRepository = application.travelRepository,
         ),
     )
     val state by viewModel.uiState.collectAsState()
@@ -452,6 +474,10 @@ fun ActivityTwoPaneScreen(
                     onToggleTheme = onToggleTheme,
                     onOpenSettings = onOpenSettings,
                     screenActions = {
+                        // iOS's Travels button in the Activity toolbar (`ActivityView.swift:83-90`, #284).
+                        IconButton(onClick = onOpenTravels) {
+                            Icon(Icons.Outlined.Flight, contentDescription = stringResource(R.string.travels_title))
+                        }
                         IconButton(onClick = { filtersVisible = true }) {
                             Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.filters))
                         }
@@ -489,6 +515,8 @@ fun ActivityTwoPaneScreen(
                 },
                 onStartSelection = { viewModel.startSelection(it.id) },
                 onToggleSelection = { viewModel.toggleSelection(it.id) },
+                onOpenTravel = onOpenTravel,
+                onEnterSelection = viewModel::enterSelection,
                 modifier = Modifier.weight(1f),
             )
 
@@ -503,6 +531,7 @@ fun ActivityTwoPaneScreen(
                     editingTransaction = selected,
                     categories = state.categories,
                     receiptMappingRepository = application.receiptMappingRepository,
+                    travelChoice = TravelChoice(state.travels, onCreate = viewModel::addTravel),
                     onDismiss = { selectedId = null },
                     onSave = { transaction, recurrenceRule, receiptMerchant ->
                         if (selected?.recurrenceRuleId != null) {
@@ -648,6 +677,8 @@ internal fun ActivityContent(
     modifier: Modifier = Modifier,
     onStartSelection: (FinanceTransaction) -> Unit = {},
     onToggleSelection: (FinanceTransaction) -> Unit = {},
+    onOpenTravel: (String) -> Unit = {},
+    onEnterSelection: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier,
@@ -733,32 +764,45 @@ internal fun ActivityContent(
                 // pulled apart by the outer list's 12dp inter-item spacing.
                 val today = LocalDate.now()
                 val yesterday = today.minusDays(1)
-                val grouped = state.visibleTransactions.groupBy {
-                    it.timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
-                }
-                grouped.forEach { (date, transactionsForDate) ->
+                // Travels arrive collapsed from the view model (#284). Hand-built states (the #111 state
+                // tests) carry none, so the plain list is grouped here.
+                val days = state.activityDays.ifEmpty { groupActivityRows(state.visibleTransactions, emptyList(), ZoneId.systemDefault()) }
+                val travelsById = state.travels.associateBy { it.id }
+                days.forEach { (date, rows) ->
                     item(key = "day-$date") {
                         Column {
                             Text(
                                 text = when (date) {
                                     today -> stringResource(R.string.date_group_today)
                                     yesterday -> stringResource(R.string.date_group_yesterday)
-                                    else -> formatTransactionDate(transactionsForDate.first().timestamp)
+                                    else -> formatTransactionDate(rows.first().anchor)
                                 },
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(bottom = 4.dp),
                             )
-                            transactionsForDate.forEach { transaction ->
-                                TransactionRow(
-                                    transaction = transaction,
-                                    categories = state.categories,
-                                    onEdit = { onEdit(transaction) },
-                                    onDelete = { onDelete(transaction) },
-                                    checked = state.checkedIds?.let { transaction.id in it },
-                                    onStartSelection = { onStartSelection(transaction) },
-                                    onToggle = { onToggleSelection(transaction) },
-                                )
+                            rows.forEach { row ->
+                                when (row) {
+                                    is ActivityRow.Travel -> TravelRow(
+                                        summary = row.summary,
+                                        onClick = { onOpenTravel(row.summary.id) },
+                                        // Every row enters selection on a long press; the trip then expands.
+                                        onLongClick = onEnterSelection,
+                                    )
+                                    is ActivityRow.Transaction -> {
+                                        val transaction = row.transaction
+                                        TransactionRow(
+                                            transaction = transaction,
+                                            categories = state.categories,
+                                            onEdit = { onEdit(transaction) },
+                                            onDelete = { onDelete(transaction) },
+                                            checked = state.checkedIds?.let { transaction.id in it },
+                                            onStartSelection = { onStartSelection(transaction) },
+                                            onToggle = { onToggleSelection(transaction) },
+                                            travel = transaction.travelId?.let(travelsById::get),
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -1100,6 +1144,8 @@ private fun TransactionRow(
     checked: Boolean? = null,
     onStartSelection: () -> Unit = {},
     onToggle: () -> Unit = {},
+    /** The travel this row belongs to (#284): its icon and name join the category line. */
+    travel: FinanceTravel? = null,
 ) {
     // Outside selection a tap edits and a long press starts selecting (iOS 0.4 s long press,
     // `ActivityListSections.swift:216-222`). Inside it the whole row is one checkbox, so TalkBack
@@ -1209,6 +1255,7 @@ private fun TransactionRow(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        travel?.let { TravelBadge(it) }
                     }
                     Spacer(Modifier.width(12.dp))
                     Text(
@@ -1258,7 +1305,10 @@ private fun TransactionRow(
                     }
                 },
                 supportingContent = {
-                    Text("${categoryDisplayName(transaction.categoryLabel)} · ${formatTransactionTime(transaction.timestamp)}")
+                    Column {
+                        Text("${categoryDisplayName(transaction.categoryLabel)} · ${formatTransactionTime(transaction.timestamp)}")
+                        travel?.let { TravelBadge(it) }
+                    }
                 },
                 trailingContent = {
                     Text(
@@ -1317,6 +1367,7 @@ fun TransactionEditorSheet(
     onSave: (FinanceTransaction, NewRecurrenceRule?, String?) -> Unit,
     ruleCadence: String? = null,
     presetRepeats: Boolean = false,
+    travelChoice: TravelChoice? = null,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1331,6 +1382,7 @@ fun TransactionEditorSheet(
             modifier = Modifier.fillMaxHeight(0.9f).coverWhenObscured(),
             ruleCadence = ruleCadence,
             presetRepeats = presetRepeats,
+            travelChoice = travelChoice,
         )
     }
 }
@@ -1353,7 +1405,12 @@ internal fun TransactionEditorContent(
     modifier: Modifier = Modifier,
     ruleCadence: String? = null,
     presetRepeats: Boolean = false,
+    /** The "Part of a trip?" section (#284); `null` hides it (the Recurring rules editor). */
+    travelChoice: TravelChoice? = null,
 ) {
+    var selectedTravelId by remember(editingTransaction, travelChoice?.presetId) {
+        mutableStateOf(editingTransaction?.travelId ?: travelChoice?.presetId)
+    }
     // Collected here rather than threaded through TransactionEditorSheet: only the receipt path
     // needs it, and every caller of the sheet would otherwise have to carry it.
     val conceptPairings by (LocalContext.current.applicationContext as PersonalFinanceApplication)
@@ -1488,6 +1545,7 @@ internal fun TransactionEditorContent(
             currencyCode = category.currencyCode,
             goalId = editingTransaction?.goalId,
             recurrenceRuleId = editingTransaction?.recurrenceRuleId,
+            travelId = if (travelChoice != null) selectedTravelId else editingTransaction?.travelId,
         )
         onSave(
             transaction,
@@ -1794,6 +1852,15 @@ internal fun TransactionEditorContent(
                         }
                     }
                 }
+            }
+            // Optional, and last, as on iOS: a travel tags an ordinary expense. Never on a goal
+            // transfer (#284; iOS hides it for `.transfer`), nor on a recurring rule's template.
+            if (travelChoice != null && editingTransaction?.goalId == null && ruleCadence == null) {
+                TravelSection(
+                    choice = travelChoice,
+                    selectedId = selectedTravelId,
+                    onSelect = { selectedTravelId = it },
+                )
             }
         }
     }

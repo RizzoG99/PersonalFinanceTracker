@@ -70,7 +70,7 @@ class RoomMigrationTest {
         // real upgrade path a v1 install takes.
         val database = openProductionDatabase()
         assertEverySeededRecordIsExact(database)
-        assertEquals(4, database.userVersion())
+        assertEquals(5, database.userVersion())
     }
 
     @Test
@@ -88,15 +88,35 @@ class RoomMigrationTest {
     }
 
     @Test
-    fun `AC-03_1 AC-04_2 the full 1 to 4 path yields the same records and constraints as the sequential path`() = runBlocking {
+    fun `AC-03_1 AC-04_2 the full 1 to 5 path yields the same records and constraints as the sequential path`() = runBlocking {
         helper.createDatabase(databaseName, 1).use(MigrationFixtures::seedVersion1)
 
-        helper.runMigrationsAndValidate(databaseName, 4, true, *PersonalFinanceDatabase.MIGRATIONS).close()
+        helper.runMigrationsAndValidate(databaseName, 5, true, *PersonalFinanceDatabase.MIGRATIONS).close()
 
         val database = openProductionDatabase()
         assertEverySeededRecordIsExact(database)
-        assertEquals(4, database.userVersion())
+        assertEquals(5, database.userVersion())
         assertSchemaContractHolds(database)
+    }
+
+    @Test
+    fun `284 AC-06 the 4 to 5 path keeps every record, starts each in no travel and lets it be tagged`() = runBlocking {
+        // v3 is byte-identical to v2 (AC-07_1), so the v2 seed is a v3 seed; 3→4→5 validates both steps.
+        helper.createDatabase(databaseName, 3).use(MigrationFixtures::seedVersion2)
+
+        helper.runMigrationsAndValidate(
+            databaseName, 5, true, PersonalFinanceDatabase.MIGRATION_3_4, PersonalFinanceDatabase.MIGRATION_4_5,
+        ).close()
+
+        val database = openProductionDatabase()
+        assertEverySeededRecordIsExact(database)
+        val transactions = RoomTransactionRepository(database)
+        assertEquals(emptyList<String?>(), transactions.observeAll().first().mapNotNull(FinanceTransaction::travelId))
+        val travels = com.rizzog99.personalfinancetracker.data.repository.RoomTravelRepository(database)
+        assertEquals(0, travels.observeAll().first().size)
+
+        val trip = travels.addAndAssign("Barcellona", "airplane", listOf(MigrationFixtures.LINKED_TRANSACTION_ID))
+        assertEquals(trip.id, transactions.observeAll().first().single { it.id == MigrationFixtures.LINKED_TRANSACTION_ID }.travelId)
     }
 
     @Test
@@ -149,7 +169,7 @@ class RoomMigrationTest {
 
         val reopened = openProductionDatabase()
         assertEverySeededRecordIsExact(reopened)
-        assertEquals(4, reopened.userVersion())
+        assertEquals(5, reopened.userVersion())
         assertSchemaContractHolds(reopened)
     }
 
@@ -207,8 +227,8 @@ class RoomMigrationTest {
         }
 
         assertEquals(
-            "the active database must match the exported schema 4",
-            exportedIdentityHash(4),
+            "the active database must match the exported schema 5",
+            exportedIdentityHash(5),
             runtimeIdentity,
         )
         // v2 and v3 are the same contract — the table set only ever diverged inside an unreleased

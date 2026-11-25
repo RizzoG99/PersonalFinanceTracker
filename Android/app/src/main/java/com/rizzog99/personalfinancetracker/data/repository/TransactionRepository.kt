@@ -90,6 +90,7 @@ internal fun TransactionEntity.toDomain() = FinanceTransaction(
     currencyCode = currencyCode,
     goalId = goalId,
     recurrenceRuleId = recurrenceRuleId,
+    travelId = travelId,
 )
 
 private fun FinanceTransaction.toEntity() = TransactionEntity(
@@ -102,4 +103,5 @@ private fun FinanceTransaction.toEntity() = TransactionEntity(
     currencyCode = currencyCode,
     goalId = goalId,
     recurrenceRuleId = recurrenceRuleId,
+    travelId = travelId,
 )

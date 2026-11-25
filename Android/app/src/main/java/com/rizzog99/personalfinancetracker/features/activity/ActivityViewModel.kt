@@ -8,6 +8,10 @@ import com.rizzog99.personalfinancetracker.R
 import com.rizzog99.personalfinancetracker.data.repository.CategoryRepository
 import com.rizzog99.personalfinancetracker.data.repository.RecurrenceRepository
 import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
+import com.rizzog99.personalfinancetracker.data.repository.TravelRepository
+import com.rizzog99.personalfinancetracker.domain.travel.ActivityDay
+import com.rizzog99.personalfinancetracker.domain.travel.FinanceTravel
+import com.rizzog99.personalfinancetracker.domain.travel.groupActivityRows
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.category.TransactionType
 import com.rizzog99.personalfinancetracker.domain.recurrence.NewRecurrenceRule
@@ -54,7 +58,15 @@ data class ActivityUiState(
     val filters: TransactionFilters = TransactionFilters(),
     /** Multi-select (#285): `null` while not selecting; otherwise the selected ids, always visible ones. */
     val checkedIds: Set<String>? = null,
-)
+    /** Every travel, newest first (#284). */
+    val travels: List<FinanceTravel> = emptyList(),
+    /** The list as drawn: day sections, with travels collapsed only in the plain list (#284). */
+    val activityDays: List<ActivityDay> = emptyList(),
+) {
+    /** iOS `selectionHasTravel`: Remove from travel is offered only when it would untag something. */
+    val selectionHasTravel: Boolean
+        get() = checkedIds?.let { ids -> allTransactions.any { it.id in ids && it.travelId != null } } ?: false
+}
 
 internal data class ActivitySummaryTotals(
     val income: BigDecimal,
@@ -223,6 +235,7 @@ internal fun isValidBulkAmount(text: String): Boolean = (parseBulkAmount(text) ?
 private data class ActivityLedger(
     val transactions: List<FinanceTransaction> = emptyList(),
     val categories: List<FinanceCategory> = emptyList(),
+    val travels: List<FinanceTravel> = emptyList(),
     val isLoading: Boolean = true,
     val isError: Boolean = false,
 )
@@ -233,6 +246,7 @@ class ActivityViewModel(
     private val categoryRepository: CategoryRepository,
     private val recurrenceRepository: RecurrenceRepository,
     private val zoneId: ZoneId = ZoneId.systemDefault(),
+    private val travelRepository: TravelRepository = TravelRepository.None,
 ) : ViewModel() {
     private val filterSelection = MutableStateFlow(ActivityFilterSelection())
 
@@ -257,8 +271,9 @@ class ActivityViewModel(
         combine(
             transactionRepository.observeAll(),
             categoryRepository.observeAll(),
-        ) { transactions, categories ->
-            ActivityLedger(transactions = transactions, categories = categories, isLoading = false)
+            travelRepository.observeAll(),
+        ) { transactions, categories, travels ->
+            ActivityLedger(transactions = transactions, categories = categories, travels = travels, isLoading = false)
         }
             .onStart {
                 // Best-effort: failing to seed defaults costs the starter categories, not the
@@ -309,6 +324,9 @@ class ActivityViewModel(
             visible.mapTo(HashSet()) { it.id }.let { ids -> selected.filterTo(HashSet()) { it in ids } }
         }
         if (pruned != selected) checkedIds.compareAndSet(selected, pruned)
+        // Travels collapse only in the plain list: searching, filtering or selecting shows every
+        // transaction on its own, as iOS does by handing its grouper no travels (`:69-74`).
+        val plain = selection.searchText.isBlank() && !selection.filters.isActive && pruned == null
         ActivityUiState(
             isLoading = ledger.isLoading,
             isError = ledger.isError,
@@ -319,6 +337,8 @@ class ActivityViewModel(
             searchText = selection.searchText,
             filters = selection.filters,
             checkedIds = pruned,
+            travels = ledger.travels,
+            activityDays = groupActivityRows(visible, if (plain) ledger.travels else emptyList(), zoneId),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActivityUiState())
 
@@ -381,6 +401,26 @@ class ActivityViewModel(
 
     fun exitSelection() {
         checkedIds.value = null
+    }
+
+    /** A long press on a travel row (#284): selection mode with nothing picked yet; the trip expands. */
+    fun enterSelection() {
+        checkedIds.value = emptySet()
+    }
+
+    /** Tags (or, with `null`, untags) [ids] — the Move to Travel sheet and Remove from travel (#284). No Undo, as on iOS. */
+    suspend fun bulkSetTravel(ids: Set<String>, travelId: String?): Boolean =
+        bulkWrites.withLock { write { travelRepository.assign(ids.toList(), travelId) } }
+
+    /** iOS `addTravelAndAssignSelection`: a new travel holding [ids], in one write. */
+    suspend fun addTravelAndAssign(ids: Set<String>, name: String, symbolName: String): Boolean =
+        bulkWrites.withLock { write { travelRepository.addAndAssign(name, symbolName, ids.toList()) } }
+
+    /** The editor's + (#284): creates a travel and answers its id, or null after reporting the failure. */
+    suspend fun addTravel(name: String, symbolName: String): String? {
+        var id: String? = null
+        write { id = travelRepository.add(name, symbolName).id }
+        return id
     }
 
     /** What a bulk action changed: [prior] is every touched row as it was, for Undo. */
@@ -468,8 +508,9 @@ class ActivityViewModel(
             transactionRepository: TransactionRepository,
             categoryRepository: CategoryRepository,
             recurrenceRepository: RecurrenceRepository,
+            travelRepository: TravelRepository = TravelRepository.None,
         ) = viewModelFactory {
-            initializer { ActivityViewModel(transactionRepository, categoryRepository, recurrenceRepository) }
+            initializer { ActivityViewModel(transactionRepository, categoryRepository, recurrenceRepository, travelRepository = travelRepository) }
         }
     }
 }

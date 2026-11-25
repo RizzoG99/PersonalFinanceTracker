@@ -441,7 +441,7 @@ class UserPreferencesPersistenceTest {
         // #317 v2: Room tables only — no preference or secret store among them.
         assertEquals(
             setOf(
-                "categories", "goals", "recurrence_rules", "transactions",
+                "categories", "goals", "recurrence_rules", "travels", "transactions",
                 "credit_cards", "health_score_snapshots", "merchant_category_mappings",
             ),
             json.getJSONObject("tables").keys().asSequence().toSet(),

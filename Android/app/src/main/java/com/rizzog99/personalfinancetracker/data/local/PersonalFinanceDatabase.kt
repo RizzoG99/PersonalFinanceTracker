@@ -16,8 +16,9 @@ import com.rizzog99.personalfinancetracker.domain.category.CategoryNameValidator
         HealthScoreSnapshotEntity::class,
         DailyForecastCacheEntity::class,
         MerchantCategoryMappingEntity::class,
+        TravelEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class PersonalFinanceDatabase : RoomDatabase() {
@@ -29,6 +30,7 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
     abstract fun healthScoreSnapshotDao(): HealthScoreSnapshotDao
     abstract fun dailyForecastCacheDao(): DailyForecastCacheDao
     abstract fun merchantCategoryMappingDao(): MerchantCategoryMappingDao
+    abstract fun travelDao(): TravelDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -65,10 +67,25 @@ abstract class PersonalFinanceDatabase : RoomDatabase() {
         }
 
         /**
+         * Travels (#284): their table and the transactions' tag. No foreign key, like iOS's raw UUID
+         * (D-08), so this is a plain column; every existing transaction starts in no travel.
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `travels` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, " +
+                        "`symbolName` TEXT NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+                )
+                db.execSQL("ALTER TABLE transactions ADD COLUMN travelId TEXT")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_travelId` ON `transactions` (`travelId`)")
+            }
+        }
+
+        /**
          * The one registration point. `PersonalFinanceApplication` and the migration tests both read
          * this, so a new migration cannot reach production without the suite covering it.
          */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 
         /**
          * Backfilled in Kotlin rather than with `lower(trim(name))`. SQLite's `trim()` strips only

@@ -31,6 +31,12 @@ interface TransactionDao {
     @Query("DELETE FROM transactions WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
 
+    @Query("UPDATE transactions SET travelId = :travelId WHERE id IN (:ids)")
+    suspend fun setTravel(ids: List<String>, travelId: String?)
+
+    @Query("UPDATE transactions SET travelId = NULL WHERE travelId = :travelId")
+    suspend fun clearTravel(travelId: String)
+
     @Query("DELETE FROM transactions WHERE recurrenceRuleId = :recurrenceRuleId AND timestampEpochMillis >= :cutoffEpochMillis")
     suspend fun deleteOccurrencesFrom(recurrenceRuleId: String, cutoffEpochMillis: Long)
 
@@ -200,5 +206,20 @@ interface GoalDao {
     suspend fun update(goal: GoalEntity)
 
     @Query("DELETE FROM goals WHERE id = :id")
+    suspend fun delete(id: String)
+}
+
+@Dao
+interface TravelDao {
+    @Query("SELECT * FROM travels ORDER BY createdAtEpochMillis DESC")
+    fun observeAll(): Flow<List<TravelEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(travel: TravelEntity)
+
+    @Query("UPDATE travels SET name = :name, symbolName = :symbolName WHERE id = :id")
+    suspend fun update(id: String, name: String, symbolName: String)
+
+    @Query("DELETE FROM travels WHERE id = :id")
     suspend fun delete(id: String)
 }
