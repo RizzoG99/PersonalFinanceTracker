@@ -143,16 +143,23 @@ class TravelsFlowTest {
 
     private fun tapDescribed(description: Int) {
         settle()
-        rule.onNode(hasContentDescription(string(description)) and hasClickAction()).performClick()
+        rule.onNode(hasContentDescription(string(description)) and hasClickAction()).scrollIntoView().performClick()
         rule.waitForIdle()
     }
+
+    /**
+     * Brings a target inside a scrolling container into view; one outside any (a top bar, a dialog)
+     * is left as is. The editor's travel + is its last section: below the fold on a tablet, where an
+     * unscrolled tap landed outside the sheet and dismissed it.
+     */
+    private fun androidx.compose.ui.test.SemanticsNodeInteraction.scrollIntoView() = apply { runCatching { performScrollTo() } }
 
     /** A tappable text that is not a text field (the search box can hold the same word). */
     private fun tappable(text: String) = hasText(text) and hasClickAction() and !hasSetTextAction()
 
     private fun tapText(text: String) {
         settle()
-        rule.onNode(tappable(text)).performClick()
+        rule.onNode(tappable(text)).scrollIntoView().performClick()
         rule.waitForIdle()
     }
 
@@ -165,7 +172,11 @@ class TravelsFlowTest {
     }
 
     /** A list row by its title, never the search field holding the same text. */
-    private fun rowText(text: String) = rule.onNode(hasText(text) and !hasSetTextAction())
+    private fun rowText(text: String): androidx.compose.ui.test.SemanticsNodeInteraction {
+        // The search field's keyboard can cover the row about to be tapped.
+        settle()
+        return rule.onNode(hasText(text) and !hasSetTextAction())
+    }
 
     private fun bulkAction(label: Int) {
         rule.onNode(hasText(string(label)) and hasClickAction() and hasAnyAncestor(hasTestTag(BULK_ACTION_BAR_TAG))).performClick()
@@ -175,6 +186,8 @@ class TravelsFlowTest {
     private fun typeTravelName(name: String) {
         waitOrDump { rule.onAllNodes(hasSetTextAction() and hasText(string(R.string.travel_name))).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(hasSetTextAction() and hasText(string(R.string.travel_name))).performTextReplacement(name)
+        // On a tablet the keyboard covers the bottom of the sheet, Save included.
+        settle()
         rule.onNode(hasText(string(R.string.save)) and hasClickAction()).performClick()
         rule.waitForIdle()
     }
