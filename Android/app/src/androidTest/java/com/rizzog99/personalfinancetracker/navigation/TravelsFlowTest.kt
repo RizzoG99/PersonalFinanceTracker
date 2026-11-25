@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -25,6 +26,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
@@ -405,7 +407,9 @@ class TravelsFlowTest {
         tapDescribed(R.string.save)
         awaitStored { it.getValue("Caffè").travelId == barcellona }
         settle()
-        rule.onNode(travelRow("Barcellona")).performScrollTo().performClick()
+        // Its click action, not a raw touch: on the API 26 CI emulator the wide pane's tap was lost twice.
+        // The compact tests tap this same row for real.
+        rule.onNode(travelRow("Barcellona")).performScrollTo().performSemanticsAction(SemanticsActions.OnClick)
         awaitText(string(R.string.travel_per_day))
     }
 

@@ -486,9 +486,13 @@ fun TravelDetailScreen(travelId: String, onBack: () -> Unit, onAddExpense: (Stri
     ErrorSnackbar(error, snackbar, viewModel::clearError)
     // Deleted (here or elsewhere): nothing left to show. The one place that leaves, and only once:
     // the page stays composed through the exit transition, where a second Back would pop the list too.
+    // Only a travel this page has shown can disappear: a just-opened page never bounces back on a
+    // momentary "not there yet".
     var left by remember { mutableStateOf(false) }
+    var shown by remember { mutableStateOf(false) }
+    if (travel != null) shown = true
     LaunchedEffect(state.isLoading, travel) {
-        if (!left && !state.isLoading && !state.isError && travel == null) {
+        if (shown && !left && !state.isLoading && !state.isError && travel == null) {
             left = true
             onBack()
         }
