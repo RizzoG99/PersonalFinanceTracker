@@ -23,6 +23,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -98,14 +99,28 @@ class TravelsFlowTest {
         awaitText("Caffè")
     }
 
-    private fun awaitText(text: String, substring: Boolean = false) = rule.waitUntil(20_000) {
+    /**
+     * A 20 s wait that, when it gives up, says what was on screen: every window's semantics tree goes
+     * into the failure, so a CI-only timeout can be read from the run's test report.
+     */
+    private fun waitOrDump(condition: () -> Boolean) {
+        try {
+            rule.waitUntil(20_000, condition)
+        } catch (e: androidx.compose.ui.test.ComposeTimeoutException) {
+            val roots = rule.onAllNodes(androidx.compose.ui.test.isRoot())
+            val dump = (0 until roots.fetchSemanticsNodes().size).joinToString("\n----\n") { roots[it].printToString() }
+            throw AssertionError("screen at timeout:\n$dump", e)
+        }
+    }
+
+    private fun awaitText(text: String, substring: Boolean = false) = waitOrDump {
         rule.onAllNodes(hasText(text, substring = substring)).fetchSemanticsNodes().isNotEmpty()
     }
 
-    private fun awaitGone(matcher: SemanticsMatcher) = rule.waitUntil(20_000) { rule.onAllNodes(matcher).fetchSemanticsNodes().isEmpty() }
+    private fun awaitGone(matcher: SemanticsMatcher) = waitOrDump { rule.onAllNodes(matcher).fetchSemanticsNodes().isEmpty() }
 
     private fun awaitStored(condition: (Map<String, FinanceTransaction>) -> Boolean) = try {
-        rule.waitUntil(20_000) { condition(stored()) }
+        waitOrDump { condition(stored()) }
     } catch (e: Throwable) {
         throw AssertionError("stored tags: " + stored().mapValues { it.value.travelId }, e)
     }
@@ -142,7 +157,7 @@ class TravelsFlowTest {
     }
 
     private fun typeTravelName(name: String) {
-        rule.waitUntil(20_000) { rule.onAllNodes(hasSetTextAction() and hasText(string(R.string.travel_name))).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(hasSetTextAction() and hasText(string(R.string.travel_name))).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(hasSetTextAction() and hasText(string(R.string.travel_name))).performTextReplacement(name)
         rule.onNode(hasText(string(R.string.save)) and hasClickAction()).performClick()
         rule.waitForIdle()
@@ -153,7 +168,7 @@ class TravelsFlowTest {
     @Test
     fun ac01_activityGroupsTheTrip_compact() {
         host()
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(travelRow("Barcellona")).assert(hasText(plural(R.plurals.travel_expenses, 3), substring = true))
         rule.onNode(travelRow("Barcellona")).assert(hasText(signedTotal))
         rule.onAllNodes(hasText("Montagna", substring = true)).assertCountEquals(0)
@@ -170,7 +185,7 @@ class TravelsFlowTest {
     @Test
     fun ac02_detailStatsAndAddExpense_compact() {
         host()
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(travelRow("Barcellona")).performClick()
         awaitText(string(R.string.travel_per_day))
         listOf(
@@ -185,7 +200,7 @@ class TravelsFlowTest {
         assertTrue("biggest spend first", travelBar < taxiBar)
 
         rule.onNode(hasText(string(R.string.travel_add_expense)) and hasClickAction()).performScrollTo().performClick()
-        rule.waitUntil(20_000) { rule.onAllNodes(hasText("Barcellona") and isSelected()).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(hasText("Barcellona") and isSelected()).fetchSemanticsNodes().isNotEmpty() }
         rule.onAllNodes(hasSetTextAction())[0].performTextInput("10")
         rule.onNode(hasContentDescription(string(R.string.add_transaction)) and hasClickAction()).performClick()
         awaitStored { s -> s.values.count { it.travelId == barcellona } == 4 }
@@ -195,12 +210,12 @@ class TravelsFlowTest {
     fun ac03_manageTravels_compact() {
         host()
         // A long press enters selection with the trip expanded, and does not open the detail.
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(travelRow("Barcellona")).performTouchInput { longClick() }
-        rule.waitUntil(20_000) { rule.onAllNodes(isToggleable() and hasText("Hotel", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(isToggleable() and hasText("Hotel", substring = true)).fetchSemanticsNodes().isNotEmpty() }
         rule.onAllNodes(hasText(string(R.string.travel_per_day))).assertCountEquals(0)
         Espresso.pressBack()
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
 
         tapDescribed(R.string.travels_title)
         awaitText("Montagna", substring = true)
@@ -208,16 +223,16 @@ class TravelsFlowTest {
 
         tapDescribed(R.string.add_travel)
         typeTravelName("Lisbona")
-        rule.waitUntil(20_000) { "Lisbona" in travelNames() }
+        waitOrDump { "Lisbona" in travelNames() }
 
         rule.onNode(travelRow("Lisbona")).performClick()
         tapDescribed(R.string.travel_options)
         tapText(string(R.string.rename))
         typeTravelName("Lisboa")
-        rule.waitUntil(20_000) { "Lisboa" in travelNames() }
+        waitOrDump { "Lisboa" in travelNames() }
         Espresso.pressBack()
 
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(travelRow("Barcellona")).performTouchInput { swipeLeft() }
         awaitText(string(R.string.delete_travel_title, "Barcellona"))
         tapText(string(R.string.cancel))
@@ -226,7 +241,7 @@ class TravelsFlowTest {
         rule.onNode(travelRow("Barcellona")).performTouchInput { swipeLeft() }
         awaitText(string(R.string.delete_travel_title, "Barcellona"))
         tapText(string(R.string.delete_travel))
-        rule.waitUntil(20_000) { "Barcellona" !in travelNames() }
+        waitOrDump { "Barcellona" !in travelNames() }
         val after = stored()
         assertEquals(5, after.size)
         assertEquals(listOf(null, null, null), listOf("Hotel", "Taxi", "Rimborso").map { after.getValue(it).travelId })
@@ -238,7 +253,7 @@ class TravelsFlowTest {
         tapText(string(R.string.delete_travel))
         awaitText(string(R.string.delete_travel_title, "Lisboa"))
         rule.onAllNodes(tappable(string(R.string.delete_travel))).onFirst().performClick()
-        rule.waitUntil(20_000) { "Lisboa" !in travelNames() }
+        waitOrDump { "Lisboa" !in travelNames() }
         awaitText("Montagna", substring = true)
         rule.onNode(hasContentDescription(string(R.string.add_travel)) and hasClickAction()).assertExists()
     }
@@ -266,7 +281,7 @@ class TravelsFlowTest {
         awaitText(string(R.string.part_of_a_trip))
         tapDescribed(R.string.add_travel)
         typeTravelName("Lisbona")
-        rule.waitUntil(20_000) { rule.onAllNodes(hasText("Lisbona") and isSelected()).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(hasText("Lisbona") and isSelected()).fetchSemanticsNodes().isNotEmpty() }
         tapDescribed(R.string.save)
         awaitStored { s -> s.getValue("Caffè").travelId != null && s.getValue("Caffè").travelId != barcellona }
 
@@ -301,7 +316,7 @@ class TravelsFlowTest {
 
         // From the detail: a long press on a member offers Remove from travel.
         rule.onNodeWithTag(ACTIVITY_SEARCH_TAG).performTextReplacement("")
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNode(travelRow("Barcellona")).performClick()
         awaitText("Hotel")
         rule.onNode(hasText("Hotel") and hasClickAction()).performScrollTo().performTouchInput { longClick() }
@@ -319,7 +334,7 @@ class TravelsFlowTest {
         awaitText(string(R.string.no_travels_title))
         tapText(string(R.string.add_travel))
         typeTravelName("Roma")
-        rule.waitUntil(20_000) { "Roma" in travelNames() }
+        waitOrDump { "Roma" in travelNames() }
         val roma = runBlocking { app.travelRepository.observeAll().first() }.single().id
         awaitStored { it.getValue("Caffè").travelId == roma }
     }
@@ -331,7 +346,7 @@ class TravelsFlowTest {
         rowText("Caffè").performScrollTo().performTouchInput { longClick() }
         awaitText(plural(R.plurals.selection_count, 1))
         bulkAction(R.string.bulk_amount)
-        rule.waitUntil(20_000) { rule.onAllNodes(hasTestTag(BULK_INPUT_TAG)).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(hasTestTag(BULK_INPUT_TAG)).fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithTag(BULK_INPUT_TAG).performTextReplacement("4")
         rule.onNode(hasText(string(R.string.bulk_set)) and hasClickAction()).performClick()
         awaitText(plural(R.plurals.transactions_updated, 1))
@@ -350,7 +365,7 @@ class TravelsFlowTest {
     @Test
     fun ac05_semantics_compact() {
         host()
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         val description = rule.onNode(travelRow("Barcellona")).fetchSemanticsNode().config[SemanticsProperties.ContentDescription].joinToString()
         assertTrue(description, description.startsWith("Barcellona, ${plural(R.plurals.travel_expenses, 3)}"))
         rule.onNode(travelRow("Barcellona")).performClick()
@@ -362,7 +377,7 @@ class TravelsFlowTest {
     @Test
     fun ac05_wideGroupsAndAssignsToo() {
         host(widthDp = 900)
-        rule.waitUntil(20_000) { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
+        waitOrDump { rule.onAllNodes(travelRow("Barcellona")).fetchSemanticsNodes().isNotEmpty() }
         rowText("Caffè").performScrollTo().performClick()
         awaitText(string(R.string.part_of_a_trip))
         tapChip("Barcellona")
