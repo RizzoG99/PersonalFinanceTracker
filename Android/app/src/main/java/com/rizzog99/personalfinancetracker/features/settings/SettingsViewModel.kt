@@ -12,19 +12,24 @@ import kotlinx.coroutines.launch
 
 data class SettingsUiState(
     val payCycleStartDay: Int = 1,
+    val bufferPercent: Int = UserPreferencesRepository.DEFAULT_BUFFER_PERCENT,
 )
 
 class SettingsViewModel(
     private val preferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
     val uiState: StateFlow<SettingsUiState> = preferencesRepository.payCycleStartDay
-        .combine(preferencesRepository.baseCurrency) { payCycleStartDay, _ ->
-            SettingsUiState(payCycleStartDay = payCycleStartDay)
+        .combine(preferencesRepository.safeToSpendBufferPercent) { payCycleStartDay, bufferPercent ->
+            SettingsUiState(payCycleStartDay = payCycleStartDay, bufferPercent = bufferPercent)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
     fun setPayCycleStartDay(day: Int) {
         viewModelScope.launch { preferencesRepository.setPayCycleStartDay(day) }
+    }
+
+    fun setBufferPercent(percent: Int) {
+        viewModelScope.launch { preferencesRepository.setSafeToSpendBufferPercent(percent) }
     }
 
     companion object {

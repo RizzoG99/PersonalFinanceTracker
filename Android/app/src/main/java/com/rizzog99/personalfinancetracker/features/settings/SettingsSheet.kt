@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Remove
+import com.rizzog99.personalfinancetracker.data.preferences.UserPreferencesRepository
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -76,7 +81,7 @@ private enum class SecurityFlow { SET_PIN, CHANGE_PIN, VERIFY_FOR_CHANGE, VERIFY
 private enum class DataConfirmation { RESTORE, DELETE_ALL }
 
 /** Full-screen settings, matching the design (not a bottom sheet). */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SettingsSheet(
     onDismiss: () -> Unit,
@@ -328,6 +333,38 @@ fun SettingsSheet(
             }
             Text(
                 text = stringResource(R.string.pay_cycle_detail, state.payCycleStartDay, endDay),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            // Safe to Spend's buffer (#298): iOS's Stepper in the same section, 0…20 %.
+            val bufferRange = UserPreferencesRepository.BUFFER_RANGE
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.safety_buffer_value, state.bufferPercent),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { viewModel.setBufferPercent(state.bufferPercent - 1) },
+                        enabled = state.bufferPercent > bufferRange.first,
+                    ) {
+                        Icon(Icons.Outlined.Remove, contentDescription = stringResource(R.string.decrease_safety_buffer))
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.setBufferPercent(state.bufferPercent + 1) },
+                        enabled = state.bufferPercent < bufferRange.last,
+                    ) {
+                        Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.increase_safety_buffer))
+                    }
+                }
+            }
+            Text(
+                text = stringResource(R.string.safe_to_spend_buffer_explanation),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

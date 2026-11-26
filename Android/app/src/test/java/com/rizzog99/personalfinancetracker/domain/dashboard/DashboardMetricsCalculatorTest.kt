@@ -29,7 +29,6 @@ class DashboardMetricsCalculatorTest {
             zoneId = zoneId,
         )
 
-        assertEquals(BigDecimal("890.20"), metrics.totalBalance)
         assertEquals(BigDecimal("1000.10"), metrics.periodIncome)
         assertEquals(BigDecimal("209.90"), metrics.periodExpenses)
         assertEquals(listOf("end", "expense", "start", "before"), metrics.recentTransactions.map { it.id })

@@ -5,8 +5,8 @@ import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
 import java.math.BigDecimal
 import java.time.ZoneId
 
+/** Home's cycle tiles and recent rows. The all-time balance hero became Safe to Spend (#298). */
 data class DashboardMetrics(
-    val totalBalance: BigDecimal,
     val periodIncome: BigDecimal,
     val periodExpenses: BigDecimal,
     val recentTransactions: List<FinanceTransaction>,
@@ -20,12 +20,10 @@ object DashboardMetricsCalculator {
         recentLimit: Int = 5,
     ): DashboardMetrics {
         require(recentLimit >= 0) { "Recent transaction limit cannot be negative." }
-        var totalBalance = BigDecimal.ZERO
         var periodIncome = BigDecimal.ZERO
         var periodExpenses = BigDecimal.ZERO
 
         transactions.forEach { transaction ->
-            totalBalance += transaction.amount
             if (transaction.timestamp.atZone(zoneId).toLocalDate() in period) {
                 when {
                     transaction.amount > BigDecimal.ZERO -> periodIncome += transaction.amount
@@ -35,7 +33,6 @@ object DashboardMetricsCalculator {
         }
 
         return DashboardMetrics(
-            totalBalance = totalBalance,
             periodIncome = periodIncome,
             periodExpenses = periodExpenses,
             recentTransactions = transactions
