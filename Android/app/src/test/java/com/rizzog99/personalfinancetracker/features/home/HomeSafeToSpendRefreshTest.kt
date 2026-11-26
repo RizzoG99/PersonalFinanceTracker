@@ -80,5 +80,12 @@ class HomeSafeToSpendRefreshTest {
         viewModel.refresh()
         advanceUntilIdle()
         assertEquals(LocalDate.of(2026, 11, 27), viewModel.uiState.value.safeToSpend!!.payday)
+
+        // A data change after midnight, with no resume, is worked out for the new day too.
+        clock.instant = at(10, 28, 9)
+        preferences.setSafeToSpendBufferPercent(4)
+        advanceUntilIdle()
+        assertEquals(LocalDate.of(2026, 10, 28), viewModel.uiState.value.today)
+        assertEquals(4, viewModel.uiState.value.bufferPercent)
     }
 }

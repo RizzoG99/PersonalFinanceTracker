@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -140,8 +141,13 @@ class SafeToSpendFlowTest {
     @Test
     fun ac08_heroShowsSafeToSpendAndBreakdown() = heroAndBreakdown(411)
 
+    /** Only meaningful on a really wide window (Pixel_Tablet / CI tablet job): skipped on phones. */
     @Test
-    fun ac08_heroShowsSafeToSpendAndBreakdownWide() = heroAndBreakdown(900)
+    fun ac08_heroShowsSafeToSpendAndBreakdownWide() {
+        val deviceWidth = app.resources.configuration.screenWidthDp
+        assumeTrue("needs a wide device, this one is ${deviceWidth}dp", deviceWidth >= 900)
+        heroAndBreakdown(deviceWidth)
+    }
 
     @Test
     fun ac09_noIncomeButSpendingPointsAtThePayCycle() {

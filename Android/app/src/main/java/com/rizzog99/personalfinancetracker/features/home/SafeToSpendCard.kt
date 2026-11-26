@@ -161,13 +161,17 @@ private fun SafeToSpendOutcome(
             // Fixed-width mask: the formatted amount's length would leak its magnitude.
             text = if (hideAmounts) stringResource(R.string.balance_hidden_placeholder) else formatCurrency(amount, currencyCode),
             style = amountStyle,
-            fontWeight = FontWeight.Medium,
+            // Bold as iOS (`.largeTitle.bold()`, `.title2.bold()`): it also makes the amount large
+            // text, where amber and red clear 3:1 on the card in both themes (#298 D-09).
+            fontWeight = FontWeight.Bold,
             color = statusColor ?: MaterialTheme.colorScheme.onPrimaryContainer,
         )
         Text(
             text = line,
             style = MaterialTheme.typography.bodyMedium,
-            color = statusColor ?: MaterialTheme.colorScheme.primary,
+            // The line says the standing in words; at body size amber/red fall under 4.5:1 here
+            // (3.19–4.11), so it keeps the card's readable colour (D-09).
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.semantics { contentDescription = spokenLine },
         )
     }

@@ -75,10 +75,11 @@ class HomeViewModel(
     private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
     /**
-     * The one instant every figure is worked out from. Re-read by [refresh] on resume, so a Home left
-     * open over midnight or across payday moves on without waiting for a data change.
+     * Bumped by [refresh] on resume, so a Home left open over midnight or across payday moves on
+     * without waiting for a data change. Every recalculation reads the clock once, so a data change
+     * after midnight is worked out for the new day too.
      */
-    private val now = MutableStateFlow(Instant.now(clock))
+    private val ticks = MutableStateFlow(0)
 
     private val preferences = combine(
         preferencesRepository.payCycleStartDay,
@@ -97,8 +98,9 @@ class HomeViewModel(
         transactionRepository.observeAll(),
         rules,
         preferences,
-        now,
-    ) { transactions, rules, prefs, now ->
+        ticks,
+    ) { transactions, rules, prefs, _ ->
+        val now = Instant.now(clock)
         val today = now.atZone(zoneId).toLocalDate()
         val period = PayCycleService.financialMonthContaining(today, prefs.payCycleStartDay)
         HomeUiState(
@@ -146,7 +148,7 @@ class HomeViewModel(
 
     /** Re-reads the clock (on resume): a new day or a new cycle without any data change. */
     fun refresh() {
-        now.value = Instant.now(clock)
+        ticks.update { it + 1 }
     }
 
     companion object {
