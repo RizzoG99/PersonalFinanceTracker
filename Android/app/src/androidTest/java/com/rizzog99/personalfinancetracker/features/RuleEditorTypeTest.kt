@@ -1,6 +1,14 @@
 package com.rizzog99.personalfinancetracker.features
 
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.isEnabled
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import com.rizzog99.personalfinancetracker.R
+import com.rizzog99.personalfinancetracker.domain.goal.NewGoal
+import kotlinx.coroutines.runBlocking
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -67,5 +75,49 @@ class RuleEditorTypeTest {
 
         assertEquals(BigDecimal("2000.00"), saved?.amount)
         assertEquals("salary", saved?.categoryId)
+    }
+
+    /** #300 AC-02: a goal rule's template opens as Transfer and saves without gaining a category. */
+    @Test
+    fun ac02_goalRuleOpensAsTransfer() {
+        val app = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as PersonalFinanceApplication
+        val goal = runBlocking {
+            app.database.clearAllTables()
+            app.goalRepository.add(NewGoal("Emergency fund", BigDecimal("5000")))
+        }
+        val template = FinanceTransaction(
+            id = "rule-ef",
+            timestamp = Instant.parse("2026-01-27T09:00:00Z"),
+            amount = BigDecimal("-200.00"),
+            note = "",
+            categoryLabel = "→ Emergency fund",
+            categoryId = null,
+            currencyCode = "EUR",
+            goalId = goal.id,
+            recurrenceRuleId = null,
+        )
+        var saved: FinanceTransaction? = null
+        rule.setContent {
+            PersonalFinanceTheme {
+                TransactionEditorSheet(
+                    editingTransaction = template,
+                    categories = listOf(category("food", "Food", TransactionType.EXPENSE)),
+                    receiptMappingRepository = app.receiptMappingRepository,
+                    onDismiss = {},
+                    onSave = { transaction, _, _ -> saved = transaction },
+                    ruleCadence = "Monthly",
+                )
+            }
+        }
+        // Save as soon as it is possible: before #300 that was at once, and it gave the rule a category.
+        val save = hasContentDescription("Save") and hasClickAction()
+        rule.waitUntil(20_000) { rule.onAllNodes(save and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
+        rule.onNode(save).performClick()
+        rule.waitForIdle()
+
+        val edited = requireNotNull(saved)
+        assertEquals(template.copy(amount = edited.amount), edited)
+        assertEquals(0, template.amount.compareTo(edited.amount))
+        rule.onNode(hasText(app.getString(R.string.transaction_type_transfer)) and hasClickAction()).assertIsSelected()
     }
 }

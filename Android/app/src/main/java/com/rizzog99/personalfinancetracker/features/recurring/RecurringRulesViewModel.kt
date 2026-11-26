@@ -105,7 +105,7 @@ class RecurringRulesViewModel(
 
     /** Rule-edit save: the template fields of [edited]; cadence and start stay (iOS `saveRuleEdits`). */
     suspend fun saveRule(rule: RecurrenceRule, edited: FinanceTransaction): Boolean = write {
-        recurrenceRepository.updateTemplate(rule.id, edited.amount, edited.note, edited.categoryLabel, edited.categoryId, edited.currencyCode)
+        recurrenceRepository.updateTemplate(rule.id, edited.amount, edited.note, edited.categoryLabel, edited.categoryId, edited.currencyCode, edited.goalId)
     }
 
     /** "+": the shell's add path (`PersonalFinanceNavHost` onSave), Repeat preset on. */

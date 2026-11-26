@@ -14,6 +14,7 @@ import com.rizzog99.personalfinancetracker.domain.goal.NewGoal
 import com.rizzog99.personalfinancetracker.domain.paycycle.FinancialPeriod
 import com.rizzog99.personalfinancetracker.domain.paycycle.PayCycleService
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
+import com.rizzog99.personalfinancetracker.domain.transaction.isGoalTransfer
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
@@ -84,7 +85,7 @@ class InsightsViewModel(
         val categoryById = categories.associateBy(FinanceCategory::id)
         val period = PayCycleService.currentFinancialMonth(payCycleStartDay, clock)
         val periodTransactions = transactions.filter { it.timestamp.atZone(zoneId).toLocalDate() in period }
-        val expenseTransactions = transactions.filter { it.amount < BigDecimal.ZERO && it.goalId == null }
+        val expenseTransactions = transactions.filter { it.amount < BigDecimal.ZERO && !it.isGoalTransfer }
         val financialMonths = PayCycleService.financialMonths(6, period.endInclusive, payCycleStartDay)
         val recentStart = financialMonths.firstOrNull()?.start
         val recentTransactions = recentStart?.let { start -> transactions.filter { it.timestamp.atZone(zoneId).toLocalDate() >= start } }.orEmpty()

@@ -10,6 +10,13 @@ enum class RecurrenceFrequency {
 
     ;
 
+    /** The editor's "every N" ceiling (iOS `RecurrenceFrequency.maxInterval`, b649dff `:32-38`). */
+    val maxInterval: Int get() = when (this) {
+        WEEKLY -> 52
+        MONTHLY -> 24
+        YEARLY -> 10
+    }
+
     companion object
 }
 

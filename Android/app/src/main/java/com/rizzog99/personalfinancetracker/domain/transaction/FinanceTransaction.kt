@@ -16,3 +16,9 @@ data class FinanceTransaction(
     /** The travel this expense belongs to (#284), or none. Defaulted so existing call sites are unchanged. */
     val travelId: String? = null,
 )
+
+/**
+ * Money moved to a goal (#300, data contract C-01): no stored type, as on iOS. Saved, not spent:
+ * category and spending analytics leave it out; the goal's saved amount counts it.
+ */
+val FinanceTransaction.isGoalTransfer: Boolean get() = goalId != null && amount.signum() < 0
