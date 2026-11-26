@@ -1790,36 +1790,37 @@ internal fun TransactionEditorContent(
                         }
                     }
                 }
-            } else
-            Box {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = stringResource(R.string.categories),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        inlineCategories(matchingCategories, selectedCategoryId).forEach { category ->
-                            CategoryPickerTile(
-                                category = category,
-                                selected = category.id == selectedCategoryId,
-                                onClick = {
+            } else {
+                Box {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = stringResource(R.string.categories),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            inlineCategories(matchingCategories, selectedCategoryId).forEach { category ->
+                                CategoryPickerTile(
+                                    category = category,
+                                    selected = category.id == selectedCategoryId,
+                                    onClick = {
+                                        focusManager.clearFocus()
+                                        selectedCategoryId = category.id
+                                        categoryTouched = true
+                                    },
+                                )
+                            }
+                            if (matchingCategories.size > MAX_INLINE_CATEGORIES) {
+                                MoreCategoriesTile(onClick = {
                                     focusManager.clearFocus()
-                                    selectedCategoryId = category.id
-                                    categoryTouched = true
-                                },
-                            )
-                        }
-                        if (matchingCategories.size > MAX_INLINE_CATEGORIES) {
-                            MoreCategoriesTile(onClick = {
-                                focusManager.clearFocus()
-                                categoryPickerVisible = true
-                            })
+                                    categoryPickerVisible = true
+                                })
+                            }
                         }
                     }
                 }
@@ -1985,10 +1986,11 @@ private fun TransactionTypeOption(
                 if (selected) MaterialTheme.colorScheme.surface else Color.Transparent,
                 RoundedCornerShape(24.dp),
             )
-            // Shown only as a fill otherwise: TalkBack would not say which type is current.
+            // Shown only as a fill otherwise: TalkBack would not say which type is current. A radio, not a
+            // Tab: one choice among three, and the shell's tabs stay the only selected Tab on screen.
             .semantics {
                 this.selected = selected
-                role = Role.Tab
+                role = Role.RadioButton
             },
     ) {
         Text(label, color = MaterialTheme.colorScheme.onSurface)
