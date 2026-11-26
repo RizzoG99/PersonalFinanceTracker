@@ -357,6 +357,21 @@ class RecurrenceDetectorTest {
         assertEquals(day(2026, 10, 1), RecurrenceDetector.paidThrough(goalRule, listOf(expense, transfer(goal, "-200", day(2026, 10, 2))), day(2026, 10, 2), utc)?.cursor)
     }
 
+    /** #300 AC-03: three nameless monthly transfers to one goal are one suggestion that keeps the goal. */
+    @Test
+    fun `ac300 three monthly goal transfers are one suggestion`() {
+        val rome = ZoneId.of("Europe/Rome")
+        fun on(date: String) = LocalDate.parse(date).atTime(12, 0).atZone(rome).toInstant()
+        val rows = listOf("2025-11-27", "2025-12-27", "2026-01-27").map { transfer("goal-ef", "-200.00", on(it)) }
+
+        val suggestions = RecurrenceDetector.detect(rows, emptyList(), emptyList(), on("2026-01-27"), rome)
+
+        val saving = suggestions.single()
+        assertEquals(RecurrenceFrequency.MONTHLY, saving.frequency)
+        assertEquals("goal-ef", saving.goalId)
+        assertEquals(0, BigDecimal("-200.00").compareTo(saving.amount))
+    }
+
     @Test
     fun `match window is a fifth of the cycle clamped to 3 to 14 days`() {
         assertEquals(3L, RecurrenceDetector.matchWindow(RecurrenceFrequency.WEEKLY, 1).toDays())

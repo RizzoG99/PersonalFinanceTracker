@@ -68,7 +68,9 @@ Specified before any Room migration for these capabilities. Paths are relative t
 - Transfer is offered only when at least one goal exists, unless the form is already on Transfer (`EditAddTransactionViewModel.swift:206-214`).
 - A recurring transfer is a `RecurrenceRule` with `goalId` set; it keeps the goal on every occurrence (`EditAddTransactionViewModel.swift:412`).
 - Money moved to a goal counts as saved, not spent, in Safe to Spend and the cycle summary (`Utilities/SafeToSpendSnapshotBuilder.swift:47`).
-- Android may add an explicit type column, but it must derive the same answer as iOS for every stored row: `goalId != null && amount < 0` is a transfer. Imported rows keep the iOS rule. Recorded as technical decision C-01.
+- **Decided in #300 (C-01, 2026-11-25):** Android stores no type column either. The one rule is `FinanceTransaction.isGoalTransfer` = `goalId != null && amount < 0`; every surface that separates transfers from spending uses it (or the equivalent `goalId == null` filter on negative rows). No Room migration, and backup v2 is unchanged. Imported rows keep the iOS rule.
+- The editor opens any goal-linked row or rule as Transfer (iOS `EditAddTransactionViewModel.swift:493`, `:505`) and saves it negative, with `categoryId = null`, label `→ <goal name>` and the goal's id. Switching a row to Income or Expense clears `goalId`. A rule edit carries `goalId` with its template (iOS `buildRecurrenceRuleInput(preserving:)`, `:443`).
+- Who counts a transfer as money out, as on iOS: Activity totals and the income/expense figures do; the category breakdown, health score, cycle summary, monthly recap and Safe to Spend do not. A goal's saved amount is Σ|amount| of its rows (`Features/Insights/InsightsViewModel.swift:350-354`).
 
 ### Forecast-only rules and payment confirmation (#294, #295, #296)
 

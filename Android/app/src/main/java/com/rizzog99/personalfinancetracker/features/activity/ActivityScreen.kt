@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -119,6 +120,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.coroutines.flow.catch
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -1413,8 +1418,15 @@ internal fun TransactionEditorContent(
     }
     // Collected here rather than threaded through TransactionEditorSheet: only the receipt path
     // needs it, and every caller of the sheet would otherwise have to carry it.
-    val conceptPairings by (LocalContext.current.applicationContext as PersonalFinanceApplication)
-        .receiptCategoryMapRepository.pairings.collectAsState(initial = emptyMap())
+    val app = LocalContext.current.applicationContext as PersonalFinanceApplication
+    val conceptPairings by app.receiptCategoryMapRepository.pairings.collectAsState(initial = emptyMap())
+    // Same reasoning: only Transfer needs goals (#300). A failed read just offers no goals.
+    val goals by remember(app) { app.goalRepository.observeAll().catch { emit(emptyList()) } }
+        .collectAsState(initial = emptyList())
+    // iOS stores no type: any goal-linked row opens as Transfer (b649dff `EditAddTransactionViewModel.swift:493`, `:505`).
+    var isTransfer by remember(editingTransaction) { mutableStateOf(editingTransaction?.goalId != null) }
+    var selectedGoalId by remember(editingTransaction) { mutableStateOf(editingTransaction?.goalId) }
+    val selectedGoal = goals.firstOrNull { it.id == selectedGoalId }
     var amountText by remember(editingTransaction) {
         mutableStateOf(editingTransaction?.amount?.abs()?.toPlainString().orEmpty())
     }
@@ -1490,7 +1502,7 @@ internal fun TransactionEditorContent(
         amount != null -> AmountInput.formattedDisplay(amount)
         else -> amountText
     }
-    val canSave = amount != null && amount > BigDecimal.ZERO && selectedCategory != null
+    val canSave = amount != null && amount > BigDecimal.ZERO && (if (isTransfer) selectedGoal != null else selectedCategory != null)
     val receiptReviewMessage = stringResource(R.string.receipt_review_before_saving)
     val receiptAmbiguousMessage = stringResource(R.string.receipt_total_ambiguous)
     val receiptAmountUnreadableMessage = stringResource(R.string.receipt_amount_unreadable)
@@ -1516,7 +1528,8 @@ internal fun TransactionEditorContent(
             scan.merchant?.let { note = it }
         }
         receiptMerchant = scan.merchant
-        if (!categoryTouched) {
+        // A scan never turns a transfer into something else (iOS `:309`, `:320`).
+        if (!categoryTouched && !isTransfer) {
             val mappedCategoryId = scan.merchant?.let { receiptMappingRepository.categoryIdFor(it) }
             val inferredCategory = categories.firstOrNull { it.id == mappedCategoryId }
                 ?: inferReceiptCategory(scan, categories, selectedType, conceptPairings)
@@ -1533,17 +1546,19 @@ internal fun TransactionEditorContent(
         }
     }
     val submitTransaction: () -> Unit = {
-        val category = requireNotNull(selectedCategory)
-        val signedAmount = if (category.type == TransactionType.EXPENSE) amount!!.negate() else amount!!
+        // A transfer is negative, has no category, and is labelled by its goal (iOS `buildInput`, `:389-407`).
+        val goal = if (isTransfer) requireNotNull(selectedGoal) else null
+        val category = if (goal == null) requireNotNull(selectedCategory) else null
+        val signedAmount = if (category?.type == TransactionType.INCOME) amount!! else amount!!.negate()
         val transaction = FinanceTransaction(
             id = editingTransaction?.id ?: UUID.randomUUID().toString(),
             timestamp = timestamp,
             amount = signedAmount,
             note = note.trim(),
-            categoryLabel = category.name,
-            categoryId = category.id,
-            currencyCode = category.currencyCode,
-            goalId = editingTransaction?.goalId,
+            categoryLabel = goal?.let { "→ ${it.name}" } ?: category!!.name,
+            categoryId = category?.id,
+            currencyCode = category?.currencyCode ?: editingTransaction?.currencyCode ?: "EUR",
+            goalId = goal?.id,
             recurrenceRuleId = editingTransaction?.recurrenceRuleId,
             travelId = if (travelChoice != null) selectedTravelId else editingTransaction?.travelId,
         )
@@ -1701,40 +1716,58 @@ internal fun TransactionEditorContent(
                     },
                 )
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(28.dp))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                TransactionTypeOption(
-                    label = stringResource(R.string.filter_income),
-                    selected = selectedType == TransactionType.INCOME,
-                    onClick = {
-                        focusManager.clearFocus()
-                        selectedType = TransactionType.INCOME
-                        selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
-                        categoryTouched = true
-                    },
-                    modifier = Modifier.weight(1f),
-                )
-                TransactionTypeOption(
-                    label = stringResource(R.string.filter_expense),
-                    selected = selectedType == TransactionType.EXPENSE,
-                    onClick = {
-                        focusManager.clearFocus()
-                        selectedType = TransactionType.EXPENSE
-                        selectedCategoryId = categories.firstOrNull { it.type == selectedType }?.id
-                        categoryTouched = true
-                    },
-                    modifier = Modifier.weight(1f),
-                )
+            val typeOptions: @Composable (Modifier) -> Unit = { optionModifier ->
+                // Only a real change of type clears the picks, as iOS's `onChange` (`TransactionFormView.swift:169-172`).
+                listOf(TransactionType.INCOME to R.string.filter_income, TransactionType.EXPENSE to R.string.filter_expense)
+                    .forEach { (type, label) ->
+                        TransactionTypeOption(
+                            label = stringResource(label),
+                            selected = !isTransfer && selectedType == type,
+                            onClick = {
+                                focusManager.clearFocus()
+                                if (isTransfer || selectedType != type) {
+                                    isTransfer = false
+                                    selectedGoalId = null
+                                    selectedType = type
+                                    selectedCategoryId = categories.firstOrNull { it.type == type }?.id
+                                    categoryTouched = true
+                                }
+                            },
+                            modifier = optionModifier,
+                        )
+                    }
+                // Needs a goal to move money into; never hidden while it is the current type (iOS `:206-214`).
+                if (goals.isNotEmpty() || isTransfer) {
+                    TransactionTypeOption(
+                        label = stringResource(R.string.transaction_type_transfer),
+                        selected = isTransfer,
+                        onClick = {
+                            focusManager.clearFocus()
+                            if (!isTransfer) {
+                                isTransfer = true
+                                selectedGoalId = null // D-04: no goal until the user picks one, as on iOS.
+                                categoryTouched = true
+                            }
+                        },
+                        modifier = optionModifier,
+                    )
+                }
             }
-            Box {
+            val typeBar = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(28.dp))
+                .padding(4.dp)
+            // ponytail: a fixed 1.5× threshold; three labels side by side break mid-word above it
+            // ("Expens/es", "Trasferi/mento" at 2.0×). Measure the labels if a locale needs it lower.
+            if (LocalDensity.current.fontScale >= 1.5f) {
+                Column(typeBar, verticalArrangement = Arrangement.spacedBy(4.dp)) { typeOptions(Modifier.fillMaxWidth()) }
+            } else {
+                Row(typeBar, horizontalArrangement = Arrangement.spacedBy(4.dp)) { typeOptions(Modifier.weight(1f)) }
+            }
+            if (isTransfer) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = stringResource(R.string.categories),
+                        text = stringResource(R.string.transaction_goal_header),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -1744,22 +1777,50 @@ internal fun TransactionEditorContent(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        inlineCategories(matchingCategories, selectedCategoryId).forEach { category ->
-                            CategoryPickerTile(
-                                category = category,
-                                selected = category.id == selectedCategoryId,
+                        goals.forEach { goal ->
+                            PickerTile(
+                                icon = categoryIconFor(goal.iconToken),
+                                label = goal.name,
+                                selected = goal.id == selectedGoalId,
                                 onClick = {
                                     focusManager.clearFocus()
-                                    selectedCategoryId = category.id
-                                    categoryTouched = true
+                                    selectedGoalId = goal.id
                                 },
                             )
                         }
-                        if (matchingCategories.size > MAX_INLINE_CATEGORIES) {
-                            MoreCategoriesTile(onClick = {
-                                focusManager.clearFocus()
-                                categoryPickerVisible = true
-                            })
+                    }
+                }
+            } else {
+                Box {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = stringResource(R.string.categories),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            inlineCategories(matchingCategories, selectedCategoryId).forEach { category ->
+                                CategoryPickerTile(
+                                    category = category,
+                                    selected = category.id == selectedCategoryId,
+                                    onClick = {
+                                        focusManager.clearFocus()
+                                        selectedCategoryId = category.id
+                                        categoryTouched = true
+                                    },
+                                )
+                            }
+                            if (matchingCategories.size > MAX_INLINE_CATEGORIES) {
+                                MoreCategoriesTile(onClick = {
+                                    focusManager.clearFocus()
+                                    categoryPickerVisible = true
+                                })
+                            }
                         }
                     }
                 }
@@ -1827,7 +1888,10 @@ internal fun TransactionEditorContent(
                             text = recurrenceInterval.toString(),
                             style = MaterialTheme.typography.titleMedium,
                         )
-                        OutlinedButton(onClick = { recurrenceInterval += 1 }) {
+                        OutlinedButton(
+                            onClick = { recurrenceInterval += 1 },
+                            enabled = recurrenceInterval < recurrenceFrequency.maxInterval,
+                        ) {
                             Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.increase_interval))
                         }
                         Spacer(Modifier.weight(1f))
@@ -1836,7 +1900,10 @@ internal fun TransactionEditorContent(
                         RecurrenceFrequency.entries.forEach { frequency ->
                             FilterChip(
                                 selected = recurrenceFrequency == frequency,
-                                onClick = { recurrenceFrequency = frequency },
+                                onClick = {
+                                    recurrenceFrequency = frequency
+                                    recurrenceInterval = recurrenceInterval.coerceAtMost(frequency.maxInterval)
+                                },
                                 label = {
                                     Text(
                                         stringResource(
@@ -1855,7 +1922,7 @@ internal fun TransactionEditorContent(
             }
             // Optional, and last, as on iOS: a travel tags an ordinary expense. Never on a goal
             // transfer (#284; iOS hides it for `.transfer`), nor on a recurring rule's template.
-            if (travelChoice != null && editingTransaction?.goalId == null && ruleCadence == null) {
+            if (travelChoice != null && !isTransfer && ruleCadence == null) {
                 TravelSection(
                     choice = travelChoice,
                     selectedId = selectedTravelId,
@@ -1914,10 +1981,17 @@ private fun TransactionTypeOption(
 ) {
     TextButton(
         onClick = onClick,
-        modifier = modifier.background(
-            if (selected) MaterialTheme.colorScheme.surface else Color.Transparent,
-            RoundedCornerShape(24.dp),
-        ),
+        modifier = modifier
+            .background(
+                if (selected) MaterialTheme.colorScheme.surface else Color.Transparent,
+                RoundedCornerShape(24.dp),
+            )
+            // Shown only as a fill otherwise: TalkBack would not say which type is current. A radio, not a
+            // Tab: one choice among three, and the shell's tabs stay the only selected Tab on screen.
+            .semantics {
+                this.selected = selected
+                role = Role.RadioButton
+            },
     ) {
         Text(label, color = MaterialTheme.colorScheme.onSurface)
     }
@@ -1929,12 +2003,29 @@ private fun CategoryPickerTile(
     selected: Boolean,
     onClick: () -> Unit,
     fillAvailableWidth: Boolean = false,
+) = PickerTile(
+    icon = categoryIconFor(category.iconToken),
+    label = categoryDisplayName(category.name),
+    selected = selected,
+    onClick = onClick,
+    fillAvailableWidth = fillAvailableWidth,
+)
+
+/** A category or goal choice: one radio tile whose selection TalkBack announces. */
+@Composable
+private fun PickerTile(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    fillAvailableWidth: Boolean = false,
 ) {
     val shape = RoundedCornerShape(18.dp)
     Column(
         modifier = Modifier
-            .then(if (fillAvailableWidth) Modifier.fillMaxWidth() else Modifier.width(108.dp))
-            .height(88.dp)
+            // Grows with large text, so "Emergency fund" is not cut to "Emerge" at 2.0× (#300); unchanged at 1.0×.
+            .then(if (fillAvailableWidth) Modifier.fillMaxWidth() else Modifier.width(108.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)))
+            .heightIn(min = 88.dp)
             .background(
                 if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else Color.Transparent,
                 shape,
@@ -1944,18 +2035,18 @@ private fun CategoryPickerTile(
                 color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                 shape = shape,
             )
-            .clickable(role = Role.RadioButton, onClick = onClick)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
     ) {
         Icon(
-            imageVector = categoryIconFor(category.iconToken),
+            imageVector = icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = categoryDisplayName(category.name),
+            text = label,
             style = MaterialTheme.typography.labelMedium,
             textAlign = TextAlign.Center,
             maxLines = 2,

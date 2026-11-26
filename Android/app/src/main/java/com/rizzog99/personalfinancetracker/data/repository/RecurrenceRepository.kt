@@ -45,9 +45,10 @@ interface RecurrenceRepository {
 
     /**
      * Rule-edit save (#294, iOS `buildRecurrenceRuleInput(preserving:)`): the template only.
-     * Cadence, start date, end date, cursor, goal and auto-record stay; no transaction is written.
+     * Cadence, start date, end date, cursor and auto-record stay; no transaction is written. The goal
+     * follows the template, as iOS copies `input.goalId` (#300).
      */
-    suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String)
+    suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String, goalId: String?)
 
     /** Ends the rule at [at] (iOS `closeRecurrenceRule`). Its transactions stay. */
     suspend fun stop(id: String, at: Instant)
@@ -122,9 +123,9 @@ class RoomRecurrenceRepository(
     override fun observeAll(): Flow<List<RecurrenceRule>> =
         database.recurrenceRuleDao().observeAll().map { rules -> rules.map { it.toDomain() } }
 
-    override suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String) {
+    override suspend fun updateTemplate(id: String, amount: BigDecimal, note: String, categoryLabel: String, categoryId: String?, currencyCode: String, goalId: String?) {
         // One statement: a concurrent materialize, advance or stop is never overwritten by a stale copy.
-        val updated = database.recurrenceRuleDao().updateTemplate(id, MoneyCodec.encode(amount), note, categoryLabel, categoryId, currencyCode)
+        val updated = database.recurrenceRuleDao().updateTemplate(id, MoneyCodec.encode(amount), note, categoryLabel, categoryId, currencyCode, goalId)
         check(updated == 1) { "Recurrence rule $id not found." }
     }
 

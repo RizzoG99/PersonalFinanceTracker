@@ -230,6 +230,8 @@
     <string name="filter_all">All</string>
     <string name="filter_income">Income</string>
     <string name="filter_expense">Expenses</string>
+    <string name="transaction_type_transfer">Transfer</string>
+    <string name="transaction_goal_header">Goal</string>
     <string name="transaction_added">Transaction added</string>
     <string name="transaction_updated">Transaction updated</string>
     <string name="transaction_deleted">Transaction deleted</string>

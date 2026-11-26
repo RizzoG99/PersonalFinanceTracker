@@ -77,9 +77,9 @@ interface RecurrenceRuleDao {
     /** Rule-edit save (#294): the template fields only. Returns the rows changed. */
     @Query(
         "UPDATE recurrence_rules SET amountDecimal = :amountDecimal, note = :note, categoryLabel = :categoryLabel, " +
-            "categoryId = :categoryId, currencyCode = :currencyCode WHERE id = :id",
+            "categoryId = :categoryId, currencyCode = :currencyCode, goalId = :goalId WHERE id = :id",
     )
-    suspend fun updateTemplate(id: String, amountDecimal: String, note: String, categoryLabel: String, categoryId: String?, currencyCode: String): Int
+    suspend fun updateTemplate(id: String, amountDecimal: String, note: String, categoryLabel: String, categoryId: String?, currencyCode: String, goalId: String?): Int
 
     @Query("UPDATE recurrence_rules SET categoryId = NULL WHERE categoryId = :categoryId")
     suspend fun clearCategoryReference(categoryId: String)
