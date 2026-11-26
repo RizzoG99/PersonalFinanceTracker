@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -1715,13 +1716,7 @@ internal fun TransactionEditorContent(
                     },
                 )
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(28.dp))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
+            val typeOptions: @Composable (Modifier) -> Unit = { optionModifier ->
                 // Only a real change of type clears the picks, as iOS's `onChange` (`TransactionFormView.swift:169-172`).
                 listOf(TransactionType.INCOME to R.string.filter_income, TransactionType.EXPENSE to R.string.filter_expense)
                     .forEach { (type, label) ->
@@ -1738,7 +1733,7 @@ internal fun TransactionEditorContent(
                                     categoryTouched = true
                                 }
                             },
-                            modifier = Modifier.weight(1f),
+                            modifier = optionModifier,
                         )
                     }
                 // Needs a goal to move money into; never hidden while it is the current type (iOS `:206-214`).
@@ -1754,9 +1749,20 @@ internal fun TransactionEditorContent(
                                 categoryTouched = true
                             }
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier = optionModifier,
                     )
                 }
+            }
+            val typeBar = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(28.dp))
+                .padding(4.dp)
+            // ponytail: a fixed 1.5× threshold; three labels side by side break mid-word above it
+            // ("Expens/es", "Trasferi/mento" at 2.0×). Measure the labels if a locale needs it lower.
+            if (LocalDensity.current.fontScale >= 1.5f) {
+                Column(typeBar, verticalArrangement = Arrangement.spacedBy(4.dp)) { typeOptions(Modifier.fillMaxWidth()) }
+            } else {
+                Row(typeBar, horizontalArrangement = Arrangement.spacedBy(4.dp)) { typeOptions(Modifier.weight(1f)) }
             }
             if (isTransfer) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -2015,8 +2021,9 @@ private fun PickerTile(
     val shape = RoundedCornerShape(18.dp)
     Column(
         modifier = Modifier
-            .then(if (fillAvailableWidth) Modifier.fillMaxWidth() else Modifier.width(108.dp))
-            .height(88.dp)
+            // Grows with large text, so "Emergency fund" is not cut to "Emerge" at 2.0× (#300); unchanged at 1.0×.
+            .then(if (fillAvailableWidth) Modifier.fillMaxWidth() else Modifier.width(108.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)))
+            .heightIn(min = 88.dp)
             .background(
                 if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else Color.Transparent,
                 shape,

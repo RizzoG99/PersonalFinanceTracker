@@ -128,7 +128,7 @@ class GoalTransferCaptureTest(private val cell: CaptureHarness.Cell) {
         fun exists(matcher: SemanticsMatcher) = rule.onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty()
         fun tap(matcher: SemanticsMatcher) = rule.onNode(matcher).performScrollTo().performClick()
         val editorTitle = hasText(string(R.string.add_transaction)) and isHeading()
-        if (!wide) tap(hasContentDescription(string(R.string.add_transaction)) and hasClickAction())
+        if (!wide) rule.onNode(hasContentDescription(string(R.string.add_transaction)) and hasClickAction()).performClick()
         val transfer = hasText(string(R.string.transaction_type_transfer)) and hasClickAction()
         rule.waitUntil(20_000) { exists(transfer) }
         // Wide: the always-visible pane, never a second (modal) editor.
