@@ -72,6 +72,11 @@ class HealthScoreActivityTest {
         app.transactionRepository.upsert(FinanceTransaction("out", now, BigDecimal("-500"), "", "Rent", null, "EUR", null, null))
     }
 
+    /** Evidence only: `UiAutomation.takeScreenshot()` returns null before API 33 (as `RelockCaptureTest`, D-02). */
+    private fun captureScreen(name: String) {
+        if (Build.VERSION.SDK_INT >= 33) CaptureHarness.writeScreenPng(CaptureHarness.outputDir("health-score-304"), name)
+    }
+
     private fun shell(command: String) {
         instrumentation.uiAutomation.executeShellCommand(command).use { pfd ->
             java.io.FileInputStream(pfd.fileDescriptor).use { it.readBytes() }
@@ -99,7 +104,7 @@ class HealthScoreActivityTest {
         seedActivity()
         waitFor(hasText(app.getString(R.string.health_score_out_of)))
         waitFor(hasText(app.getString(R.string.health_exclude_subscriptions)))
-        CaptureHarness.writeScreenPng(CaptureHarness.outputDir("health-score-304"), "wide-page--${Build.MODEL.replace(' ', '_')}")
+        captureScreen("wide-page--${Build.MODEL.replace(' ', '_')}")
     }
 
     @Test
@@ -130,7 +135,7 @@ class HealthScoreActivityTest {
             it.getString(R.string.health_explain_budget_none),
         ).forEach { text -> waitFor(hasText(text)) }
         instrumentation.uiAutomation.waitForIdle(500, 5_000)
-        CaptureHarness.writeScreenPng(CaptureHarness.outputDir("health-score-304"), "sheet-it--${Build.MODEL.replace(' ', '_')}")
+        captureScreen("sheet-it--${Build.MODEL.replace(' ', '_')}")
     }
 
     /** AC-06: the sheet is its own window, so 200 % text is proven with the system font scale. */
@@ -150,10 +155,10 @@ class HealthScoreActivityTest {
         waitFor(list)
         rule.onNode(list).performScrollToNode(card)
         waitFor(card)
-        CaptureHarness.writeScreenPng(CaptureHarness.outputDir("health-score-304"), "card-200--${Build.MODEL.replace(' ', '_')}")
+        captureScreen("card-200--${Build.MODEL.replace(' ', '_')}")
         rule.onNode(card).performClick()
         waitFor(hasText(app.getString(R.string.health_guide)))
         instrumentation.uiAutomation.waitForIdle(500, 5_000)
-        CaptureHarness.writeScreenPng(CaptureHarness.outputDir("health-score-304"), "sheet-200--${Build.MODEL.replace(' ', '_')}")
+        captureScreen("sheet-200--${Build.MODEL.replace(' ', '_')}")
     }
 }

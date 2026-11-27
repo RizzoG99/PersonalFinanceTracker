@@ -219,7 +219,8 @@ class HealthScoreFlowTest {
             rule.onNode(card).performClick()
             waitFor(isToggleable() and hasText(string(R.string.health_exclude_subscriptions)))
             InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
-            com.rizzog99.personalfinancetracker.ui.CaptureHarness.writeScreenPng(dir, "detail--en-${c.first}")
+            // Screen captures need API 33+ (null before, as RelockCaptureTest D-02); the sheet still opened above.
+            if (android.os.Build.VERSION.SDK_INT >= 33) com.rizzog99.personalfinancetracker.ui.CaptureHarness.writeScreenPng(dir, "detail--en-${c.first}")
             // The next cell re-keys the screen, which drops the open sheet with it.
         }
     }
