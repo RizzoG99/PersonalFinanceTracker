@@ -251,7 +251,7 @@
     <string name="health_tip_budget_none">Imposta i budget mensili in Pianifica per sbloccare questo punteggio.</string>
     <string name="health_explain_subscriptions">Gli abbonamenti sono il %1$d%% delle spese negli ultimi 6 mesi.</string>
     <string name="health_explain_subscriptions_none">Nessuna spesa per abbonamenti rilevata negli ultimi 6 mesi.</string>
-    <string name="health_tip_subscriptions">Mantieni gli abbonamenti sotto il 15% delle spese per ottenere il punteggio pieno.</string>
+    <string name="health_tip_subscriptions">Mantieni gli abbonamenti sotto il %1$d%% delle spese per ottenere il punteggio pieno.</string>
     <string name="health_history">Cronologia del punteggio</string>
     <string name="health_breakdown_period">%1$s · 25 pt per metrica</string>
     <string name="health_guide">Guida al punteggio totale</string>

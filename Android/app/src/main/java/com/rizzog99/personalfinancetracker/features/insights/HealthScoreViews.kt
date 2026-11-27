@@ -130,7 +130,7 @@ private fun tip(component: HealthComponent, currencyCode: String): String? {
             val over = component.budgeted - component.adhering
             pluralStringResource(R.plurals.health_tip_budget, over, over)
         }
-        HealthComponentKind.SUBSCRIPTIONS -> stringResource(R.string.health_tip_subscriptions)
+        HealthComponentKind.SUBSCRIPTIONS -> stringResource(R.string.health_tip_subscriptions, 15)
     }
 }
 

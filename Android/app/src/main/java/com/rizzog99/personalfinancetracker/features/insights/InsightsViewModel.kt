@@ -211,10 +211,21 @@ class InsightsViewModel(
         val repo = insightRepository ?: return
         val health = state.health ?: return
         if (state.isLoading || state.isError) return
+        val today = state.now.atZone(zoneId).toLocalDate()
         runCatching { repo.saveSnapshotIfNeeded(health.snapshot(state.now), zoneId) }
-            .onSuccess { saved -> if (saved) snapshotTicks.update { it + 1 } }
+            .onSuccess { saved ->
+                // Re-read after we saved, and once a day after another model did (Insights, Plan and
+                // the wide page each hold one): a skipped save mustn't leave this history stale.
+                // ponytail: once per day per model, so a re-read can never loop back into itself.
+                if (saved || historyCheckedOn != today) {
+                    historyCheckedOn = today
+                    snapshotTicks.update { it + 1 }
+                }
+            }
             .onFailure(::rethrowIfCancelled)
     }
+
+    private var historyCheckedOn: java.time.LocalDate? = null
 
     companion object {
         fun factory(

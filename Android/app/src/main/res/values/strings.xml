@@ -252,7 +252,7 @@
     <string name="health_tip_budget_none">Set monthly budgets in Plan to unlock this score.</string>
     <string name="health_explain_subscriptions">Subscriptions are %1$d%% of expenses over the last 6 months.</string>
     <string name="health_explain_subscriptions_none">No subscription spending detected in the last 6 months.</string>
-    <string name="health_tip_subscriptions">Keep subscriptions under 15% of expenses to earn full points.</string>
+    <string name="health_tip_subscriptions">Keep subscriptions under %1$d%% of expenses to earn full points.</string>
     <string name="health_history">Score History</string>
     <string name="health_breakdown_period">%1$s · 25 pts per metric</string>
     <string name="health_guide">Total score guide</string>

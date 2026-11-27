@@ -131,6 +131,25 @@ class HealthScoreViewModelTest {
         assertEquals(2, vm.uiState.value.snapshots.size)
     }
 
+    /**
+     * Code review r1: another model (Plan, the wide page) saves today's snapshot after this one read
+     * its history; this model's own save is then skipped, and it must still re-read the history.
+     */
+    @Test
+    fun ac04_historyRereadsWhenAnotherModelSavedFirst() = runTest(dispatcher) {
+        val shared = MemoryInsights()
+        val racing = object : InsightRepository by shared {
+            override suspend fun saveSnapshotIfNeeded(snapshot: HealthScoreSnapshot, zone: ZoneId): Boolean {
+                shared.rows += snapshot.copy(id = "other-model") // the other model got there first
+                return false
+            }
+        }
+        val vm = viewModel(MovableClock(at(9, 15), zone), UserPreferencesRepository(FakePreferencesDataStore()), racing)
+        backgroundScope.launch(dispatcher) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        assertEquals(listOf("other-model"), vm.uiState.value.snapshots.map { it.id })
+    }
+
     @Test
     fun ac04_ignoringSavesZeroForSubscriptions() = runTest(dispatcher) {
         val preferences = UserPreferencesRepository(FakePreferencesDataStore()).also { it.setHealthScoreIgnoreSubscriptions(true) }

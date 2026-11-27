@@ -279,7 +279,7 @@ class PlanNavigationTest {
         val items = rule.onAllNodes(anyTab).fetchSemanticsNodes().sortedBy { it.boundsInRoot.top }
             .map { node -> node.config[SemanticsProperties.Text].joinToString { it.text } }
         assertEquals(
-            listOf(R.string.tab_home, R.string.tab_activity, R.string.recurring_title, R.string.budgets_title, R.string.goals_title, R.string.tab_insights, R.string.settings_title)
+            listOf(R.string.tab_home, R.string.tab_activity, R.string.recurring_title, R.string.budgets_title, R.string.goals_title, R.string.tab_insights, R.string.health_score, R.string.settings_title)
                 .map { string(it) },
             items,
         )

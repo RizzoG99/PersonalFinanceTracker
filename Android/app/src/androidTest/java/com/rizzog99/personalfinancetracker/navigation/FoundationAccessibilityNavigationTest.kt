@@ -144,12 +144,12 @@ class FoundationAccessibilityNavigationTest {
         node.assertIsFocused()
     }
 
-    /** #283: four tabs on compact; on wide, the drawer's iPad-like groups (D-03: no Health Score item). */
+    /** #283: four tabs on compact; on wide, the drawer's iPad-like groups, Health Score under Insights (#304). */
     private fun primaryLabels(locale: Locale, wide: Boolean): List<String> =
         (if (wide) {
             listOf(
                 R.string.tab_home, R.string.tab_activity, R.string.recurring_title, R.string.budgets_title,
-                R.string.goals_title, R.string.tab_insights, R.string.settings_title,
+                R.string.goals_title, R.string.tab_insights, R.string.health_score, R.string.settings_title,
             )
         } else {
             listOf(R.string.tab_home, R.string.tab_activity, R.string.tab_plan, R.string.tab_insights)
