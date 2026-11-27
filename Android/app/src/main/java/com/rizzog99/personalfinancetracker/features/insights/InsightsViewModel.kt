@@ -96,6 +96,10 @@ class InsightsViewModel(
         ExplorerSelection(ExplorerPeriod.current(ExplorerGranularity.MONTH, clock.instant(), calendar), ExplorerType.EXPENSES),
     )
 
+    /** Re-reads "now" (iOS reloads the explorer on every foreground): a new day or month re-enables ›, moves Δ's cutoff. */
+    private val nowTicks = MutableStateFlow(0)
+    fun refreshNow() = nowTicks.update { it + 1 }
+
     fun selectType(type: ExplorerType) = selection.update { it.copy(type = type) }
     fun previousPeriod() = selection.update { it.copy(period = it.period.previous(calendar)) }
     fun nextPeriod() = selection.update { it.copy(period = it.period.next(calendar)) }
@@ -150,7 +154,7 @@ class InsightsViewModel(
             transactions = transactions,
             categories = categories,
         )
-    }.combine(selection) { state, selection ->
+    }.combine(combine(selection, nowTicks) { selection, _ -> selection }) { state, selection ->
         // Inside the same flow as the reads, so a failure here lands in the error state below (#133).
         val now = clock.instant()
         val calendar = calendar

@@ -140,6 +140,15 @@ fun InsightsScreen(
         ),
     )
     val state by viewModel.uiState.collectAsState()
+    // A foreground can cross midnight or a month end with no data change (iOS reloads on foreground).
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner, viewModel) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) viewModel.refreshNow()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     var drill by rememberSaveable(stateSaver = ExplorerDrillDown.Saver) { mutableStateOf<ExplorerDrillDown?>(null) }
     drill?.takeIf { !state.isLoading && !state.isError }?.let {
         CategoryTransactionsScreen(it, state, onBack = { drill = null })

@@ -89,6 +89,36 @@ class InsightsExplorerViewModelTest {
         assertEquals(LocalDate.of(2026, 1, 1), vm.uiState.value.explorerPeriod!!.start.atZone(zone).toLocalDate())
     }
 
+    /** Code review r1: a foreground into a new month, with no data change, re-reads now. */
+    @Test
+    fun ac03_foregroundRereadsNow() = runTest(dispatcher) {
+        val movable = object : Clock() {
+            var instant: Instant = clock.instant()
+            override fun instant(): Instant = instant
+            override fun getZone(): ZoneId = this@InsightsExplorerViewModelTest.zone
+            override fun withZone(zone: ZoneId?): Clock = this
+        }
+        val vm = InsightsViewModel(
+            FakeTransactionRepository(listOf(transaction("a", "-5.00", categoryLabel = "Food", timestamp = on(9, 3)))),
+            FakeGoalRepository(),
+            UserPreferencesRepository(FakePreferencesDataStore()),
+            FakeCategoryRepository(emptyList()),
+            movable,
+            zone,
+        )
+        backgroundScope.launch(dispatcher) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        assertFalse("loaded", vm.uiState.value.isLoading || vm.uiState.value.isError)
+        assertFalse("September is current: › off", vm.uiState.value.canGoNext)
+
+        movable.instant = LocalDateTime.of(2026, 10, 2, 9, 0).atZone(zone).toInstant()
+        vm.refreshNow()
+        advanceUntilIdle()
+
+        assertTrue("October now: September's › is on", vm.uiState.value.canGoNext)
+        assertEquals(LocalDate.of(2026, 9, 1), vm.uiState.value.explorerPeriod!!.start.atZone(zone).toLocalDate())
+    }
+
     @Test
     fun ac07_readFailureIsAnErrorState() = runTest(dispatcher) {
         val vm = InsightsViewModel(
