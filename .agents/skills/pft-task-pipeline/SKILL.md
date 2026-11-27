@@ -63,7 +63,7 @@ Done when every scenario maps to a test and every change to a file.
 
 ## 5. Plan critique
 
-Run critic **rounds** on the plan as in [references/critique.md](references/critique.md), which holds the round limit and what to do with findings left after it. Then publish a short plan to the issue's Plan section, plus a Decision log entry for anything the critique changed.
+Review the plan in **rounds** as in [references/critique.md](references/critique.md), which defines the self-review fallback and round limit. Then publish a short plan to the issue's Plan section, plus a Decision log entry for anything the review changed.
 
 Done when the Plan section is published and the last round either was APPROVE or its remaining findings are recorded as decided.
 
@@ -88,7 +88,7 @@ Done when every scenario screenshot was checked, each problem is fixed or record
 
 ## 8. Code review
 
-Run critic rounds on the diff as in [references/critique.md](references/critique.md). After every fix:
+Review the diff in rounds as in [references/critique.md](references/critique.md), including its fallback when the critic is unavailable. After every fix:
 - rerun step 6's command;
 - run `scripts/xcb shots-diff` and repeat step 7 for every screenshot it lists under `review`.
 
@@ -115,5 +115,5 @@ Done when `CI` has passed, the `Scenarios` run has ended, each of its failures, 
 Summarise for the owner, in their language:
 - the PR and the issues touched or filed;
 - each scenario's before/after;
-- the critic rounds;
+- the review rounds, who ran them, and their verdicts;
 - every limitation: anything not reproduced, not automated, or flaky.
