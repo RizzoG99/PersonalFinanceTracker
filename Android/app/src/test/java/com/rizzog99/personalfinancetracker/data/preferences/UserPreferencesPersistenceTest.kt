@@ -342,6 +342,20 @@ class UserPreferencesPersistenceTest {
     }
 
     @Test
+    fun `298 AC-10 safety buffer defaults to 5, clamps to 0-20 and survives a restart`() = runBlocking {
+        val repository = UserPreferencesRepository(openStore())
+        assertEquals("an unset buffer is 5, not 0", 5, repository.safeToSpendBufferPercent.first())
+
+        repository.setSafeToSpendBufferPercent(-3)
+        assertEquals(0, repository.safeToSpendBufferPercent.first())
+        repository.setSafeToSpendBufferPercent(35)
+        assertEquals(20, repository.safeToSpendBufferPercent.first())
+        repository.setSafeToSpendBufferPercent(0)
+
+        assertEquals("0 % is a valid choice, kept as such", 0, UserPreferencesRepository(restart()).safeToSpendBufferPercent.first())
+    }
+
+    @Test
     fun `AC-06 the preference key inventory is exactly the documented surface`() {
         val declared = UserPreferencesRepository.Keys.all.map { it.name } +
             ImportProfileRepository.Keys.all.map { it.name }
@@ -497,6 +511,7 @@ class UserPreferencesPersistenceTest {
             "pulse_prompt_dismissed",
             "user_full_name",
             "health_score_ignore_subscriptions",
+            "safe_to_spend_buffer_percent",
             "import_profiles_v1",
         )
     }

@@ -77,9 +77,9 @@ Closed gap and CI issues #105, #106, #107, #108, #120–#147 and #368 keep their
 | DRIFT-2026-10-FIXED-DETECT | Fixed-expense detection; forecast-only rules | #295 | Todo / Gap found |
 | DRIFT-2026-10-FIXED-REVIEW | Fixed-expense review cards and missed payments | #296 | Todo / Gap found |
 | DRIFT-2026-10-CALENDAR | Financial calendar and Home upcoming preview | #297 | Todo / Gap found |
-| DRIFT-2026-10-SAFE | Safe to Spend and buffer | #298 | Todo / Gap found |
+| DRIFT-2026-10-SAFE | Safe to Spend, buffer, "using buffer" warning and what-if (D-06) | #298 | In Progress / Verifying |
 | DRIFT-2026-10-CYCLE | Home "This cycle" card and spending pace | #299 | Todo / Gap found |
-| DRIFT-2026-10-GOAL-TRANSFERS | Transfer type and recurring goal contributions (review copy moved to #296, D-01) | #300 | In Progress / Verifying |
+| DRIFT-2026-10-GOAL-TRANSFERS | Transfer type and recurring goal contributions (review copy moved to #296, D-01) | #300 | Done / Verified |
 | DRIFT-2026-10-PROJECTIONS | Goal ETA and required monthly savings | #301 | Todo / Gap found |
 | DRIFT-2026-10-RECAP | Monthly recap and payday notification | #302 | Todo / Gap found |
 | DRIFT-2026-10-BREAKDOWN | Insights Breakdown explorer | #303 | Todo / Gap found |

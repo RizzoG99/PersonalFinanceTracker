@@ -78,6 +78,7 @@ class UserPreferencesRepository(
         val pulsePromptDismissed = booleanPreferencesKey("pulse_prompt_dismissed")
         val userFullName = stringPreferencesKey("user_full_name")
         val healthScoreIgnoreSubscriptions = booleanPreferencesKey("health_score_ignore_subscriptions")
+        val safeToSpendBufferPercent = intPreferencesKey("safe_to_spend_buffer_percent")
 
         val all: List<Preferences.Key<*>> = listOf(
             payCycleStartDay,
@@ -92,6 +93,7 @@ class UserPreferencesRepository(
             pulsePromptDismissed,
             userFullName,
             healthScoreIgnoreSubscriptions,
+            safeToSpendBufferPercent,
         )
     }
 
@@ -151,6 +153,18 @@ class UserPreferencesRepository(
     /** Health-score preference; frozen iOS default is `bool(forKey:)`, i.e. false. */
     val healthScoreIgnoreSubscriptions: Flow<Boolean> = readable.map {
         it[Keys.healthScoreIgnoreSubscriptions] ?: false
+    }
+
+    /**
+     * Share of the cycle's income Safe to Spend keeps aside (#298). Frozen iOS: 0…20, and an unset key
+     * means 5, not 0 (`AppSettings.swift:29-61` at b649dff).
+     */
+    val safeToSpendBufferPercent: Flow<Int> = readable.map {
+        (it[Keys.safeToSpendBufferPercent] ?: DEFAULT_BUFFER_PERCENT).coerceIn(BUFFER_RANGE)
+    }
+
+    suspend fun setSafeToSpendBufferPercent(percent: Int) {
+        dataStore.edit { it[Keys.safeToSpendBufferPercent] = percent.coerceIn(BUFFER_RANGE) }
     }
 
     suspend fun setLastBackupAt(instant: Instant) {
@@ -239,8 +253,10 @@ class UserPreferencesRepository(
         val salt = stringPreferencesKey("pin_salt")
     }
 
-    private companion object {
-        const val DEFAULT_REMINDER_HOUR = 21
-        const val DEFAULT_REMINDER_MINUTE = 0
+    companion object {
+        private const val DEFAULT_REMINDER_HOUR = 21
+        private const val DEFAULT_REMINDER_MINUTE = 0
+        const val DEFAULT_BUFFER_PERCENT = 5
+        val BUFFER_RANGE = 0..20
     }
 }

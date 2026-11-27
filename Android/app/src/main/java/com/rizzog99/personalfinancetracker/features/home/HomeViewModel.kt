@@ -10,20 +10,26 @@ import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.dashboard.DashboardMetrics
 import com.rizzog99.personalfinancetracker.domain.dashboard.DashboardMetricsCalculator
+import com.rizzog99.personalfinancetracker.domain.dashboard.SafeToSpend
+import com.rizzog99.personalfinancetracker.domain.dashboard.SafeToSpendCalculator
 import com.rizzog99.personalfinancetracker.domain.paycycle.FinancialPeriod
 import com.rizzog99.personalfinancetracker.domain.paycycle.PayCycleService
 import com.rizzog99.personalfinancetracker.domain.pulse.FinancialPulseMetrics
 import com.rizzog99.personalfinancetracker.domain.pulse.FinancialPulseCalculator
+import com.rizzog99.personalfinancetracker.domain.recurrence.RecurrenceRule
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -42,6 +48,20 @@ data class HomeUiState(
     val pulseMetrics: FinancialPulseMetrics? = null,
     val dailyReminderEnabled: Boolean = false,
     val pulsePromptDismissed: Boolean = false,
+    /** Home's hero (#298). */
+    val safeToSpend: SafeToSpend? = null,
+    val bufferPercent: Int = UserPreferencesRepository.DEFAULT_BUFFER_PERCENT,
+    /** The day [safeToSpend] was worked out for: per-day figures count from it. */
+    val today: LocalDate? = null,
+    val hasTransactions: Boolean = false,
+)
+
+private data class HomePreferences(
+    val payCycleStartDay: Int,
+    val currencyCode: String,
+    val bufferPercent: Int,
+    val dailyReminderEnabled: Boolean,
+    val pulsePromptDismissed: Boolean,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -49,29 +69,54 @@ class HomeViewModel(
     transactionRepository: TransactionRepository,
     preferencesRepository: UserPreferencesRepository,
     categoryRepository: CategoryRepository,
+    /** Active and past rules; Safe to Spend reserves what is still due. */
+    recurrenceRules: Flow<List<RecurrenceRule>> = flowOf(emptyList()),
     private val clock: Clock = Clock.systemDefaultZone(),
     private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
-    // combine() only has typed overloads up to 5 flows; nest the category flow rather than
-    // widen every arg to Array<Any?> for one extra source.
-    private val dashboardState = combine(
-        transactionRepository.observeAll(),
+    /**
+     * Bumped by [refresh] on resume, so a Home left open over midnight or across payday moves on
+     * without waiting for a data change. Every recalculation reads the clock once, so a data change
+     * after midnight is worked out for the new day too.
+     */
+    private val ticks = MutableStateFlow(0)
+
+    private val preferences = combine(
         preferencesRepository.payCycleStartDay,
         preferencesRepository.baseCurrency,
+        preferencesRepository.safeToSpendBufferPercent,
         preferencesRepository.dailyReminderEnabled,
         preferencesRepository.pulsePromptDismissed,
-    ) { transactions, payCycleStartDay, currencyCode, dailyReminderEnabled, pulsePromptDismissed ->
-        val period = PayCycleService.currentFinancialMonth(payCycleStartDay, clock)
+        ::HomePreferences,
+    )
+
+    // A preview of what is due, not the screen's point: a rules read failing just reserves nothing,
+    // as iOS's `(try? await active) ?? []` (DashboardViewModel.swift at b649dff).
+    private val rules = recurrenceRules.catch { emit(emptyList()) }
+
+    private val dashboardState = combine(
+        transactionRepository.observeAll(),
+        rules,
+        preferences,
+        ticks,
+    ) { transactions, rules, prefs, _ ->
         val now = Instant.now(clock)
-        val pulseMetrics = FinancialPulseCalculator.calculate(transactions, now, zoneId)
+        val today = now.atZone(zoneId).toLocalDate()
+        val period = PayCycleService.financialMonthContaining(today, prefs.payCycleStartDay)
         HomeUiState(
             isLoading = false,
             metrics = DashboardMetricsCalculator.calculate(transactions, period, zoneId),
             period = period,
-            currencyCode = currencyCode,
-            pulseMetrics = pulseMetrics,
-            dailyReminderEnabled = dailyReminderEnabled,
-            pulsePromptDismissed = pulsePromptDismissed,
+            currencyCode = prefs.currencyCode,
+            pulseMetrics = FinancialPulseCalculator.calculate(transactions, now, zoneId),
+            dailyReminderEnabled = prefs.dailyReminderEnabled,
+            pulsePromptDismissed = prefs.pulsePromptDismissed,
+            safeToSpend = SafeToSpendCalculator.compute(
+                transactions, rules, prefs.payCycleStartDay, prefs.bufferPercent, prefs.currencyCode, now, zoneId,
+            ),
+            bufferPercent = prefs.bufferPercent,
+            today = today,
+            hasTransactions = transactions.isNotEmpty(),
         )
     }
 
@@ -101,13 +146,19 @@ class HomeViewModel(
         retries.update { it + 1 }
     }
 
+    /** Re-reads the clock (on resume): a new day or a new cycle without any data change. */
+    fun refresh() {
+        ticks.update { it + 1 }
+    }
+
     companion object {
         fun factory(
             transactionRepository: TransactionRepository,
             preferencesRepository: UserPreferencesRepository,
             categoryRepository: CategoryRepository,
+            recurrenceRules: Flow<List<RecurrenceRule>>,
         ) = viewModelFactory {
-            initializer { HomeViewModel(transactionRepository, preferencesRepository, categoryRepository) }
+            initializer { HomeViewModel(transactionRepository, preferencesRepository, categoryRepository, recurrenceRules) }
         }
     }
 }

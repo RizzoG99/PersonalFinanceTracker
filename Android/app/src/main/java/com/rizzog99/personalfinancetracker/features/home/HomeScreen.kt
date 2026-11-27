@@ -80,9 +80,19 @@ fun HomeScreen(
             transactionRepository = application.transactionRepository,
             preferencesRepository = application.preferencesRepository,
             categoryRepository = application.categoryRepository,
+            recurrenceRules = application.recurrenceRepository.observeAll(),
         ),
     )
     val state by viewModel.uiState.collectAsState()
+    // A Home left open over midnight or payday moves on when the user comes back.
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner, viewModel) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) viewModel.refresh()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     val hideBalance by application.preferencesRepository.hideBalance.collectAsState(initial = false)
     val scope = rememberCoroutineScope()
 
@@ -162,8 +172,16 @@ private fun HomeContent(
             text = stringResource(greeting),
             style = MaterialTheme.typography.bodyLarge,
         )
-        BalanceCard(
-            totalBalance = formatCurrency(metrics.totalBalance, state.currencyCode),
+        SafeToSpendCard(
+            safe = requireNotNull(state.safeToSpend),
+            today = requireNotNull(state.today),
+            bufferPercent = state.bufferPercent,
+            currencyCode = state.currencyCode,
+            hideAmounts = hideBalance,
+            hasTransactions = state.hasTransactions,
+        )
+        // ponytail: interim until #299's This cycle card replaces these tiles (D-07).
+        CycleTilesCard(
             periodLabel = formatPeriod(period.start, period.endInclusive),
             income = metrics.periodIncome,
             expenses = metrics.periodExpenses,
@@ -200,8 +218,7 @@ private fun HomeContent(
 }
 
 @Composable
-private fun BalanceCard(
-    totalBalance: String,
+private fun CycleTilesCard(
     periodLabel: String,
     income: java.math.BigDecimal,
     expenses: java.math.BigDecimal,
@@ -209,27 +226,15 @@ private fun BalanceCard(
     hideBalance: Boolean,
 ) {
     val useVerticalStats = LocalDensity.current.fontScale >= 1.3f
-    val placeholder = stringResource(R.string.balance_hidden_placeholder)
-    FinanceCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+    FinanceCard {
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = stringResource(R.string.total_balance),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = if (hideBalance) placeholder else totalBalance,
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Text(
                 text = periodLabel,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (useVerticalStats) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
