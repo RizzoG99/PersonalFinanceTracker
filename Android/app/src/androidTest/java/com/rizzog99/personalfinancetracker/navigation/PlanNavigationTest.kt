@@ -332,7 +332,7 @@ class PlanNavigationTest {
         goal("Holiday")
         host()
         rule.onNode(tab(string(R.string.tab_insights))).performClick()
-        waitFor(hasText(string(R.string.insights_spending)))
+        waitFor(hasText(string(R.string.explorer_breakdown)))
         rule.onNode(hasText(string(R.string.goals_title))).assertDoesNotExist()
         rule.onNode(hasText("Holiday")).assertDoesNotExist()
         rule.onNode(hasText(string(R.string.new_goal))).assertDoesNotExist()

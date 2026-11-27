@@ -220,7 +220,8 @@ class ActivityTravelTest {
 
         val after = insights()
         val keep2 = launch { after.uiState.collect {} }
-        assertEquals(before, snapshot(after))
+        // Every figure Insights shows; the raw rows it keeps for the drill-down (#303) carry the tag by design.
+        assertEquals(before.copy(transactions = emptyList()), snapshot(after).copy(transactions = emptyList()))
         keep2.cancel()
     }
 }

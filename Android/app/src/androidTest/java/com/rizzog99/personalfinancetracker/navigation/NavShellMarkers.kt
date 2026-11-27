@@ -63,8 +63,8 @@ class NavShellMarkers(
         get() = mapOf(
             homeTab to hasText(string(R.string.home_title)),
             activityTab to hasContentDescription(string(R.string.filters)),
-            // Goals moved to Plan (#283); the spending heading is Insights-only.
-            insightsTab to hasText(string(R.string.insights_spending)),
+            // Goals moved to Plan (#283); the Breakdown heading (#303) is Insights-only.
+            insightsTab to hasText(string(R.string.explorer_breakdown)),
             planTab to hasTestTag(PLAN_CONTENT_TAG),
         )
 
