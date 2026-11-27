@@ -1,8 +1,6 @@
 # Critic rounds
 
-A **critic** is the *other* agent, run headless and read-only, so a second model checks the work:
-- Claude Code calls Codex.
-- Codex calls Claude.
+The **critic** runs headless and read-only. Claude Code calls Codex, and Codex calls Claude.
 
 Critics only read: files, `rg`, `graphify`, `gh issue view`, and `git diff` / `git show` / `git log`. They never edit files, build, or run tests: only one agent runs a simulator or emulator.
 
@@ -16,6 +14,12 @@ scripts/critic claude <n> <kind> <k>   # Codex → Claude
 ```
 
 It writes `.plan/<n>-<kind>-r<k>.md` and fails loudly if the prompt is missing or the critic wrote nothing. On a branch without `scripts/critic`, `git show origin/main:scripts/critic` shows the two underlying commands.
+
+## When the critic is unavailable
+
+Use **self-review** for the round if the critic is already known to be unavailable, reports a usage limit or service error, exits without a usable verdict, or has provided no verdict after five minutes. The agent running the pipeline applies the same prompt to its plan or current diff and verifies every finding against the issue or source. Record the findings, evidence, and verdict in the round file. Label it **Self-review** with the agent's name and record which critic was unavailable and why.
+
+Count the self-review as that round and continue under the same findings, approval, and round-limit rules. While the critic remains unavailable, use self-review for the remaining rounds. Report the reviewer, verdict, and which rounds lacked independent review in the issue evidence and PR Limitations as applicable.
 
 ## Rounds and decisions
 

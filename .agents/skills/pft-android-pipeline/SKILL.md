@@ -86,7 +86,7 @@ Done when every AC maps to a test and every change to a file.
 
 ## 5. Plan critique
 
-Run critic rounds with the mechanics and prompts in [`../pft-task-pipeline/references/critique.md`](../pft-task-pipeline/references/critique.md) (on `codex/android-native`, which lacks `scripts/critic`, use the commands it falls back to). Run `codex exec` in the background, since a foreground run dumps about 1 MB into context, and give it an absolute `-C <worktree path>`. Substitute:
+Review the plan in rounds using [`../pft-task-pipeline/references/critique.md`](../pft-task-pipeline/references/critique.md), including its fallback when the critic is unavailable. On `codex/android-native`, use the underlying command for the relevant critic in place of `scripts/critic`. If Codex is the critic, run `codex exec` in the background and give it an absolute `-C <worktree path>`. Substitute:
 
 - "iOS repo" → "Android app under `Android/`; read `Android/README.md` and the issue's parent tracker too";
 - the plan checklist's scenario-test item → whether each AC test will actually work (semantics queries, locale and font-scale recreation, the PIN gate, first-run seeding, compact vs wide), and "iPhone AND iPad" → compact AND wide; keep its other items, and add any `D-xx` the plan silently introduces;
@@ -120,7 +120,7 @@ Done when every cell was checked and each problem is fixed, recorded as a techni
 
 ## 8. Code review
 
-Run critic rounds on the diff as in step 5, adding `-c model_reasoning_effort=high` to `codex exec`. After every fix rerun step 6, and if the fix changes what is on screen, repeat step 7 for the cells that changed.
+Review the diff in rounds as in step 5, adding `-c model_reasoning_effort=high` when Codex is the critic. After every fix rerun step 6, and if the fix changes what is on screen, repeat step 7 for the cells that changed.
 
 Done when the last round was APPROVE on the final diff, or its remaining findings are recorded as decided.
 
@@ -129,7 +129,7 @@ Done when the last round was APPROVE on the final diff, or its remaining finding
 1. Full verification runs in the cloud, on the PR: CI runs the four gates (assemble, JVM tests, lint, and instrumentation on API 26 and 34), and step 5 reads them. The Mac runs only step 6's AC tests, on the phone AVD and the wide ACs on the tablet AVD (see [references/parity-tests.md](references/parity-tests.md)); name both and their API level in the evidence. Edit no code or test after step 6's last run; if one changes, rerun step 6. A test changed after its red run must go red again on the unfixed code (commit the fix first, then `git checkout codex/android-native -- <production files>`, run the test, and `git checkout HEAD -- <production files>`) before it counts.
 2. Skip the `CHANGELOG.md` bullet: it feeds TestFlight only, and Android has no release-notes channel until #81 (precedent: #146 has none). A PR then needs `no-changelog` in its body for CI and `PFT_SKIP_CHANGELOG=1 gh pr create …` for the `git-guard.sh` hook.
 3. Commit by staging explicit paths (`git add <file>…`): `graphify-out/` is tracked on `codex/android-native` and the hooks rewrite it, so `git add -A` sweeps it in. Commit messages and PR bodies carry no AI attribution (no `Co-Authored-By` trailer, no "Generated with" footer). Then publish as the owner chose at the gate. For a PR, follow `$pft-pr-lifecycle` (its publish reference) with `Closes #<n>`, overriding it in three places: the base is the one chosen at the gate, the changelog rule is step 2's, and the project fields are project 3's.
-4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, a TalkBack state the AVD could not reach, API levels). The verdict names its reviewers: you, and the last critic round with its verdict. When that verdict was REVISE after round 3, name the `D-xx` rows that decided the remaining findings and their Limitations entries. Then set the fields by what the evidence shows:
+4. Fill the issue's *Android implementation and evidence*, *Verification checklist*, and *Final verdict*: commits, the tests mapped to each `AC-xx`, counts, device and API level, and what was not run (physical device, a TalkBack state the AVD could not reach, API levels). Name the implementing agent, the last round's reviewer and verdict, and whether that round was a self-review. When that verdict was REVISE after round 3, name the `D-xx` rows that decided the remaining findings and their Limitations entries. Then set the fields by what the evidence shows:
    - **Verified** and Parity **Matched**: every AC passed, every cell was reviewed, and every item of #75's Definition of Done that applies is ticked, including TalkBack where the AC depends on it. The verdict text says "Matched with approved deviations" when any `D-xx` was approved (the project field has no such option). A capability the owner approved as Android-only or postponed takes Parity Platform-specific or Deferred instead.
    - **Verifying**: everything that ran passed, but a required check was not run (for example a TalkBack state the AVD could not reach). Name it.
    - **Gap found**: an AC failed or an unapproved difference remains. Link the gap issue and say why.
@@ -147,5 +147,5 @@ Summarise for the owner, in their language:
 - the commits or PR, and the issues touched or filed;
 - each `AC-xx`'s before/after;
 - each `D-xx` and who approved it;
-- the critic rounds;
+- the review rounds, who ran them, and their verdicts;
 - every limitation: anything not reproduced, not automated, or run only on the local AVD.
