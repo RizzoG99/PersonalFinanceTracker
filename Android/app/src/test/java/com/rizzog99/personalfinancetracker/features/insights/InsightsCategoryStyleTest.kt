@@ -25,7 +25,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-/** #291 AC-03: Insights category rows carry their own category, so they draw its icon and colour. */
+/** #291 AC-03 (now the #303 explorer rows): Insights category rows carry their own category, so they draw its icon and colour. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class InsightsCategoryStyleTest {
     private val dispatcher = UnconfinedTestDispatcher()
@@ -55,7 +55,7 @@ class InsightsCategoryStyleTest {
         backgroundScope.launch(dispatcher) { vm.uiState.collect {} }
         advanceUntilIdle()
 
-        val rows = vm.uiState.value.categorySpending.associateBy { it.label }
+        val rows = vm.uiState.value.explorer.trends.associateBy { it.label }
         assertEquals(palestra, rows.getValue("Palestra").category)
         assertNull(rows.getValue("Loose").category)
     }

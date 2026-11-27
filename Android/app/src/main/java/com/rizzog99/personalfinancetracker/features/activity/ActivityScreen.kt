@@ -1140,11 +1140,14 @@ private fun Long.toUtcLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-private fun TransactionRow(
+internal fun TransactionRow(
     transaction: FinanceTransaction,
     categories: List<FinanceCategory>,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    /** Off in the Insights drill-down (#303): it edits only, with no swipe-delete and no selection (D-07). */
+    swipeToDelete: Boolean = true,
+    selectable: Boolean = true,
     /** `null` outside selection mode (#285); otherwise whether this row is selected. */
     checked: Boolean? = null,
     onStartSelection: () -> Unit = {},
@@ -1155,7 +1158,9 @@ private fun TransactionRow(
     // Outside selection a tap edits and a long press starts selecting (iOS 0.4 s long press,
     // `ActivityListSections.swift:216-222`). Inside it the whole row is one checkbox, so TalkBack
     // reads its state with the rest of the row; iOS adds `isSelected` for the same reason (`:206-209`).
-    val interaction = if (checked == null) {
+    val interaction = if (checked == null && !selectable) {
+        Modifier.clickable(role = Role.Button, onClick = onEdit)
+    } else if (checked == null) {
         Modifier.combinedClickable(
             role = Role.Button,
             onClick = onEdit,
@@ -1200,7 +1205,7 @@ private fun TransactionRow(
         state = dismissState,
         enableDismissFromStartToEnd = false,
         // No swipe-to-delete while selecting, as on iOS: the action bar's Delete is the only one.
-        enableDismissFromEndToStart = checked == null,
+        enableDismissFromEndToStart = checked == null && swipeToDelete,
         backgroundContent = {
             Box(
                 modifier = Modifier
@@ -2324,7 +2329,7 @@ private fun RecurringDeleteDialog(
 }
 
 @Composable
-private fun RecurringEditDialog(
+internal fun RecurringEditDialog(
     onDismiss: () -> Unit,
     onEditThisOnly: () -> Unit,
     onEditThisAndFuture: () -> Unit,

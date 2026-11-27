@@ -57,6 +57,6 @@ class InsightsGoalTransferTest {
 
         val state = vm.uiState.value
         assertEquals(0, BigDecimal("80.00").compareTo(state.goals.single().currentAmount))
-        assertEquals(listOf("Food"), state.categorySpending.map { it.label })
+        assertEquals(listOf("Food"), state.explorer.trends.map { it.label })
     }
 }

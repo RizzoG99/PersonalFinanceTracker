@@ -11,6 +11,12 @@ import com.rizzog99.personalfinancetracker.data.repository.TransactionRepository
 import com.rizzog99.personalfinancetracker.domain.category.FinanceCategory
 import com.rizzog99.personalfinancetracker.domain.goal.FinanceGoal
 import com.rizzog99.personalfinancetracker.domain.goal.NewGoal
+import com.rizzog99.personalfinancetracker.domain.insights.ExplorerBreakdown
+import com.rizzog99.personalfinancetracker.domain.insights.ExplorerCalendar
+import com.rizzog99.personalfinancetracker.domain.insights.ExplorerGranularity
+import com.rizzog99.personalfinancetracker.domain.insights.ExplorerPeriod
+import com.rizzog99.personalfinancetracker.domain.insights.ExplorerType
+import com.rizzog99.personalfinancetracker.domain.insights.canGoPrevious
 import com.rizzog99.personalfinancetracker.domain.paycycle.FinancialPeriod
 import com.rizzog99.personalfinancetracker.domain.paycycle.PayCycleService
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
@@ -18,6 +24,7 @@ import com.rizzog99.personalfinancetracker.domain.transaction.isGoalTransfer
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,9 +39,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-
-/** [category] supplies the row's own icon and colour (#291); null for rows no category owns. */
-data class CategorySpending(val label: String, val amount: BigDecimal, val category: FinanceCategory? = null)
 
 data class GoalProgress(val goal: FinanceGoal, val currentAmount: BigDecimal)
 data class PaceInsight(val direction: PaceDirection, val percent: Int? = null)
@@ -53,8 +57,21 @@ data class InsightsUiState(
     val goals: List<GoalProgress> = emptyList(),
     val paceInsight: PaceInsight = PaceInsight(PaceDirection.BUILDING),
     val health: FinancialHealth? = null,
-    val categorySpending: List<CategorySpending> = emptyList(),
+    /** The Breakdown explorer (#303): its selection, what it shows, and what its controls allow. */
+    val explorerPeriod: ExplorerPeriod? = null,
+    val explorerType: ExplorerType = ExplorerType.EXPENSES,
+    val explorer: ExplorerBreakdown = ExplorerBreakdown.EMPTY,
+    val canGoPrevious: Boolean = false,
+    val canGoNext: Boolean = false,
+    val firstTransaction: Instant? = null,
+    val now: Instant = Instant.EPOCH,
+    val zoneId: ZoneId = ZoneId.systemDefault(),
+    /** Every transaction, for a row's drill-down, derived live so edits made from it show. */
+    val transactions: List<FinanceTransaction> = emptyList(),
+    val categories: List<FinanceCategory> = emptyList(),
 )
+
+private data class ExplorerSelection(val period: ExplorerPeriod, val type: ExplorerType)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class InsightsViewModel(
@@ -67,6 +84,29 @@ class InsightsViewModel(
 ) : ViewModel() {
     /** See `HomeViewModel.retries` — same `flatMapLatest` guarantee (#111 AC-05). */
     private val retries = MutableStateFlow(0)
+
+    /** Read per use: a locale change can move the first weekday while this model lives on. */
+    private val calendar get() = ExplorerCalendar.of(zoneId)
+
+    /**
+     * Set once here and only by the user: data, pay-cycle and foreground refreshes never reset it,
+     * so an edit from a drill-down doesn't throw the user back to this month (iOS `InsightsViewModel.swift:12-17`).
+     */
+    private val selection = MutableStateFlow(
+        ExplorerSelection(ExplorerPeriod.current(ExplorerGranularity.MONTH, clock.instant(), calendar), ExplorerType.EXPENSES),
+    )
+
+    /** Re-reads "now" (iOS reloads the explorer on every foreground): a new day or month re-enables ›, moves Δ's cutoff. */
+    private val nowTicks = MutableStateFlow(0)
+    fun refreshNow() = nowTicks.update { it + 1 }
+
+    fun selectType(type: ExplorerType) = selection.update { it.copy(type = type) }
+    fun previousPeriod() = selection.update { it.copy(period = it.period.previous(calendar)) }
+    fun nextPeriod() = selection.update { it.copy(period = it.period.next(calendar)) }
+    fun selectGranularity(granularity: ExplorerGranularity) =
+        selection.update { it.copy(period = it.period.withGranularity(granularity, calendar)) }
+    fun selectCustomRange(from: LocalDate, through: LocalDate) =
+        selection.update { it.copy(period = ExplorerPeriod.custom(from, through, calendar)) }
 
     val uiState: StateFlow<InsightsUiState> = retries.flatMapLatest { insights() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InsightsUiState())
@@ -82,7 +122,6 @@ class InsightsViewModel(
         preferencesRepository.baseCurrency,
         categoryRepository.observeAll(),
     ) { transactions, goals, payCycleStartDay, currencyCode, categories ->
-        val categoryById = categories.associateBy(FinanceCategory::id)
         val period = PayCycleService.currentFinancialMonth(payCycleStartDay, clock)
         val periodTransactions = transactions.filter { it.timestamp.atZone(zoneId).toLocalDate() in period }
         val expenseTransactions = transactions.filter { it.amount < BigDecimal.ZERO && !it.isGoalTransfer }
@@ -110,16 +149,22 @@ class InsightsViewModel(
             },
             paceInsight = paceInsight(currentSpend, previousSpend),
             health = recentTransactions.takeIf { it.isNotEmpty() }?.let { health(it, expenseTransactions, financialMonths, zoneId) },
-            categorySpending = expenseTransactions.filter { it.timestamp.atZone(zoneId).toLocalDate() in period }
-                .groupBy { it.categoryLabel }
-                .map { (label, items) ->
-                    CategorySpending(
-                        label = label,
-                        amount = items.fold(BigDecimal.ZERO) { total, item -> total + item.amount.abs() },
-                        category = items.firstNotNullOfOrNull { it.categoryId }?.let(categoryById::get),
-                    )
-                }
-                .sortedByDescending(CategorySpending::amount),
+            firstTransaction = transactions.minOfOrNull { it.timestamp },
+            zoneId = zoneId,
+            transactions = transactions,
+            categories = categories,
+        )
+    }.combine(combine(selection, nowTicks) { selection, _ -> selection }) { state, selection ->
+        // Inside the same flow as the reads, so a failure here lands in the error state below (#133).
+        val now = clock.instant()
+        val calendar = calendar
+        state.copy(
+            explorerPeriod = selection.period,
+            explorerType = selection.type,
+            explorer = ExplorerBreakdown.build(state.transactions, state.categories, selection.period, selection.type, now, calendar),
+            canGoPrevious = canGoPrevious(selection.period, state.firstTransaction, calendar),
+            canGoNext = !selection.period.isCurrent(now),
+            now = now,
         )
     }
         .onStart { emit(InsightsUiState(isLoading = true)) }
@@ -131,8 +176,9 @@ class InsightsViewModel(
             goalRepository: GoalRepository,
             preferencesRepository: UserPreferencesRepository,
             categoryRepository: CategoryRepository,
+            clock: Clock = Clock.systemDefaultZone(),
         ) = viewModelFactory {
-            initializer { InsightsViewModel(transactionRepository, goalRepository, preferencesRepository, categoryRepository) }
+            initializer { InsightsViewModel(transactionRepository, goalRepository, preferencesRepository, categoryRepository, clock, clock.zone) }
         }
     }
 

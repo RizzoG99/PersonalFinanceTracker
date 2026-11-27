@@ -15,7 +15,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -26,7 +27,8 @@ import com.rizzog99.personalfinancetracker.features.activity.ActivityContent
 import com.rizzog99.personalfinancetracker.features.activity.ActivityUiState
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsContent
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsUiState
-import com.rizzog99.personalfinancetracker.features.insights.CategorySpending
+import com.rizzog99.personalfinancetracker.domain.insights.CategoryTrend
+import com.rizzog99.personalfinancetracker.domain.insights.TrendDirection
 import com.rizzog99.personalfinancetracker.features.insights.CategoryTrendRow
 import com.rizzog99.personalfinancetracker.ui.theme.PersonalFinanceTheme
 import com.rizzog99.personalfinancetracker.ui.theme.ThemeMode
@@ -97,9 +99,12 @@ class CategoryLocalizationCaptureTest {
                 rule.waitForIdle()
                 val italian = c.locale == Locale.ITALIAN
                 // The built-in reads in the cell's language; the custom name never changes.
-                assertTrue("$hostId ${c.id}", rule.onAllNodesWithText(if (italian) "Spesa" else "Groceries", substring = true).fetchSemanticsNodes().isNotEmpty())
-                assertEquals("$hostId ${c.id}", 0, rule.onAllNodesWithText(if (italian) "Groceries" else "Spesa", substring = true).fetchSemanticsNodes().size)
-                assertTrue("$hostId ${c.id}", rule.onAllNodesWithText("Palestra", substring = true).fetchSemanticsNodes().isNotEmpty())
+                // Text or content description: an Insights row (#303) speaks its name as one node.
+                fun named(text: String) = rule.onAllNodes(hasText(text, substring = true) or hasContentDescription(text, substring = true))
+                    .fetchSemanticsNodes().size
+                assertTrue("$hostId ${c.id}", named(if (italian) "Spesa" else "Groceries") > 0)
+                assertEquals("$hostId ${c.id}", 0, named(if (italian) "Groceries" else "Spesa"))
+                assertTrue("$hostId ${c.id}", named("Palestra") > 0)
                 val name = "$hostId--${c.id}"
                 CaptureHarness.writePng(rule, outputDir, name)
                 CaptureHarness.writeSemantics(rule, outputDir, name)
@@ -130,9 +135,11 @@ class CategoryLocalizationCaptureTest {
                 modifier = Modifier.fillMaxSize(),
             )
             else -> Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                CategoryTrendRow(CategorySpending("Palestra", BigDecimal("40.00"), CATEGORIES[1]), share = 70, currencyCode = "EUR")
-                CategoryTrendRow(CategorySpending("Groceries", BigDecimal("12.50"), CATEGORIES[0]), share = 22, currencyCode = "EUR")
-                CategoryTrendRow(CategorySpending("Carta", BigDecimal("4.50"), CATEGORIES[2]), share = 8, currencyCode = "EUR")
+                fun trend(label: String, amount: String, share: Double, category: Int) =
+                    CategoryTrend(label, BigDecimal(amount), share, 0.0, TrendDirection.FLAT, isNew = false, category = CATEGORIES[category])
+                CategoryTrendRow(trend("Palestra", "40.00", 70.0, 1), isIncome = false, currencyCode = "EUR") {}
+                CategoryTrendRow(trend("Groceries", "12.50", 22.0, 0), isIncome = false, currencyCode = "EUR") {}
+                CategoryTrendRow(trend("Carta", "4.50", 8.0, 2), isIncome = false, currencyCode = "EUR") {}
             }
         }
     }

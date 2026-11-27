@@ -113,7 +113,7 @@ import com.rizzog99.personalfinancetracker.ui.formatters.formatPeriod
 import com.rizzog99.personalfinancetracker.ui.theme.CardShape
 import com.rizzog99.personalfinancetracker.ui.theme.LocalFinanceExtendedColors
 import java.math.BigDecimal
-import java.math.RoundingMode
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -126,6 +126,8 @@ fun InsightsScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onOpenSettings: () -> Unit,
+    /** Injectable so tests can pin "now" (#303 fixtures), as `RecurringRulesScreen` does. */
+    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val application = LocalContext.current.applicationContext as PersonalFinanceApplication
     val viewModel: InsightsViewModel = viewModel(
@@ -134,9 +136,32 @@ fun InsightsScreen(
             application.goalRepository,
             application.preferencesRepository,
             application.categoryRepository,
+            clock,
         ),
     )
     val state by viewModel.uiState.collectAsState()
+    // A foreground can cross midnight or a month end with no data change (iOS reloads on foreground).
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner, viewModel) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) viewModel.refreshNow()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    var drill by rememberSaveable(stateSaver = ExplorerDrillDown.Saver) { mutableStateOf<ExplorerDrillDown?>(null) }
+    drill?.takeIf { !state.isLoading && !state.isError }?.let {
+        CategoryTransactionsScreen(it, state, onBack = { drill = null })
+        return
+    }
+    val actions = ExplorerActions(
+        onPrevious = viewModel::previousPeriod,
+        onNext = viewModel::nextPeriod,
+        onGranularity = viewModel::selectGranularity,
+        onCustomRange = viewModel::selectCustomRange,
+        onType = viewModel::selectType,
+        onOpenCategory = { trend -> state.explorerPeriod?.let { drill = ExplorerDrillDown.of(trend, it, state.explorerType) } },
+    )
 
     Scaffold(
         topBar = {
@@ -164,6 +189,7 @@ fun InsightsScreen(
             )
             else -> InsightsContent(
                 state = state,
+                actions = actions,
                 modifier = Modifier.padding(padding),
             )
         }
@@ -286,6 +312,7 @@ internal fun GoalSheetsHost(
 @Composable
 private fun InsightsContent(
     state: InsightsUiState,
+    actions: ExplorerActions,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -293,44 +320,15 @@ private fun InsightsContent(
         contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // D-06: Pace stays until #299 moves it to Home. Then iOS's order: Breakdown, Health Score.
         item {
             PaceCard(state.paceInsight)
         }
         item {
-            HealthSection(state.health)
+            BreakdownExplorerSection(state, actions)
         }
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    stringResource(R.string.insights_spending),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(stringResource(R.string.insights_spending_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        if (state.categorySpending.isEmpty()) {
-            item {
-                FinanceCard {
-                    Text(
-                        stringResource(R.string.insights_empty_spending),
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        } else {
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    state.categorySpending.take(5).forEach { category ->
-                        CategoryTrendRow(
-                            category = category,
-                            share = category.amount.shareOf(state.categorySpending),
-                            currencyCode = state.currencyCode,
-                        )
-                    }
-                }
-            }
+            HealthSection(state.health)
         }
     }
 }
@@ -696,56 +694,6 @@ private fun healthScoreBand(score: Int): String = stringResource(
         else -> R.string.health_score_band_excellent
     },
 )
-
-/** One category's spend and its share of this period's total — the design's "Category Trends" row. */
-@Composable
-internal fun CategoryTrendRow(
-    category: CategorySpending,
-    share: Int,
-    currencyCode: String,
-) {
-    FinanceCard {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            // The category's own icon and colour, like the Activity rows (#291, iOS CategoryTrendRow).
-            Icon(
-                categoryIconFor(category.category?.iconToken.orEmpty()),
-                contentDescription = null,
-                tint = categoryColor(category.category?.colorToken ?: "categoryGray"),
-                modifier = Modifier.size(20.dp),
-            )
-            Text(
-                categoryDisplayName(category.label),
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    formatCurrency(category.amount, currencyCode),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    stringResource(R.string.insights_category_share, share),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-/** Percent this amount represents of the total across all categories, rounded down. */
-private fun BigDecimal.shareOf(categories: List<CategorySpending>): Int {
-    val total = categories.fold(BigDecimal.ZERO) { acc, item -> acc + item.amount }
-    if (total <= BigDecimal.ZERO) return 0
-    return divide(total, 4, RoundingMode.DOWN).multiply(BigDecimal(100)).toInt()
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
