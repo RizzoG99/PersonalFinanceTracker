@@ -9,6 +9,8 @@ import com.rizzog99.personalfinancetracker.domain.insight.DayValue
 import com.rizzog99.personalfinancetracker.domain.insight.HealthScoreSnapshot
 import java.math.BigDecimal
 import java.time.Instant
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -120,6 +122,25 @@ class RoomInsightRepositoryTest {
         repository.clearForecastCache()
 
         assertNull(repository.forecastCache())
+    }
+
+
+    /** #304 AC-04: one snapshot per local day however many view models ask at once. */
+    @Test
+    fun ac04_oneSnapshotPerDayAcrossConcurrentCallers() = runBlocking {
+        val zone = java.time.ZoneId.of("Europe/Rome")
+        val morning = Instant.parse("2026-09-15T07:00:00Z")
+        val saved = (1..8).map { i ->
+            async(Dispatchers.Default) {
+                repository.saveSnapshotIfNeeded(HealthScoreSnapshot("s$i", morning.plusSeconds(i.toLong()), 67, 20, 12, 12, 23), zone)
+            }
+        }.map { it.await() }
+        assertEquals(1, saved.count { it })
+        assertEquals(1, repository.recentSnapshots(6).size)
+        // Late evening is still the same Rome day; the next morning is not.
+        assertEquals(false, repository.saveSnapshotIfNeeded(HealthScoreSnapshot("late", Instant.parse("2026-09-15T21:30:00Z"), 60, 1, 1, 1, 1), zone))
+        assertEquals(true, repository.saveSnapshotIfNeeded(HealthScoreSnapshot("next", Instant.parse("2026-09-15T22:30:00Z"), 60, 1, 1, 1, 1), zone))
+        assertEquals(listOf("next", saved.indexOf(true).let { "s${it + 1}" }), repository.recentSnapshots(6).map { it.id })
     }
 
     private fun snapshot(id: String, at: String, score: Int) = HealthScoreSnapshot(

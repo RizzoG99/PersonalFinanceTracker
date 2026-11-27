@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.Flag
@@ -79,6 +80,7 @@ import com.rizzog99.personalfinancetracker.features.budgets.BudgetsScreen
 import com.rizzog99.personalfinancetracker.features.categories.CategorySettingsScreen
 import com.rizzog99.personalfinancetracker.features.data.DataTransferScreen
 import com.rizzog99.personalfinancetracker.features.home.HomeScreen
+import com.rizzog99.personalfinancetracker.features.insights.HealthScoreScreen
 import com.rizzog99.personalfinancetracker.features.insights.InsightsScreen
 import com.rizzog99.personalfinancetracker.features.plan.GoalsScreen
 import com.rizzog99.personalfinancetracker.features.plan.PlanScreen
@@ -101,6 +103,7 @@ private sealed class MainDestination(
     data object Insights : MainDestination("insights", R.string.tab_insights)
     data object Recurring : MainDestination("recurring", R.string.recurring_title)
     data object Goals : MainDestination("goals", R.string.goals_title)
+    data object HealthScore : MainDestination("health", R.string.health_score)
     data object Categories : MainDestination("categories", R.string.category_settings_title)
     data object ScanCategories : MainDestination("scan-categories", R.string.scan_categories_title)
     data object Budgets : MainDestination("budgets", R.string.budgets_title)
@@ -117,12 +120,12 @@ private val phoneTabs = listOf(
 
 /**
  * Wide drawer: iOS `IPadSection.Group` (b649dff) — what the phone stacks on Plan gets its own
- * destination. No Health Score item until #304 (D-03); Settings follows as its own row.
+ * destination. Health Score sits under Insights (#304, closing #283 D-03); Settings follows as its own row.
  */
 private val drawerGroups: List<Pair<Int?, List<MainDestination>>> = listOf(
     null to listOf(MainDestination.Home, MainDestination.Activity),
     R.string.tab_plan to listOf(MainDestination.Recurring, MainDestination.Budgets, MainDestination.Goals),
-    R.string.tab_insights to listOf(MainDestination.Insights),
+    R.string.tab_insights to listOf(MainDestination.Insights, MainDestination.HealthScore),
 )
 private val drawerDestinations = drawerGroups.flatMap { it.second }
 
@@ -220,8 +223,15 @@ fun PersonalFinanceNavHost(
     // Crossing the breakpoint never strands a screen without navigation: Plan keeps the drawer on
     // wide, and the wide-only Goals keeps the bottom bar on compact, under the Plan tab it belongs
     // to. (Recurring and Budgets get their back arrow back on compact instead.)
-    val shellRoutes = (if (isExpandedWidth) drawerDestinations + MainDestination.Plan else phoneTabs + MainDestination.Goals).map { it.route }
-    val selectedTab = if (currentRoute == MainDestination.Goals.route) MainDestination.Plan.route else currentRoute
+    // Health Score likewise keeps the bar on compact, under Insights (#304).
+    val shellRoutes = (
+        if (isExpandedWidth) drawerDestinations + MainDestination.Plan else phoneTabs + MainDestination.Goals + MainDestination.HealthScore
+        ).map { it.route }
+    val selectedTab = when (currentRoute) {
+        MainDestination.Goals.route -> MainDestination.Plan.route
+        MainDestination.HealthScore.route -> MainDestination.Insights.route
+        else -> currentRoute
+    }
     val onMainDestination = currentRoute in shellRoutes && !settingsVisible && !dashboardTransactionEditorVisible
     // Recurring and Budgets are drawer roots on wide (no back arrow, D-05) and pushed screens on phones.
     val secondaryBack: (() -> Unit)? = if (isExpandedWidth) null else navigateBackFromSecondary
@@ -414,6 +424,13 @@ fun PersonalFinanceNavHost(
                     startAdding = entry.arguments?.getBoolean("add") == true,
                 )
             }
+            composable(MainDestination.HealthScore.route) {
+                HealthScoreScreen(
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    onOpenSettings = { settingsVisible = true },
+                )
+            }
             composable(MainDestination.Goals.route) {
                 GoalsScreen(
                     isDarkTheme = isDarkTheme,
@@ -535,6 +552,7 @@ private fun MainDestination.icon() = when (this) {
     MainDestination.Insights -> Icons.Outlined.Insights
     MainDestination.Recurring -> Icons.Outlined.Repeat
     MainDestination.Goals -> Icons.Outlined.Flag
+    MainDestination.HealthScore -> Icons.Outlined.Speed
     MainDestination.Categories -> Icons.Outlined.Category
     MainDestination.ScanCategories -> Icons.Outlined.DocumentScanner
     MainDestination.Budgets -> Icons.Outlined.Savings

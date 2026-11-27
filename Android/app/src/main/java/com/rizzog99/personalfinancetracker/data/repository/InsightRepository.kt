@@ -8,6 +8,7 @@ import com.rizzog99.personalfinancetracker.domain.insight.DayValue
 import com.rizzog99.personalfinancetracker.domain.insight.HealthScoreSnapshot
 import com.rizzog99.personalfinancetracker.domain.money.MoneyCodec
 import java.time.Instant
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
 
 /**
@@ -20,6 +21,14 @@ interface InsightRepository {
 
     /** Appends a snapshot, as the frozen `saveSnapshot` does. Re-saving an id replaces that row. */
     suspend fun saveSnapshot(snapshot: HealthScoreSnapshot): HealthScoreSnapshot
+
+    /**
+     * Saves [snapshot] unless one already exists for its local day in [zone] (iOS
+     * `saveSnapshotIfNeeded`). Serialized across callers: Insights, Plan and the wide Health Score
+     * page each hold a model, and two of them must not both see "nothing today" (#304).
+     * Returns whether it saved.
+     */
+    suspend fun saveSnapshotIfNeeded(snapshot: HealthScoreSnapshot, zone: java.time.ZoneId): Boolean
 
     /** `null` when nothing has been cached yet. */
     suspend fun forecastCache(): DailyForecastCache?
@@ -43,6 +52,21 @@ class RoomInsightRepository(
 
     override suspend fun saveSnapshot(snapshot: HealthScoreSnapshot): HealthScoreSnapshot =
         snapshot.toEntity().also { snapshotDao.upsert(it) }.toDomain()
+
+    // ponytail: one in-process lock; the app has a single repository instance, so that's every caller.
+    private val snapshotLock = kotlinx.coroutines.sync.Mutex()
+
+    override suspend fun saveSnapshotIfNeeded(snapshot: HealthScoreSnapshot, zone: java.time.ZoneId): Boolean =
+        snapshotLock.withLock {
+            val day = snapshot.timestamp.atZone(zone).toLocalDate()
+            val newest = snapshotDao.recent(1).firstOrNull()
+            if (newest != null && Instant.ofEpochMilli(newest.timestampEpochMillis).atZone(zone).toLocalDate() == day) {
+                false
+            } else {
+                snapshotDao.upsert(snapshot.toEntity())
+                true
+            }
+        }
 
     override suspend fun forecastCache(): DailyForecastCache? =
         forecastDao.get()?.toDomain()
