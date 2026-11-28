@@ -117,12 +117,16 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.catch
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -241,7 +245,7 @@ fun ActivityScreen(
     LaunchedEffect(selecting, barInShell) { if (barInShell) publishBar(if (selecting) selectionBar else null) }
     DisposableEffect(Unit) { onDispose { publishBar(null) } }
     var editingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
-    var isCreating by remember { mutableStateOf(false) }
+    var isCreating by rememberSaveable { mutableStateOf(false) }
     var deletingTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var recurringDeletionTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
     var recurringEditTransaction by remember { mutableStateOf<FinanceTransaction?>(null) }
@@ -1418,7 +1422,7 @@ internal fun TransactionEditorContent(
     /** The "Part of a trip?" section (#284); `null` hides it (the Recurring rules editor). */
     travelChoice: TravelChoice? = null,
 ) {
-    var selectedTravelId by remember(editingTransaction, travelChoice?.presetId) {
+    var selectedTravelId by rememberSaveable(editingTransaction, travelChoice?.presetId) {
         mutableStateOf(editingTransaction?.travelId ?: travelChoice?.presetId)
     }
     // Collected here rather than threaded through TransactionEditorSheet: only the receipt path
@@ -1429,42 +1433,37 @@ internal fun TransactionEditorContent(
     val goals by remember(app) { app.goalRepository.observeAll().catch { emit(emptyList()) } }
         .collectAsState(initial = emptyList())
     // iOS stores no type: any goal-linked row opens as Transfer (b649dff `EditAddTransactionViewModel.swift:493`, `:505`).
-    var isTransfer by remember(editingTransaction) { mutableStateOf(editingTransaction?.goalId != null) }
-    var selectedGoalId by remember(editingTransaction) { mutableStateOf(editingTransaction?.goalId) }
+    var isTransfer by rememberSaveable(editingTransaction) { mutableStateOf(editingTransaction?.goalId != null) }
+    var selectedGoalId by rememberSaveable(editingTransaction) { mutableStateOf(editingTransaction?.goalId) }
     val selectedGoal = goals.firstOrNull { it.id == selectedGoalId }
-    var amountText by remember(editingTransaction) {
+    var amountText by rememberSaveable(editingTransaction) {
         mutableStateOf(editingTransaction?.amount?.abs()?.toPlainString().orEmpty())
     }
-    var note by remember(editingTransaction) { mutableStateOf(editingTransaction?.note.orEmpty()) }
-    var selectedType by remember(editingTransaction, categories) {
-        mutableStateOf(
-            categories.firstOrNull { it.id == editingTransaction?.categoryId }?.type
-                // An unknown category (deleted, or a rule planned from an import) must not turn an
-                // income into an expense on save (#294).
-                ?: if ((editingTransaction?.amount?.signum() ?: 0) > 0) TransactionType.INCOME else TransactionType.EXPENSE,
-        )
-    }
-    var selectedCategoryId by remember(editingTransaction, categories, selectedType) {
-        mutableStateOf(
-            editingTransaction?.categoryId?.takeIf { id -> categories.any { it.id == id } }
-                ?: categories.firstOrNull { it.type == selectedType }?.id,
-        )
-    }
+    var note by rememberSaveable(editingTransaction) { mutableStateOf(editingTransaction?.note.orEmpty()) }
+    var chosenType by rememberSaveable(editingTransaction) { mutableStateOf<TransactionType?>(null) }
+    var chosenCategoryId by rememberSaveable(editingTransaction) { mutableStateOf<String?>(null) }
+    // An unknown category must not turn an income into an expense on save (#294).
+    val selectedType = chosenType ?: categories.firstOrNull { it.id == editingTransaction?.categoryId }?.type
+        ?: if ((editingTransaction?.amount?.signum() ?: 0) > 0) TransactionType.INCOME else TransactionType.EXPENSE
     var categoryPickerVisible by remember { mutableStateOf(false) }
-    var repeats by remember { mutableStateOf(presetRepeats) }
-    var recurrenceFrequency by remember { mutableStateOf(RecurrenceFrequency.MONTHLY) }
-    var recurrenceInterval by remember { mutableStateOf(1) }
-    var categoryTouched by remember { mutableStateOf(false) }
-    var receiptStatus by remember { mutableStateOf<String?>(null) }
-    var receiptMerchant by remember { mutableStateOf<String?>(null) }
-    var scannedAmountText by remember { mutableStateOf<String?>(null) }
-    var receiptTotalCandidates by remember { mutableStateOf<List<BigDecimal>>(emptyList()) }
-    var timestamp by remember(editingTransaction) { mutableStateOf(editingTransaction?.timestamp ?: Instant.now()) }
-    var scannedDate by remember { mutableStateOf<LocalDate?>(null) }
+    var repeats by rememberSaveable(editingTransaction, presetRepeats) { mutableStateOf(presetRepeats) }
+    var recurrenceFrequency by rememberSaveable(editingTransaction) { mutableStateOf(RecurrenceFrequency.MONTHLY) }
+    var recurrenceInterval by rememberSaveable(editingTransaction) { mutableStateOf(1) }
+    var categoryTouched by rememberSaveable(editingTransaction) { mutableStateOf(false) }
+    var receiptStatus by rememberSaveable(editingTransaction) { mutableStateOf<Int?>(null) }
+    var receiptMerchant by rememberSaveable(editingTransaction) { mutableStateOf<String?>(null) }
+    var isReceiptScanning by remember { mutableStateOf(false) }
+    var amountEdited by rememberSaveable(editingTransaction) { mutableStateOf(editingTransaction != null) }
+    var noteEdited by rememberSaveable(editingTransaction) { mutableStateOf(editingTransaction != null) }
+    var receiptTotalCandidates by rememberSaveable(editingTransaction) { mutableStateOf<List<BigDecimal>>(emptyList()) }
+    var timestamp by rememberSaveable(editingTransaction) { mutableStateOf(editingTransaction?.timestamp ?: Instant.now()) }
+    var dateEdited by rememberSaveable(editingTransaction) { mutableStateOf(editingTransaction != null) }
     var datePickerVisible by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val matchingCategories = categories.filter { it.type == selectedType }
-    val selectedCategory = matchingCategories.firstOrNull { it.id == selectedCategoryId }
+    val preferredCategoryId = chosenCategoryId ?: editingTransaction?.categoryId?.takeIf { chosenType == null }
+    val selectedCategory = matchingCategories.firstOrNull { it.id == preferredCategoryId } ?: matchingCategories.firstOrNull()
+    val selectedCategoryId = selectedCategory?.id
     var isAmountFocused by remember { mutableStateOf(false) }
     // #319: the field that had focus when the app left or locked, given back on the return — as
     // frozen iOS's form does (`TransactionFormView.swift:460-490` at `b649dfff`).
@@ -1507,47 +1506,36 @@ internal fun TransactionEditorContent(
         amount != null -> AmountInput.formattedDisplay(amount)
         else -> amountText
     }
-    val canSave = amount != null && amount > BigDecimal.ZERO && (if (isTransfer) selectedGoal != null else selectedCategory != null)
-    val receiptReviewMessage = stringResource(R.string.receipt_review_before_saving)
-    val receiptAmbiguousMessage = stringResource(R.string.receipt_total_ambiguous)
-    val receiptAmountUnreadableMessage = stringResource(R.string.receipt_amount_unreadable)
-    val receiptDateClampedMessage = stringResource(R.string.receipt_date_clamped)
-    val receiptUnreadableMessage = stringResource(R.string.receipt_unreadable)
+    val canSave = !isReceiptScanning && amount != null && amount > BigDecimal.ZERO &&
+        (if (isTransfer) selectedGoal != null else selectedCategory != null)
     val applyReceiptScan: suspend (ReceiptScan) -> Unit = { scan ->
-        val wasAmountScanned = amountText == scannedAmountText
-        if (amountText.isBlank() || wasAmountScanned) {
-            scan.total?.let {
-                amountText = it.toPlainString()
-                scannedAmountText = amountText
-            }
+        val mappedCategoryId = if (!categoryTouched && !isTransfer) {
+            scan.merchant?.let { receiptMappingRepository.categoryIdFor(it) }
+        } else {
+            null
         }
-        receiptTotalCandidates = scan.totalCandidates
-        val displayedDate = timestamp.atZone(ZoneId.systemDefault()).toLocalDate()
-        if ((displayedDate == LocalDate.now() || displayedDate == scannedDate) && !scan.dateWasClamped) {
-            scan.date?.let { date ->
-                timestamp = date.atTime(LocalTime.now()).atZone(ZoneId.systemDefault()).toInstant()
-                scannedDate = date
-            }
+        if (!amountEdited) amountText = scan.total?.toPlainString().orEmpty()
+        receiptTotalCandidates = if (amountEdited) emptyList() else scan.totalCandidates
+        if (!dateEdited) {
+            val zone = ZoneId.systemDefault()
+            timestamp = scan.date?.atTime(LocalTime.now(zone))?.atZone(zone)?.toInstant() ?: Instant.now()
         }
-        if (note.isBlank() || note == receiptMerchant.orEmpty()) {
-            scan.merchant?.let { note = it }
-        }
+        if (!noteEdited) note = scan.merchant.orEmpty()
         receiptMerchant = scan.merchant
         // A scan never turns a transfer into something else (iOS `:309`, `:320`).
         if (!categoryTouched && !isTransfer) {
-            val mappedCategoryId = scan.merchant?.let { receiptMappingRepository.categoryIdFor(it) }
             val inferredCategory = categories.firstOrNull { it.id == mappedCategoryId }
                 ?: inferReceiptCategory(scan, categories, selectedType, conceptPairings)
             if (inferredCategory != null) {
-                selectedType = inferredCategory.type
-                selectedCategoryId = inferredCategory.id
+                chosenType = inferredCategory.type
+                chosenCategoryId = inferredCategory.id
             }
         }
         receiptStatus = when {
-            scan.totalCandidates.isNotEmpty() -> receiptAmbiguousMessage
-            scan.total == null -> receiptAmountUnreadableMessage
-            scan.dateWasClamped -> receiptDateClampedMessage
-            else -> receiptReviewMessage
+            receiptTotalCandidates.isNotEmpty() -> R.string.receipt_total_ambiguous
+            !amountEdited && scan.total == null -> R.string.receipt_amount_unreadable
+            scan.dateWasClamped && !dateEdited -> R.string.receipt_date_clamped
+            else -> R.string.receipt_review_before_saving
         }
     }
     val submitTransaction: () -> Unit = {
@@ -1590,40 +1578,57 @@ internal fun TransactionEditorContent(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(
-                            when {
-                                ruleCadence != null -> R.string.edit_recurring
-                                editingTransaction == null -> R.string.add_transaction
-                                else -> R.string.edit_transaction
-                            },
-                        ),
-                        modifier = Modifier.semantics { heading() },
-                    )
+            val editorTitle = stringResource(
+                when {
+                    ruleCadence != null -> R.string.edit_recurring
+                    editingTransaction == null -> R.string.add_transaction
+                    else -> R.string.edit_transaction
                 },
-                navigationIcon = {
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.dismiss))
-                    }
-                },
-                actions = {
-                    if (editingTransaction == null) {
-                        ReceiptCaptureAction(
-                            onScan = applyReceiptScan,
-                            onFailure = { receiptStatus = receiptUnreadableMessage },
-                        )
-                    }
-                    IconButton(onClick = submitTransaction, enabled = canSave) {
-                        Icon(
-                            imageVector = Icons.Outlined.Check,
-                            contentDescription = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.save),
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
+            val largeText = LocalDensity.current.fontScale >= 1.5f
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+                TopAppBar(
+                    title = {
+                        if (!largeText) Text(editorTitle, modifier = Modifier.semantics { heading() })
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.dismiss))
+                        }
+                    },
+                    actions = {
+                        if (editingTransaction == null) {
+                            ReceiptCaptureAction(
+                                isScanning = isReceiptScanning,
+                                onScanningChanged = { isReceiptScanning = it },
+                                onScan = applyReceiptScan,
+                                onFailure = {
+                                    if (!amountEdited) amountText = ""
+                                    if (!noteEdited) note = ""
+                                    if (!dateEdited) timestamp = Instant.now()
+                                    receiptMerchant = null
+                                    receiptTotalCandidates = emptyList()
+                                    receiptStatus = R.string.receipt_unreadable
+                                },
+                            )
+                        }
+                        IconButton(onClick = submitTransaction, enabled = canSave) {
+                            Icon(
+                                imageVector = Icons.Outlined.Check,
+                                contentDescription = stringResource(if (editingTransaction == null) R.string.add_transaction else R.string.save),
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+                )
+                if (largeText) {
+                    Text(
+                        text = editorTitle,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).semantics { heading() },
+                    )
+                }
+            }
         },
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -1637,25 +1642,26 @@ internal fun TransactionEditorContent(
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            receiptStatus?.let { status ->
+            val displayedReceiptStatus = if (isReceiptScanning) R.string.receipt_scanning else receiptStatus
+            displayedReceiptStatus?.let { status ->
                 FinanceCard {
                     Text(
-                        text = status,
-                        modifier = Modifier.padding(12.dp),
+                        text = stringResource(status),
+                        modifier = Modifier.padding(12.dp).semantics { liveRegion = LiveRegionMode.Polite },
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
-            if (receiptTotalCandidates.isNotEmpty()) {
+            if (!isReceiptScanning && receiptTotalCandidates.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     receiptTotalCandidates.forEach { candidate ->
                         FilterChip(
                             selected = false,
                             onClick = {
                                 amountText = candidate.toPlainString()
-                                scannedAmountText = amountText
+                                amountEdited = true
                                 receiptTotalCandidates = emptyList()
-                                receiptStatus = receiptReviewMessage
+                                receiptStatus = R.string.receipt_review_before_saving
                             },
                             label = { Text(formatCurrency(candidate, "EUR")) },
                         )
@@ -1678,7 +1684,14 @@ internal fun TransactionEditorContent(
                 )
                 BasicTextField(
                     value = displayedAmountText,
-                    onValueChange = { amountText = AmountInput.sanitize(it) },
+                    onValueChange = {
+                        amountText = AmountInput.sanitize(it)
+                        amountEdited = true
+                        if (receiptTotalCandidates.isNotEmpty()) {
+                            receiptTotalCandidates = emptyList()
+                            receiptStatus = R.string.receipt_review_before_saving
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.Center)
@@ -1733,8 +1746,8 @@ internal fun TransactionEditorContent(
                                 if (isTransfer || selectedType != type) {
                                     isTransfer = false
                                     selectedGoalId = null
-                                    selectedType = type
-                                    selectedCategoryId = categories.firstOrNull { it.type == type }?.id
+                                    chosenType = type
+                                    chosenCategoryId = null
                                     categoryTouched = true
                                 }
                             },
@@ -1815,7 +1828,7 @@ internal fun TransactionEditorContent(
                                     selected = category.id == selectedCategoryId,
                                     onClick = {
                                         focusManager.clearFocus()
-                                        selectedCategoryId = category.id
+                                        chosenCategoryId = category.id
                                         categoryTouched = true
                                     },
                                 )
@@ -1832,7 +1845,10 @@ internal fun TransactionEditorContent(
             }
             OutlinedTextField(
                 value = note,
-                onValueChange = { note = it },
+                onValueChange = {
+                    note = it
+                    noteEdited = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(noteFocus)
@@ -1951,7 +1967,7 @@ internal fun TransactionEditorContent(
                     onClick = {
                         val date = datePickerState.selectedDateMillis!!.toUtcLocalDate()
                         timestamp = date.atTime(LocalTime.now()).atZone(ZoneId.systemDefault()).toInstant()
-                        scannedDate = null
+                        dateEdited = true
                         datePickerVisible = false
                     },
                 ) { Text(stringResource(R.string.done)) }
@@ -1969,7 +1985,7 @@ internal fun TransactionEditorContent(
             onDismiss = { categoryPickerVisible = false },
             onCategorySelected = { category ->
                 focusManager.clearFocus()
-                selectedCategoryId = category.id
+                chosenCategoryId = category.id
                 categoryTouched = true
                 categoryPickerVisible = false
             },
@@ -2181,23 +2197,40 @@ private fun CategoryPickerSheet(
 
 @Composable
 private fun ReceiptCaptureAction(
+    isScanning: Boolean,
+    onScanningChanged: (Boolean) -> Unit,
     onScan: suspend (ReceiptScan) -> Unit,
     onFailure: () -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+    val currentOnScan by rememberUpdatedState(onScan)
+    val currentOnFailure by rememberUpdatedState(onFailure)
     var sourcePickerVisible by remember { mutableStateOf(false) }
-    var pendingCameraFile by remember { mutableStateOf<File?>(null) }
+    var pendingCameraName by rememberSaveable { mutableStateOf<String?>(null) }
+    val captureDirectory = File(context.cacheDir, "receipt-capture")
+    val scanReceiptLabel = stringResource(R.string.scan_receipt)
+    val privacyDetail = stringResource(R.string.receipt_privacy_detail)
+    val takePhotoLabel = stringResource(R.string.take_photo)
+    val choosePhotoLabel = stringResource(R.string.choose_photo)
+
+    fun cameraUri(file: File): Uri =
+        FileProvider.getUriForFile(context, "${context.packageName}.receipt-files", file)
 
     fun recognize(uri: Uri, temporaryFile: File? = null) {
-        scope.launch {
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            onScanningChanged(true)
             try {
-                val scan = ReceiptParser.parse(ReceiptTextRecognizer.recognize(context, uri))
-                temporaryFile?.delete()
-                onScan(scan)
+                val document = ReceiptTextRecognizer.recognize(context, uri)
+                if (document.lines.isEmpty()) currentOnFailure() else currentOnScan(ReceiptParser.parse(document))
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (_: Exception) {
+                currentOnFailure()
+            } finally {
                 temporaryFile?.delete()
-                onFailure()
+                onScanningChanged(false)
             }
         }
     }
@@ -2206,19 +2239,25 @@ private fun ReceiptCaptureAction(
         if (uri != null) recognize(uri)
     }
     val cameraCapture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        val file = pendingCameraFile
-        pendingCameraFile = null
+        val file = pendingCameraName?.let { File(captureDirectory, it) }
+        pendingCameraName = null
         if (success && file != null) {
-            recognize(FileProvider.getUriForFile(context, "${context.packageName}.receipt-files", file), file)
+            recognize(cameraUri(file), file)
         } else {
             file?.delete()
         }
     }
 
-    IconButton(onClick = { sourcePickerVisible = true }) {
+    IconButton(
+        onClick = {
+            focusManager.clearFocus()
+            sourcePickerVisible = true
+        },
+        enabled = !isScanning,
+    ) {
         Icon(
             imageVector = Icons.Outlined.DocumentScanner,
-            contentDescription = stringResource(R.string.scan_receipt),
+            contentDescription = scanReceiptLabel,
         )
     }
 
@@ -2226,28 +2265,36 @@ private fun ReceiptCaptureAction(
         AlertDialog(
             onDismissRequest = { sourcePickerVisible = false },
             modifier = Modifier.coverWhenObscured(),
-            title = { Text(stringResource(R.string.scan_receipt)) },
-            text = { Text(stringResource(R.string.receipt_privacy_detail)) },
+            title = { Text(scanReceiptLabel) },
+            text = { Text(privacyDetail) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         sourcePickerVisible = false
-                        val directory = File(context.cacheDir, "receipt-capture").apply { mkdirs() }
-                        val file = File(directory, "${UUID.randomUUID()}.jpg")
-                        pendingCameraFile = file
-                        cameraCapture.launch(
-                            FileProvider.getUriForFile(context, "${context.packageName}.receipt-files", file),
-                        )
+                        val file = File(captureDirectory, "${UUID.randomUUID()}.jpg")
+                        try {
+                            captureDirectory.mkdirs()
+                            pendingCameraName = file.name
+                            cameraCapture.launch(cameraUri(file))
+                        } catch (_: Exception) {
+                            pendingCameraName = null
+                            file.delete()
+                            currentOnFailure()
+                        }
                     },
-                ) { Text(stringResource(R.string.take_photo)) }
+                ) { Text(takePhotoLabel) }
             },
             dismissButton = {
                 TextButton(
                     onClick = {
                         sourcePickerVisible = false
-                        photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        try {
+                            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        } catch (_: Exception) {
+                            currentOnFailure()
+                        }
                     },
-                ) { Text(stringResource(R.string.choose_photo)) }
+                ) { Text(choosePhotoLabel) }
             },
         )
     }

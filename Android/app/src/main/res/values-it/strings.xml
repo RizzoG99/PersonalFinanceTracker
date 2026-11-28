@@ -451,6 +451,7 @@
     <string name="take_photo">Scatta una foto</string>
     <string name="choose_photo">Scegli una foto</string>
     <string name="receipt_privacy_detail">L’immagine viene elaborata su questo dispositivo ed eliminata dopo la lettura.</string>
+    <string name="receipt_scanning">Lettura della ricevuta…</string>
     <string name="receipt_review_before_saving">Ricevuta acquisita — controlla prima di salvare.</string>
     <string name="receipt_total_ambiguous">Scegli il totale corretto prima di salvare.</string>
     <string name="receipt_amount_unreadable">Non è stato possibile leggere l’importo. Inseriscilo manualmente.</string>

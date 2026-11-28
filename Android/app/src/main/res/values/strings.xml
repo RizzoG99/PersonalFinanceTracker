@@ -454,6 +454,7 @@
     <string name="take_photo">Take photo</string>
     <string name="choose_photo">Choose photo</string>
     <string name="receipt_privacy_detail">The image is processed on this device and discarded after reading.</string>
+    <string name="receipt_scanning">Reading receipt…</string>
     <string name="receipt_review_before_saving">Receipt scanned — review before saving.</string>
     <string name="receipt_total_ambiguous">Choose the correct total before saving.</string>
     <string name="receipt_amount_unreadable">Couldn’t read the receipt amount. Enter it manually.</string>
