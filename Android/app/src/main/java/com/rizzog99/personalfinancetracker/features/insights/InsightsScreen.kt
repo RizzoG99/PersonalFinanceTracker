@@ -137,18 +137,12 @@ fun InsightsScreen(
             application.preferencesRepository,
             application.categoryRepository,
             clock,
+            application.insightRepository,
         ),
     )
     val state by viewModel.uiState.collectAsState()
-    // A foreground can cross midnight or a month end with no data change (iOS reloads on foreground).
-    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
-    androidx.compose.runtime.DisposableEffect(lifecycleOwner, viewModel) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) viewModel.refreshNow()
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
+    RefreshNowOnResume(viewModel)
+    var showingHealth by rememberSaveable { mutableStateOf(false) }
     var drill by rememberSaveable(stateSaver = ExplorerDrillDown.Saver) { mutableStateOf<ExplorerDrillDown?>(null) }
     drill?.takeIf { !state.isLoading && !state.isError }?.let {
         CategoryTransactionsScreen(it, state, onBack = { drill = null })
@@ -190,8 +184,77 @@ fun InsightsScreen(
             else -> InsightsContent(
                 state = state,
                 actions = actions,
+                onOpenHealth = { showingHealth = true },
                 modifier = Modifier.padding(padding),
             )
+        }
+    }
+    if (showingHealth && state.health != null) {
+        HealthScoreSheet(state, viewModel::setIgnoreSubscriptions, onDismiss = { showingHealth = false })
+    }
+}
+
+/**
+ * A foreground can cross midnight or a cycle end with no data change (iOS reloads on foreground):
+ * re-read "now" for the explorer, the score and its daily snapshot.
+ */
+@Composable
+private fun RefreshNowOnResume(viewModel: InsightsViewModel) {
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner, viewModel) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) viewModel.refreshNow()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+}
+
+/**
+ * The wide layout's Health Score page (iOS `IPadHealthScoreView`, #304): the detail as a
+ * destination, or the empty state without activity. On a compact width it is still reachable and
+ * keeps the Insights tab selected (the shell maps its route to Insights).
+ */
+@Composable
+fun HealthScoreScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    onOpenSettings: () -> Unit,
+    clock: Clock = Clock.systemDefaultZone(),
+) {
+    val application = LocalContext.current.applicationContext as PersonalFinanceApplication
+    val viewModel: InsightsViewModel = viewModel(
+        factory = InsightsViewModel.factory(
+            application.transactionRepository,
+            application.goalRepository,
+            application.preferencesRepository,
+            application.categoryRepository,
+            clock,
+            application.insightRepository,
+        ),
+    )
+    val state by viewModel.uiState.collectAsState()
+    RefreshNowOnResume(viewModel)
+    Scaffold(
+        topBar = {
+            MainTopBar(
+                title = stringResource(R.string.health_score),
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
+                onOpenSettings = onOpenSettings,
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) { padding ->
+        when {
+            state.isLoading -> LoadingState(modifier = Modifier.padding(padding).fillMaxSize())
+            state.isError -> ErrorState(
+                message = stringResource(R.string.error_state_message),
+                onRetry = viewModel::retry,
+                modifier = Modifier.padding(padding).fillMaxSize(),
+            )
+            else -> HealthScoreDetail(state, viewModel::setIgnoreSubscriptions, Modifier.padding(padding).fillMaxSize())
         }
     }
 }
@@ -313,6 +376,7 @@ internal fun GoalSheetsHost(
 private fun InsightsContent(
     state: InsightsUiState,
     actions: ExplorerActions,
+    onOpenHealth: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -328,7 +392,7 @@ private fun InsightsContent(
             BreakdownExplorerSection(state, actions)
         }
         item {
-            HealthSection(state.health)
+            HealthScoreSection(state.health, onOpen = onOpenHealth)
         }
     }
 }
@@ -523,77 +587,6 @@ private fun PaceCard(insight: PaceInsight) {
     }
 }
 
-@Composable
-private fun HealthSection(health: FinancialHealth?) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.health_score), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
-        Text(stringResource(R.string.health_score_detail), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        FinanceCard {
-            if (health == null) {
-                Text(stringResource(R.string.health_score_empty), modifier = Modifier.fillMaxWidth().padding(24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        HealthScoreGauge(
-                            score = health.score,
-                            modifier = Modifier.size(120.dp),
-                        )
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                stringResource(R.string.health_score_value, health.score),
-                                style = MaterialTheme.typography.titleLarge,
-                            )
-                            Text(
-                                healthScoreBand(health.score),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        health.components.forEach { component ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Text(
-                                    component.name,
-                                    modifier = Modifier.weight(1f),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                                FlatProgressTrack(
-                                    fraction = component.score.toFloat() / component.max,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.width(80.dp).height(5.dp),
-                                )
-                                Text(
-                                    "${component.score}/${component.max}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.End,
-                                    modifier = Modifier.width(40.dp),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 /**
  * A plain, fixed-size progress track: solid fill over a solid track, no gaps or stop indicators.
  * M3's `LinearProgressIndicator` inserts a leading gap before the active segment at intermediate
@@ -622,78 +615,6 @@ private fun FlatProgressTrack(
         )
     }
 }
-
-@Composable
-private fun HealthScoreGauge(score: Int, modifier: Modifier = Modifier) {
-    val strokeWidth = 16.dp
-    val scoreFloat = (score / 100f).coerceIn(0f, 1f)
-    val gaugeColor = MaterialTheme.colorScheme.primary
-    val trackColor = MaterialTheme.colorScheme.outlineVariant
-    val strokeWidthPx = strokeWidth.value
-    val scoreDescription = stringResource(R.string.health_score_value, score)
-
-    Box(
-        modifier = modifier
-            .clearAndSetSemantics { contentDescription = scoreDescription },
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-        ) {
-            val inset = (strokeWidthPx * density) / 2
-            val arcSize = size.width - (inset * 2)
-
-            drawArc(
-                color = trackColor,
-                startAngle = -90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
-                size = androidx.compose.ui.geometry.Size(arcSize, arcSize),
-                style = Stroke(width = strokeWidthPx * density, cap = StrokeCap.Round),
-            )
-
-            drawArc(
-                color = gaugeColor,
-                startAngle = -90f,
-                sweepAngle = 360f * scoreFloat,
-                useCenter = false,
-                topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
-                size = androidx.compose.ui.geometry.Size(arcSize, arcSize),
-                style = Stroke(width = strokeWidthPx * density, cap = StrokeCap.Round),
-            )
-        }
-
-        Column(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                "$score",
-                style = MaterialTheme.typography.displaySmall,
-                color = gaugeColor,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                stringResource(R.string.health_score_label),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
-private fun healthScoreBand(score: Int): String = stringResource(
-    when {
-        score < 26 -> R.string.health_score_band_poor
-        score < 51 -> R.string.health_score_band_fair
-        score < 76 -> R.string.health_score_band_good
-        else -> R.string.health_score_band_excellent
-    },
-)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable

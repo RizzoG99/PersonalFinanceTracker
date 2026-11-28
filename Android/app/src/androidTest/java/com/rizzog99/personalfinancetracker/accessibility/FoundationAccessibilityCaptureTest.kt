@@ -326,8 +326,8 @@ class FoundationAccessibilityCaptureTest {
 
         if (spec.host == Host.SHELL) {
             val tabs = nodes.filter { it.config.getOrNull(SemanticsProperties.Role) == Role.Tab }
-            // #283: 4 phone tabs; the wide drawer lists 6 destinations plus its Settings row.
-            val expectedTabs = if (spec.cell.widthDp >= 840) 7 else 4
+            // The wide drawer has seven destinations including Health Score (#304), plus Settings.
+            val expectedTabs = if (spec.cell.widthDp >= 840) 8 else 4
             assertEquals("${spec.name} primary tab count", expectedTabs, tabs.size)
             assertEquals("${spec.name} selected tab count", 1, tabs.count { it.config.getOrNull(SemanticsProperties.Selected) == true })
         }

@@ -17,6 +17,11 @@ import com.rizzog99.personalfinancetracker.domain.insights.ExplorerGranularity
 import com.rizzog99.personalfinancetracker.domain.insights.ExplorerPeriod
 import com.rizzog99.personalfinancetracker.domain.insights.ExplorerType
 import com.rizzog99.personalfinancetracker.domain.insights.canGoPrevious
+import com.rizzog99.personalfinancetracker.domain.insights.HealthScore
+import com.rizzog99.personalfinancetracker.domain.insights.computeHealthScore
+import com.rizzog99.personalfinancetracker.domain.insights.snapshot
+import com.rizzog99.personalfinancetracker.domain.insight.HealthScoreSnapshot
+import com.rizzog99.personalfinancetracker.data.repository.InsightRepository
 import com.rizzog99.personalfinancetracker.domain.paycycle.FinancialPeriod
 import com.rizzog99.personalfinancetracker.domain.paycycle.PayCycleService
 import com.rizzog99.personalfinancetracker.domain.transaction.FinanceTransaction
@@ -36,6 +41,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -43,8 +50,6 @@ import kotlinx.coroutines.flow.update
 data class GoalProgress(val goal: FinanceGoal, val currentAmount: BigDecimal)
 data class PaceInsight(val direction: PaceDirection, val percent: Int? = null)
 enum class PaceDirection { UP, DOWN, FLAT, BUILDING }
-data class HealthComponent(val name: String, val score: Int, val max: Int = 25)
-data class FinancialHealth(val score: Int, val components: List<HealthComponent>)
 
 data class InsightsUiState(
     val isLoading: Boolean = true,
@@ -56,7 +61,12 @@ data class InsightsUiState(
     val expenses: BigDecimal = BigDecimal.ZERO,
     val goals: List<GoalProgress> = emptyList(),
     val paceInsight: PaceInsight = PaceInsight(PaceDirection.BUILDING),
-    val health: FinancialHealth? = null,
+    /** iOS `FinancialHealthService` (#304); null without activity in the six-cycle window. */
+    val health: HealthScore? = null,
+    val ignoreSubscriptions: Boolean = false,
+    val payCycleStartDay: Int = 1,
+    /** Newest first, at most six: the detail's history chart (shown with two or more). */
+    val snapshots: List<HealthScoreSnapshot> = emptyList(),
     /** The Breakdown explorer (#303): its selection, what it shows, and what its controls allow. */
     val explorerPeriod: ExplorerPeriod? = null,
     val explorerType: ExplorerType = ExplorerType.EXPENSES,
@@ -81,6 +91,8 @@ class InsightsViewModel(
     private val categoryRepository: CategoryRepository,
     private val clock: Clock = Clock.systemDefaultZone(),
     private val zoneId: ZoneId = ZoneId.systemDefault(),
+    /** Health Score history; null where nothing should be recorded (Plan's goals-only use). */
+    private val insightRepository: InsightRepository? = null,
 ) : ViewModel() {
     /** See `HomeViewModel.retries` — same `flatMapLatest` guarantee (#111 AC-05). */
     private val retries = MutableStateFlow(0)
@@ -100,6 +112,18 @@ class InsightsViewModel(
     private val nowTicks = MutableStateFlow(0)
     fun refreshNow() = nowTicks.update { it + 1 }
 
+    /** Bumped after a snapshot is saved, so the history re-reads. */
+    private val snapshotTicks = MutableStateFlow(0)
+    private val snapshots: Flow<List<HealthScoreSnapshot>> = snapshotTicks.mapLatest {
+        // History is decoration: a failed read shows none rather than turning Insights into an error.
+        insightRepository?.let { repo -> runCatching { repo.recentSnapshots(6) }.getOrElse { error -> rethrowIfCancelled(error); emptyList() } }.orEmpty()
+    }
+
+    /** iOS keeps this in UserDefaults and reloads on change; here the stored preference drives the score. */
+    fun setIgnoreSubscriptions(ignore: Boolean) {
+        viewModelScope.launch { runCatching { preferencesRepository.setHealthScoreIgnoreSubscriptions(ignore) } }
+    }
+
     fun selectType(type: ExplorerType) = selection.update { it.copy(type = type) }
     fun previousPeriod() = selection.update { it.copy(period = it.period.previous(calendar)) }
     fun nextPeriod() = selection.update { it.copy(period = it.period.next(calendar)) }
@@ -118,16 +142,16 @@ class InsightsViewModel(
     private fun insights(): Flow<InsightsUiState> = combine(
         transactionRepository.observeAll(),
         goalRepository.observeAll(),
-        preferencesRepository.payCycleStartDay,
-        preferencesRepository.baseCurrency,
+        combine(
+            preferencesRepository.payCycleStartDay,
+            preferencesRepository.baseCurrency,
+            preferencesRepository.healthScoreIgnoreSubscriptions,
+        ) { day, currency, ignore -> Triple(day, currency, ignore) },
         categoryRepository.observeAll(),
-    ) { transactions, goals, payCycleStartDay, currencyCode, categories ->
+    ) { transactions, goals, (payCycleStartDay, currencyCode, ignoreSubscriptions), categories ->
         val period = PayCycleService.currentFinancialMonth(payCycleStartDay, clock)
         val periodTransactions = transactions.filter { it.timestamp.atZone(zoneId).toLocalDate() in period }
         val expenseTransactions = transactions.filter { it.amount < BigDecimal.ZERO && !it.isGoalTransfer }
-        val financialMonths = PayCycleService.financialMonths(6, period.endInclusive, payCycleStartDay)
-        val recentStart = financialMonths.firstOrNull()?.start
-        val recentTransactions = recentStart?.let { start -> transactions.filter { it.timestamp.atZone(zoneId).toLocalDate() >= start } }.orEmpty()
         val previousPeriod = PayCycleService.financialMonthContaining(period.start.minusDays(1), payCycleStartDay)
         val currentSpend = expenseTransactions.inPeriod(period, zoneId)
         val previousSpend = expenseTransactions.inPeriod(previousPeriod, zoneId)
@@ -148,17 +172,24 @@ class InsightsViewModel(
                 )
             },
             paceInsight = paceInsight(currentSpend, previousSpend),
-            health = recentTransactions.takeIf { it.isNotEmpty() }?.let { health(it, expenseTransactions, financialMonths, zoneId) },
+            ignoreSubscriptions = ignoreSubscriptions,
+            payCycleStartDay = payCycleStartDay,
             firstTransaction = transactions.minOfOrNull { it.timestamp },
             zoneId = zoneId,
             transactions = transactions,
             categories = categories,
         )
-    }.combine(combine(selection, nowTicks) { selection, _ -> selection }) { state, selection ->
+    }.combine(combine(selection, nowTicks, snapshots) { selection, _, history -> selection to history }) { state, (selection, history) ->
         // Inside the same flow as the reads, so a failure here lands in the error state below (#133).
+        // One "now" for the explorer, the score and its snapshot, re-read on every foreground.
         val now = clock.instant()
         val calendar = calendar
         state.copy(
+            health = computeHealthScore(
+                state.transactions, state.categories, state.payCycleStartDay, state.ignoreSubscriptions,
+                now.atZone(zoneId).toLocalDate(), zoneId,
+            ),
+            snapshots = history,
             explorerPeriod = selection.period,
             explorerType = selection.type,
             explorer = ExplorerBreakdown.build(state.transactions, state.categories, selection.period, selection.type, now, calendar),
@@ -167,8 +198,34 @@ class InsightsViewModel(
             now = now,
         )
     }
+        .onEach { state -> recordSnapshot(state) }
         .onStart { emit(InsightsUiState(isLoading = true)) }
         .catch { emit(InsightsUiState(isLoading = false, isError = true)) }
+
+    /**
+     * The day's reading (iOS `saveSnapshotIfNeeded`): only from a loaded, error-free state, once per
+     * local day across every model (the repository serializes), then the history re-reads. A failed
+     * write is dropped: it must neither break Insights nor touch the rows already saved.
+     */
+    private suspend fun recordSnapshot(state: InsightsUiState) {
+        val repo = insightRepository ?: return
+        val health = state.health ?: return
+        if (state.isLoading || state.isError) return
+        val today = state.now.atZone(zoneId).toLocalDate()
+        runCatching { repo.saveSnapshotIfNeeded(health.snapshot(state.now), zoneId) }
+            .onSuccess { saved ->
+                // Re-read after we saved, and once a day after another model did (Insights, Plan and
+                // the wide page each hold one): a skipped save mustn't leave this history stale.
+                // ponytail: once per day per model, so a re-read can never loop back into itself.
+                if (saved || historyCheckedOn != today) {
+                    historyCheckedOn = today
+                    snapshotTicks.update { it + 1 }
+                }
+            }
+            .onFailure(::rethrowIfCancelled)
+    }
+
+    private var historyCheckedOn: java.time.LocalDate? = null
 
     companion object {
         fun factory(
@@ -177,8 +234,11 @@ class InsightsViewModel(
             preferencesRepository: UserPreferencesRepository,
             categoryRepository: CategoryRepository,
             clock: Clock = Clock.systemDefaultZone(),
+            insightRepository: InsightRepository? = null,
         ) = viewModelFactory {
-            initializer { InsightsViewModel(transactionRepository, goalRepository, preferencesRepository, categoryRepository, clock, clock.zone) }
+            initializer {
+                InsightsViewModel(transactionRepository, goalRepository, preferencesRepository, categoryRepository, clock, clock.zone, insightRepository)
+            }
         }
     }
 
@@ -229,28 +289,7 @@ private fun paceInsight(current: BigDecimal, previous: BigDecimal): PaceInsight 
     }
 }
 
-private fun health(
-    transactions: List<FinanceTransaction>,
-    expenses: List<FinanceTransaction>,
-    months: List<FinancialPeriod>,
-    zoneId: ZoneId,
-): FinancialHealth {
-    val income = transactions.filter { it.amount > BigDecimal.ZERO }.fold(BigDecimal.ZERO) { total, item -> total + item.amount }
-    val totalExpenses = expenses.filter { item -> months.any { item.timestamp.atZone(zoneId).toLocalDate() in it } }
-        .fold(BigDecimal.ZERO) { total, item -> total + item.amount.abs() }
-    val savingsRate = if (income > BigDecimal.ZERO) income.subtract(totalExpenses).divide(income, 4, java.math.RoundingMode.DOWN) else BigDecimal.ZERO
-    val savings = savingsRate.divide(BigDecimal("0.20"), 4, java.math.RoundingMode.DOWN).multiply(BigDecimal(25)).toInt().coerceIn(0, 25)
-    val activeMonths = months.count { expenses.inPeriod(it, zoneId) > BigDecimal.ZERO }
-    val stability = (activeMonths * 25 / months.size).coerceIn(0, 25)
-    val subscriptions = expenses.filter { it.categoryLabel.contains("subscri", true) || it.categoryLabel.contains("stream", true) }
-        .fold(BigDecimal.ZERO) { total, item -> total + item.amount.abs() }
-    val subscriptionRatio = if (totalExpenses > BigDecimal.ZERO) subscriptions.divide(totalExpenses, 4, java.math.RoundingMode.DOWN) else BigDecimal.ZERO
-    val subscription = BigDecimal.ONE.subtract(subscriptionRatio.divide(BigDecimal("0.15"), 4, java.math.RoundingMode.DOWN)).multiply(BigDecimal(25)).toInt().coerceIn(0, 25)
-    val components = listOf(
-        HealthComponent("Savings rate", savings),
-        HealthComponent("Stability", stability),
-        HealthComponent("Budget", 25),
-        HealthComponent("Subscriptions", subscription),
-    )
-    return FinancialHealth(components.sumOf(HealthComponent::score), components)
+/** `runCatching` must not swallow cancellation: a cancelled collector stays cancelled (#133). */
+private fun rethrowIfCancelled(error: Throwable) {
+    if (error is kotlinx.coroutines.CancellationException) throw error
 }

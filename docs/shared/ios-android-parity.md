@@ -83,7 +83,7 @@ Closed gap and CI issues #105, #106, #107, #108, #120–#147 and #368 keep their
 | DRIFT-2026-10-PROJECTIONS | Goal ETA and required monthly savings | #301 | Todo / Gap found |
 | DRIFT-2026-10-RECAP | Monthly recap and payday notification | #302 | Todo / Gap found |
 | DRIFT-2026-10-BREAKDOWN | Insights Breakdown explorer (Pace card stays until #299, D-06) | #303 | Done / Verified |
-| DRIFT-2026-10-HEALTH | Health Score formulas and preferences | #304 | Todo / Gap found |
+| DRIFT-2026-10-HEALTH | Health Score formulas, preferences, detail and wide page (iOS #342 last-day fix adopted, D-01) | #304 | Done / Verified |
 | DRIFT-2026-10-PATTERNS | Insights patterns and Home anomalies | #305 | Todo / Gap found |
 | DRIFT-2026-10-BUDGETS | Income/expense budgets and cycle progress | #306 | Todo / Gap found |
 | DRIFT-2026-10-PULSE | Financial Pulse check-in and quick logs | #307 | Todo / Gap found |
